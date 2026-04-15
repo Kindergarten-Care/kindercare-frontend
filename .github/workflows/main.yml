@@ -1,0 +1,45 @@
+name: CI/CD KinderCareFrontEnd NextJS
+
+on:
+  push:
+    branches: [ "release/master", "dev" ] # Chạy khi push vào master hoặc dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        run: |
+          # Chuyển tên repo về chữ thường
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ghcr.io/$REPO_LOWER:${{ github.ref_name }} .
+          docker push ghcr.io/$REPO_LOWER:${{ github.ref_name }}
+
+      - name: SSH Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            IMAGE=ghcr.io/$REPO_LOWER:${{ github.ref_name }}
+            CONTAINER=kindercare-${{ github.ref_name }}
+            
+            # Master cổng 3000, Dev cổng 3002
+            if [ "${{ github.ref_name }}" == "master" ]; then PORT=3000; else PORT=3002; fi
+
+            docker pull $IMAGE
+            docker stop $CONTAINER || true
+            docker rm $CONTAINER || true
+            docker run -d --name $CONTAINER -p $PORT:3000 $IMAGE
