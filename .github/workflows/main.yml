@@ -51,6 +51,9 @@ jobs:
               PORT=3002
             fi
 
+            # Đăng nhập vào Registry trên VPS
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             docker pull $IMAGE
             docker stop $CONTAINER || true
             docker rm $CONTAINER || true
