@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "release/master", "dev" ] # Chạy khi push vào master hoặc dev
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
