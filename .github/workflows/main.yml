@@ -20,10 +20,12 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          # Chuyển tên repo về chữ thường
+          # Chuyển tên repo về chữ thường và sanitize branch name (thay / bằng -)
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/$REPO_LOWER:${{ github.ref_name }} .
-          docker push ghcr.io/$REPO_LOWER:${{ github.ref_name }}
+          CLEAN_REF=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          
+          docker build -t ghcr.io/$REPO_LOWER:$CLEAN_REF .
+          docker push ghcr.io/$REPO_LOWER:$CLEAN_REF
 
       - name: SSH Deploy to VPS
         uses: appleboy/ssh-action@master
@@ -33,11 +35,17 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-            IMAGE=ghcr.io/$REPO_LOWER:${{ github.ref_name }}
-            CONTAINER=kindercare-${{ github.ref_name }}
+            CLEAN_REF=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
             
-            # Master cổng 3000, Dev cổng 3002
-            if [ "${{ github.ref_name }}" == "master" ]; then PORT=3000; else PORT=3002; fi
+            IMAGE=ghcr.io/$REPO_LOWER:$CLEAN_REF
+            CONTAINER=kindercare-$CLEAN_REF
+            
+            # Nếu là release/master thì dùng cổng 3000, ngược lại (dev) dùng 3002
+            if [[ "${{ github.ref_name }}" == *"master"* ]]; then 
+              PORT=3000
+            else 
+              PORT=3002
+            fi
 
             docker pull $IMAGE
             docker stop $CONTAINER || true
