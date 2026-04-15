@@ -1,19 +1,19 @@
-FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 COPY package.json yarn.lock* ./
 RUN yarn install --network-timeout 100000
 
 # Giai đoạn 2: Build dự án
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN yarn build
 
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
