@@ -187,7 +187,7 @@ export default function Home() {
           <IconWrapper color="#ec4899">🥗</IconWrapper>
           <CardTitle>Dinh dưỡng & Sức khỏe</CardTitle>
           <CardText>
-            Test site build
+            Test site build at dev
           </CardText>
         </Card>
         <Card>
