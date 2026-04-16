@@ -187,7 +187,7 @@ export default function Home() {
           <IconWrapper color="#ec4899">🥗</IconWrapper>
           <CardTitle>Dinh dưỡng & Sức khỏe</CardTitle>
           <CardText>
-            Cập nhật thực đơn, chế độ ăn uống và các chỉ số sức khỏe của bé nhanh chóng.
+            Test site build
           </CardText>
         </Card>
         <Card>
