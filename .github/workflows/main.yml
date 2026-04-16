@@ -40,15 +40,15 @@ jobs:
           script: |
             REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
             CLEAN_REF=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-            
             IMAGE=ghcr.io/$REPO_LOWER:$CLEAN_REF
-            CONTAINER=kindercare-$CLEAN_REF
             
-            # Nếu là release/master thì dùng cổng 3000, ngược lại (dev) dùng 3002
+            # ĐỒNG BỘ TÊN CONTAINER ĐỂ TRÁNH LỖI CHIẾM CỔNG
             if [[ "${{ github.ref_name }}" == *"master"* ]]; then 
               PORT=3000
+              CONTAINER="kindercare-prod"
             else 
               PORT=3002
+              CONTAINER="kindercare-test"
             fi
 
             # Đăng nhập vào Registry trên VPS
