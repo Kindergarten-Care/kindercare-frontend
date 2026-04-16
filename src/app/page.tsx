@@ -249,7 +249,7 @@ export default function UnderDevelopment() {
 
       <GlassCard>
         <LogoWrapper>🏠</LogoWrapper>
-        
+
         <div>
           <StatusBadge>
             <Dot /> Đang phát triển
@@ -259,9 +259,9 @@ export default function UnderDevelopment() {
         <Title>
           <span>KinderCare</span> sẽ sớm quay trở lại!
         </Title>
-        
+
         <Description>
-          Chúng tôi đang nỗ lực hoàn thiện một nền tảng quản lý mầm non tuyệt vời nhất. 
+          Chúng tôi đang nỗ lực hoàn thiện một nền tảng quản lý mầm non tuyệt vời nhất.
           Website đang được nâng cấp để mang lại trải nghiệm tốt hơn cho bé và gia đình.
         </Description>
 
@@ -286,7 +286,7 @@ export default function UnderDevelopment() {
         </div>
 
         <Footer>
-          © 2024 KinderCare Team. All rights reserved.
+          © 2024 KinderCare Team. All rights reserved. Build for Education.
         </Footer>
       </GlassCard>
     </Container>
