@@ -54,6 +54,10 @@ jobs:
             # Đăng nhập vào Registry trên VPS
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+            #Remove unused images or dangling images
+            
+            docker image prune -af
+
             docker pull $IMAGE
             docker stop $CONTAINER || true
             docker rm $CONTAINER || true
