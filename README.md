@@ -77,7 +77,7 @@ docker run -p 3000:3000 kindercare-frontend
 ## 📝 Contact
 
 If you have any questions or would like to provide feedback, please contact us:
-- **Website:** [kindercare.vn](http://kindercare.app) (Under Development)
+- **Website:** [kindercare.app](http://kindercare.app) (Under Development)
 
 ---
 
