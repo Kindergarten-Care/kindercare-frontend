@@ -7,11 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sync-languages": "node scripts/sync-i18n.js"
   },
   "dependencies": {
-    "axios": "^1.15.0",
+    "axios": "^1.15.2",
     "next": "16.2.3",
+    "next-intl": "^4.9.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "socket.io-client": "^4.8.3",
@@ -23,6 +25,8 @@
     "@types/react-dom": "^19",
     "@types/styled-components": "^5.1.36",
     "babel-plugin-react-compiler": "1.0.0",
+    "csv-parse": "^6.2.1",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "husky": "^9.1.7",

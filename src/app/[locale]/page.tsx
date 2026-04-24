@@ -230,7 +230,10 @@ const Footer = styled.div`
   color: #94a3b8;
 `;
 
+import { useTranslations } from 'next-intl';
+
 export default function UnderDevelopment() {
+  const t = useTranslations('ComingSoon');
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -252,17 +255,16 @@ export default function UnderDevelopment() {
 
         <div>
           <StatusBadge>
-            <Dot /> Đang phát triển
+            <Dot /> {t('badge')}
           </StatusBadge>
         </div>
 
         <Title>
-          <span>KinderCare</span> sẽ sớm quay trở lại!
+          <span>KinderCare</span> {t('title')}
         </Title>
 
         <Description>
-          Chúng tôi đang nỗ lực hoàn thiện một nền tảng quản lý mầm non tuyệt vời nhất.
-          Website đang được nâng cấp để mang lại trải nghiệm tốt hơn cho bé và gia đình.
+          {t('description')}
         </Description>
 
         <div style={{ position: 'relative' }}>
@@ -270,23 +272,23 @@ export default function UnderDevelopment() {
             <ProgressBar width={progress} />
           </ProgressContainer>
           <ProgressText>
-            <span>Tiến độ hoàn thiện</span>
+            <span>{t('progressLabel')}</span>
             <span>{progress}%</span>
           </ProgressText>
         </div>
 
         <div style={{ marginTop: '2rem' }}>
           <Description style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Để lại email để nhận thông báo khi chúng tôi ra mắt:
+            {t('emailPrompt')}
           </Description>
           <InputGroup>
-            <Input type="email" placeholder="Địa chỉ email của bạn..." />
-            <Button>Thông báo cho tôi</Button>
+            <Input type="email" placeholder={t('emailPlaceholder')} />
+            <Button>{t('notifyButton')}</Button>
           </InputGroup>
         </div>
 
         <Footer>
-          © 2024 KinderCare Team. All rights reserved. Build for Education.
+          {t('footer')}
         </Footer>
       </GlassCard>
     </Container>

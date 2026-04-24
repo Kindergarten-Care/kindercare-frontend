@@ -44,14 +44,16 @@ class SocketService {
     event: T,
     listener: ServerToClientEvents[T]
   ): void {
-    this.socket?.on(event, listener as any);
+    // Use unknown as an intermediate step to cast to the required function type
+    this.socket?.on(event, listener as unknown as (...args: unknown[]) => void);
   }
 
   public off<T extends keyof ServerToClientEvents>(
     event: T,
     listener: ServerToClientEvents[T]
   ): void {
-    this.socket?.off(event, listener as any);
+    // Use unknown as an intermediate step to cast to the required function type
+    this.socket?.off(event, listener as unknown as (...args: unknown[]) => void);
   }
 }
 

@@ -23,7 +23,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       socket.on('connect', onConnect);
       socket.on('disconnect', onDisconnect);
 
-      setIsConnected(socket.connected);
+      if (socket.connected !== isConnected) {
+        setIsConnected(socket.connected);
+      }
 
       return () => {
         socket.off('connect', onConnect);
