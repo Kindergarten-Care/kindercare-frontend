@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prepare": "husky",
     "sync-languages": "node scripts/sync-i18n.js"
   },
   "dependencies": {
@@ -31,13 +30,6 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
     "typescript": "^5"
-  },
-  "lint-staged": {
-    "src/{app,views}/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ]
   }
 }
