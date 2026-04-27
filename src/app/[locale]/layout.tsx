@@ -4,8 +4,11 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
+import { ToastProvider } from '@/contexts/ToastProvider';
 import LanguageSwitcher from '@/layout/LanguageSwitcher';
 import type { Metadata } from 'next';
+import ThemeProvider from '@/theme/ThemeProvider';
+import { Lexend } from 'next/font/google';
 
 export async function generateMetadata({
   params
@@ -28,6 +31,11 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+const lexend = Lexend({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '500', '600', '700', '900'],
+});
+
 export default async function RootLayout({
   children,
   params
@@ -37,16 +45,12 @@ export default async function RootLayout({
 }) {
   const { locale } = await params;
 
-  // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as typeof routing.locales[number])) {
     notFound();
   }
 
-  // Enable static rendering
   setRequestLocale(locale);
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
   const messages = await getMessages();
 
   return (
@@ -54,16 +58,20 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body className={lexend.className}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              <LanguageSwitcher />
-              {children}
-            </SocketProvider>
+            <ThemeProvider>
+              <SocketProvider>
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
+              </SocketProvider>
+            </ThemeProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>
     </html>
   );
 }
+
