@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
+import Login from '@/views/Login';
 
 const HeaderWrapper = styled.header`
   position: fixed;
@@ -142,6 +143,7 @@ const LoginButton = styled.a`
 
 export const Header: React.FC = () => {
   const [activeSection, setActiveSection] = useState('hero');
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   useEffect(() => {
     const sectionIds = ['hero', 'environment', 'technology', 'enrollment', 'contact'];
@@ -195,62 +197,67 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <HeaderWrapper>
-      <Container>
-        <LogoSection onClick={(e) => handleNavClick(e, 'hero')}>
-          <Image
-            src="/images/logo.png"
-            alt="KinderCare Logo"
-            width={32}
-            height={32}
-            style={{ objectFit: 'contain' }}
-          />
-          <LogoText>KinderCare</LogoText>
-        </LogoSection>
+    <>
+      <HeaderWrapper>
+        <Container>
+          <LogoSection onClick={(e) => handleNavClick(e, 'hero')}>
+            <Image
+              src="/images/logo.png"
+              alt="KinderCare Logo"
+              width={32}
+              height={32}
+              style={{ objectFit: 'contain' }}
+            />
+            <LogoText>KinderCare</LogoText>
+          </LogoSection>
 
-        <NavLinks>
-          <NavLink 
-            className={activeSection === 'hero' ? 'active' : ''}
-            onClick={(e) => handleNavClick(e, 'hero')}
-          >
-            Trang chủ
-          </NavLink>
-          <NavLink 
-            className={activeSection === 'environment' ? 'active' : ''}
-            onClick={(e) => handleNavClick(e, 'environment')}
-          >
-            Môi trường
-          </NavLink>
-          <NavLink 
-            className={activeSection === 'technology' ? 'active' : ''}
-            onClick={(e) => handleNavClick(e, 'technology')}
-          >
-            Công nghệ
-          </NavLink>
-          <NavLink 
-            className={activeSection === 'enrollment' ? 'active' : ''}
-            onClick={(e) => handleNavClick(e, 'enrollment')}
-          >
-            Tuyển sinh
-          </NavLink>
-          <NavLink 
-            className={activeSection === 'contact' ? 'active' : ''}
-            onClick={(e) => handleNavClick(e, 'contact')}
-          >
-            Liên hệ
-          </NavLink>
-        </NavLinks>
+          <NavLinks>
+            <NavLink 
+              className={activeSection === 'hero' ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, 'hero')}
+            >
+              Trang chủ
+            </NavLink>
+            <NavLink 
+              className={activeSection === 'environment' ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, 'environment')}
+            >
+              Môi trường
+            </NavLink>
+            <NavLink 
+              className={activeSection === 'technology' ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, 'technology')}
+            >
+              Công nghệ
+            </NavLink>
+            <NavLink 
+              className={activeSection === 'enrollment' ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, 'enrollment')}
+            >
+              Tuyển sinh
+            </NavLink>
+            <NavLink 
+              className={activeSection === 'contact' ? 'active' : ''}
+              onClick={(e) => handleNavClick(e, 'contact')}
+            >
+              Liên hệ
+            </NavLink>
+          </NavLinks>
 
-        <ActionsSection>
-          <LoginButton href="/login">Phụ huynh Đăng nhập</LoginButton>
-          <RegisterButton 
-            onClick={(e) => handleNavClick(e, 'contact')}
-          >
-            Đăng ký tư vấn
-          </RegisterButton>
-        </ActionsSection>
-      </Container>
-    </HeaderWrapper>
+          <ActionsSection>
+            <LoginButton onClick={() => setIsLoginOpen(true)} style={{ cursor: 'pointer' }}>
+              Phụ huynh Đăng nhập
+            </LoginButton>
+            <RegisterButton 
+              onClick={(e) => handleNavClick(e, 'contact')}
+            >
+              Đăng ký tư vấn
+            </RegisterButton>
+          </ActionsSection>
+        </Container>
+      </HeaderWrapper>
+      <Login isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+    </>
   );
 };
 
