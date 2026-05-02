@@ -42,11 +42,11 @@ import {
 } from './styles';
 
 export interface LoginProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ isOpen, onClose }) => {
+export const Login: React.FC<LoginProps> = ({ isOpen = true, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -65,7 +65,7 @@ export const Login: React.FC<LoginProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && onClose) {
       onClose();
     }
   };
@@ -75,11 +75,13 @@ export const Login: React.FC<LoginProps> = ({ isOpen, onClose }) => {
       <LoginGlobalStyle />
       <LoginWrapper $isOpen={isOpen} onClick={handleBackdropClick}>
         <LoginCard>
-          <CloseButton onClick={onClose} aria-label="Close login">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L13 13M1 13L13 1" stroke="#191C1D" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </CloseButton>
+          {onClose && (
+            <CloseButton onClick={onClose} aria-label="Close login">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L13 13M1 13L13 1" stroke="#191C1D" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </CloseButton>
+          )}
           <LeftColumn>
             <LeftOverlay>
             <Badge>
