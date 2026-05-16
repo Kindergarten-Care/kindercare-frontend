@@ -87,6 +87,17 @@ jobs:
               -p ${{ matrix.port }}:${{ matrix.port }} \
               --restart always \
               $IMAGE_NAME
-            
-            # Dọn dẹp image rác để tránh đầy ổ cứng VPS
-            docker image prune -f
+
+  cleanup:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Cleanup VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "Cleaning up old images..."
+            docker image prune -af --filter "until=24h"
