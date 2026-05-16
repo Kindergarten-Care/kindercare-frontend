@@ -41,6 +41,8 @@ jobs:
             APP_NAME=${{ matrix.app }}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
   deploy:
     name: deploy (${{ matrix.app }})
