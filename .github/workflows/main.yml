@@ -11,6 +11,11 @@ permissions:
 env:
   IMAGE_TAG: ${{ github.ref_name == 'release/master' && 'release-master' || 'dev' }}
 
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
