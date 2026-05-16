@@ -1,34 +1,60 @@
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+# Sử dụng Alpine để tối ưu dung lượng
+FROM node:20-alpine AS base
+
+# Giai đoạn 1: Prune dự án bằng turbo
+FROM base AS pruner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+ARG APP_NAME
+RUN turbo prune @kindercare/${APP_NAME} --docker
+
+# Giai đoạn 2: Cài đặt dependencies
+FROM base AS installer
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json yarn.lock* ./
+# Copy files từ giai đoạn prune
+COPY .gitignore .gitignore
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/yarn.lock ./yarn.lock
 RUN yarn install --network-timeout 100000
 
-# Giai đoạn 2: Build dự án
-FROM node:20-alpine AS builder
+# Giai đoạn 3: Build dự án
+FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=installer /app/ .
+COPY --from=pruner /app/out/full/ .
+COPY turbo.json turbo.json
+ARG APP_NAME
+# Next.js build
+RUN yarn turbo build --filter=@kindercare/${APP_NAME}
 
-RUN yarn build
-
-FROM node:20-alpine AS runner
+# Giai đoạn 4: Runner
+FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
-ENV PORT 3000
+ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+# Copy các file cần thiết từ builder (standalone mode)
+# Lưu ý: Với monorepo, file standalone nằm trong apps/[app-name]/.next/standalone
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy node_modules của root và app (cần thiết cho standalone trong monorepo)
+# Tuy nhiên standalone mode thường đã gom đủ. 
 
 USER nextjs
 
 EXPOSE 3000
+ENV PORT 3000
 
-CMD ["node", "server.js"]
+# Chạy server.js của app tương ứng
+CMD node apps/${APP_NAME}/server.js

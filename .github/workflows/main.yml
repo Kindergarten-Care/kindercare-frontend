@@ -1,8 +1,8 @@
-name: CI/CD KinderCareFrontEnd NextJS
+name: CI/CD KinderCare Monorepo
 
 on:
   push:
-    branches: [ "release/master", "dev" ] # Chạy khi push vào master hoặc dev
+    branches: [ "release/master", "dev" ]
 
 permissions:
   packages: write
@@ -11,6 +11,10 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [parent, teacher, principal, admin]
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,12 +28,14 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          # Chuyển tên repo về chữ thường và sanitize branch name (thay / bằng -)
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           CLEAN_REF=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          IMAGE_NAME="ghcr.io/$REPO_LOWER/${{ matrix.app }}:$CLEAN_REF"
           
-          docker build -t ghcr.io/$REPO_LOWER:$CLEAN_REF .
-          docker push ghcr.io/$REPO_LOWER:$CLEAN_REF
+          docker build \
+            --build-arg APP_NAME=${{ matrix.app }} \
+            -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
 
       - name: SSH Deploy to VPS
         uses: appleboy/ssh-action@master
@@ -40,25 +46,35 @@ jobs:
           script: |
             REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
             CLEAN_REF=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-            IMAGE=ghcr.io/$REPO_LOWER:$CLEAN_REF
+            IMAGE="ghcr.io/$REPO_LOWER/${{ matrix.app }}:$CLEAN_REF"
             
-            # ĐỒNG BỘ TÊN CONTAINER ĐỂ TRÁNH LỖI CHIẾM CỔNG
+            # Quy hoạch Port cho Monorepo
+            # Parent: 3000 (Prod) / 3100 (Test)
+            # Teacher: 3001 (Prod) / 3101 (Test)
+            # Principal: 3002 (Prod) / 3102 (Test)
+            # Admin: 3003 (Prod) / 3103 (Test)
+            
+            BASE_PORT=3000
+            if [[ "${{ matrix.app }}" == "teacher" ]]; then BASE_PORT=3001; fi
+            if [[ "${{ matrix.app }}" == "principal" ]]; then BASE_PORT=3002; fi
+            if [[ "${{ matrix.app }}" == "admin" ]]; then BASE_PORT=3003; fi
+            
             if [[ "${{ github.ref_name }}" == *"master"* ]]; then 
-              PORT=3000
-              CONTAINER="kindercare-prod"
+              PORT=$BASE_PORT
+              CONTAINER="kindercare-${{ matrix.app }}-prod"
             else 
-              PORT=3002
-              CONTAINER="kindercare-test"
+              PORT=$((BASE_PORT + 100))
+              CONTAINER="kindercare-${{ matrix.app }}-test"
             fi
 
-            # Đăng nhập vào Registry trên VPS
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            #Remove unused images or dangling images
             
             docker image prune -af
-
             docker pull $IMAGE
             docker stop $CONTAINER || true
             docker rm $CONTAINER || true
-            docker run -d --name $CONTAINER -p $PORT:3000 $IMAGE
+            docker run -d \
+              --name $CONTAINER \
+              -p $PORT:3000 \
+              --restart always \
+              $IMAGE
