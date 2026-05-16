@@ -1,0 +1,3 @@
+module.exports=[50640,(a,b,c)=>{"use strict";Object.defineProperty(c,"__esModule",{value:!0}),Object.defineProperty(c,"InvariantError",{enumerable:!0,get:function(){return d}});class d extends Error{constructor(a,b){super(`Invariant: ${a.endsWith(".")?a:a+"."} This is a bug in Next.js.`,b),this.name="InvariantError"}}},90591,a=>{a.v(b=>Promise.all(["server/chunks/ssr/apps_admin_src_resources_locales_en_json_[json]_cjs_037p7e6._.js"].map(b=>a.l(b))).then(()=>b(23454)))},54285,a=>{a.v(b=>Promise.all(["server/chunks/ssr/apps_admin_src_resources_locales_vi_json_[json]_cjs_08_lbl-._.js"].map(b=>a.l(b))).then(()=>b(78133)))}];
+
+//# sourceMappingURL=_0pyoydj._.js.map

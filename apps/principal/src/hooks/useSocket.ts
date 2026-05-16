@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { socketService } from '../services/SocketService';
-import { ServerToClientEvents } from '../config/types/socket';
+import { socketService, ServerToClientEvents } from '@kindercare/core';
 
 export const useSocket = <T extends keyof ServerToClientEvents>(
   event: T,
