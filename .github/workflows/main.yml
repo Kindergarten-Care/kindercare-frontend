@@ -5,16 +5,12 @@ on:
     branches: [ "release/master", "dev" ]
 
 permissions:
-  packages: write
-  contents: read
-
-env:
-  IMAGE_TAG: ${{ github.ref_name == 'release/master' && 'release-master' || 'dev' }}
-
-permissions:
   contents: read
   packages: write
   actions: write
+
+env:
+  IMAGE_TAG: ${{ github.ref_name == 'release/master' && 'release-master' || 'dev' }}
 
 jobs:
   build-and-push:
