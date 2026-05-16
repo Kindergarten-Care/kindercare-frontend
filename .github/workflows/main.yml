@@ -84,7 +84,7 @@ jobs:
             # Chạy container mới
             docker run -d \
               --name $CONTAINER_NAME \
-              -p ${{ matrix.port }}:${{ matrix.port }} \
+              -p ${{ matrix.port }}:3000 \
               --restart always \
               $IMAGE_NAME
 
