@@ -2,27 +2,16 @@
   "name": "kindercare-monorepo",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "prepare": "husky"
+    "build": "turbo build"
   },
   "devDependencies": {
-    "turbo": "latest",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0"
-  },
-  "lint-staged": {
-    "apps/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ],
-    "packages/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ]
+    "turbo": "latest"
   }
 }
