@@ -1,5 +1,5 @@
 {
-  "name": "landing",
+  "name": "@kindercare/landing",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
   "dependencies": {
     "next": "15.0.3",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "styled-components": "^6.1.11"
   }
 }
