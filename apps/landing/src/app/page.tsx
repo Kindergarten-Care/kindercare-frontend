@@ -1,22 +1,11 @@
-export default function LandingPage() {
+export default function Page() {
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'system-ui, sans-serif',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white'
-    }}>
-      <h1>KinderCare Landing Page</h1>
-      <p>Chào mừng bạn đến với hệ thống quản lý mầm non toàn diện.</p>
-      <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
-        <a href="https://parent.kindercare.app" style={{ color: 'white', textDecoration: 'none', padding: '10px 20px', border: '1px solid white', borderRadius: '5px' }}>Phụ huynh</a>
-        <a href="https://teacher.kindercare.app" style={{ color: 'white', textDecoration: 'none', padding: '10px 20px', border: '1px solid white', borderRadius: '5px' }}>Giáo viên</a>
-        <a href="https://admin.kindercare.app" style={{ color: 'white', textDecoration: 'none', padding: '10px 20px', border: '1px solid white', borderRadius: '5px' }}>Quản trị viên</a>
+    <main style={{ padding: '2rem', textAlign: 'center' }}>
+      <h1 style={{ color: '#6366f1' }}>KinderCare Landing Page</h1>
+      <p>Hệ thống quản lý mầm non chuyên nghiệp</p>
+      <div style={{ marginTop: '2rem' }}>
+        <a href="https://parent.kindercare.app">Dashboard Phụ huynh</a>
       </div>
-    </div>
+    </main>
   );
 }
