@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [parent, teacher, principal, admin]
+        app: [parent, teacher, principal, admin, landing]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,6 +56,8 @@ jobs:
             port: 3002
           - app: admin
             port: 3003
+          - app: landing
+            port: 3004
     steps:
       - name: Set lower case owner name
         run: |
@@ -70,21 +72,28 @@ jobs:
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            IMAGE_NAME="ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}"
-            CONTAINER_NAME="kindercare-${{ matrix.app }}-prod"
+            # Phân biệt môi trường
+            ENV_SUFFIX="${{ github.ref_name == 'release/master' && 'prod' || 'dev' }}"
+            BASE_PORT=${{ matrix.port }}
+            if [ "$ENV_SUFFIX" == "dev" ]; then
+              DEPLOY_PORT=$((BASE_PORT + 1000))
+            else
+              DEPLOY_PORT=$BASE_PORT
+            fi
             
-            echo "Deploying $IMAGE_NAME to $CONTAINER_NAME on port ${{ matrix.port }}"
+            IMAGE_NAME="ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}"
+            CONTAINER_NAME="kindercare-${{ matrix.app }}-$ENV_SUFFIX"
+            
+            echo "Deploying $IMAGE_NAME to $CONTAINER_NAME on port $DEPLOY_PORT"
             
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
             
-            # Pull image mới nhất
             docker pull $IMAGE_NAME
             
-            # Chạy container mới
             docker run -d \
               --name $CONTAINER_NAME \
-              -p ${{ matrix.port }}:3000 \
+              -p $DEPLOY_PORT:3000 \
               --restart always \
               $IMAGE_NAME
 

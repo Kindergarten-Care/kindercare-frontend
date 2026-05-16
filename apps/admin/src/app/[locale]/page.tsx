@@ -260,7 +260,7 @@ export default function UnderDevelopment() {
         </div>
 
         <Title>
-          <span>KinderCare</span> {t('title')}
+          <span>KinderCare</span> Quản Trị Dashboard
         </Title>
 
         <Description>
