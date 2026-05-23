@@ -1,12 +1,30 @@
-export default function Page() {
+import React from 'react';
+import { Navbar, Footer } from '@/layout';
+import { LandingView } from '@/views/landing';
+
+export default function LandingPage(): React.ReactElement {
   return (
-    <main style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1 style={{ color: '#6366f1' }}>KinderCare Landing Page</h1>
-      <h2 style={{ color: 'red', border: '2px solid red', display: 'inline-block', padding: '10px' }}>🚧 MÔI TRƯỜNG TEST (DEV) 🚧</h2>
-      <p>Hệ thống quản lý mầm non chuyên nghiệp</p>
-      <div style={{ marginTop: '2rem' }}>
-        <a href="https://parent-test.kindercare.app">Dashboard Phụ huynh (Bản Test)</a>
-      </div>
-    </main>
+    <>
+      <Navbar />
+      <main>
+        <h1
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
+        >
+          KinderCare – Nơi ươm mầm & Phát triển tương lai
+        </h1>
+        <LandingView />
+      </main>
+      <Footer />
+    </>
   );
 }
