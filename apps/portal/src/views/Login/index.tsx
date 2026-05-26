@@ -147,9 +147,9 @@ export const LoginView: React.FC = () => {
 
         {/* Footer Links */}
         <S.FooterLinks>
-          <a href="#">Tiếng Việt</a>
-          <a href="#">Hỗ trợ kỹ thuật</a>
-          <a href="#">Bảo mật</a>
+          <button type="button">Tiếng Việt</button>
+          <button type="button">Hỗ trợ kỹ thuật</button>
+          <button type="button">Bảo mật</button>
         </S.FooterLinks>
       </S.InteractionPane>
 
