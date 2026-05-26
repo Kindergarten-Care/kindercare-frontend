@@ -57,11 +57,21 @@ export const Input: React.FC<InputProps> = ({
   id,
   ...props
 }) => {
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
+  const errorId = error ? `${inputId}-error` : undefined;
+
   return (
     <Wrapper>
-      {label && <Label htmlFor={id}>{label}</Label>}
-      <StyledInput id={id} hasError={!!error} {...props} />
-      {error && <ErrorText>{error}</ErrorText>}
+      {label && <Label htmlFor={inputId}>{label}</Label>}
+      <StyledInput
+        id={inputId}
+        hasError={!!error}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={errorId}
+        {...props}
+      />
+      {error && <ErrorText id={errorId}>{error}</ErrorText>}
     </Wrapper>
   );
 };
