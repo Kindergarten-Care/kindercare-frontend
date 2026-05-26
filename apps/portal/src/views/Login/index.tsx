@@ -8,9 +8,9 @@ import * as S from './styles';
 // Sprout logo representation for KinderCare
 const SproutLogo: React.FC = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 22V10" stroke="#046E1E" strokeWidth="2.5" strokeLinecap="round"/>
-    <path d="M12 14C12 14 15 11 18 11C21 11 21 14 21 14C21 14 18 15 15 15C12 15 12 14 12 14Z" fill="#046E1E" stroke="#046E1E" strokeWidth="1" strokeLinejoin="round"/>
-    <path d="M12 10C12 10 9 7 6 7C3 7 3 10 3 10C3 10 6 11 9 11C12 11 12 10 12 10Z" fill="#046E1E" stroke="#046E1E" strokeWidth="1" strokeLinejoin="round"/>
+    <path d="M12 22V10" stroke="#046E1E" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M12 14C12 14 15 11 18 11C21 11 21 14 21 14C21 14 18 15 15 15C12 15 12 14 12 14Z" fill="#046E1E" stroke="#046E1E" strokeWidth="1" strokeLinejoin="round" />
+    <path d="M12 10C12 10 9 7 6 7C3 7 3 10 3 10C3 10 6 11 9 11C12 11 12 10 12 10Z" fill="#046E1E" stroke="#046E1E" strokeWidth="1" strokeLinejoin="round" />
   </svg>
 );
 
@@ -64,8 +64,11 @@ export const LoginView: React.FC = () => {
         <S.InteractionContent>
           {/* Header */}
           <S.BrandHeader>
-            <SproutLogo />
-            <S.BrandText>KinderCare</S.BrandText>
+            <img
+              src="/KinderCare_LogoTextHorizontal.png"
+              alt="KinderCare Logo"
+              style={{ height: '40px', objectFit: 'contain' }}
+            />
           </S.BrandHeader>
 
           {/* Role Selection */}

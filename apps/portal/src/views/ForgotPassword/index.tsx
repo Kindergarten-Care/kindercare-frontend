@@ -26,10 +26,11 @@ export const ForgotPasswordView: React.FC = () => {
       {/* --- CỘT TRÁI (FORM) --- */}
       <S.LeftSection>
         <S.LogoHeader>
-          <S.LogoIcon>
-            <LogoSvg />
-          </S.LogoIcon>
-          <S.AppName>KinderCare</S.AppName>
+          <img
+            src="/KinderCare_LogoTextHorizontal.png"
+            alt="KinderCare Logo"
+            style={{ height: '40px', objectFit: 'contain' }}
+          />
         </S.LogoHeader>
 
         <S.FormContainer>
