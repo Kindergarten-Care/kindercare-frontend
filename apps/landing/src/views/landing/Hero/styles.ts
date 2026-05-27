@@ -4,9 +4,9 @@ import styled, { css, keyframes } from 'styled-components';
 import type { HeroSlideVariant } from '@/config/types';
 
 const variantBackgrounds: Record<HeroSlideVariant, string> = {
-  forest: 'linear-gradient(135deg, #14310c 0%, #1f4a16 45%, #2d6a22 100%)',
-  spring: 'linear-gradient(135deg, #1a4f12 0%, #3d7a2e 60%, #5a9e44 100%)',
-  amber: 'linear-gradient(135deg, #2d4a0e 0%, #5a7c1a 55%, #c4880a 100%)',
+  forest: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(1).png") center/cover no-repeat',
+  spring: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(2).png") center/cover no-repeat',
+  amber: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(3).png") center/cover no-repeat',
 };
 
 const forestBlobs = css`
@@ -133,14 +133,15 @@ export const Eyebrow = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50px;
   padding: 0.35rem 1rem;
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
+  color: ${({ theme }) => theme.colors.white};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   margin-bottom: 1.5rem;
   text-transform: uppercase;
 
@@ -165,7 +166,7 @@ export const Title = styled.h2`
   color: ${({ theme }) => theme.colors.white};
   line-height: 1.15;
   margin-bottom: 1.25rem;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4);
   max-width: 700px;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
@@ -181,7 +182,8 @@ export const Title = styled.h2`
 
 export const Description = styled.p`
   font-size: clamp(1rem, 1.8vw, 1.2rem);
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   max-width: 520px;
   margin-bottom: 2rem;
 

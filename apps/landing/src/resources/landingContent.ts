@@ -214,7 +214,7 @@ export const PRICING_PLANS: PricingPlan[] = [
 ];
 
 export const CONTACT_ITEMS: ContactItem[] = [
-  { icon: '📍', label: 'Địa chỉ', value: '123 Đường Vườn Xanh, Phường 7, Quận 3, TP. Hồ Chí Minh' },
+  { icon: '📍', label: 'Địa chỉ', value: '65 Huỳnh Thúc Kháng, Sài Gòn, Hồ Chí Minh' },
   { icon: '📞', label: 'Hotline tuyển sinh', value: '0901 234 567 (Thứ 2 – Thứ 7, 07:30 – 17:30)' },
   { icon: '✉️', label: 'Email', value: 'tuyensinh@kindercare.edu.vn' },
   { icon: '🕐', label: 'Giờ tham quan trường', value: 'Thứ 3 & Thứ 5: 9:00 – 11:00 (đặt lịch trước)' },

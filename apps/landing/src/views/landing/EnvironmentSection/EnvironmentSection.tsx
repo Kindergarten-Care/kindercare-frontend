@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import {
   Divider,
   LinkButton,
@@ -24,7 +25,6 @@ import {
   EnvCardText,
   EnvCardTitle,
   EnvCards,
-  EnvImagePlaceholder,
   EnvImageWrap,
   EnvIntro,
   EnvText,
@@ -63,10 +63,18 @@ export function EnvironmentSection(): React.ReactElement {
 
           <Reveal>
             <EnvImageWrap>
-              <EnvImagePlaceholder>
-                <EnvIllustration />
-                <p>Ảnh khuôn viên trường sẽ được cập nhật</p>
-              </EnvImagePlaceholder>
+              <Image
+                src="/campus.png"
+                alt="Khuôn viên trường"
+                width={800}
+                height={600}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '16px',
+                }}
+              />
               <AwardBadge>
                 <BadgeIcon>🏆</BadgeIcon>
                 <div>

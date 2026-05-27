@@ -44,15 +44,16 @@ export function Navbar(): React.ReactElement {
             <Image
               src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
               alt="KinderCare logo"
-              width={220}
-              height={84}
+              width={120}
+              height={44}
               priority
+              unoptimized
               style={{
                 objectFit: 'contain',
                 width: 'auto',
-                height: '84px',
-                marginTop: '-20px',
-                marginBottom: '-20px',
+                height: '44px',
+                marginTop: '0px',
+                marginBottom: '0px',
               }}
             />
           </NavLogo>
@@ -107,14 +108,15 @@ export function Navbar(): React.ReactElement {
             <Image
               src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
               alt="KinderCare logo"
-              width={180}
-              height={72}
+              width={100}
+              height={36}
+              unoptimized
               style={{
                 objectFit: 'contain',
                 width: 'auto',
-                height: '72px',
-                marginTop: '-16px',
-                marginBottom: '-16px',
+                height: '36px',
+                marginTop: '0px',
+                marginBottom: '0px',
               }}
             />
           </DrawerHeader>

@@ -32,14 +32,15 @@ export function Footer(): React.ReactElement {
               <Image
                 src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
                 alt="KinderCare logo"
-                width={190}
-                height={76}
+                width={120}
+                height={44}
+                unoptimized
                 style={{
                   objectFit: 'contain',
                   width: 'auto',
-                  height: '76px',
-                  marginTop: '-18px',
-                  marginBottom: '-18px',
+                  height: '44px',
+                  marginTop: '0px',
+                  marginBottom: '0px',
                   filter: 'brightness(0) invert(1)',
                 }}
               />
