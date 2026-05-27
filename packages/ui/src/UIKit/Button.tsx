@@ -8,7 +8,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   fullWidth?: boolean;
 }
 
-const StyledButton = styled.button<ButtonProps>`
+const StyledButton = styled.button<{ $variant?: ButtonProps['variant']; $fullWidth?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -20,7 +20,7 @@ const StyledButton = styled.button<ButtonProps>`
   border: none;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  width: ${props => (props.fullWidth ? '100%' : 'auto')};
+  width: ${props => (props.$fullWidth ? '100%' : 'auto')};
 
   &:disabled {
     opacity: 0.6;
@@ -28,7 +28,7 @@ const StyledButton = styled.button<ButtonProps>`
   }
 
   ${props => {
-    switch (props.variant) {
+    switch (props.$variant) {
       case 'primary':
         return css`
           background-color: ${props.theme.colors.primary};
@@ -99,7 +99,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   return (
-    <StyledButton variant={variant} fullWidth={fullWidth} {...props}>
+    <StyledButton $variant={variant} $fullWidth={fullWidth} {...props}>
       {children}
     </StyledButton>
   );
