@@ -34,6 +34,7 @@ export function Footer(): React.ReactElement {
                 alt="KinderCare logo"
                 width={120}
                 height={44}
+                unoptimized
                 style={{
                   objectFit: 'contain',
                   width: 'auto',

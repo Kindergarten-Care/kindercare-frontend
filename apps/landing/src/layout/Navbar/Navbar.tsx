@@ -47,6 +47,7 @@ export function Navbar(): React.ReactElement {
               width={120}
               height={44}
               priority
+              unoptimized
               style={{
                 objectFit: 'contain',
                 width: 'auto',
@@ -109,6 +110,7 @@ export function Navbar(): React.ReactElement {
               alt="KinderCare logo"
               width={100}
               height={36}
+              unoptimized
               style={{
                 objectFit: 'contain',
                 width: 'auto',
