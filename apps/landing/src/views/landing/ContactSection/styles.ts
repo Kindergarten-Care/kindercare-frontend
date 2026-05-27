@@ -71,17 +71,18 @@ export const ItemText = styled.div`
   }
 `;
 
-export const MapPlaceholder = styled.div`
+export const MapContainer = styled.div`
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.greenXLight} 0%, ${({ theme }) => theme.colors.greenLight} 100%);
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.muted};
-  font-size: 0.85rem;
-  gap: 0.5rem;
+  height: 250px;
+  box-shadow: ${({ theme }) => theme.shadows.soft};
+  
+  /* Make sure the iframe fills the container */
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
 `;
 
 export const FormWrap = styled.div`
