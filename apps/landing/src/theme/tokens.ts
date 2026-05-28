@@ -1,14 +1,13 @@
-import type { AppTheme } from './types';
-import { BREAKPOINTS } from './constants';
+import type { AppTheme } from '@kindercare/ui';
+import { BREAKPOINTS } from '@kindercare/ui';
 
-export const theme: AppTheme & { spacing: (val: number) => string } = {
+export const theme: AppTheme = {
   colors: {
-    // Required AppThemeColors
     bg: '#faf8f4',
     surface: '#ffffff',
     fg: '#1c2218',
     muted: '#68736a',
-    border: '#cbd5e1',
+    border: '#e4e0d8',
 
     green: '#2d6a22',
     greenMid: '#3d7a2e',
@@ -23,19 +22,6 @@ export const theme: AppTheme & { spacing: (val: number) => string } = {
     footerBg: '#0f1a0b',
     techBg: '#111d0d',
     white: '#ffffff',
-
-    // UI legacy theme colors
-    primary: '#046E1E',
-    secondary: '#a855f7',
-    accent: '#006494',
-    background: '#F7FAFC',
-    text: '#181C1E',
-    textSecondary: '#3F493D',
-    neutralLight: '#EBEEF0',
-    neutralLighter: '#F1F4F6',
-    borderMuted: '#BFCAB9',
-    successLight: 'rgba(118, 210, 117, 0.50)',
-    success: '#76D275',
   },
   fonts: {
     display: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -58,18 +44,4 @@ export const theme: AppTheme & { spacing: (val: number) => string } = {
     maxWidth: '1200px',
   },
   breakpoints: BREAKPOINTS,
-  spacing: (val: number) => `${val * 4}px`,
 };
-
-export type {
-  AppTheme,
-  AppThemeColors,
-  AppThemeFonts,
-  AppThemeRadius,
-  AppThemeShadows,
-  AppThemeLayout,
-  AppThemeBreakpoints,
-} from './types';
-
-export { BREAKPOINTS } from './constants';
-export type { BreakpointKey } from './constants';

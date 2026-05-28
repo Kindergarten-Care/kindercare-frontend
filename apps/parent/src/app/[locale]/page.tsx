@@ -261,6 +261,9 @@ export default function UnderDevelopment() {
 
         <Title>
           <span>KinderCare</span> Phụ Huynh Dashboard
+          <div style={{ color: 'red', fontSize: '1.5rem', marginTop: '1rem', border: '2px solid red', padding: '0.5rem', borderRadius: '10px' }}>
+            🚧 MÔI TRƯỜNG TEST (DEV) 🚧
+          </div>
         </Title>
 
         <Description>
