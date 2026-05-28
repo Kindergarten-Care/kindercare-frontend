@@ -123,7 +123,7 @@ export const LoginView: React.FC = () => {
                 >
                   Mật khẩu
                 </label>
-                <S.ForgotPasswordLink as={Link} href="/forgot-password">Quên mật khẩu?</S.ForgotPasswordLink>
+                <S.ForgotPasswordLink as={Link} href="/login/forgot-password">Quên mật khẩu?</S.ForgotPasswordLink>
               </S.FormOptionsRow>
               <Input
                 id="password"
