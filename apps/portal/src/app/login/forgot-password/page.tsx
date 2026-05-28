@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { ThemeProvider } from 'styled-components';
 import { theme } from '@kindercare/ui';
 
-const ForgotPasswordView = dynamic(() => import('@/views/ForgotPassword'), {
+const ForgotPasswordView = dynamic(() => import('../../../views/ForgotPassword'), {
   ssr: false,
 });
 
