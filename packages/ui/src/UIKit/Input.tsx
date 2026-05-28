@@ -22,11 +22,11 @@ const Label = styled.label`
   text-align: left;
 `;
 
-const StyledInput = styled.input<{ hasError?: boolean }>`
+const StyledInput = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
   border-radius: 9999px;
-  border: 1px solid ${props => (props.hasError ? 'red' : props.theme.colors.border)};
+  border: 1px solid ${props => (props.$hasError ? 'red' : props.theme.colors.border)};
   font-family: inherit;
   font-size: 14px;
   outline: none;
@@ -60,7 +60,7 @@ export const Input: React.FC<InputProps> = ({
   return (
     <Wrapper>
       {label && <Label htmlFor={id}>{label}</Label>}
-      <StyledInput id={id} hasError={!!error} {...props} />
+      <StyledInput id={id} $hasError={!!error} {...props} />
       {error && <ErrorText>{error}</ErrorText>}
     </Wrapper>
   );

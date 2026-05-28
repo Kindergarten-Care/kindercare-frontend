@@ -7,7 +7,11 @@ export const theme = {
     text: '#181C1E',           // Main text
     textSecondary: '#3F493D',  // Muted body text
     neutralLight: '#EBEEF0',   // Tab select background
+    neutralLighter: '#F1F4F6', // Input grey background
     border: '#cbd5e1',         // Border line color
+    borderMuted: '#BFCAB9',    // Soft border for metrics cards
+    successLight: 'rgba(118, 210, 117, 0.50)', // Status badge bg
+    success: '#76D275',        // Status badge text & border
     white: '#ffffff',          // Base white
   },
   breakpoints: {

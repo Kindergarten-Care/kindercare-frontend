@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Button, Input, Checkbox } from '@kindercare/ui';
 import { useLoginState, UserRole } from './hooks';
 import * as S from './styles';
@@ -64,8 +65,11 @@ export const LoginView: React.FC = () => {
         <S.InteractionContent>
           {/* Header */}
           <S.BrandHeader>
-            <SproutLogo />
-            <S.BrandText>KinderCare</S.BrandText>
+            <img
+              src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
+              alt="KinderCare Logo"
+              style={{ height: '40px', objectFit: 'contain' }}
+            />
           </S.BrandHeader>
 
           {/* Role Selection */}
@@ -126,7 +130,7 @@ export const LoginView: React.FC = () => {
                 >
                   Mật khẩu
                 </label>
-                <S.ForgotPasswordLink href="#">Quên mật khẩu?</S.ForgotPasswordLink>
+                <S.ForgotPasswordLink as={Link} href="/forgot-password">Quên mật khẩu?</S.ForgotPasswordLink>
               </S.FormOptionsRow>
               <Input
                 id="password"
