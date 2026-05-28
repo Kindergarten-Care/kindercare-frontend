@@ -11,6 +11,11 @@ const LogoSvg: React.FC = () => (
 );
 
 export const ForgotPasswordView: React.FC = () => {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const {
     email,
     error,
@@ -20,6 +25,10 @@ export const ForgotPasswordView: React.FC = () => {
     handleSubmit,
     resetForm,
   } = useForgotPasswordState();
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <S.PageWrapper>
