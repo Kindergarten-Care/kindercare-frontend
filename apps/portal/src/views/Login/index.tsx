@@ -9,6 +9,11 @@ import * as S from './styles';
 
 
 export const LoginView: React.FC = () => {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const {
     role,
     username,
@@ -50,6 +55,10 @@ export const LoginView: React.FC = () => {
   };
 
   const content = getRoleContent(role);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <S.Container>

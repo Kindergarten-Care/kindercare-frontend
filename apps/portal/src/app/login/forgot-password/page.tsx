@@ -1,9 +1,13 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from 'styled-components';
 import { theme } from '@kindercare/ui';
-import { ForgotPasswordView } from '@/views/ForgotPassword';
+
+const ForgotPasswordView = dynamic(() => import('@/views/ForgotPassword').then(mod => mod.ForgotPasswordView), {
+  ssr: false,
+});
 
 export default function ForgotPasswordPage() {
   return (
