@@ -8,10 +8,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   fullWidth?: boolean;
 }
 
-const StyledButton = styled.button<{
-  $variant?: 'primary' | 'secondary' | 'text' | 'tab' | 'activeTab';
-  $fullWidth?: boolean;
-}>`
+const StyledButton = styled.button<{ $variant?: ButtonProps['variant']; $fullWidth?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
