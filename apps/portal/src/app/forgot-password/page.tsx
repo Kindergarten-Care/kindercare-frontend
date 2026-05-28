@@ -3,12 +3,12 @@
 import React from 'react';
 import { ThemeProvider } from 'styled-components';
 import { theme } from '@kindercare/ui';
-import { LoginView } from '@/views/Login';
+import { ForgotPasswordView } from '@/views/ForgotPassword';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   return (
     <ThemeProvider theme={theme}>
-      <LoginView />
+      <ForgotPasswordView />
     </ThemeProvider>
   );
 }
