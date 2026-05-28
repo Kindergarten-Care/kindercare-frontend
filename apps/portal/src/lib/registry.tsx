@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useServerInsertedHTML } from 'next/navigation';
-import { ServerStyleSheet, StyleSheetManager } from 'styled-components';
+import { ServerStyleSheet, StyleSheetManager, ThemeProvider } from 'styled-components';
+import { theme } from '@kindercare/ui';
 
 function StyledComponentsRegistryInner({
   children,
@@ -27,5 +28,11 @@ function StyledComponentsRegistryInner({
 }
 
 export default function StyledComponentsRegistry({ children }: { children: React.ReactNode }) {
-  return <StyledComponentsRegistryInner>{children}</StyledComponentsRegistryInner>;
+  return (
+    <StyledComponentsRegistryInner>
+      <ThemeProvider theme={theme}>
+        {children}
+      </ThemeProvider>
+    </StyledComponentsRegistryInner>
+  );
 }
