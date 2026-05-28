@@ -45,7 +45,9 @@ RUN adduser --system --uid 1001 nextjs
 # Copy các file cần thiết từ builder (standalone mode)
 # Lưu ý: Với monorepo, file standalone nằm trong apps/[app-name]/.next/standalone
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 
 # Copy node_modules của root và app (cần thiết cho standalone trong monorepo)
