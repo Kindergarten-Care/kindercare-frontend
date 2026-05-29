@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
-import { ForgotPasswordView } from '@/views/ForgotPassword';
+import dynamic from 'next/dynamic';
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordView = dynamic(() => import('@/views/ForgotPassword'), { ssr: false });
+
+export default function ForgotPasswordPage(): React.ReactElement {
   return <ForgotPasswordView />;
 }
