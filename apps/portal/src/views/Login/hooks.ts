@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export type UserRole = 'admin' | 'principal' | 'teacher';
 
 export interface UseLoginStateReturn {
   role: UserRole;
   username: string;
-  password:  string;
+  password: string;
   rememberMe: boolean;
   errors: { username?: string; password?: string };
+  isSubmitting: boolean;
   handleRoleChange: (role: UserRole) => void;
   handleUsernameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handlePasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,37 +20,40 @@ export interface UseLoginStateReturn {
 }
 
 export const useLoginState = (): UseLoginStateReturn => {
+  const router = useRouter();
   const [role, setRole] = useState<UserRole>('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRoleChange = (selectedRole: UserRole) => {
+  const handleRoleChange = (selectedRole: UserRole): void => {
     setRole(selectedRole);
-    // Clear errors when changing roles
     setErrors({});
+    setUsername('');
+    setPassword('');
   };
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setUsername(e.target.value);
     if (errors.username) {
       setErrors(prev => ({ ...prev, username: undefined }));
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setPassword(e.target.value);
     if (errors.password) {
       setErrors(prev => ({ ...prev, password: undefined }));
     }
   };
 
-  const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
 
     const newErrors: { username?: string; password?: string } = {};
@@ -64,14 +69,16 @@ export const useLoginState = (): UseLoginStateReturn => {
       return;
     }
 
-    // Perform redirect based on role
-    if (role === 'admin') {
-      window.location.href = '/admin';
-    } else if (role === 'principal') {
-      window.location.href = '/principal';
-    } else if (role === 'teacher') {
-      window.location.href = '/teacher';
-    }
+    setIsSubmitting(true);
+
+    // Redirect based on role using Next.js router
+    const roleRoutes: Record<UserRole, string> = {
+      admin: '/admin',
+      principal: '/principal',
+      teacher: '/teacher',
+    };
+
+    router.push(roleRoutes[role]);
   };
 
   return {
@@ -80,6 +87,7 @@ export const useLoginState = (): UseLoginStateReturn => {
     password,
     rememberMe,
     errors,
+    isSubmitting,
     handleRoleChange,
     handleUsernameChange,
     handlePasswordChange,
