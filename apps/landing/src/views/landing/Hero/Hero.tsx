@@ -6,6 +6,7 @@ import { HeroLeaf } from '@/svgs';
 import { HERO_SLIDES } from '@/resources/landingContent';
 import { HERO_AUTOPLAY_MS, SECTION_IDS } from '@/config/constants';
 import { useHeroSlider } from '@/hooks';
+import { useTranslation } from '@kindercare/ui';
 import {
   Actions,
   ArrowNext,
@@ -24,15 +25,32 @@ import {
 } from './styles';
 
 export function Hero(): React.ReactElement {
+  const { t } = useTranslation();
+  const heroSlides = HERO_SLIDES.map((slide, index) => ({
+    ...slide,
+    eyebrow: t(`Landing.Hero.slide${index + 1}.eyebrow`),
+    titleLineOne: t(`Landing.Hero.slide${index + 1}.title1`),
+    titleLineTwo: t(`Landing.Hero.slide${index + 1}.title2`),
+    description: t(`Landing.Hero.slide${index + 1}.description`),
+    primaryCta: {
+      ...slide.primaryCta,
+      label: t(`Landing.Hero.slide${index + 1}.primaryCta`),
+    },
+    secondaryCta: {
+      ...slide.secondaryCta,
+      label: t(`Landing.Hero.slide${index + 1}.secondaryCta`),
+    },
+  }));
+
   const { current, goTo, next, prev, progressKey } = useHeroSlider({
-    total: HERO_SLIDES.length,
+    total: heroSlides.length,
     autoplayMs: HERO_AUTOPLAY_MS,
   });
 
   return (
     <HeroSection id={SECTION_IDS.HERO} aria-label="KinderCare kindergarten introduction">
       <SlidesWrap>
-        {HERO_SLIDES.map((slide, index) => {
+        {heroSlides.map((slide, index) => {
           const isActive = index === current;
           return (
             <Slide
@@ -82,7 +100,7 @@ export function Hero(): React.ReactElement {
       </Responsive>
 
       <Dots>
-        {HERO_SLIDES.map((_, index) => (
+        {heroSlides.map((_, index) => (
           <Dot
             key={index}
             type="button"

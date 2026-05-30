@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  transpilePackages: ['@kindercare/ui'],
+  reactCompiler: true,
+  transpilePackages: ['@kindercare/ui', '@kindercare/core'],
   compiler: {
     styledComponents: true,
   },
