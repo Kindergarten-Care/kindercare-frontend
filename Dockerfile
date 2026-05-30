@@ -47,12 +47,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone ./
-# Copy static assets — cần CẢ HAI đường dẫn:
-#   1. Đường dẫn gốc /app/.next/static → Next.js server tìm file tĩnh ở đây
-#   2. Đường dẫn monorepo /app/apps/<app>/.next/static → một số internal reference cần
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 
 USER nextjs
