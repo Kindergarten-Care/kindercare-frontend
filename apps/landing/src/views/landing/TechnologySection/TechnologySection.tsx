@@ -1,10 +1,9 @@
-'use client';
-
 import React from 'react';
 import { Reveal, SectionLabel } from '@/UIKit';
 import { TECH_CARDS } from '@/resources/landingContent';
 import { SECTION_IDS, TECH_CARD_STEP_PX } from '@/config/constants';
 import { useTechCarousel } from '@/hooks';
+import { useTranslation } from '@kindercare/ui';
 import { TechMock } from './mocks';
 import {
   CarouselTrack,
@@ -23,33 +22,42 @@ import {
 } from './styles';
 
 export function TechnologySection(): React.ReactElement {
+  const { t } = useTranslation();
+
   const { trackRef, wrapperRef, offset, move, isAtStart, isAtEnd } = useTechCarousel({
     cardCount: TECH_CARDS.length,
     stepPx: TECH_CARD_STEP_PX,
   });
+
+  const techCards = TECH_CARDS.map((card, index) => ({
+    ...card,
+    title: t(`Landing.Technology.card${index + 1}.title`),
+    description: t(`Landing.Technology.card${index + 1}.description`),
+  }));
 
   return (
     <TechSectionRoot id={SECTION_IDS.TECHNOLOGY} aria-labelledby="technology-title">
       <TechInner>
         <Reveal>
           <TechHeader>
-            <SectionLabel className="section-label">Ứng dụng dành cho phụ huynh</SectionLabel>
+            <SectionLabel className="section-label">
+              {t('Landing.Technology.sectionLabel')}
+            </SectionLabel>
             <CenteredDivider />
             <TechTitle id="technology-title">
-              Đồng hành cùng con
+              {t('Landing.Technology.title1')}
               <br />
-              mọi lúc mọi nơi
+              {t('Landing.Technology.title2')}
             </TechTitle>
             <TechSubtitle>
-              Cổng thông tin KinderCare giúp phụ huynh kết nối trực tiếp với nhà trường — từ thực đơn hôm
-              nay đến lịch sử phát triển của bé.
+              {t('Landing.Technology.subtitle')}
             </TechSubtitle>
           </TechHeader>
         </Reveal>
 
         <CarouselWrap ref={wrapperRef}>
           <CarouselTrack ref={trackRef} $offset={offset}>
-            {TECH_CARDS.map((card) => (
+            {techCards.map((card) => (
               <TechCard key={card.id}>
                 <TechCardScreen>
                   <TechMock kind={card.mockKind} />

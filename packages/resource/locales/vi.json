@@ -1,0 +1,272 @@
+{
+  "Landing": {
+    "Nav": {
+      "learningEnvironment": "Môi trường học",
+      "technology": "Công nghệ",
+      "enrollment": "Tuyển sinh",
+      "contact": "Liên hệ",
+      "parentPortal": "Đăng nhập phụ huynh",
+      "requestConsultation": "Đăng ký tư vấn",
+      "mobile": {
+        "learningEnvironment": "Môi trường học tập",
+        "enrollmentTuition": "Tuyển sinh & Học phí",
+        "contactConsultation": "Liên hệ & Tư vấn",
+        "registerNow": "Đăng ký tư vấn ngay"
+      }
+    },
+    "Hero": {
+      "slide1": {
+        "eyebrow": "Chào mừng đến KinderCare",
+        "title1": "Nơi ươm mầm &",
+        "title2": "Phát triển tương lai",
+        "description": "Môi trường học tập an toàn, yêu thương, nơi mỗi đứa trẻ được tỏa sáng theo cách riêng của mình.",
+        "primaryCta": "Tìm hiểu tuyển sinh",
+        "secondaryCta": "Đặt lịch tham quan"
+      },
+      "slide2": {
+        "eyebrow": "Môi trường học tập",
+        "title1": "Không gian sáng tạo,",
+        "title2": "trải nghiệm phong phú",
+        "description": "Phòng học hiện đại, sân chơi rộng rãi và bếp dinh dưỡng chuẩn — tất cả thiết kế riêng cho trẻ mầm non.",
+        "primaryCta": "Khám phá ngay",
+        "secondaryCta": "Liên hệ tư vấn"
+      },
+      "slide3": {
+        "eyebrow": "Công nghệ đồng hành",
+        "title1": "Phụ huynh kết nối,",
+        "title2": "yên tâm mọi lúc mọi nơi",
+        "description": "Ứng dụng quản lý lớp học thông minh — xem thực đơn, theo dõi phát triển và thanh toán học phí ngay trên điện thoại.",
+        "primaryCta": "Xem tính năng",
+        "secondaryCta": "Dùng thử ngay"
+      }
+    },
+    "Stats": {
+      "stat1": {
+        "label": "Năm thành lập & hoạt động"
+      },
+      "stat2": {
+        "label": "Học sinh đang theo học"
+      },
+      "stat3": {
+        "label": "Phụ huynh hài lòng"
+      },
+      "stat4": {
+        "label": "Giáo viên tận tâm"
+      }
+    },
+    "Environment": {
+      "sectionLabel": "Môi trường học tập",
+      "title1": "Không gian được thiết kế",
+      "title2": "cho từng giai đoạn phát triển",
+      "subtitle": "Mỗi góc nhỏ tại KinderCare đều được cân nhắc kỹ lưỡng — từ ánh sáng, màu sắc đến từng vật liệu tiếp xúc với trẻ.",
+      "ctaVisit": "Đăng ký tham quan trường",
+      "badgeTitle": "Top trường mầm non 2024",
+      "badgeSub": "Hiệp hội Giáo dục Mầm non VN",
+      "checklist1": "Lớp học theo mô hình Montessori kết hợp STEAM",
+      "checklist2": "Sân chơi ngoài trời đạt chuẩn an toàn quốc tế",
+      "checklist3": "Thực đơn do chuyên gia dinh dưỡng xây dựng hàng tuần",
+      "checklist4": "Phòng nghỉ trưa yên tĩnh, cách nhiệt, ánh sáng dịu",
+      "checklist5": "Hệ thống camera an ninh 24/7, phụ huynh theo dõi qua app",
+      "card1": {
+        "title": "Phòng học sáng tạo",
+        "description": "Góc nghệ thuật, góc sách và góc xây dựng theo phương pháp học qua chơi — phát triển trí tưởng tượng tự nhiên."
+      },
+      "card2": {
+        "title": "Sân chơi ngoài trời",
+        "description": "Cầu trượt, xích đu, bể cát, vườn rau mini — không gian vận động thúc đẩy sự phát triển thể chất toàn diện."
+      },
+      "card3": {
+        "title": "Bếp dinh dưỡng",
+        "description": "Thực đơn xoay vòng 4 tuần, cân bằng dưỡng chất theo độ tuổi, không sử dụng thực phẩm chế biến sẵn."
+      },
+      "card4": {
+        "title": "Phòng ngủ trưa",
+        "description": "Giường cá nhân, chăn gối riêng, nhiệt độ điều hòa ổn định — giúp trẻ nghỉ ngơi đủ giấc mỗi buổi trưa."
+      }
+    },
+    "Technology": {
+      "sectionLabel": "Ứng dụng dành cho phụ huynh",
+      "title1": "Đồng hành cùng con",
+      "title2": "mọi lúc mọi nơi",
+      "subtitle": "Cổng thông tin KinderCare giúp phụ huynh kết nối trực tiếp với nhà trường — từ thực đơn hôm nay đến lịch sử phát triển của bé.",
+      "card1": {
+        "title": "Tổng quan hôm nay",
+        "description": "Timeline các hoạt động theo thời gian thực"
+      },
+      "card2": {
+        "title": "Camera lớp học",
+        "description": "Xem trực tiếp lớp học, phòng ăn, sân chơi"
+      },
+      "card3": {
+        "title": "Thực đơn & Lịch học",
+        "description": "Xem thực đơn tuần, lịch hoạt động theo ngày"
+      },
+      "card4": {
+        "title": "Học phí & Thanh toán",
+        "description": "Thanh toán trực tuyến, xem lịch sử giao dịch"
+      },
+      "card5": {
+        "title": "Phát triển & Kết quả",
+        "description": "Báo cáo kỹ năng, nhận xét giáo viên theo học kỳ"
+      }
+    },
+    "Enrollment": {
+      "sectionLabel": "Tuyển sinh 2025–2026",
+      "title1": "Đăng ký ngay để",
+      "title2": "giữ suất cho bé",
+      "subtitle": "Số lượng chỗ mỗi lớp có giới hạn — đăng ký sớm để đảm bảo bé được vào lớp phù hợp nhất.",
+      "ctaNoteText1": "Liên hệ để được tư vấn gói học phù hợp và",
+      "ctaNoteText2": "ưu đãi sớm dành cho hồ sơ tháng 6",
+      "row1": {
+        "title": "Độ tuổi tiếp nhận",
+        "description": "Từ 18 tháng đến 5 tuổi (nhà trẻ, mẫu giáo nhỏ, mẫu giáo lớn)"
+      },
+      "row2": {
+        "title": "Thời gian mở đăng ký",
+        "description": "01/06/2025 – 15/08/2025 (ưu tiên nộp hồ sơ sớm)"
+      },
+      "row3": {
+        "title": "Sĩ số lớp học",
+        "description": "Tối đa 18–20 bé / lớp, tỷ lệ giáo viên 1:8"
+      },
+      "row4": {
+        "title": "Giờ học",
+        "description": "07:30 – 17:00 (có thể đón trễ đến 18:00 theo gói)"
+      },
+      "row5": {
+        "title": "Hồ sơ cần thiết",
+        "description": "Giấy khai sinh, sổ tiêm chủng, ảnh 3x4, đơn đăng ký"
+      }
+    },
+    "Pricing": {
+      "plan1": {
+        "name": "Gói Tháng",
+        "tag": "Linh hoạt",
+        "description": "Phù hợp với phụ huynh muốn thử trải nghiệm hoặc có lịch học thất thường.",
+        "feature1": "Học theo lịch cố định trong tháng",
+        "feature2": "Bao gồm 3 bữa ăn mỗi ngày",
+        "feature3": "Tiếp cận ứng dụng phụ huynh",
+        "feature4": "Báo nghỉ linh hoạt qua app",
+        "ctaLabel": "Hỏi về gói tháng"
+      },
+      "plan2": {
+        "name": "Gói Quý",
+        "tag": "3 tháng",
+        "description": "Cân bằng giữa cam kết và linh hoạt — lựa chọn phổ biến nhất của gia đình KinderCare.",
+        "feature1": "Ưu đãi so với đóng từng tháng",
+        "feature2": "Bao gồm 3 bữa ăn và hoạt động ngoại khóa",
+        "feature3": "Tiếp cận đầy đủ tính năng ứng dụng",
+        "feature4": "Đón muộn đến 18:00 không phát sinh phí",
+        "feature5": "Báo cáo phát triển hằng tháng",
+        "ctaLabel": "Tư vấn gói quý",
+        "badge": "Được chọn nhiều nhất"
+      },
+      "plan3": {
+        "name": "Gói Năm",
+        "tag": "Tiết kiệm nhất",
+        "description": "Cam kết toàn năm học — tiết kiệm đáng kể, ưu tiên chỗ học kỳ tiếp theo.",
+        "feature1": "Tiết kiệm cao nhất trong các gói",
+        "feature2": "Ưu tiên đăng ký năm học tiếp theo",
+        "feature3": "Tất cả tính năng gói quý",
+        "feature4": "Đồng phục trường miễn phí",
+        "feature5": "1 buổi tư vấn phát triển với giáo viên/học kỳ",
+        "ctaLabel": "Tư vấn gói năm"
+      }
+    },
+    "Contact": {
+      "sectionLabel": "Liên hệ & Tư vấn",
+      "title1": "Hãy để chúng tôi",
+      "title2": "cùng đồng hành với bé",
+      "subtitle": "Đội ngũ tư vấn của KinderCare luôn sẵn sàng giải đáp mọi thắc mắc và sắp xếp buổi tham quan trường cho gia đình bạn.",
+      "item1": {
+        "label": "Địa chỉ",
+        "value": "65 Huỳnh Thúc Kháng, Sài Gòn, Hồ Chí Minh"
+      },
+      "item2": {
+        "label": "Hotline tuyển sinh",
+        "value": "0901 234 567 (Thứ 2 – Thứ 7, 07:30 – 17:30)"
+      },
+      "item3": {
+        "label": "Email",
+        "value": "tuyensinh@kindercare.edu.vn"
+      },
+      "item4": {
+        "label": "Giờ tham quan trường",
+        "value": "Thứ 3 & Thứ 5: 9:00 – 11:00 (đặt lịch trước)"
+      },
+      "Form": {
+        "successTitle": "Đăng ký thành công!",
+        "successLine1": "Cảm ơn bạn đã quan tâm đến KinderCare.",
+        "successLine2": "Đội ngũ tư vấn sẽ liên hệ lại trong vòng 24 giờ làm việc.",
+        "title": "Đăng ký tư vấn miễn phí",
+        "subtitle": "Điền thông tin bên dưới, chúng tôi sẽ liên hệ lại trong vòng 24 giờ làm việc.",
+        "parentNameLabel": "Họ và tên phụ huynh *",
+        "parentNamePlaceholder": "Nguyễn Văn A",
+        "phoneLabel": "Số điện thoại *",
+        "phonePlaceholder": "090x xxx xxx",
+        "emailLabel": "Email",
+        "emailPlaceholder": "email@example.com",
+        "childAgeLabel": "Tuổi của bé *",
+        "childAgePlaceholder": "Chọn độ tuổi",
+        "planLabel": "Gói quan tâm",
+        "planPlaceholder": "Chưa quyết định",
+        "visitDateLabel": "Thời gian có thể tham quan",
+        "notesLabel": "Câu hỏi hoặc lưu ý thêm",
+        "notesPlaceholder": "Bé có dị ứng thực phẩm, nhu cầu đặc biệt hoặc câu hỏi cụ thể nào không?",
+        "submitButton": "Gửi đăng ký tư vấn",
+        "consentText": "Thông tin của bạn được bảo mật tuyệt đối và chỉ dùng cho mục đích liên hệ tư vấn."
+      }
+    },
+    "Footer": {
+      "col1": {
+        "title": "Về trường",
+        "link1": "Triết lý giáo dục",
+        "link2": "Cơ sở vật chất",
+        "link3": "Đội ngũ giáo viên",
+        "link4": "Chương trình học",
+        "link5": "Tin tức & Sự kiện"
+      },
+      "col2": {
+        "title": "Dịch vụ",
+        "link1": "Tuyển sinh 2025–2026",
+        "link2": "Các gói học phí",
+        "link3": "Cổng thông tin phụ huynh",
+        "link4": "Ứng dụng KinderCare",
+        "link5": "Đặt lịch tham quan"
+      },
+      "col3": {
+        "title": "Hỗ trợ",
+        "link1": "Câu hỏi thường gặp",
+        "link2": "Liên hệ tư vấn",
+        "link3": "Hướng dẫn sử dụng app",
+        "link4": "Chính sách bảo mật",
+        "link5": "Điều khoản dịch vụ"
+      },
+      "badge1": "Bộ GD&ĐT Cấp phép",
+      "badge2": "ISO 45001",
+      "badge3": "Trường Xanh 2024",
+      "tagline": "Nơi mỗi buổi sáng bắt đầu bằng nụ cười, mỗi buổi chiều kết thúc bằng niềm vui. Chúng tôi ươm mầm những tâm hồn nhỏ để chúng trở thành những con người lớn.",
+      "copyright": "© 2025 KinderCare Education. Tất cả quyền được bảo lưu."
+    },
+    "Dropdown": {
+      "age": {
+        "18_24m": "18 – 24 tháng",
+        "2y": "2 tuổi",
+        "3y": "3 tuổi",
+        "4y": "4 tuổi",
+        "5y": "5 tuổi"
+      },
+      "plan": {
+        "month": "Gói Tháng",
+        "quarter": "Gói Quý",
+        "year": "Gói Năm"
+      }
+    },
+    "Meta": {
+      "title": "KinderCare – Nơi ươm mầm & Phát triển tương lai",
+      "description": "Trường mầm non KinderCare: môi trường học tập an toàn, yêu thương; ứng dụng kết nối phụ huynh; tuyển sinh 2025–2026.",
+      "h1": "KinderCare – Nơi ươm mầm & Phát triển tương lai",
+      "campusAlt": "Khuôn viên trường KinderCare"
+    }
+  }
+}

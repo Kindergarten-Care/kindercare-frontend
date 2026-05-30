@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Button } from '@/UIKit';
-import { Dropdown } from '@kindercare/ui';
+import { Dropdown, useTranslation } from '@kindercare/ui';
 import type { ChildAgeValue, PricingPlanValue } from '@/config/types';
 import { CHILD_AGE_OPTIONS, PRICING_PLAN_OPTIONS } from '@/resources/landingContent';
 import {
@@ -17,6 +15,20 @@ export function ContactForm(): React.ReactElement {
   const [submitted, setSubmitted] = useState(false);
   const [childAge, setChildAge] = useState<ChildAgeValue | null>(null);
   const [plan, setPlan] = useState<PricingPlanValue | null>(null);
+  const { t } = useTranslation();
+
+  const translatedAgeOptions = CHILD_AGE_OPTIONS.map((opt) => {
+    const key = opt.value === '18-24m' ? '18_24m' : `${opt.value}y`;
+    return {
+      ...opt,
+      label: t(`Landing.Dropdown.age.${key}`),
+    };
+  });
+
+  const translatedPlanOptions = PRICING_PLAN_OPTIONS.map((opt) => ({
+    ...opt,
+    label: t(`Landing.Dropdown.plan.${opt.value}`),
+  }));
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -29,11 +41,11 @@ export function ContactForm(): React.ReactElement {
       <FormWrap>
         <FormSuccess>
           <div className="success-icon">🌱</div>
-          <h4>Đăng ký thành công!</h4>
+          <h4>{t('Landing.Contact.Form.successTitle')}</h4>
           <p>
-            Cảm ơn bạn đã quan tâm đến KinderCare.
+            {t('Landing.Contact.Form.successLine1')}
             <br />
-            Đội ngũ tư vấn sẽ liên hệ lại trong vòng <strong>24 giờ làm việc</strong>.
+            {t('Landing.Contact.Form.successLine2')}
           </p>
         </FormSuccess>
       </FormWrap>
@@ -42,47 +54,52 @@ export function ContactForm(): React.ReactElement {
 
   return (
     <FormWrap>
-      <h3>Đăng ký tư vấn miễn phí</h3>
-      <p>Điền thông tin bên dưới, chúng tôi sẽ liên hệ lại trong vòng 24 giờ làm việc.</p>
+      <h3>{t('Landing.Contact.Form.title')}</h3>
+      <p>{t('Landing.Contact.Form.subtitle')}</p>
 
       <form onSubmit={handleSubmit}>
         <FormRow>
           <FormGroup>
-            <label htmlFor="parentName">Họ và tên phụ huynh *</label>
-            <input id="parentName" type="text" placeholder="Nguyễn Văn A" required />
+            <label htmlFor="parentName">{t('Landing.Contact.Form.parentNameLabel')}</label>
+            <input
+              id="parentName"
+              type="text"
+              placeholder={t('Landing.Contact.Form.parentNamePlaceholder')}
+              required
+            />
           </FormGroup>
           <FormGroup>
-            <label htmlFor="phone">Số điện thoại *</label>
-            <input id="phone" type="tel" placeholder="090x xxx xxx" required />
+            <label htmlFor="phone">{t('Landing.Contact.Form.phoneLabel')}</label>
+            <input id="phone" type="tel" placeholder={t('Landing.Contact.Form.phonePlaceholder')} required />
           </FormGroup>
         </FormRow>
 
         <FormGroup>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" placeholder="email@example.com" />
+          <label htmlFor="email">{t('Landing.Contact.Form.emailLabel')}</label>
+          <input id="email" type="email" placeholder={t('Landing.Contact.Form.emailPlaceholder')} />
         </FormGroup>
 
         <FormRow>
           <FormGroup>
-            <label htmlFor="childAge">Tuổi của bé *</label>
+            <label htmlFor="childAge">{t('Landing.Contact.Form.childAgeLabel')}</label>
             <Dropdown<ChildAgeValue>
               id="childAge"
               value={childAge}
               onChange={setChildAge}
-              options={CHILD_AGE_OPTIONS}
-              placeholder="Chọn độ tuổi"
+              options={translatedAgeOptions}
+              placeholder={t('Landing.Contact.Form.childAgePlaceholder')}
               ariaLabel="Child age"
               fullWidth
             />
           </FormGroup>
           <FormGroup>
-            <label htmlFor="plan">Gói quan tâm</label>
+            <label htmlFor="plan">{t('Landing.Contact.Form.planLabel')}</label>
             <Dropdown<PricingPlanValue>
               id="plan"
               value={plan}
               onChange={setPlan}
-              options={PRICING_PLAN_OPTIONS}
-              placeholder="Chưa quyết định"
+              options={translatedPlanOptions}
+              placeholder={t('Landing.Contact.Form.planPlaceholder')}
               ariaLabel="Interested pricing package"
               fullWidth
             />
@@ -90,23 +107,23 @@ export function ContactForm(): React.ReactElement {
         </FormRow>
 
         <FormGroup>
-          <label htmlFor="visitDate">Thời gian có thể tham quan</label>
+          <label htmlFor="visitDate">{t('Landing.Contact.Form.visitDateLabel')}</label>
           <input id="visitDate" type="date" />
         </FormGroup>
 
         <FormGroup>
-          <label htmlFor="notes">Câu hỏi hoặc lưu ý thêm</label>
+          <label htmlFor="notes">{t('Landing.Contact.Form.notesLabel')}</label>
           <textarea
             id="notes"
-            placeholder="Bé có dị ứng thực phẩm, nhu cầu đặc biệt hoặc câu hỏi cụ thể nào không?"
+            placeholder={t('Landing.Contact.Form.notesPlaceholder')}
           />
         </FormGroup>
 
         <Button type="submit" $variant="primary" $size="lg" $fullWidth>
-          Gửi đăng ký tư vấn
+          {t('Landing.Contact.Form.submitButton')}
         </Button>
         <FormConsent>
-          Thông tin của bạn được bảo mật tuyệt đối và chỉ dùng cho mục đích liên hệ tư vấn.
+          {t('Landing.Contact.Form.consentText')}
         </FormConsent>
       </form>
     </FormWrap>

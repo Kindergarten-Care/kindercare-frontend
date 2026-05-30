@@ -1,0 +1,272 @@
+{
+  "Landing": {
+    "Nav": {
+      "learningEnvironment": "Learning Environment",
+      "technology": "Technology",
+      "enrollment": "Admissions",
+      "contact": "Contact",
+      "parentPortal": "Parent Portal",
+      "requestConsultation": "Request Consultation",
+      "mobile": {
+        "learningEnvironment": "Learning Environment",
+        "enrollmentTuition": "Admissions & Tuition",
+        "contactConsultation": "Contact & Consultation",
+        "registerNow": "Register for Consultation"
+      }
+    },
+    "Hero": {
+      "slide1": {
+        "eyebrow": "Welcome to KinderCare",
+        "title1": "Where seeds are sown &",
+        "title2": "Futures are nurtured",
+        "description": "A safe, loving learning environment where every child shines in their own unique way.",
+        "primaryCta": "Learn about Admissions",
+        "secondaryCta": "Book a Tour"
+      },
+      "slide2": {
+        "eyebrow": "Learning Environment",
+        "title1": "Creative spaces,",
+        "title2": "rich experiences",
+        "description": "Modern classrooms, spacious playground, and standard nutrition kitchen — all customized for preschoolers.",
+        "primaryCta": "Explore Now",
+        "secondaryCta": "Contact for Advice"
+      },
+      "slide3": {
+        "eyebrow": "Smart Technology",
+        "title1": "Parents connected,",
+        "title2": "peace of mind anytime, anywhere",
+        "description": "Smart classroom management app — view menus, track progress, and pay tuition right on your phone.",
+        "primaryCta": "View Features",
+        "secondaryCta": "Try Now"
+      }
+    },
+    "Stats": {
+      "stat1": {
+        "label": "Years of establishment & operation"
+      },
+      "stat2": {
+        "label": "Students currently enrolled"
+      },
+      "stat3": {
+        "label": "Satisfied parents"
+      },
+      "stat4": {
+        "label": "Dedicated teachers"
+      }
+    },
+    "Environment": {
+      "sectionLabel": "Learning Environment",
+      "title1": "Spaces designed for",
+      "title2": "every developmental stage",
+      "subtitle": "Every small corner at KinderCare is carefully considered — from lighting, colors to every material in contact with children.",
+      "ctaVisit": "Schedule a Campus Visit",
+      "badgeTitle": "Top Kindergarten 2024",
+      "badgeSub": "Vietnam Early Childhood Education Association",
+      "checklist1": "Montessori combined with STEAM classrooms",
+      "checklist2": "International safety standard outdoor playground",
+      "checklist3": "Weekly menus designed by nutrition specialists",
+      "checklist4": "Quiet, insulated nap room with soft lighting",
+      "checklist5": "24/7 security camera system, monitored via parent app",
+      "card1": {
+        "title": "Creative Classroom",
+        "description": "Art corner, book corner, and building corner based on play-based learning — fostering natural imagination."
+      },
+      "card2": {
+        "title": "Outdoor Playground",
+        "description": "Slides, swings, sandpit, mini vegetable garden — active space promoting comprehensive physical development."
+      },
+      "card3": {
+        "title": "Nutrition Kitchen",
+        "description": "4-week rotating menu, balanced nutrients by age group, strictly no processed foods."
+      },
+      "card4": {
+        "title": "Nap Room",
+        "description": "Individual beds, private blankets and pillows, stable AC temperature — helping kids get sufficient nap time."
+      }
+    },
+    "Technology": {
+      "sectionLabel": "App for Parents",
+      "title1": "Accompanying your child",
+      "title2": "anytime, anywhere",
+      "subtitle": "The KinderCare portal helps parents connect directly with the school — from today's menu to child's developmental history.",
+      "card1": {
+        "title": "Today's Overview",
+        "description": "Real-time timeline of activities"
+      },
+      "card2": {
+        "title": "Classroom Camera",
+        "description": "Watch live classroom, dining room, and playground"
+      },
+      "card3": {
+        "title": "Menu & Schedule",
+        "description": "View weekly menu, daily activity schedule"
+      },
+      "card4": {
+        "title": "Tuition & Payment",
+        "description": "Online payments, view transaction history"
+      },
+      "card5": {
+        "title": "Development & Results",
+        "description": "Skill reports, teacher feedback by semester"
+      }
+    },
+    "Enrollment": {
+      "sectionLabel": "Admissions 2025–2026",
+      "title1": "Register now to",
+      "title2": "secure your child's spot",
+      "subtitle": "Class sizes are limited — apply early to ensure your child gets into the most suitable class.",
+      "ctaNoteText1": "Contact us for tuition consulting and",
+      "ctaNoteText2": "early bird discount for June applications",
+      "row1": {
+        "title": "Acceptance Age",
+        "description": "From 18 months to 5 years old (toddler, junior, senior groups)"
+      },
+      "row2": {
+        "title": "Registration Period",
+        "description": "01/06/2025 – 15/08/2025 (early applications prioritized)"
+      },
+      "row3": {
+        "title": "Class Size Limit",
+        "description": "Max 18–20 kids / class, teacher ratio of 1:8"
+      },
+      "row4": {
+        "title": "School Hours",
+        "description": "07:30 – 17:00 (late pick-up up to 18:00 package available)"
+      },
+      "row5": {
+        "title": "Required Documents",
+        "description": "Birth certificate, vaccination record, 3x4 photo, registration form"
+      }
+    },
+    "Pricing": {
+      "plan1": {
+        "name": "Monthly Plan",
+        "tag": "Flexible",
+        "description": "Suitable for parents who want a trial or have irregular schedules.",
+        "feature1": "Study according to a fixed monthly schedule",
+        "feature2": "Includes 3 meals per day",
+        "feature3": "Access to parent mobile app",
+        "feature4": "Report absences flexibly via app",
+        "ctaLabel": "Inquire About Monthly Plan"
+      },
+      "plan2": {
+        "name": "Quarterly Plan",
+        "tag": "3 Months",
+        "description": "Balance between commitment and flexibility — the most popular choice for KinderCare families.",
+        "feature1": "Discounts compared to monthly billing",
+        "feature2": "Includes 3 meals and extracurricular activities",
+        "feature3": "Full access to app features",
+        "feature4": "Late pick-up until 18:00 at no extra charge",
+        "feature5": "Monthly development reports",
+        "ctaLabel": "Inquire About Quarterly Plan",
+        "badge": "Most Popular"
+      },
+      "plan3": {
+        "name": "Annual Plan",
+        "tag": "Best Savings",
+        "description": "Full school year commitment — significant savings, guaranteed spot for next term.",
+        "feature1": "Highest savings among all packages",
+        "feature2": "Priority registration for next academic year",
+        "feature3": "All features of the quarterly package",
+        "feature4": "Free school uniform",
+        "feature5": "1 development consultation session with teacher/semester",
+        "ctaLabel": "Inquire About Annual Plan"
+      }
+    },
+    "Contact": {
+      "sectionLabel": "Contact & Advice",
+      "title1": "Let us accompany",
+      "title2": "your child's journey",
+      "subtitle": "The KinderCare admissions team is always ready to answer any questions and schedule a campus visit for your family.",
+      "item1": {
+        "label": "Address",
+        "value": "65 Huynh Thuc Khang, Saigon, Ho Chi Minh"
+      },
+      "item2": {
+        "label": "Admissions Hotline",
+        "value": "0901 234 567 (Mon – Sat, 07:30 – 17:30)"
+      },
+      "item3": {
+        "label": "Email",
+        "value": "admissions@kindercare.edu.vn"
+      },
+      "item4": {
+        "label": "School Tour Hours",
+        "value": "Tue & Thu: 9:00 – 11:00 (booking required)"
+      },
+      "Form": {
+        "successTitle": "Registration Successful!",
+        "successLine1": "Thank you for your interest in KinderCare.",
+        "successLine2": "Our team will contact you within 24 working hours.",
+        "title": "Register for Free Consultation",
+        "subtitle": "Fill in the information below, we will contact you within 24 working hours.",
+        "parentNameLabel": "Parent's Full Name *",
+        "parentNamePlaceholder": "John Doe",
+        "phoneLabel": "Phone Number *",
+        "phonePlaceholder": "090x xxx xxx",
+        "emailLabel": "Email",
+        "emailPlaceholder": "email@example.com",
+        "childAgeLabel": "Child's Age *",
+        "childAgePlaceholder": "Select age",
+        "planLabel": "Interested Package",
+        "planPlaceholder": "Undecided",
+        "visitDateLabel": "Preferred Visit Date",
+        "notesLabel": "Additional Questions or Notes",
+        "notesPlaceholder": "Does the child have food allergies, special needs, or any specific questions?",
+        "submitButton": "Submit Consultation Request",
+        "consentText": "Your information is strictly confidential and used only for consultation purposes."
+      }
+    },
+    "Footer": {
+      "col1": {
+        "title": "About Us",
+        "link1": "Educational Philosophy",
+        "link2": "Facilities",
+        "link3": "Teaching Staff",
+        "link4": "Curriculum",
+        "link5": "News & Events"
+      },
+      "col2": {
+        "title": "Services",
+        "link1": "Admissions 2025–2026",
+        "link2": "Tuition Packages",
+        "link3": "Parent Portal",
+        "link4": "KinderCare App",
+        "link5": "Book a Tour"
+      },
+      "col3": {
+        "title": "Support",
+        "link1": "FAQs",
+        "link2": "Contact Support",
+        "link3": "App User Guide",
+        "link4": "Privacy Policy",
+        "link5": "Terms of Service"
+      },
+      "badge1": "MOET Licensed",
+      "badge2": "ISO 45001 Certified",
+      "badge3": "Green School 2024",
+      "tagline": "Where every morning starts with a smile, every afternoon ends with joy. We nurture small souls so they grow into great people.",
+      "copyright": "© 2025 KinderCare Education. All rights reserved."
+    },
+    "Dropdown": {
+      "age": {
+        "18_24m": "18 – 24 months",
+        "2y": "2 years old",
+        "3y": "3 years old",
+        "4y": "4 years old",
+        "5y": "5 years old"
+      },
+      "plan": {
+        "month": "Monthly Plan",
+        "quarter": "Quarterly Plan",
+        "year": "Annual Plan"
+      }
+    },
+    "Meta": {
+      "title": "KinderCare – Nurturing Seeds & Growing Futures",
+      "description": "KinderCare Kindergarten: a safe, loving learning environment; parent-connected app; admissions 2025–2026.",
+      "h1": "KinderCare – Nurturing Seeds & Growing Futures",
+      "campusAlt": "KinderCare School Campus"
+    }
+  }
+}

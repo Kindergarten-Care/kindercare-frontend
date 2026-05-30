@@ -8,6 +8,7 @@ import {
 } from '@/UIKit';
 import { CONTACT_ITEMS } from '@/resources/landingContent';
 import { SECTION_IDS } from '@/config/constants';
+import { useTranslation } from '@kindercare/ui';
 import { ContactForm } from './ContactForm';
 import {
   ContactSectionRoot,
@@ -21,26 +22,33 @@ import {
 } from './styles';
 
 export function ContactSection(): React.ReactElement {
+  const { t } = useTranslation();
+
+  const contactItems = CONTACT_ITEMS.map((item, index) => ({
+    ...item,
+    label: t(`Landing.Contact.item${index + 1}.label`),
+    value: t(`Landing.Contact.item${index + 1}.value`),
+  }));
+
   return (
     <ContactSectionRoot id={SECTION_IDS.CONTACT} aria-labelledby="contact-title">
       <Inner>
         <Grid>
           <Reveal>
             <div>
-              <SectionLabel>Liên hệ & Tư vấn</SectionLabel>
+              <SectionLabel>{t('Landing.Contact.sectionLabel')}</SectionLabel>
               <Divider />
               <SectionTitle id="contact-title">
-                Hãy để chúng tôi
+                {t('Landing.Contact.title1')}
                 <br />
-                cùng đồng hành với bé
+                {t('Landing.Contact.title2')}
               </SectionTitle>
               <SectionSubtitle>
-                Đội ngũ tư vấn của KinderCare luôn sẵn sàng giải đáp mọi thắc mắc và sắp xếp buổi tham quan
-                trường cho gia đình bạn.
+                {t('Landing.Contact.subtitle')}
               </SectionSubtitle>
 
               <Items style={{ marginTop: '2rem' }}>
-                {CONTACT_ITEMS.map((item) => (
+                {contactItems.map((item) => (
                   <Item key={item.label}>
                     <ItemIcon>{item.icon}</ItemIcon>
                     <ItemText>
