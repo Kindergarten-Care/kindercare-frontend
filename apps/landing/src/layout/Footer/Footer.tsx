@@ -4,8 +4,8 @@ import { FacebookIcon, ZaloIcon, YoutubeIcon, TiktokIcon } from '@/svgs';
 import {
   FOOTER_BADGES,
   FOOTER_COLUMNS,
-  FOOTER_TAGLINE,
 } from '@/resources/landingContent';
+import { useTranslation } from '@kindercare/ui';
 import {
   Badge,
   BadgeRow,
@@ -23,6 +23,27 @@ import {
 } from './styles';
 
 export function Footer(): React.ReactElement {
+  const { t } = useTranslation();
+
+  const footerTagline = t('Landing.Footer.tagline');
+  
+  const footerBadges = FOOTER_BADGES.map((badge, index) => ({
+    ...badge,
+    label: t(`Landing.Footer.badge${index + 1}`),
+  }));
+
+  const footerColumns = FOOTER_COLUMNS.map((column, cIndex) => {
+    const colNum = cIndex + 1;
+    const links = column.links.map((link, lIndex) => ({
+      ...link,
+      label: t(`Landing.Footer.col${colNum}.link${lIndex + 1}`),
+    }));
+    return {
+      title: t(`Landing.Footer.col${colNum}.title`),
+      links,
+    };
+  });
+
   return (
     <FooterRoot>
       <FooterInner>
@@ -45,7 +66,7 @@ export function Footer(): React.ReactElement {
                 }}
               />
             </BrandHeader>
-            <BrandTagline>{FOOTER_TAGLINE}</BrandTagline>
+            <BrandTagline>{footerTagline}</BrandTagline>
             <SocialRow>
               <SocialButton href="#" aria-label="Facebook">
                 <FacebookIcon />
@@ -62,7 +83,7 @@ export function Footer(): React.ReactElement {
             </SocialRow>
           </FooterBrand>
 
-          {FOOTER_COLUMNS.map((column) => (
+          {footerColumns.map((column) => (
             <FooterCol key={column.title}>
               <h4>{column.title}</h4>
               <ul>
@@ -77,9 +98,11 @@ export function Footer(): React.ReactElement {
         </FooterGrid>
 
         <FooterBottom>
-          <Copy>© 2025 KinderCare Education. Tất cả quyền được bảo lưu.</Copy>
+          <Copy>
+            {t('Landing.Footer.copyright')}
+          </Copy>
           <BadgeRow>
-            {FOOTER_BADGES.map((badge) => (
+            {footerBadges.map((badge) => (
               <Badge key={badge.label}>{badge.label}</Badge>
             ))}
           </BadgeRow>

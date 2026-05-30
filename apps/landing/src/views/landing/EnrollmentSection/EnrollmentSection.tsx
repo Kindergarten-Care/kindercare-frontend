@@ -10,6 +10,7 @@ import {
 } from '@/UIKit';
 import { ENROLLMENT_ROWS, PRICING_PLANS } from '@/resources/landingContent';
 import { SECTION_IDS } from '@/config/constants';
+import { useTranslation } from '@kindercare/ui';
 import {
   CtaNote,
   EnrollGrid,
@@ -31,6 +32,30 @@ import {
 } from './styles';
 
 export function EnrollmentSection(): React.ReactElement {
+  const { t } = useTranslation();
+
+  const enrollmentRows = ENROLLMENT_ROWS.map((row, index) => ({
+    ...row,
+    title: t(`Landing.Enrollment.row${index + 1}.title`),
+    description: t(`Landing.Enrollment.row${index + 1}.description`),
+  }));
+
+  const pricingPlans = PRICING_PLANS.map((plan, index) => {
+    const pIndex = index + 1;
+    const planFeatures = plan.features.map((_, fIndex) =>
+      t(`Landing.Pricing.plan${pIndex}.feature${fIndex + 1}`)
+    );
+    return {
+      ...plan,
+      name: t(`Landing.Pricing.plan${pIndex}.name`),
+      tag: t(`Landing.Pricing.plan${pIndex}.tag`),
+      description: t(`Landing.Pricing.plan${pIndex}.description`),
+      features: planFeatures,
+      ctaLabel: t(`Landing.Pricing.plan${pIndex}.ctaLabel`),
+      badge: plan.badge ? t(`Landing.Pricing.plan${pIndex}.badge`) : undefined,
+    };
+  });
+
   return (
     <EnrollSection id={SECTION_IDS.ENROLLMENT} aria-labelledby="enrollment-title">
       <EnrollInner>
@@ -38,19 +63,19 @@ export function EnrollmentSection(): React.ReactElement {
           <EnrollGrid>
             <Reveal>
               <div>
-                <SectionLabel>Tuyển sinh 2025–2026</SectionLabel>
+                <SectionLabel>{t('Landing.Enrollment.sectionLabel')}</SectionLabel>
                 <Divider />
                 <SectionTitle id="enrollment-title">
-                  Đăng ký ngay để
+                  {t('Landing.Enrollment.title1')}
                   <br />
-                  giữ suất cho bé
+                  {t('Landing.Enrollment.title2')}
                 </SectionTitle>
                 <SectionSubtitle>
-                  Số lượng chỗ mỗi lớp có giới hạn — đăng ký sớm để đảm bảo bé được vào lớp phù hợp nhất.
+                  {t('Landing.Enrollment.subtitle')}
                 </SectionSubtitle>
 
                 <Rows>
-                  {ENROLLMENT_ROWS.map((row) => (
+                  {enrollmentRows.map((row) => (
                     <Row key={row.title}>
                       <RowIcon>{row.icon}</RowIcon>
                       <RowText>
@@ -64,8 +89,8 @@ export function EnrollmentSection(): React.ReactElement {
                 <CtaNote>
                   <span>💡</span>
                   <span>
-                    Liên hệ để được tư vấn gói học phù hợp và{' '}
-                    <strong>ưu đãi sớm dành cho hồ sơ tháng 6</strong>.
+                    {t('Landing.Enrollment.ctaNoteText1')}{' '}
+                    <strong>{t('Landing.Enrollment.ctaNoteText2')}</strong>.
                   </span>
                 </CtaNote>
               </div>
@@ -73,7 +98,7 @@ export function EnrollmentSection(): React.ReactElement {
 
             <Reveal>
               <PricingCards>
-                {PRICING_PLANS.map((plan) => (
+                {pricingPlans.map((plan) => (
                   <PricingCard key={plan.name} $featured={plan.featured}>
                     {plan.badge && <PricingBadge>{plan.badge}</PricingBadge>}
                     <PricingHeader>

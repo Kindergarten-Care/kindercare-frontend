@@ -1,5 +1,3 @@
-'use client';
-
 import styled, { css } from 'styled-components';
 
 export const Nav = styled.nav<{ $scrolled: boolean }>`
@@ -33,6 +31,18 @@ export const NavInner = styled.div`
   align-items: center;
   gap: 2rem;
   padding: 0 1.5rem;
+
+  > nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  @media (max-width: 1200px) {
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
 `;
 
 export const NavLogo = styled.a`
@@ -42,27 +52,35 @@ export const NavLogo = styled.a`
   flex-shrink: 0;
 `;
 
-export const NavLogoText = styled.span`
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.green};
-  letter-spacing: -0.01em;
-`;
-
 export const NavLinks = styled.ul`
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
   margin: 0 auto;
+  flex-shrink: 1;
+  list-style: none;
+  padding: 0;
+
+  li {
+    list-style: none;
+    white-space: nowrap;
+    display: block;
+  }
 
   a {
+    display: block;
     padding: 0.45rem 0.85rem;
     border-radius: 8px;
     font-size: 0.9rem;
     font-weight: 500;
     color: ${({ theme }) => theme.colors.muted};
     transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+
+    @media (max-width: 1200px) {
+      padding: 0.4rem 0.45rem;
+      font-size: 0.82rem;
+    }
   }
 
   a:hover {
@@ -80,6 +98,19 @@ export const NavCta = styled.div`
   align-items: center;
   gap: 0.65rem;
   flex-shrink: 0;
+
+  @media (max-width: 1200px) {
+    gap: 0.4rem;
+  }
+
+  > a, > button {
+    white-space: nowrap;
+
+    @media (max-width: 1200px) {
+      padding: 0.5rem 0.65rem !important;
+      font-size: 0.8rem !important;
+    }
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
     display: none;
