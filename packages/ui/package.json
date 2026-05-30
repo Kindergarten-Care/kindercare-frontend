@@ -4,6 +4,10 @@
   "private": true,
   "main": "./index.ts",
   "types": "./index.ts",
+  "dependencies": {
+    "@kindercare/resource": "*",
+    "@kindercare/public": "*"
+  },
   "peerDependencies": {
     "react": "^19",
     "react-dom": "^19",
