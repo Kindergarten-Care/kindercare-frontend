@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { LinkButton, Responsive } from '@/UIKit';
 import { HeroLeaf } from '@/svgs';
 import { HERO_SLIDES } from '@/resources/landingContent';
@@ -20,8 +21,10 @@ import {
   ProgressBar,
   Slide,
   SlideContent,
+  SlideOverlay,
   SlidesWrap,
   Title,
+  variantImages,
 } from './styles';
 
 export function Hero(): React.ReactElement {
@@ -59,6 +62,16 @@ export function Hero(): React.ReactElement {
               $active={isActive}
               aria-hidden={!isActive}
             >
+              <Image
+                src={variantImages[slide.variant]}
+                alt=""
+                fill
+                sizes="100vw"
+                style={{ objectFit: 'cover' }}
+                priority={index === 0}
+                loading={index === 0 ? 'eager' : 'lazy'}
+              />
+              <SlideOverlay />
               <SlideContent>
                 <Eyebrow>{slide.eyebrow}</Eyebrow>
                 <Title>

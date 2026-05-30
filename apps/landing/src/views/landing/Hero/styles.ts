@@ -3,10 +3,10 @@
 import styled, { css, keyframes } from 'styled-components';
 import type { HeroSlideVariant } from '@/config/types';
 
-const variantBackgrounds: Record<HeroSlideVariant, string> = {
-  forest: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(1).png") center/cover no-repeat',
-  spring: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(2).png") center/cover no-repeat',
-  amber: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("/carousel/carousel(3).png") center/cover no-repeat',
+export const variantImages: Record<HeroSlideVariant, string> = {
+  forest: '/carousel/carousel-1.webp',
+  spring: '/carousel/carousel-2.webp',
+  amber: '/carousel/carousel-3.webp',
 };
 
 const forestBlobs = css`
@@ -116,8 +116,14 @@ export const Slide = styled.div<{ $variant: HeroSlideVariant; $active: boolean }
   opacity: ${({ $active }) => ($active ? 1 : 0)};
   pointer-events: ${({ $active }) => ($active ? 'auto' : 'none')};
   transition: opacity 0.9s ease;
-  background: ${({ $variant }) => variantBackgrounds[$variant]};
   ${({ $variant }) => blobByVariant($variant)}
+`;
+
+export const SlideOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1;
 `;
 
 export const SlideContent = styled.div`
