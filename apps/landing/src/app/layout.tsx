@@ -1,16 +1,5 @@
-export const metadata = {
-  title: 'KinderCare Landing Page',
-  description: 'Hệ thống quản lý mầm non toàn diện',
-}
+import React from 'react';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="vi">
-      <body style={{ margin: 0 }}>{children}</body>
-    </html>
-  )
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }
