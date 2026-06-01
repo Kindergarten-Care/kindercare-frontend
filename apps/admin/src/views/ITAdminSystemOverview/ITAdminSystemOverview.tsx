@@ -87,82 +87,19 @@ const MoreDotsIcon: React.FC = () => (
   </svg>
 );
 
-/* ─── Data Types ─── */
-interface MetricData {
-  label: string;
-  value: string;
-  badge: React.ReactNode;
-  iconBg: string;
-  icon: React.ReactNode;
-}
+/* ─── Role Colors Mapping ─── */
+const roleColors: Record<string, string> = {
+  'Giáo viên': '#86efac',
+  'Hiệu trưởng': '#7dd3fc',
+  'Admin': '#fde047',
+};
 
-interface PieLegendData {
-  label: string;
-  value: string;
-  color: string;
-  percent: number;
-}
-
-interface BarData {
-  label: string;
-  value: number;
-  displayValue: string;
-  active?: boolean;
-}
-
-/* ─── Static Data ─── */
-const metricsData: MetricData[] = [
-  {
-    label: 'TỔNG TÀI KHOẢN',
-    value: '12,458',
-    badge: (
-      <CardBadge $variant="success">
-        <TrendArrow><ArrowUpIcon /></TrendArrow>
-        4.2%
-      </CardBadge>
-    ),
-    iconBg: '#dcfce7',
-    icon: <AccountIcon />,
-  },
-  {
-    label: 'TÀI KHOẢN ĐANG ONLINE',
-    value: '1,842',
-    badge: (
-      <CardBadge $variant="info">
-        <LiveDot />
-        Live
-      </CardBadge>
-    ),
-    iconBg: '#e0f2fe',
-    icon: <OnlineIcon />,
-  },
-  {
-    label: 'CẢNH BÁO LỖI SYSTEM LOG',
-    value: '24',
-    badge: <CardBadge $variant="warning">trong 24h qua</CardBadge>,
-    iconBg: '#fef9c3',
-    icon: <WarningIcon />,
-  },
-];
-
-const pieData: PieLegendData[] = [
-  { label: 'Giáo viên', value: '65%', color: '#86efac', percent: 65 },
-  { label: 'Hiệu trưởng', value: '25%', color: '#7dd3fc', percent: 25 },
-  { label: 'Admin', value: '10%', color: '#fde047', percent: 10 },
-];
-
-const barData: BarData[] = [
-  { label: 'T2', value: 1200, displayValue: '1.2k' },
-  { label: 'T3', value: 1650, displayValue: '1.7k' },
-  { label: 'T4', value: 1050, displayValue: '1.1k' },
-  { label: 'T5', value: 2400, displayValue: '2.4k' },
-  { label: 'T6', value: 1950, displayValue: '2.0k' },
-  { label: 'T7', value: 3800, displayValue: '3.8k', active: true },
-  { label: 'CN', value: 2100, displayValue: '2.1k' },
-];
+/* ─── Helper function for formatting numbers ─── */
+const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
+const formatK = (num: number) => num >= 1000 ? `${(num / 1000).toFixed(1)}k` : num.toString();
 
 /* ─── Donut Pie Chart ─── */
-function DonutChart({ data }: { data: PieLegendData[] }): React.ReactElement {
+function DonutChart({ data }: { data: { percent: number; color: string }[] }): React.ReactElement {
   const radius = 90;
   const strokeWidth = 28;
   const center = 112;
@@ -200,11 +137,68 @@ function DonutChart({ data }: { data: PieLegendData[] }): React.ReactElement {
   );
 }
 
+/* ─── Loading Skeleton ─── */
+const LoadingSpinner = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+    <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #16a34a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    <style>{`
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    `}</style>
+  </div>
+);
+
+import { useEffect } from 'react';
+import { ITAdminService } from '@/services/ITAdminService';
+import { SystemOverviewResponse } from '@/config/types/admin';
+
 /* ─── Main View Component ─── */
 export default function ITAdminSystemOverview(): React.ReactElement {
   const [chartPeriod, setChartPeriod] = useState<'day' | 'week'>('week');
+  const [data, setData] = useState<SystemOverviewResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const maxBarValue = Math.max(...barData.map((d) => d.value));
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    ITAdminService.getSystemOverview()
+      .then((res) => {
+        if (isMounted) {
+          setData(res);
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch system overview:', err);
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Show loading spinner if data is not yet fetched
+  if (isLoading || !data) {
+    return (
+      <PageWrapper>
+        <ITAdminSideNavBar />
+        <ITAdminTopAppBar />
+        <MainContent>
+          <Container>
+            <PageHeader>
+              <PageTitle>Tổng quan Hệ thống</PageTitle>
+              <PageSubtitle>Đang tải dữ liệu thời gian thực...</PageSubtitle>
+            </PageHeader>
+            <LoadingSpinner />
+          </Container>
+        </MainContent>
+      </PageWrapper>
+    );
+  }
+
+  // Map raw data to UI models
+  const maxBarValue = Math.max(...data.traffic.map((d) => d.requests));
   const maxBarHeight = 295;
 
   return (
@@ -224,18 +218,47 @@ export default function ITAdminSystemOverview(): React.ReactElement {
 
           {/* ── Metric Cards ── */}
           <MetricCardsGrid>
-            {metricsData.map((metric) => (
-              <MetricCard key={metric.label}>
-                <CardHeader>
-                  <CardIconWrapper $bg={metric.iconBg}>{metric.icon}</CardIconWrapper>
-                  <CardLabel>{metric.label}</CardLabel>
-                </CardHeader>
-                <CardValueRow>
-                  <CardValue>{metric.value}</CardValue>
-                  {metric.badge}
-                </CardValueRow>
-              </MetricCard>
-            ))}
+            {/* Total Accounts */}
+            <MetricCard>
+              <CardHeader>
+                <CardIconWrapper $bg="#dcfce7"><AccountIcon /></CardIconWrapper>
+                <CardLabel>TỔNG TÀI KHOẢN</CardLabel>
+              </CardHeader>
+              <CardValueRow>
+                <CardValue>{formatNumber(data.metrics.totalAccounts)}</CardValue>
+                <CardBadge $variant="success">
+                  <TrendArrow><ArrowUpIcon /></TrendArrow>
+                  {data.metrics.totalAccountsGrowth}%
+                </CardBadge>
+              </CardValueRow>
+            </MetricCard>
+
+            {/* Online Accounts */}
+            <MetricCard>
+              <CardHeader>
+                <CardIconWrapper $bg="#e0f2fe"><OnlineIcon /></CardIconWrapper>
+                <CardLabel>TÀI KHOẢN ĐANG ONLINE</CardLabel>
+              </CardHeader>
+              <CardValueRow>
+                <CardValue>{formatNumber(data.metrics.onlineAccounts)}</CardValue>
+                <CardBadge $variant="info">
+                  <LiveDot />
+                  Live
+                </CardBadge>
+              </CardValueRow>
+            </MetricCard>
+
+            {/* System Warnings */}
+            <MetricCard>
+              <CardHeader>
+                <CardIconWrapper $bg="#fef9c3"><WarningIcon /></CardIconWrapper>
+                <CardLabel>CẢNH BÁO LỖI SYSTEM LOG</CardLabel>
+              </CardHeader>
+              <CardValueRow>
+                <CardValue>{data.metrics.systemWarnings24h}</CardValue>
+                <CardBadge $variant="warning">trong 24h qua</CardBadge>
+              </CardValueRow>
+            </MetricCard>
           </MetricCardsGrid>
 
           {/* ── Charts ── */}
@@ -249,15 +272,15 @@ export default function ITAdminSystemOverview(): React.ReactElement {
                 </MoreButton>
               </ChartCardHeader>
               <PieChartWrapper>
-                <DonutChart data={pieData} />
+                <DonutChart data={data.roles.map(r => ({ percent: r.percentage, color: roleColors[r.role] || '#ccc' }))} />
                 <LegendList>
-                  {pieData.map((item) => (
-                    <LegendItem key={item.label}>
+                  {data.roles.map((item) => (
+                    <LegendItem key={item.role}>
                       <LegendLeft>
-                        <LegendDot $color={item.color} />
-                        <LegendLabel>{item.label}</LegendLabel>
+                        <LegendDot $color={roleColors[item.role] || '#ccc'} />
+                        <LegendLabel>{item.role}</LegendLabel>
                       </LegendLeft>
-                      <LegendValue>{item.value}</LegendValue>
+                      <LegendValue>{item.percentage}%</LegendValue>
                     </LegendItem>
                   ))}
                 </LegendList>
@@ -289,23 +312,29 @@ export default function ITAdminSystemOverview(): React.ReactElement {
                   <GridLine />
                 </GridLines>
                 <BarsContainer>
-                  {barData.map((bar, index) => (
-                    <Bar
-                      key={bar.label}
-                      $height={Math.round((bar.value / maxBarValue) * maxBarHeight)}
-                      $active={bar.active}
-                      $delay={index * 0.08}
-                    >
-                      <BarTooltip>{bar.displayValue}</BarTooltip>
-                    </Bar>
-                  ))}
+                  {data.traffic.map((bar, index) => {
+                    const isActive = index === data.traffic.length - 2; // Default mock active bar
+                    return (
+                      <Bar
+                        key={bar.day}
+                        $height={Math.round((bar.requests / maxBarValue) * maxBarHeight)}
+                        $active={isActive}
+                        $delay={index * 0.08}
+                      >
+                        <BarTooltip>{formatK(bar.requests)}</BarTooltip>
+                      </Bar>
+                    );
+                  })}
                 </BarsContainer>
                 <XAxisLabels>
-                  {barData.map((bar) => (
-                    <XAxisLabel key={bar.label} $active={bar.active}>
-                      {bar.label}
-                    </XAxisLabel>
-                  ))}
+                  {data.traffic.map((bar, index) => {
+                    const isActive = index === data.traffic.length - 2;
+                    return (
+                      <XAxisLabel key={bar.day} $active={isActive}>
+                        {bar.day}
+                      </XAxisLabel>
+                    );
+                  })}
                 </XAxisLabels>
               </BarChartArea>
             </BarChartCard>
