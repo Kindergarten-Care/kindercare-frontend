@@ -5,8 +5,8 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@kindercare/public": "*",
-    "@kindercare/resource": "*"
+    "@kindercare/resource": "*",
+    "@kindercare/public": "*"
   },
   "peerDependencies": {
     "react": "^19",
