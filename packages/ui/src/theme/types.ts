@@ -17,6 +17,19 @@ export interface AppThemeColors {
   footerBg: string;
   techBg: string;
   white: string;
+
+  // UI legacy theme colors
+  primary?: string;
+  secondary?: string;
+  accent?: string;
+  background?: string;
+  text?: string;
+  textSecondary?: string;
+  neutralLight?: string;
+  neutralLighter?: string;
+  borderMuted?: string;
+  successLight?: string;
+  success?: string;
 }
 
 export interface AppThemeFonts {
