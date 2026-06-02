@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Sidebar } from '@kindercare/ui';
+import ITAdminTopAppBar from '../ITAdminTopAppBar';
 import {
   DashboardWrapper,
   MainContent,
@@ -21,12 +22,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps): React.React
     <DashboardWrapper>
       <Sidebar />
       <MainContent>
-        <TopBar>
-          <TopBarTitle>KinderCare Admin</TopBarTitle>
-          <TopBarActions>
-            <Avatar>A</Avatar>
-          </TopBarActions>
-        </TopBar>
+        <ITAdminTopAppBar />
         <PageArea>{children}</PageArea>
       </MainContent>
     </DashboardWrapper>
