@@ -1,3 +1,4 @@
+import '../globals.css';
 import StyledComponentsRegistry from '@/lib/registry';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
