@@ -1,20 +1,20 @@
 import 'styled-components';
+import { AppTheme } from '@kindercare/ui';
 
 declare module 'styled-components' {
-  export interface DefaultTheme {
-    colors: {
-      surface: string;
-      [key: string]: any;
+  export interface DefaultTheme extends AppTheme {
+    colors: AppTheme['colors'] & {
+      primary: string;
+      secondary?: string;
+      accent?: string;
+      background: string;
+      text: string;
+      textSecondary?: string;
+      neutralLight?: string;
+      neutralLighter?: string;
+      borderMuted?: string;
+      successLight?: string;
+      success?: string;
     };
-    fonts: {
-      display: string;
-      body: string;
-      [key: string]: any;
-    };
-    breakpoints?: {
-      lg?: string;
-      [key: string]: any;
-    };
-    [key: string]: any;
   }
 }
