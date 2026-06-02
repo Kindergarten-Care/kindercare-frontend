@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   /* config options here */
+  basePath: '/parents',
   output: 'standalone',
   reactCompiler: true,
   compiler: {

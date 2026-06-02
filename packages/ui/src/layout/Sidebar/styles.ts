@@ -75,11 +75,11 @@ export const NavLinks = styled.div`
   gap: 2px;
 `;
 
-export const NavLink = styled.a<{ $active?: boolean }>`
+export const NavLink = styled.a<{ $active?: boolean; $variant?: 'default' | 'button' }>`
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 20px;
+  gap: ${({ $variant }) => ($variant === 'button' ? '8px' : '16px')};
+  padding: ${({ $variant }) => ($variant === 'button' ? '12px 8px' : '10px 20px')};
   border-radius: 0 8px 8px 0;
   border-left: 4px solid transparent;
   cursor: pointer;
@@ -87,8 +87,20 @@ export const NavLink = styled.a<{ $active?: boolean }>`
   text-decoration: none;
   min-height: 40px;
 
-  ${({ $active }) =>
-    $active
+  ${({ $active, $variant }) =>
+    $variant === 'button'
+      ? css`
+          background: #005e2c;
+          border-radius: 12px;
+          border-left: none;
+          margin: 0 12px 16px 12px;
+          justify-content: center;
+
+          &:hover {
+            background: #004a23;
+          }
+        `
+      : $active
       ? css`
           background: #f0fdf4;
           border-left-color: #15803d;
@@ -103,14 +115,14 @@ export const NavLink = styled.a<{ $active?: boolean }>`
         `}
 `;
 
-export const NavIcon = styled.div<{ $active?: boolean }>`
+export const NavIcon = styled.div<{ $active?: boolean; $variant?: 'default' | 'button' }>`
   width: 18px;
   height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: ${({ $active }) => ($active ? '#046e1e' : '#475569')};
+  color: ${({ $active, $variant }) => ($variant === 'button' ? 'white' : $active ? '#046e1e' : '#475569')};
 
   svg {
     width: 100%;
@@ -118,12 +130,13 @@ export const NavIcon = styled.div<{ $active?: boolean }>`
   }
 `;
 
-export const NavLabel = styled.span<{ $active?: boolean }>`
+export const NavLabel = styled.span<{ $active?: boolean; $variant?: 'default' | 'button' }>`
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   line-height: 17.5px;
-  color: ${({ $active }) => ($active ? '#046e1e' : '#475569')};
-  font-weight: ${({ $active }) => ($active ? 700 : 400)};
+  color: ${({ $active, $variant }) => ($variant === 'button' ? 'white' : $active ? '#046e1e' : '#475569')};
+  font-weight: ${({ $active, $variant }) => ($variant === 'button' ? 600 : $active ? 700 : 400)};
+  white-space: nowrap;
 `;
 
 export const BottomSection = styled.div`

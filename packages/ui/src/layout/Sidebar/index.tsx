@@ -23,6 +23,7 @@ export interface NavItem {
   icon: React.ReactNode;
   href: string;
   active?: boolean;
+  variant?: 'default' | 'button';
 }
 
 export interface SidebarProps {
@@ -72,9 +73,9 @@ export function Sidebar({
 
       <BottomSection>
         {bottomNavItems.map((item) => (
-          <NavLink key={item.href} href={item.href}>
-            <NavIcon>{item.icon}</NavIcon>
-            <NavLabel>{item.label}</NavLabel>
+          <NavLink key={item.href} href={item.href} $variant={item.variant}>
+            <NavIcon $variant={item.variant}>{item.icon}</NavIcon>
+            <NavLabel $variant={item.variant}>{item.label}</NavLabel>
           </NavLink>
         ))}
       </BottomSection>
