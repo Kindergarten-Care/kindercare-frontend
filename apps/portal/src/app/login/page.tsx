@@ -21,13 +21,13 @@ export default function LoginPage() {
     <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f1f5f9' }}>
       <div style={{ padding: '2rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', width: '100%', maxWidth: '400px' }}>
         <h1 style={{ textAlign: 'center', color: '#334155', marginBottom: '1.5rem' }}>Đăng nhập Hệ thống</h1>
-        
+
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#475569' }}>Email</label>
             <input type="email" placeholder="Email của bạn" style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
           </div>
-          
+
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: '#475569' }}>Mật khẩu</label>
             <input type="password" placeholder="Mật khẩu" style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
