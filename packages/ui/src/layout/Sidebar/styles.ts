@@ -6,7 +6,7 @@ export const SideNavContainer = styled.nav`
   position: fixed;
   top: 0;
   left: 0;
-  width: 280px;
+  width: 240px;
   height: 100vh;
   background: #ffffff;
   border-right: 1px solid #f1f5f9;

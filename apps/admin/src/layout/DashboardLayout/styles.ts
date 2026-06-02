@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 
-const SIDEBAR_WIDTH = 280;
+const SIDEBAR_WIDTH = 240;
 
 export const DashboardWrapper = styled.div`
   display: flex;
@@ -39,7 +39,7 @@ export const TopBar = styled.header`
 
 export const PageArea = styled.div`
   flex: 1;
-  padding: 0;
+  padding: 32px 50px;
 `;
 
 export const TopBarTitle = styled.h2`

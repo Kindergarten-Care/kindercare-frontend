@@ -143,19 +143,13 @@ export default function ITAdminSystemOverview(): React.ReactElement {
   // Show loading spinner if data is not yet fetched
   if (isLoading || !data) {
     return (
-      <PageWrapper>
-        <Sidebar />
-        <ITAdminTopAppBar />
-        <MainContent>
-          <Container>
-            <PageHeader>
-              <PageTitle>Tổng quan Hệ thống</PageTitle>
-              <PageSubtitle>Đang tải dữ liệu thời gian thực...</PageSubtitle>
-            </PageHeader>
-            <LoadingSpinner />
-          </Container>
-        </MainContent>
-      </PageWrapper>
+      <Container>
+        <PageHeader>
+          <PageTitle>Tổng quan Hệ thống</PageTitle>
+          <PageSubtitle>Đang tải dữ liệu thời gian thực...</PageSubtitle>
+        </PageHeader>
+        <LoadingSpinner />
+      </Container>
     );
   }
 
@@ -164,145 +158,138 @@ export default function ITAdminSystemOverview(): React.ReactElement {
   const maxBarHeight = 295;
 
   return (
-    <PageWrapper>
-      <Sidebar />
-      <ITAdminTopAppBar />
+    <Container>
+      {/* ── Page Header ── */}
+      <PageHeader>
+        <PageTitle>Tổng quan Hệ thống</PageTitle>
+        <PageSubtitle>
+          Giám sát hoạt động và tài nguyên hệ thống theo thời gian thực.
+        </PageSubtitle>
+      </PageHeader>
 
-      <MainContent>
-        <Container>
-          {/* ── Page Header ── */}
-          <PageHeader>
-            <PageTitle>Tổng quan Hệ thống</PageTitle>
-            <PageSubtitle>
-              Giám sát hoạt động và tài nguyên hệ thống theo thời gian thực.
-            </PageSubtitle>
-          </PageHeader>
+      {/* ── Metric Cards ── */}
+      <MetricCardsGrid>
+        {/* Total Accounts */}
+        <MetricCard>
+          <CardHeader>
+            <CardIconWrapper $bg="#dcfce7"><AccountIcon /></CardIconWrapper>
+            <CardLabel>TỔNG TÀI KHOẢN</CardLabel>
+          </CardHeader>
+          <CardValueRow>
+            <CardValue>{formatNumber(data.metrics.totalAccounts)}</CardValue>
+            <CardBadge $variant="success">
+              <TrendArrow><ArrowUpIcon /></TrendArrow>
+              {data.metrics.totalAccountsGrowth}%
+            </CardBadge>
+          </CardValueRow>
+        </MetricCard>
 
-          {/* ── Metric Cards ── */}
-          <MetricCardsGrid>
-            {/* Total Accounts */}
-            <MetricCard>
-              <CardHeader>
-                <CardIconWrapper $bg="#dcfce7"><AccountIcon /></CardIconWrapper>
-                <CardLabel>TỔNG TÀI KHOẢN</CardLabel>
-              </CardHeader>
-              <CardValueRow>
-                <CardValue>{formatNumber(data.metrics.totalAccounts)}</CardValue>
-                <CardBadge $variant="success">
-                  <TrendArrow><ArrowUpIcon /></TrendArrow>
-                  {data.metrics.totalAccountsGrowth}%
-                </CardBadge>
-              </CardValueRow>
-            </MetricCard>
+        {/* Online Accounts */}
+        <MetricCard>
+          <CardHeader>
+            <CardIconWrapper $bg="#e0f2fe"><OnlineIcon /></CardIconWrapper>
+            <CardLabel>TÀI KHOẢN ĐANG ONLINE</CardLabel>
+          </CardHeader>
+          <CardValueRow>
+            <CardValue>{formatNumber(data.metrics.onlineAccounts)}</CardValue>
+            <CardBadge $variant="info">
+              <LiveDot />
+              Live
+            </CardBadge>
+          </CardValueRow>
+        </MetricCard>
 
-            {/* Online Accounts */}
-            <MetricCard>
-              <CardHeader>
-                <CardIconWrapper $bg="#e0f2fe"><OnlineIcon /></CardIconWrapper>
-                <CardLabel>TÀI KHOẢN ĐANG ONLINE</CardLabel>
-              </CardHeader>
-              <CardValueRow>
-                <CardValue>{formatNumber(data.metrics.onlineAccounts)}</CardValue>
-                <CardBadge $variant="info">
-                  <LiveDot />
-                  Live
-                </CardBadge>
-              </CardValueRow>
-            </MetricCard>
+        {/* System Warnings */}
+        <MetricCard>
+          <CardHeader>
+            <CardIconWrapper $bg="#fef9c3"><WarningIcon /></CardIconWrapper>
+            <CardLabel>CẢNH BÁO LỖI SYSTEM LOG</CardLabel>
+          </CardHeader>
+          <CardValueRow>
+            <CardValue>{data.metrics.systemWarnings24h}</CardValue>
+            <CardBadge $variant="warning">trong 24h qua</CardBadge>
+          </CardValueRow>
+        </MetricCard>
+      </MetricCardsGrid>
 
-            {/* System Warnings */}
-            <MetricCard>
-              <CardHeader>
-                <CardIconWrapper $bg="#fef9c3"><WarningIcon /></CardIconWrapper>
-                <CardLabel>CẢNH BÁO LỖI SYSTEM LOG</CardLabel>
-              </CardHeader>
-              <CardValueRow>
-                <CardValue>{data.metrics.systemWarnings24h}</CardValue>
-                <CardBadge $variant="warning">trong 24h qua</CardBadge>
-              </CardValueRow>
-            </MetricCard>
-          </MetricCardsGrid>
+      {/* ── Charts ── */}
+      <ChartsGrid>
+        {/* Pie Chart */}
+        <ChartCard>
+          <ChartCardHeader>
+            <ChartTitle>Tỷ lệ Role</ChartTitle>
+            <MoreButton aria-label="More options">
+              <MoreDotsIcon />
+            </MoreButton>
+          </ChartCardHeader>
+          <PieChartWrapper>
+            <DonutChart data={data.roles.map(r => ({ percent: r.percentage, color: roleColors[r.role] || '#ccc' }))} />
+            <LegendList>
+              {data.roles.map((item) => (
+                <LegendItem key={item.role}>
+                  <LegendLeft>
+                    <LegendDot $color={roleColors[item.role] || '#ccc'} />
+                    <LegendLabel>{item.role}</LegendLabel>
+                  </LegendLeft>
+                  <LegendValue>{item.percentage}%</LegendValue>
+                </LegendItem>
+              ))}
+            </LegendList>
+          </PieChartWrapper>
+        </ChartCard>
 
-          {/* ── Charts ── */}
-          <ChartsGrid>
-            {/* Pie Chart */}
-            <ChartCard>
-              <ChartCardHeader>
-                <ChartTitle>Tỷ lệ Role</ChartTitle>
-                <MoreButton aria-label="More options">
-                  <MoreDotsIcon />
-                </MoreButton>
-              </ChartCardHeader>
-              <PieChartWrapper>
-                <DonutChart data={data.roles.map(r => ({ percent: r.percentage, color: roleColors[r.role] || '#ccc' }))} />
-                <LegendList>
-                  {data.roles.map((item) => (
-                    <LegendItem key={item.role}>
-                      <LegendLeft>
-                        <LegendDot $color={roleColors[item.role] || '#ccc'} />
-                        <LegendLabel>{item.role}</LegendLabel>
-                      </LegendLeft>
-                      <LegendValue>{item.percentage}%</LegendValue>
-                    </LegendItem>
-                  ))}
-                </LegendList>
-              </PieChartWrapper>
-            </ChartCard>
+        {/* Bar Chart */}
+        <BarChartCard>
+          <BarChartHeader>
+            <BarChartTitleGroup>
+              <ChartTitle>Tải lượng truy cập hệ thống</ChartTitle>
+              <BarChartSubtitle>Lưu lượng request / giây (7 ngày qua)</BarChartSubtitle>
+            </BarChartTitleGroup>
+            <ToggleGroup>
+              <ToggleButton $active={chartPeriod === 'day'} onClick={() => setChartPeriod('day')}>
+                Ngày
+              </ToggleButton>
+              <ToggleButton $active={chartPeriod === 'week'} onClick={() => setChartPeriod('week')}>
+                Tuần
+              </ToggleButton>
+            </ToggleGroup>
+          </BarChartHeader>
 
-            {/* Bar Chart */}
-            <BarChartCard>
-              <BarChartHeader>
-                <BarChartTitleGroup>
-                  <ChartTitle>Tải lượng truy cập hệ thống</ChartTitle>
-                  <BarChartSubtitle>Lưu lượng request / giây (7 ngày qua)</BarChartSubtitle>
-                </BarChartTitleGroup>
-                <ToggleGroup>
-                  <ToggleButton $active={chartPeriod === 'day'} onClick={() => setChartPeriod('day')}>
-                    Ngày
-                  </ToggleButton>
-                  <ToggleButton $active={chartPeriod === 'week'} onClick={() => setChartPeriod('week')}>
-                    Tuần
-                  </ToggleButton>
-                </ToggleGroup>
-              </BarChartHeader>
-
-              <BarChartArea>
-                <GridLines>
-                  <GridLine />
-                  <GridLine />
-                  <GridLine />
-                  <GridLine />
-                </GridLines>
-                <BarsContainer>
-                  {data.traffic.map((bar, index) => {
-                    const isActive = index === data.traffic.length - 2; // Default mock active bar
-                    return (
-                      <Bar
-                        key={bar.day}
-                        $height={Math.round((bar.requests / maxBarValue) * maxBarHeight)}
-                        $active={isActive}
-                        $delay={index * 0.08}
-                      >
-                        <BarTooltip>{formatK(bar.requests)}</BarTooltip>
-                      </Bar>
-                    );
-                  })}
-                </BarsContainer>
-                <XAxisLabels>
-                  {data.traffic.map((bar, index) => {
-                    const isActive = index === data.traffic.length - 2;
-                    return (
-                      <XAxisLabel key={bar.day} $active={isActive}>
-                        {bar.day}
-                      </XAxisLabel>
-                    );
-                  })}
-                </XAxisLabels>
-              </BarChartArea>
-            </BarChartCard>
-          </ChartsGrid>
-        </Container>
-      </MainContent>
-    </PageWrapper>
+          <BarChartArea>
+            <GridLines>
+              <GridLine />
+              <GridLine />
+              <GridLine />
+              <GridLine />
+            </GridLines>
+            <BarsContainer>
+              {data.traffic.map((bar, index) => {
+                const isActive = index === data.traffic.length - 2; // Default mock active bar
+                return (
+                  <Bar
+                    key={bar.day}
+                    $height={Math.round((bar.requests / maxBarValue) * maxBarHeight)}
+                    $active={isActive}
+                    $delay={index * 0.08}
+                  >
+                    <BarTooltip>{formatK(bar.requests)}</BarTooltip>
+                  </Bar>
+                );
+              })}
+            </BarsContainer>
+            <XAxisLabels>
+              {data.traffic.map((bar, index) => {
+                const isActive = index === data.traffic.length - 2;
+                return (
+                  <XAxisLabel key={bar.day} $active={isActive}>
+                    {bar.day}
+                  </XAxisLabel>
+                );
+              })}
+            </XAxisLabels>
+          </BarChartArea>
+        </BarChartCard>
+      </ChartsGrid>
+    </Container>
   );
 }
