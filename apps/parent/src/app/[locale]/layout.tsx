@@ -53,7 +53,7 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <SocketProvider>

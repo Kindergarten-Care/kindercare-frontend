@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 
-const SIDEBAR_WIDTH = 280;
+const SIDEBAR_WIDTH = 240;
 
 export const DashboardWrapper = styled.div`
   display: flex;
