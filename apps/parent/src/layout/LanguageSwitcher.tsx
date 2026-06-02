@@ -63,6 +63,8 @@ const LanguageSwitcher: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  if (pathname === '/login') return null;
+
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === locale) return;
     router.replace(pathname, { locale: newLocale as "vi" | "en" });
