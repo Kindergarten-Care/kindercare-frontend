@@ -3,10 +3,8 @@
 import styled from 'styled-components';
 
 export const TopBarContainer = styled.header`
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 280px;
-  right: 0;
   height: 64px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(6px);
@@ -17,7 +15,8 @@ export const TopBarContainer = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  z-index: 90;
+  z-index: 50;
+  flex-shrink: 0;
   font-family: 'Montserrat', sans-serif;
 `;
 
