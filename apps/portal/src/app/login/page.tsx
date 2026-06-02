@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 export default function LoginPage() {
   const [role, setRole] = useState('teacher');
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate login and redirect

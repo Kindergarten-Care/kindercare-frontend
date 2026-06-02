@@ -7,8 +7,8 @@ import { usePathname, useRouter } from '@/i18n/routing';
 
 const SwitcherContainer = styled.div`
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 20px;
   z-index: 1000;
   display: flex;
   gap: 8px;
