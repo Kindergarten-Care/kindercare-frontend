@@ -30,6 +30,7 @@ export interface SidebarProps {
   bottomNavItems?: NavItem[];
   brandLogoUrl?: string;
   brandName?: string;
+  activePath?: string;
 }
 
 const defaultMainNavItems: NavItem[] = [
@@ -49,7 +50,8 @@ export function Sidebar({
   mainNavItems = defaultMainNavItems, 
   bottomNavItems = defaultBottomNavItems,
   brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png",
-  brandName = "KinderCare Guardian System"
+  brandName = "KinderCare Guardian System",
+  activePath
 }: SidebarProps): React.ReactElement {
   return (
     <SideNavContainer>
@@ -62,12 +64,15 @@ export function Sidebar({
       </BrandSection>
 
       <NavLinks>
-        {mainNavItems.map((item) => (
-          <NavLink key={item.href} href={item.href} $active={item.active}>
-            <NavIcon $active={item.active}>{item.icon}</NavIcon>
-            <NavLabel $active={item.active}>{item.label}</NavLabel>
-          </NavLink>
-        ))}
+        {mainNavItems.map((item) => {
+          const isActive = activePath ? activePath === item.href || activePath.startsWith(item.href + '/') : item.active;
+          return (
+            <NavLink key={item.href} href={item.href} $active={isActive}>
+              <NavIcon $active={isActive}>{item.icon}</NavIcon>
+              <NavLabel $active={isActive}>{item.label}</NavLabel>
+            </NavLink>
+          );
+        })}
       </NavLinks>
 
       <BottomSection>
