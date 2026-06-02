@@ -1,8 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-const LoginView = dynamic(() => import('@/views/Login'), { ssr: false });
+import LoginView from '@/views/Login';
 
 export default function LoginPage(): React.ReactElement {
   return <LoginView />;
