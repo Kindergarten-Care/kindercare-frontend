@@ -6,10 +6,6 @@ import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import LanguageSwitcher from '@/layout/LanguageSwitcher';
 import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
-import '../globals.css';
-
-const montserrat = Montserrat({ subsets: ['latin', 'vietnamese'] });
 
 export async function generateMetadata({
   params
@@ -58,7 +54,7 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className={montserrat.className}>
+      <body>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <SocketProvider>
