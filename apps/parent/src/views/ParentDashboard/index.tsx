@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ParentDashboardService } from '@/services/ParentDashboardService';
+import { parentDashboardService } from '@/services/ParentDashboardService';
 import { ParentDashboardModel } from '@/config/types/dashboard';
-import { DashboardContainer, GridContainer, Col1, Col2, Col3 } from './styles';
-import { ChildStatusWidget } from './components/ChildStatusWidget';
-import { MomentsWidget } from './components/MomentsWidget';
-import { TuitionWidget } from './components/TuitionWidget';
-import { AttendanceWidget } from './components/AttendanceWidget';
-import { NewsWidget } from './components/NewsWidget';
+import * as S from './styles';
 
-import { PickupWidget } from './components/PickupWidget';
-import { UpcomingEventsWidget } from './components/UpcomingEventsWidget';
+import ChildHeroWidget from './components/ChildHeroWidget';
+import QuickActionsStrip from './components/QuickActionsStrip';
+import TimelineWidget from './components/TimelineWidget';
+import MessagesWidget from './components/MessagesWidget';
+import CameraWidget from './components/CameraWidget';
+import FeeAlertWidget from './components/FeeAlertWidget';
+import AttendanceStatsWidget from './components/AttendanceStatsWidget';
+import MiniCalendarWidget from './components/MiniCalendarWidget';
+import UpcomingEventsWidget from './components/UpcomingEventsWidget';
 
 export function ParentDashboard(): React.ReactElement {
   const [data, setData] = useState<ParentDashboardModel | null>(null);
@@ -20,7 +22,7 @@ export function ParentDashboard(): React.ReactElement {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dashboardData = await ParentDashboardService.getDashboardData();
+        const dashboardData = await parentDashboardService.getDashboardData();
         setData(dashboardData);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -34,34 +36,35 @@ export function ParentDashboard(): React.ReactElement {
 
   if (loading || !data) {
     return (
-      <DashboardContainer>
+      <S.DashboardContainer>
         <div>Đang tải dữ liệu...</div>
-      </DashboardContainer>
+      </S.DashboardContainer>
     );
   }
 
   return (
-    <DashboardContainer>
-      <GridContainer>
-        {/* Column 1: Status, Moments, Tuition */}
-        <Col1>
-          <ChildStatusWidget data={data.childStatus} />
-          <MomentsWidget data={data.moments} />
-          <TuitionWidget data={data.tuition} />
-        </Col1>
+    <S.DashboardContainer>
+      {/* Hero Section - Full width */}
+      <ChildHeroWidget data={data.childHero} />
+      
+      {/* Quick Access Strip - Full width */}
+      <QuickActionsStrip />
 
-        {/* Column 2: Upcoming Events */}
-        <Col2>
-          <UpcomingEventsWidget data={data.upcomingEvents} />
-        </Col2>
+      {/* Main Grid: 12 Columns */}
+      <S.MainGrid>
+        <S.LeftColumn>
+          <TimelineWidget events={data.timeline} />
+          <MessagesWidget messages={data.messages} />
+          <CameraWidget />
+        </S.LeftColumn>
 
-        {/* Column 3: Attendance, Pickup, News */}
-        <Col3>
-          <AttendanceWidget data={data.attendance} />
-          <PickupWidget data={data.pickup} />
-          <NewsWidget data={data.news} />
-        </Col3>
-      </GridContainer>
-    </DashboardContainer>
+        <S.RightColumn>
+          <FeeAlertWidget fee={data.fee} />
+          <AttendanceStatsWidget stats={data.attendanceStats} />
+          <MiniCalendarWidget />
+          <UpcomingEventsWidget events={data.upcomingEvents} />
+        </S.RightColumn>
+      </S.MainGrid>
+    </S.DashboardContainer>
   );
 }

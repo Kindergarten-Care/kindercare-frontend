@@ -1,59 +1,64 @@
-export interface ChildStatus {
-  id: string;
+export interface ChildHeroInfo {
   name: string;
-  class: string;
-  weight: number; // in kg
-  status: 'Đang ở lớp' | 'Chưa điểm danh' | 'Vắng mặt';
+  className: string;
+  teacher: string;
+  branch: string;
+  statusTags: { label: string; type: 'green' | 'blue' | 'neutral' }[];
+  checkinTime: string;
+  checkinSub: string;
 }
 
-export interface Moment {
+export interface TimelineEvent {
   id: string;
-  url: string;
-  type: 'activity' | 'painting' | 'outdoor' | 'other';
-}
-
-export interface TuitionStatus {
-  month: number;
-  amountDue: number; // in VND
-}
-
-export interface AttendanceStatus {
-  month: number;
-  days: {
-    date: number; // 1-31
-    status: 'Đúng giờ' | 'Vắng/Ốm' | 'Chưa có' | 'Nghỉ lễ';
-  }[];
-}
-
-export interface NewsItem {
-  id: string;
+  time: string;
   title: string;
-  date: string;
-  imageUrl: string;
-  category: string;
+  description: string;
+  type: 'done' | 'current' | 'upcoming';
+  icon: string;
+  photos?: string[];
+  isNow?: boolean;
+}
+
+export interface MessageInfo {
+  id: string;
+  sender: string;
+  avatar: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+  avatarColor?: string;
+}
+
+export interface FeeInfo {
+  title: string;
+  deadline: string;
+  amount: number;
+  daysLeft: number;
+}
+
+export interface AttendanceStats {
+  percentage: number;
+  present: number;
+  absent: number;
+  excused: number;
+  totalDays: number;
 }
 
 export interface UpcomingEvent {
   id: string;
+  day: number;
+  month: string;
   title: string;
-  date: string;
-  time: string;
-  location: string;
-}
-
-export interface PickupInfo {
-  personName: string;
-  relation: string;
-  imageUrl: string;
-  status: 'Chờ đón' | 'Đã đón';
+  timeOrAmount: string;
+  tag: string;
+  tagType: 'school' | 'payment' | 'holiday';
 }
 
 export interface ParentDashboardModel {
-  childStatus: ChildStatus;
-  moments: Moment[];
-  tuition: TuitionStatus;
-  attendance: AttendanceStatus;
-  news: NewsItem[];
+  childHero: ChildHeroInfo;
+  timeline: TimelineEvent[];
+  messages: MessageInfo[];
+  fee: FeeInfo;
+  attendanceStats: AttendanceStats;
   upcomingEvents: UpcomingEvent[];
-  pickup: PickupInfo;
 }
