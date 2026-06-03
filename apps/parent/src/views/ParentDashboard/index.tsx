@@ -50,15 +50,14 @@ export function ParentDashboard(): React.ReactElement {
       {/* Quick Access Strip - Full width */}
       <QuickActionsStrip />
 
-      {/* Main Grid: 12 Columns */}
       <S.MainGrid>
         <S.LeftColumn>
           <TimelineWidget events={data.timeline} />
           <MessagesWidget messages={data.messages} />
-          <CameraWidget />
         </S.LeftColumn>
 
         <S.RightColumn>
+          <CameraWidget />
           <FeeAlertWidget fee={data.fee} />
           <AttendanceStatsWidget stats={data.attendanceStats} />
           <MiniCalendarWidget />
