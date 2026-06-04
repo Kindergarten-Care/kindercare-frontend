@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LinkButton, Responsive } from '@/UIKit';
 import { LanguageSwitcher, useTranslation } from '@kindercare/ui';
-import { PARENT_PORTAL_HREF } from '@/resources/landingContent';
+import { useAppRouter } from '@kindercare/core';
 import { SECTION_IDS } from '@/config/constants';
 import { useNavScroll } from '@/hooks';
 import {
@@ -26,6 +26,9 @@ export function Navbar(): React.ReactElement {
   const scrolled = useNavScroll();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { locale, t } = useTranslation();
+
+  const { urls } = useAppRouter({ locale });
+  const parentLoginHref = urls.parentLogin;
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const toggleDrawer = useCallback(() => setDrawerOpen((value) => !value), []);
@@ -95,7 +98,7 @@ export function Navbar(): React.ReactElement {
 
           <Responsive from="lg" display="contents">
             <NavCta>
-              <LinkButton href={PARENT_PORTAL_HREF} $variant="outline">
+              <LinkButton href={parentLoginHref} $variant="outline">
                 {t('Landing.Nav.parentPortal')}
               </LinkButton>
               <LinkButton href={`#${SECTION_IDS.CONTACT}`} $variant="primary">
@@ -156,7 +159,7 @@ export function Navbar(): React.ReactElement {
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
               <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
             </div>
-            <LinkButton href={PARENT_PORTAL_HREF} $variant="outline" onClick={closeDrawer}>
+            <LinkButton href={parentLoginHref} $variant="outline" onClick={closeDrawer}>
               {t('Landing.Nav.parentPortal')}
             </LinkButton>
             <LinkButton
