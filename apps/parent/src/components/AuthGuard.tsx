@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { useAuth, useAppRouter } from '@kindercare/core';
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
+interface AuthGuardProps {
+  children: React.ReactNode;
+}
+
+export default function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const locale = useLocale();
   const { go } = useAppRouter({ locale });
@@ -15,8 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, go]);
 
-  if (isLoading) return null;
-  if (!isAuthenticated) return null;
+  if (isLoading || !isAuthenticated) return null;
 
   return <>{children}</>;
 }

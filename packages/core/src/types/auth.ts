@@ -1,9 +1,12 @@
-/** POST /auth/login request body. */
-export interface LoginCredentials {
+// ── Request ───────────────────────────────────────────────────────────────────
+
+export interface LoginRequest {
   /** Phone number or email address. */
   identifier: string;
   password: string;
 }
+
+// ── Response ──────────────────────────────────────────────────────────────────
 
 export interface AuthUser {
   userId: number;
@@ -13,8 +16,14 @@ export interface AuthUser {
   fcmToken?: string;
 }
 
-/** Shape of `data` field in the login API response. */
 export interface LoginData {
   token: string;
   user: AuthUser;
+}
+
+// ── Session ───────────────────────────────────────────────────────────────────
+
+export interface AuthSession {
+  user: AuthUser;
+  token: string;
 }

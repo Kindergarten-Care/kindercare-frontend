@@ -13,7 +13,12 @@ export * from './src/hooks';
 // Auth
 export { AuthProvider } from './src/contexts/AuthContext';
 export { apiClient } from './src/lib/apiClient';
-export { tokenStorage } from './src/lib/tokenStorage';
+export {
+  getToken, setToken, clearToken,
+  getStoredUser, setStoredUser, clearStoredUser,
+  isSessionValid, clearSession,
+  tokenStorage,
+} from './src/lib/tokenStorage';
 
 // Utils & Helpers
 export * from './src/utils/i18n';

@@ -5,66 +5,83 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useReducer,
 } from 'react';
 import { apiClient } from '../lib/apiClient';
-import { tokenStorage } from '../lib/tokenStorage';
+import {
+  getToken,
+  getStoredUser,
+  setToken,
+  setStoredUser,
+  clearSession,
+} from '../lib/tokenStorage';
 import { SERVER } from '../config/server';
 import type { ApiResponse } from '../types/api';
-import type { AuthUser, LoginCredentials, LoginData } from '../types/auth';
+import type { AuthUser, LoginRequest, LoginData } from '../types/auth';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
+
+type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated';
 
 interface AuthState {
+  status: AuthStatus;
+  user: AuthUser | null;
+}
+
+type AuthAction =
+  | { type: 'INIT' }
+  | { type: 'AUTHENTICATED'; user: AuthUser }
+  | { type: 'UNAUTHENTICATED' };
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+  switch (action.type) {
+    case 'INIT':
+      return { ...state, status: 'loading' };
+    case 'AUTHENTICATED':
+      return { status: 'authenticated', user: action.user };
+    case 'UNAUTHENTICATED':
+      return { status: 'unauthenticated', user: null };
+  }
+}
+
+// ── Context value ─────────────────────────────────────────────────────────────
+
+export interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-}
-
-export interface AuthContextValue extends AuthState {
-  login: (credentials: LoginCredentials & { rememberMe?: boolean }) => Promise<void>;
+  login: (credentials: LoginRequest, options?: { rememberMe?: boolean }) => Promise<void>;
   logout: () => void;
 }
 
-// ── Context ──────────────────────────────────────────────────────────────────
-
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// ── Provider ─────────────────────────────────────────────────────────────────
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
+  const [state, dispatch] = useReducer(authReducer, {
+    status: 'idle',
     user: null,
-    isAuthenticated: false,
-    isLoading: true,
   });
 
-  // Rehydrate from storage on mount
   useEffect(() => {
-    const token = tokenStorage.getAccessToken();
-    if (token) {
-      const savedUser = tokenStorage.getUser<AuthUser>();
-      if (savedUser) {
-        setState({ user: savedUser, isAuthenticated: true, isLoading: false });
-      } else {
-        tokenStorage.clearAll();
-        setState({ user: null, isAuthenticated: false, isLoading: false });
-      }
+    dispatch({ type: 'INIT' });
+    if (getToken() && getStoredUser()) {
+      dispatch({ type: 'AUTHENTICATED', user: getStoredUser()! });
     } else {
-      setState(s => ({ ...s, isLoading: false }));
+      clearSession();
+      dispatch({ type: 'UNAUTHENTICATED' });
     }
   }, []);
 
-  // Listen for forced logout triggered by the apiClient interceptor
   useEffect(() => {
-    const onForcedLogout = () =>
-      setState({ user: null, isAuthenticated: false, isLoading: false });
-    window.addEventListener('kc:auth:logout', onForcedLogout);
-    return () => window.removeEventListener('kc:auth:logout', onForcedLogout);
+    const handleForcedLogout = () => dispatch({ type: 'UNAUTHENTICATED' });
+    window.addEventListener('kc:auth:logout', handleForcedLogout);
+    return () => window.removeEventListener('kc:auth:logout', handleForcedLogout);
   }, []);
 
   const login = useCallback(
-    async ({ rememberMe = false, ...credentials }: LoginCredentials & { rememberMe?: boolean }) => {
+    async (credentials: LoginRequest, options?: { rememberMe?: boolean }) => {
       const { data: res } = await apiClient.post<ApiResponse<LoginData>>(
         SERVER.auth.login,
         credentials,
@@ -73,28 +90,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!res.success) throw new Error(res.message);
 
       const { token, user } = res.data;
-
-      tokenStorage.setAccessToken(token, rememberMe);
-      tokenStorage.setUser(user);
-
-      setState({ user, isAuthenticated: true, isLoading: false });
+      setToken(token, options?.rememberMe);
+      setStoredUser(user);
+      dispatch({ type: 'AUTHENTICATED', user });
     },
     [],
   );
 
   const logout = useCallback(() => {
-    tokenStorage.clearAll();
-    setState({ user: null, isAuthenticated: false, isLoading: false });
+    clearSession();
+    dispatch({ type: 'UNAUTHENTICATED' });
   }, []);
 
+  const value: AuthContextValue = {
+    user: state.user,
+    isAuthenticated: state.status === 'authenticated',
+    isLoading: state.status === 'idle' || state.status === 'loading',
+    login,
+    logout,
+  };
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// ── Hook ─────────────────────────────────────────────────────────────────────
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
