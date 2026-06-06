@@ -3,6 +3,7 @@
   "globalEnv": [
     "GOOGLE_SHEET_ID",
     "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_API_BASE",
     "NEXT_PUBLIC_SOCKET_URL",
     "NEXT_PUBLIC_LANDING_APP_URL",
     "NEXT_PUBLIC_PARENT_APP_URL",
@@ -17,6 +18,7 @@
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_API_BASE",
         "NEXT_PUBLIC_SOCKET_URL",
         "NEXT_PUBLIC_LANDING_APP_URL",
         "NEXT_PUBLIC_PARENT_APP_URL",

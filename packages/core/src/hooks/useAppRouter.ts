@@ -65,6 +65,7 @@ export function useAppRouter(options?: AppRouterOptions) {
   /** Pre-built href strings — handy for `<a href>` or `<Link href>`. */
   const urls = {
     parentLogin:        buildUrl('parent',    '/login'),
+    parentDashboard:    buildUrl('parent',    '/dashboard'),
     teacherLogin:       buildUrl('teacher',   '/login'),
     principalDashboard: buildUrl('principal', '/'),
     adminDashboard:     buildUrl('admin',     '/'),
@@ -75,6 +76,7 @@ export function useAppRouter(options?: AppRouterOptions) {
   /** Imperative navigation helpers. */
   const go = {
     parentLogin:        () => navigate(urls.parentLogin),
+    parentDashboard:    () => navigate(urls.parentDashboard),
     teacherLogin:       () => navigate(urls.teacherLogin),
     principalDashboard: () => navigate(urls.principalDashboard),
     adminDashboard:     () => navigate(urls.adminDashboard),

@@ -3,6 +3,8 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { useAuth, useAppRouter } from '@kindercare/core';
+import { RouteConfig } from '@/config/routes';
 import { LanguageSwitcher } from '@kindercare/ui';
 import { PhoneIcon, EmailIcon, LockIcon, EyeIcon, EyeOffIcon, HeadsetIcon } from './Icons';
 import { LOGO_URL } from './Icons';
@@ -46,6 +48,8 @@ export default function LoginFormPanel(): React.ReactElement {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const { login } = useAuth();
+  const { go } = useAppRouter({ locale });
 
   /* ─── State Management ─── */
   const [activeTab, setActiveTab] = useState<'phone' | 'email'>('phone');
@@ -55,6 +59,7 @@ export default function LoginFormPanel(): React.ReactElement {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   /* ─── Callbacks ─── */
   const handleLocaleChange = useCallback(
@@ -66,17 +71,28 @@ export default function LoginFormPanel(): React.ReactElement {
   );
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       setIsLoading(true);
+      setError('');
 
-      // Perform validation check / mock login
-      setTimeout(() => {
+      try {
+        const identifier = activeTab === 'phone' ? phone : email;
+        await login({ identifier, password, rememberMe });
+        go.parentDashboard();
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        const messages: Record<number, string> = {
+          400: 'Thiếu thông tin đăng nhập.',
+          401: 'Sai tên đăng nhập hoặc mật khẩu.',
+          403: 'Tài khoản bị vô hiệu hóa. Vui lòng liên hệ nhà trường.',
+        };
+        setError(messages[status ?? 0] ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
+      } finally {
         setIsLoading(false);
-        // Successful simulation redirects or triggers action
-      }, 1500);
+      }
     },
-    []
+    [activeTab, phone, email, password, rememberMe, login, go]
   );
 
   return (
@@ -209,6 +225,21 @@ export default function LoginFormPanel(): React.ReactElement {
             </CheckboxLabel>
             <ForgotLink href="#">{t('forgotPassword')}</ForgotLink>
           </ControlRow>
+
+          {/* Error message */}
+          {error && (
+            <div style={{
+              background: '#fff1f2',
+              border: '1px solid #fca5a5',
+              borderRadius: 10,
+              color: '#dc2626',
+              fontSize: '0.85rem',
+              padding: '0.6rem 0.9rem',
+              marginBottom: '0.75rem',
+            }}>
+              {error}
+            </div>
+          )}
 
           {/* Actions */}
           <SolidSubmitButton type="submit" disabled={isLoading}>

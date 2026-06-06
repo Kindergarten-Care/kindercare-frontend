@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
+import { AuthProvider } from '@kindercare/core';
 import type { Metadata } from 'next';
 import '../globals.css';
 
@@ -58,9 +59,11 @@ export default async function RootLayout({
       <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              {children}
-            </SocketProvider>
+            <AuthProvider>
+              <SocketProvider>
+                {children}
+              </SocketProvider>
+            </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>
