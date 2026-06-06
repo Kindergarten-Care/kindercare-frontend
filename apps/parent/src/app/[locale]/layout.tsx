@@ -1,10 +1,10 @@
+import '../globals.css';
 import StyledComponentsRegistry from '@/lib/registry';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
-import LanguageSwitcher from '@/layout/LanguageSwitcher';
 import type { Metadata } from 'next';
 import '../globals.css';
 
@@ -55,11 +55,10 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <SocketProvider>
-              <LanguageSwitcher />
               {children}
             </SocketProvider>
           </StyledComponentsRegistry>
