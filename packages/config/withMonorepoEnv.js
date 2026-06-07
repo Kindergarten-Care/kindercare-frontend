@@ -1,10 +1,9 @@
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
-import type { NextConfig } from 'next';
 
-function parseEnvFile(filePath: string): Record<string, string> {
+function parseEnvFile(filePath) {
   if (!existsSync(filePath)) return {};
-  const vars: Record<string, string> = {};
+  const vars = {};
   for (const line of readFileSync(filePath, 'utf-8').split('\n')) {
     const t = line.trim();
     if (!t || t.startsWith('#')) continue;
@@ -24,7 +23,7 @@ function parseEnvFile(filePath: string): Record<string, string> {
  * Call this at the TOP of every app's next.config.ts:
  *   loadMonorepoEnv(path.resolve(__dirname, '../..'));
  */
-export function loadMonorepoEnv(rootDir: string): void {
+export function loadMonorepoEnv(rootDir) {
   for (const file of ['.env.development', '.env.local']) {
     const vars = parseEnvFile(path.resolve(rootDir, file));
     for (const [k, v] of Object.entries(vars)) {
@@ -41,7 +40,7 @@ export function loadMonorepoEnv(rootDir: string): void {
  * In production, NEXT_PUBLIC_API_BASE is typically unset so the
  * client calls the API URL directly (CORS allowed on the server).
  */
-export function withApiProxy(config: NextConfig): NextConfig {
+export function withApiProxy(config) {
   return {
     ...config,
     async rewrites() {
