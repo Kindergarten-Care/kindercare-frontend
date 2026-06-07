@@ -17,7 +17,8 @@
     "styled-components": "^6.4.0",
     "@kindercare/core": "*",
     "@kindercare/ui": "*",
-    "@kindercare/public": "*"
+    "@kindercare/public": "*",
+    "@kindercare/config": "*"
   },
   "devDependencies": {
     "@types/node": "^20",
