@@ -43,6 +43,14 @@ jobs:
           push: true
           build-args: |
             APP_NAME=${{ matrix.app }}
+            NEXT_PUBLIC_API_URL=${{ github.ref_name == 'release/master' && 'https://web.kindercare.app/api/v1' || 'https://web-test.kindercare.app/api/v1' }}
+            NEXT_PUBLIC_API_BASE=/api
+            NEXT_PUBLIC_LANDING_APP_URL=${{ github.ref_name == 'release/master' && 'https://kindercare.app' || 'https://web-test.kindercare.app' }}
+            NEXT_PUBLIC_PARENT_APP_URL=${{ github.ref_name == 'release/master' && 'https://parent.kindercare.app' || 'https://parent-test.kindercare.app' }}
+            NEXT_PUBLIC_TEACHER_APP_URL=${{ github.ref_name == 'release/master' && 'https://teacher.kindercare.app' || 'https://teacher-test.kindercare.app' }}
+            NEXT_PUBLIC_PRINCIPAL_APP_URL=${{ github.ref_name == 'release/master' && 'https://principal.kindercare.app' || 'https://principal-test.kindercare.app' }}
+            NEXT_PUBLIC_ADMIN_APP_URL=${{ github.ref_name == 'release/master' && 'https://admin.kindercare.app' || 'https://admin-test.kindercare.app' }}
+            NEXT_PUBLIC_PORTAL_APP_URL=${{ github.ref_name == 'release/master' && 'https://portal.kindercare.app' || 'https://portal-test.kindercare.app' }}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}
           cache-from: type=gha,scope=${{ matrix.app }}
