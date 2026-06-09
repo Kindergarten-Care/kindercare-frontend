@@ -1,12 +1,8 @@
-'use client';
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth, useAppRouter } from '@kindercare/core';
 import axios from 'axios';
-
-type LoginTab = 'phone' | 'email';
 
 const LOGIN_ERRORS: Record<number, string> = {
   400: 'Thiếu thông tin đăng nhập.',
@@ -14,21 +10,43 @@ const LOGIN_ERRORS: Record<number, string> = {
   403: 'Tài khoản bị vô hiệu hóa. Vui lòng liên hệ nhà trường.',
 };
 
-export function useLoginForm() {
+export interface UseLoginFormReturn {
+  locale: string;
+  handleLocaleChange: (next: string) => void;
+  identifier: string;
+  setIdentifier: React.Dispatch<React.SetStateAction<string>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  showPassword: boolean;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  rememberMe: boolean;
+  setRememberMe: React.Dispatch<React.SetStateAction<boolean>>;
+  isSubmitting: boolean;
+  isAuthChecking: boolean;
+  error: string;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+}
+
+export function useLoginForm(): UseLoginFormReturn {
   const locale   = useLocale();
   const router   = useRouter();
   const pathname = usePathname();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { go }  = useAppRouter({ locale });
 
-  const [tab,          setTab]          = useState<LoginTab>('phone');
-  const [phone,        setPhone]        = useState('');
-  const [email,        setEmail]        = useState('');
+  const [identifier,   setIdentifier]   = useState('');
   const [password,     setPassword]     = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe,   setRememberMe]   = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error,        setError]        = useState('');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      go.parentDashboard();
+    }
+  }, [isAuthLoading, isAuthenticated, go]);
 
   const handleLocaleChange = useCallback(
     (next: string) => {
@@ -44,7 +62,6 @@ export function useLoginForm() {
       setError('');
 
       try {
-        const identifier = tab === 'phone' ? phone : email;
         await login({ identifier, password }, { rememberMe });
         go.parentDashboard();
       } catch (err) {
@@ -58,23 +75,22 @@ export function useLoginForm() {
         setIsSubmitting(false);
       }
     },
-    [tab, phone, email, password, rememberMe, login, go],
+    [identifier, password, rememberMe, login, go],
   );
 
   return {
-    // locale switcher
     locale,
     handleLocaleChange,
-    // tab
-    tab, setTab,
-    // fields
-    phone, setPhone,
-    email, setEmail,
-    password, setPassword,
-    showPassword, setShowPassword,
-    rememberMe, setRememberMe,
-    // submission
+    identifier,
+    setIdentifier,
+    password,
+    setPassword,
+    showPassword,
+    setShowPassword,
+    rememberMe,
+    setRememberMe,
     isSubmitting,
+    isAuthChecking: isAuthLoading || isAuthenticated,
     error,
     handleSubmit,
   };

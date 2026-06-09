@@ -13,6 +13,8 @@
     "brandSubtitle": "Cổng Phụ Huynh",
     "title": "Đăng nhập phụ huynh",
     "subtitle": "Chào mừng trở lại! Theo dõi hành trình lớn khôn của con yêu mỗi ngày.",
+    "identifierLabel": "Tài khoản",
+    "identifierPlaceholder": "Nhập tên đăng nhập, số điện thoại hoặc email",
     "emailLabel": "Email",
     "emailPlaceholder": "Ví dụ: parent@kindercare.app",
     "passwordLabel": "Mật khẩu",

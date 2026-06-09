@@ -161,6 +161,10 @@ export const TwinkleStar = styled.div<{
 
 /* Rainbow stripe at the top of the login card */
 export const CardRainbowAccent = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 5px;
   background: linear-gradient(90deg,
     #ef4444 0%,
@@ -171,11 +175,7 @@ export const CardRainbowAccent = styled.div`
     #c084fc 83%,
     #f472b6 100%
   );
-  margin: -1.75rem -2rem 1.5rem -2rem;
-
-  @media (max-width: 640px) {
-    margin: -1.25rem -1.25rem 1.25rem -1.25rem;
-  }
+  z-index: 10;
 `;
 
 /* ─── Mobile Hero Banner (< lg) ─── */
@@ -640,7 +640,7 @@ export const FloatingSoftRedCircle = styled.div`
 /* ─── Top Header (Links & Language) ─── */
 export const HeaderRow = styled.div`
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -681,11 +681,13 @@ export const TeacherPathText = styled.span`
 
 /* ─── Centered Login Form Card ─── */
 export const LoginCard = styled.div`
+  position: relative;
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
+  min-height: 520px;
   background-color: #ffffff;
   border-radius: 24px;
-  padding: 1.75rem 2rem;
+  padding: 2rem 3rem 3.5rem 3rem;
   box-shadow:
     0 4px 6px rgba(35, 122, 60, 0.04),
     0 12px 32px rgba(35, 122, 60, 0.10),
@@ -693,6 +695,7 @@ export const LoginCard = styled.div`
   border: 1px solid rgba(35, 122, 60, 0.10);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   overflow: hidden;
   margin-top: auto;
   margin-bottom: auto;
@@ -701,6 +704,7 @@ export const LoginCard = styled.div`
 
   @media (max-width: 640px) {
     max-width: 100%;
+    min-height: auto;
     padding: 1.25rem 1.25rem;
     border-radius: 18px;
     box-shadow: 0 8px 24px rgba(35, 122, 60, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -710,13 +714,14 @@ export const LoginCard = styled.div`
 export const CardHeaderArea = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-  gap: 0.25rem;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  gap: 0.75rem;
 `;
 
 export const CDNLogo = styled.img`
-  height: 40px;
+  height: 55px;
   width: auto;
   object-fit: contain;
   margin-bottom: 0.4rem;
