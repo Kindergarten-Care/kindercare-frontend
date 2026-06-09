@@ -25,6 +25,8 @@ export const GreetingTitle = styled.h2`
   font-weight: bold;
   font-family: 'Montserrat', sans-serif;
   margin: 0;
+  line-height: 1.4;
+  padding-top: 4px; /* extra space for top accents */
 `;
 
 export const GreetingDate = styled.p`
@@ -97,6 +99,7 @@ export const ProfileName = styled.span`
   font-size: 14px;
   font-weight: bold;
   font-family: 'Montserrat', sans-serif;
+  line-height: 1.4;
 `;
 
 export const ProfileRole = styled.span`
