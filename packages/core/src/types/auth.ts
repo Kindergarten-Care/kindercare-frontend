@@ -8,12 +8,24 @@ export interface LoginRequest {
 
 // ── Response ──────────────────────────────────────────────────────────────────
 
+export interface AuthStudent {
+  studentId: number;
+  fullName: string;
+  relationship: string;
+  avatarUrl?: string;
+  classId?: number;
+  className?: string;
+}
+
 export interface AuthUser {
   userId: number;
   username: string;
   roleId: number;
   roleName: string;
   fcmToken?: string;
+  fullName?: string;
+  relationship?: string;
+  children?: AuthStudent[];
 }
 
 export interface LoginData {
