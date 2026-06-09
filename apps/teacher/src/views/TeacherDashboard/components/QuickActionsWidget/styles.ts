@@ -34,5 +34,5 @@ export const ActionTitle = styled.div`
   font-weight: bold;
   color: #181d18;
   text-align: center;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;

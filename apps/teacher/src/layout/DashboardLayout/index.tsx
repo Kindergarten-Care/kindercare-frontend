@@ -9,10 +9,10 @@ interface DashboardLayoutProps {
   roleTitle: string;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  fullName, 
-  roleTitle 
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  fullName,
+  roleTitle
 }) => {
   return (
     <S.LayoutContainer>

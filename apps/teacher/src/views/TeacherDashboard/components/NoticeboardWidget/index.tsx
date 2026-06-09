@@ -13,7 +13,7 @@ export const NoticeboardWidget: React.FC = () => {
         <S.WidgetTitle>Thông báo BGH</S.WidgetTitle>
         <S.Badge>2 MỚI</S.Badge>
       </S.WidgetHeader>
-      
+
       <S.NoticeList>
         {NOTICES.map(notice => (
           <S.NoticeItem key={notice.id}>

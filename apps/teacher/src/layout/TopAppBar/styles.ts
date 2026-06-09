@@ -23,14 +23,14 @@ export const GreetingTitle = styled.h2`
   color: #005e2c;
   font-size: 24px;
   font-weight: bold;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   margin: 0;
 `;
 
 export const GreetingDate = styled.p`
   color: #3f493f;
   font-size: 16px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   margin: 0;
   margin-top: 4px;
 `;
@@ -96,11 +96,11 @@ export const ProfileName = styled.span`
   color: #181d18;
   font-size: 14px;
   font-weight: bold;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const ProfileRole = styled.span`
   color: #6f7a6e;
   font-size: 12px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;

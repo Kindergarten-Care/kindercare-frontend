@@ -11,8 +11,8 @@ export const MainContent = styled.main`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-left: 280px; /* Space for the sidebar */
-  width: 100%;
+  margin-left: 280px; /* Space for the sidebar */
+  width: calc(100% - 280px);
 `;
 
 export const PageContent = styled.div`

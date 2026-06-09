@@ -25,7 +25,7 @@ export const LogoContainer = styled.div`
     font-size: 24px;
     font-weight: bold;
     margin: 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Montserrat', sans-serif;
   }
 `;
 
@@ -36,17 +36,29 @@ export const NavList = styled.nav`
   gap: 8px;
 `;
 
-export const NavItem = styled.div<{ active?: boolean }>`
+export const NavItem = styled.div<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 12px 16px;
   border-radius: 8px;
   cursor: pointer;
-  background-color: ${props => props.active ? '#e8f5e9' : 'transparent'};
-  color: ${props => props.active ? '#005e2c' : '#3f493f'};
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: ${props => props.$active ? '#e8f5e9' : 'transparent'};
+  color: ${props => props.$active ? '#005e2c' : '#3f493f'};
+  font-weight: ${props => props.$active ? 'bold' : 'normal'};
+  font-family: 'Montserrat', sans-serif;
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: ${props => props.active ? '#e8f5e9' : '#f6fbf2'};
+    background-color: ${props => props.$active ? '#e8f5e9' : '#f6fbf2'};
   }
+`;
+
+export const BottomNav = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid rgba(190, 202, 188, 0.4);
 `;

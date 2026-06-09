@@ -10,7 +10,7 @@ export const TimelineWidget: React.FC = () => {
         {/* Completed Activity */}
         <S.TimelineItem>
           <S.TimeLabel>08:00</S.TimeLabel>
-          <S.ActivityText completed>Thể dục sáng</S.ActivityText>
+          <S.ActivityText $completed>Thể dục sáng</S.ActivityText>
           <S.CircleIcon variant="completed">
             <S.CheckIcon />
           </S.CircleIcon>

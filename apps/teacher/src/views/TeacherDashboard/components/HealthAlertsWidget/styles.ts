@@ -25,7 +25,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const AlertsList = styled.div`
@@ -79,7 +79,7 @@ export const AlertContent = styled.div`
 export const AlertName = styled.span<{ severity: string }>`
   font-size: 16px;
   font-weight: bold;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 
   ${props => props.severity === 'high' && css`
     color: #ba1a1a;
@@ -92,7 +92,7 @@ export const AlertName = styled.span<{ severity: string }>`
 
 export const AlertDesc = styled.span<{ severity: string }>`
   font-size: 14px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 
   ${props => props.severity === 'high' && css`
     color: #7f1d1d;

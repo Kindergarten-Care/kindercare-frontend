@@ -25,7 +25,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const NotesList = styled.div`
@@ -65,14 +65,14 @@ export const StudentName = styled.span`
   font-size: 16px;
   font-weight: bold;
   color: #181d18;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const NoteText = styled.span`
   font-size: 14px;
   font-style: italic;
   color: #3f493f;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const Checkbox = styled.div`

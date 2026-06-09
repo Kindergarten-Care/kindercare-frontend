@@ -30,12 +30,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Kiểm tra token trên URL trước (từ Portal truyền sang)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      // Xoá token khỏi URL để bảo mật
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
+    // 2. Lấy token từ localStorage (hoặc vừa lưu ở trên)
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const payloadBase64 = token.split('.')[1];
-        const decodedJson = atob(payloadBase64);
-        const payload = JSON.parse(decodedJson);
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        const payload = JSON.parse(jsonPayload);
+        
         setUser({
           userId: payload.userId,
           username: payload.username,
