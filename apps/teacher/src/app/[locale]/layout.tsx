@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/layout/LanguageSwitcher';
 import type { Metadata } from 'next';
 
@@ -57,10 +58,12 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              <LanguageSwitcher />
-              {children}
-            </SocketProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <LanguageSwitcher />
+                {children}
+              </SocketProvider>
+            </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>

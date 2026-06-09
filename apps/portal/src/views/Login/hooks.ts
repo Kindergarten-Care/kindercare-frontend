@@ -53,7 +53,7 @@ export const useLoginState = (): UseLoginStateReturn => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const newErrors: { username?: string; password?: string } = {};
@@ -71,13 +71,38 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     setIsSubmitting(true);
 
-    // Redirect based on role using Next.js router
-    const roleRoutes: Record<UserRole, string> = {
-      principal: '/principal',
-      teacher: '/teacher',
-    };
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ identifier: username, password }),
+      });
 
-    router.push(roleRoutes[role]);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ username: data.message || 'Đăng nhập thất bại. Vui lòng thử lại.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Store token
+      localStorage.setItem('token', data.data.token);
+
+      // Redirect based on role using Next.js router
+      const roleRoutes: Record<UserRole, string> = {
+        principal: '/principal',
+        teacher: '/teacher',
+      };
+
+      router.push(roleRoutes[role]);
+    } catch (error) {
+      setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
