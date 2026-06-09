@@ -880,12 +880,39 @@ export const CheckboxLabel = styled.label`
 `;
 
 export const CustomCheckbox = styled.input.attrs({ type: 'checkbox' })`
+  appearance: none;
+  -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  accent-color: ${props => props.theme.colors?.green || '#237A3C'};
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 5px;
+  outline: none;
   cursor: pointer;
-  border-radius: 6px;
-  border: 1.5px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:checked {
+    background-color: ${props => props.theme.colors?.green || '#237A3C'};
+    border-color: ${props => props.theme.colors?.green || '#237A3C'};
+  }
+
+  &:checked::after {
+    content: '✓';
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  &:hover {
+    border-color: ${props => props.theme.colors?.green || '#237A3C'};
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px rgba(35, 122, 60, 0.25);
+  }
 `;
 
 export const ForgotLink = styled.a`

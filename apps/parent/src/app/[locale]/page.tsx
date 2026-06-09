@@ -3,7 +3,8 @@
 import React, { useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useLocale } from 'next-intl';
-import { useAuth, useAppRouter } from '@kindercare/core';
+import { useAppRouter } from '@kindercare/core';
+import { useSession } from '@/hooks/useSession';
 
 const rotate = keyframes`
   from { transform: rotate(0deg); }
@@ -62,7 +63,7 @@ const Text = styled.p`
 
 export default function RootPage(): React.ReactElement {
   const locale = useLocale();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useSession();
   const { go } = useAppRouter({ locale });
 
   useEffect(() => {

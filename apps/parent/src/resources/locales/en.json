@@ -45,6 +45,9 @@
     "teachersCount": "42+",
     "teachersLabel": "Dedicated teachers"
   },
+  "Dashboard": {
+    "title": "Parent Dashboard"
+  },
   "Site": {
     "title": "KinderCare - Preschool management system",
     "description": "A comprehensive, modern, and secure preschool management platform."

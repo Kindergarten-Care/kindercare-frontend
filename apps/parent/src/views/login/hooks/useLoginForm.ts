@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth, useAppRouter } from '@kindercare/core';
+import { useSession } from '@/hooks/useSession';
 import axios from 'axios';
 
 const LOGIN_ERRORS: Record<number, string> = {
@@ -31,7 +32,8 @@ export function useLoginForm(): UseLoginFormReturn {
   const locale   = useLocale();
   const router   = useRouter();
   const pathname = usePathname();
-  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { login } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useSession({ redirectToDashboardIfAuth: true });
   const { go }  = useAppRouter({ locale });
 
   const [identifier,   setIdentifier]   = useState('');
@@ -40,13 +42,6 @@ export function useLoginForm(): UseLoginFormReturn {
   const [rememberMe,   setRememberMe]   = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error,        setError]        = useState('');
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!isAuthLoading && isAuthenticated) {
-      go.parentDashboard();
-    }
-  }, [isAuthLoading, isAuthenticated, go]);
 
   const handleLocaleChange = useCallback(
     (next: string) => {
@@ -67,12 +62,7 @@ export function useLoginForm(): UseLoginFormReturn {
       } catch (err) {
         if (axios.isAxiosError(err)) {
           const status = err.response?.status ?? 0;
-          const apiMessage = err.response?.data?.message;
-          if (apiMessage) {
-             setError(apiMessage);
-          } else {
-             setError(LOGIN_ERRORS[status] ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
-          }
+          setError(LOGIN_ERRORS[status] ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
         } else {
           setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
         }

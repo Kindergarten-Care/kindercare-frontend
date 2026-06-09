@@ -45,6 +45,9 @@
     "teachersCount": "42+",
     "teachersLabel": "Giáo viên tận tâm"
   },
+  "Dashboard": {
+    "title": "Tổng quan phụ huynh"
+  },
   "Site": {
     "title": "KinderCare - Hệ Thống Quản Lý Mầm Non",
     "description": "Nền tảng quản lý mầm non toàn diện, hiện đại và bảo mật."
