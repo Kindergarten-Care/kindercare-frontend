@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   compiler: {
     styledComponents: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://web-test.kindercare.app/api/:path*', // Proxy to Backend
+      },
+    ];
+  },
 };
 
 export default withApiProxy(nextConfig);

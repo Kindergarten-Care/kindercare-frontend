@@ -72,7 +72,9 @@ export const useLoginState = (): UseLoginStateReturn => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      // Dùng proxy Next.js để tránh lỗi CORS
+      const apiUrl = `/api/v1/auth/${role}/login`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,13 +93,16 @@ export const useLoginState = (): UseLoginStateReturn => {
       // Store token
       localStorage.setItem('token', data.data.token);
 
-      // Redirect based on role using Next.js router
-      const roleRoutes: Record<UserRole, string> = {
-        principal: '/principal',
-        teacher: '/teacher',
+      // Redirect based on role
+      const domainMapping: Record<UserRole, string> = {
+        principal: 'http://localhost:3002',
+        teacher: 'http://localhost:3001/teacher',
       };
 
-      router.push(roleRoutes[role]);
+      const redirectUrl = new URL(domainMapping[role]);
+      redirectUrl.searchParams.set('token', data.data.token);
+
+      window.location.href = redirectUrl.toString();
     } catch (error) {
       setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
     } finally {

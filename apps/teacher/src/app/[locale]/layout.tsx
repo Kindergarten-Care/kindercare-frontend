@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import type { Metadata } from 'next';
+import '../globals.css';
 
 export async function generateMetadata({
   params
