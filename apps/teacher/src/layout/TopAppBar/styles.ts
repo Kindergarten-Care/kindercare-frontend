@@ -43,6 +43,10 @@ export const ActionsSection = styled.div`
   gap: 24px;
 `;
 
+export const NotificationWrapper = styled.div`
+  position: relative;
+`;
+
 export const NotificationButton = styled.div`
   position: relative;
   width: 36px;
