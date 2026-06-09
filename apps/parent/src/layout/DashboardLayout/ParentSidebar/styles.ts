@@ -248,8 +248,12 @@ export const ParentInfo = styled.div`
   }
 `;
 
-export const SettingsBtn = styled.button`
+export const DropdownContainer = styled.div`
+  position: relative;
   margin-left: auto;
+`;
+
+export const SettingsBtn = styled.button`
   width: 26px;
   height: 26px;
   background: none;
@@ -264,5 +268,35 @@ export const SettingsBtn = styled.button`
 
   &:hover {
     background: var(--accent-xlight, #f0faf3);
+  }
+`;
+
+export const DropdownMenu = styled.div`
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #dde8d9);
+  border-radius: var(--r-sm, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  min-width: 130px;
+  z-index: 100;
+`;
+
+export const DropdownItem = styled.div`
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger, #b91c1c);
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--danger-light, #fee2e2);
   }
 `;
