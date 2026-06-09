@@ -67,7 +67,12 @@ export function useLoginForm(): UseLoginFormReturn {
       } catch (err) {
         if (axios.isAxiosError(err)) {
           const status = err.response?.status ?? 0;
-          setError(LOGIN_ERRORS[status] ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
+          const apiMessage = err.response?.data?.message;
+          if (apiMessage) {
+             setError(apiMessage);
+          } else {
+             setError(LOGIN_ERRORS[status] ?? 'Đăng nhập thất bại. Vui lòng thử lại.');
+          }
         } else {
           setError('Đã có lỗi xảy ra. Vui lòng thử lại.');
         }

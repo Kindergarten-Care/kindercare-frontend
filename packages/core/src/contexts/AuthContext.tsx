@@ -97,9 +97,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const logout = useCallback(() => {
-    clearSession();
-    dispatch({ type: 'UNAUTHENTICATED' });
+  const logout = useCallback(async () => {
+    try {
+      // Call the backend to invalidate the token (if required)
+      await apiClient.post(SERVER.auth.logout);
+    } catch (error) {
+      console.error('Logout API failed:', error);
+    } finally {
+      clearSession();
+      dispatch({ type: 'UNAUTHENTICATED' });
+    }
   }, []);
 
   const value: AuthContextValue = {

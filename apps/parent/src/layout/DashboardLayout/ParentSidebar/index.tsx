@@ -1,16 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import { useAuth } from '@kindercare/core';
 import * as S from './styles';
 
 const ParentSidebar: React.FC = () => {
   const pathname = usePathname();
   const locale = useLocale();
+  const { user, logout } = useAuth();
+  
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleOpenAbsence = () => {
     alert('Báo nghỉ clicked');
+  };
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await logout();
   };
 
   return (
@@ -24,10 +44,10 @@ const ParentSidebar: React.FC = () => {
       </S.SidebarLogo>
 
       <S.ChildSwitcher>
-        <S.CsAv>👧</S.CsAv>
+        <S.CsAv>{user?.children?.[0]?.avatarUrl ? <img src={user.children[0].avatarUrl} alt="Avatar" /> : '👧'}</S.CsAv>
         <S.CsInfo>
-          <strong>Nguyễn Bảo Châu</strong>
-          <span>Hoa Hướng Dương · K3</span>
+          <strong>{user?.children?.[0]?.fullName || 'Đang tải...'}</strong>
+          <span>{user?.children?.[0]?.className || 'Chưa xếp lớp'}</span>
         </S.CsInfo>
         <S.CsChevron>⌄</S.CsChevron>
       </S.ChildSwitcher>
@@ -85,12 +105,26 @@ const ParentSidebar: React.FC = () => {
 
       <S.SidebarFooter>
         <S.ParentRow>
-          <S.ParentAv>👩</S.ParentAv>
+          <S.ParentAv>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.ParentAv>
           <S.ParentInfo>
-            <strong>Nguyễn Thị Mai</strong>
-            <span>Phụ huynh · Mẹ</span>
+            <strong>{user?.fullName || user?.username || 'Đang tải...'}</strong>
+            <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
           </S.ParentInfo>
-          <S.SettingsBtn>⚙</S.SettingsBtn>
+          
+          <S.DropdownContainer ref={settingsRef}>
+            <S.SettingsBtn onClick={(e) => {
+              e.stopPropagation();
+              setShowSettings(!showSettings);
+            }}>⚙</S.SettingsBtn>
+            
+            {showSettings && (
+              <S.DropdownMenu>
+                <S.DropdownItem onClick={handleLogout}>
+                  🚪 Đăng xuất
+                </S.DropdownItem>
+              </S.DropdownMenu>
+            )}
+          </S.DropdownContainer>
         </S.ParentRow>
       </S.SidebarFooter>
     </S.SidebarContainer>
