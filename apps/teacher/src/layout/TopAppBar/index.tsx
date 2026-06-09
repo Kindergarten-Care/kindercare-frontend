@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as S from './styles';
+import { NotificationDropdown } from './components/NotificationDropdown';
 
 interface TopAppBarProps {
   fullName: string;
@@ -7,6 +8,7 @@ interface TopAppBarProps {
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle }) => {
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const today = new Date();
   const dateString = today.toLocaleDateString('vi-VN', {
     weekday: 'long',
@@ -23,10 +25,13 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle }) => 
       </S.GreetingSection>
       
       <S.ActionsSection>
-        <S.NotificationButton>
-          🔔
-          <S.NotificationBadge />
-        </S.NotificationButton>
+        <S.NotificationWrapper>
+          <S.NotificationButton onClick={() => setIsNotifOpen(!isNotifOpen)}>
+            🔔
+            <S.NotificationBadge />
+          </S.NotificationButton>
+          {isNotifOpen && <NotificationDropdown onClose={() => setIsNotifOpen(false)} />}
+        </S.NotificationWrapper>
         <S.ProfileSection>
           <S.Avatar>
             <img src="https://ui-avatars.com/api/?name=Teacher&background=dcfce7&color=0e793c" alt="avatar" />
