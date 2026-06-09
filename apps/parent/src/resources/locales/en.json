@@ -13,6 +13,8 @@
     "brandSubtitle": "Parent Portal",
     "title": "Parent Sign In",
     "subtitle": "Welcome back! Monitor your beloved child's growing journey every day.",
+    "identifierLabel": "Username",
+    "identifierPlaceholder": "Enter username, phone number or email",
     "emailLabel": "Email",
     "emailPlaceholder": "e.g., parent@kindercare.app",
     "passwordLabel": "Password",
@@ -42,6 +44,9 @@
     "satisfactionLabel": "Satisfied parents",
     "teachersCount": "42+",
     "teachersLabel": "Dedicated teachers"
+  },
+  "Dashboard": {
+    "title": "Parent Dashboard"
   },
   "Site": {
     "title": "KinderCare - Preschool management system",

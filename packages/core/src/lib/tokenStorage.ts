@@ -3,7 +3,7 @@ import type { AuthUser } from '../types/auth';
 const TOKEN_COOKIE = 'kc_token';
 const USER_KEY     = 'kc_user';
 
-const PERSISTENT_MAX_AGE = 7 * 24 * 3600; // 7 days
+const PERSISTENT_MAX_AGE = 3 * 24 * 3600; // 3 days
 
 const isBrowser = () => typeof window !== 'undefined';
 

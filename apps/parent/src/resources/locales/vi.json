@@ -13,6 +13,8 @@
     "brandSubtitle": "Cổng Phụ Huynh",
     "title": "Đăng nhập phụ huynh",
     "subtitle": "Chào mừng trở lại! Theo dõi hành trình lớn khôn của con yêu mỗi ngày.",
+    "identifierLabel": "Tài khoản",
+    "identifierPlaceholder": "Nhập tên đăng nhập, số điện thoại hoặc email",
     "emailLabel": "Email",
     "emailPlaceholder": "Ví dụ: parent@kindercare.app",
     "passwordLabel": "Mật khẩu",
@@ -42,6 +44,9 @@
     "satisfactionLabel": "Phụ huynh hài lòng",
     "teachersCount": "42+",
     "teachersLabel": "Giáo viên tận tâm"
+  },
+  "Dashboard": {
+    "title": "Tổng quan phụ huynh"
   },
   "Site": {
     "title": "KinderCare - Hệ Thống Quản Lý Mầm Non",

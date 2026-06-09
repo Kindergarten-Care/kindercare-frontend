@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@kindercare/ui';
-import { PhoneIcon, EmailIcon, LockIcon, EyeIcon, EyeOffIcon, HeadsetIcon, LOGO_URL } from './Icons';
+import { UserIcon, LockIcon, EyeIcon, EyeOffIcon, HeadsetIcon, LOGO_URL } from './Icons';
 import {
   FormSide,
   FloatingYellowStar,
@@ -17,8 +17,6 @@ import {
   CDNLogo,
   FormTitle,
   FormSubtitle,
-  TabCapsuleContainer,
-  TabCapsuleButton,
   FieldGroup,
   FieldLabel,
   FieldInputWrapper,
@@ -30,8 +28,6 @@ import {
   CustomCheckbox,
   ForgotLink,
   SolidSubmitButton,
-  DividerRow,
-  OutlineSecondaryButton,
   BottomCenterFooter,
   FooterHelpLink,
   SupportHotline,
@@ -44,9 +40,7 @@ export default function LoginFormPanel(): React.ReactElement {
   const t = useTranslations('Login');
   const {
     locale, handleLocaleChange,
-    tab, setTab,
-    phone, setPhone,
-    email, setEmail,
+    identifier, setIdentifier,
     password, setPassword,
     showPassword, setShowPassword,
     rememberMe, setRememberMe,
@@ -86,49 +80,22 @@ export default function LoginFormPanel(): React.ReactElement {
           <FormSubtitle>{t('subtitle')}</FormSubtitle>
         </CardHeaderArea>
 
-        <TabCapsuleContainer>
-          <TabCapsuleButton $isActive={tab === 'phone'} onClick={() => setTab('phone')}>
-            <PhoneIcon />{t('phoneLogin')}
-          </TabCapsuleButton>
-          <TabCapsuleButton $isActive={tab === 'email'} onClick={() => setTab('email')}>
-            <EmailIcon />{t('emailLabel')}
-          </TabCapsuleButton>
-        </TabCapsuleContainer>
-
         <form onSubmit={handleSubmit} autoComplete="on">
-          {tab === 'phone' ? (
-            <FieldGroup>
-              <FieldLabel htmlFor="login-phone">{t('phoneLogin')}</FieldLabel>
-              <FieldInputWrapper>
-                <FieldIconLeft><PhoneIcon /></FieldIconLeft>
-                <StyledTextInput
-                  id="login-phone"
-                  type="tel"
-                  placeholder={t('phonePlaceholder')}
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  required
-                  autoComplete="tel"
-                />
-              </FieldInputWrapper>
-            </FieldGroup>
-          ) : (
-            <FieldGroup>
-              <FieldLabel htmlFor="login-email">{t('emailLabel')}</FieldLabel>
-              <FieldInputWrapper>
-                <FieldIconLeft><EmailIcon /></FieldIconLeft>
-                <StyledTextInput
-                  id="login-email"
-                  type="email"
-                  placeholder={t('emailPlaceholder')}
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </FieldInputWrapper>
-            </FieldGroup>
-          )}
+          <FieldGroup>
+            <FieldLabel htmlFor="login-identifier">{t('identifierLabel')}</FieldLabel>
+            <FieldInputWrapper>
+              <FieldIconLeft><UserIcon /></FieldIconLeft>
+              <StyledTextInput
+                id="login-identifier"
+                type="text"
+                placeholder={t('identifierPlaceholder')}
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
+                required
+                autoComplete="username"
+              />
+            </FieldInputWrapper>
+          </FieldGroup>
 
           <FieldGroup>
             <FieldLabel htmlFor="login-password">{t('passwordLabel')}</FieldLabel>
@@ -182,9 +149,6 @@ export default function LoginFormPanel(): React.ReactElement {
             {isSubmitting ? t('loggingIn') : t('loginButton')}
           </SolidSubmitButton>
         </form>
-
-        <DividerRow>{t('orDivider')}</DividerRow>
-        <OutlineSecondaryButton type="button">{t('otpButton')}</OutlineSecondaryButton>
       </LoginCard>
 
       <BottomCenterFooter>

@@ -6,8 +6,8 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@kindercare/core';
+import ClientAppWrapper from '@/components/ClientAppWrapper';
 import type { Metadata } from 'next';
-import '../globals.css';
 
 export async function generateMetadata({
   params
@@ -61,7 +61,9 @@ export default async function RootLayout({
           <StyledComponentsRegistry>
             <AuthProvider>
               <SocketProvider>
-                {children}
+                <ClientAppWrapper>
+                  {children}
+                </ClientAppWrapper>
               </SocketProvider>
             </AuthProvider>
           </StyledComponentsRegistry>
