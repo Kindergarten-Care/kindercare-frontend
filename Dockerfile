@@ -28,6 +28,28 @@ COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 COPY turbo.json turbo.json
 ARG APP_NAME
+
+# Declare build-time environment variables for Next.js static inlining
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_BASE
+ARG NEXT_PUBLIC_SOCKET_URL
+ARG NEXT_PUBLIC_LANDING_APP_URL
+ARG NEXT_PUBLIC_PARENT_APP_URL
+ARG NEXT_PUBLIC_TEACHER_APP_URL
+ARG NEXT_PUBLIC_PRINCIPAL_APP_URL
+ARG NEXT_PUBLIC_ADMIN_APP_URL
+ARG NEXT_PUBLIC_PORTAL_APP_URL
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
+ENV NEXT_PUBLIC_LANDING_APP_URL=$NEXT_PUBLIC_LANDING_APP_URL
+ENV NEXT_PUBLIC_PARENT_APP_URL=$NEXT_PUBLIC_PARENT_APP_URL
+ENV NEXT_PUBLIC_TEACHER_APP_URL=$NEXT_PUBLIC_TEACHER_APP_URL
+ENV NEXT_PUBLIC_PRINCIPAL_APP_URL=$NEXT_PUBLIC_PRINCIPAL_APP_URL
+ENV NEXT_PUBLIC_ADMIN_APP_URL=$NEXT_PUBLIC_ADMIN_APP_URL
+ENV NEXT_PUBLIC_PORTAL_APP_URL=$NEXT_PUBLIC_PORTAL_APP_URL
+
 # Next.js build
 RUN yarn turbo build --filter=@kindercare/${APP_NAME}
 
@@ -45,9 +67,7 @@ RUN adduser --system --uid 1001 nextjs
 # Copy các file cần thiết từ builder (standalone mode)
 # Lưu ý: Với monorepo, file standalone nằm trong apps/[app-name]/.next/standalone
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
 
 # Copy node_modules của root và app (cần thiết cho standalone trong monorepo)

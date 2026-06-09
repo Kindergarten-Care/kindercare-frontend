@@ -10,9 +10,9 @@ import {
   SectionSubtitle,
   SectionTitle,
 } from '@/UIKit';
-import { EnvIllustration } from '@/svgs';
 import { ENV_CARDS, ENV_CHECKLIST } from '@/resources/landingContent';
 import { SECTION_IDS } from '@/config/constants';
+import { useTranslation } from '@kindercare/ui';
 import {
   AwardBadge,
   BadgeIcon,
@@ -31,31 +31,39 @@ import {
 } from './styles';
 
 export function EnvironmentSection(): React.ReactElement {
+  const { t } = useTranslation();
+
+  const checklist = ENV_CHECKLIST.map((_, index) => t(`Landing.Environment.checklist${index + 1}`));
+  const envCards = ENV_CARDS.map((card, index) => ({
+    ...card,
+    title: t(`Landing.Environment.card${index + 1}.title`),
+    description: t(`Landing.Environment.card${index + 1}.description`),
+  }));
+
   return (
     <Section id={SECTION_IDS.ENVIRONMENT} aria-labelledby="environment-title">
       <SectionInner>
         <EnvIntro>
           <Reveal>
             <EnvText>
-              <SectionLabel>Môi trường học tập</SectionLabel>
+              <SectionLabel>{t('Landing.Environment.sectionLabel')}</SectionLabel>
               <Divider />
               <SectionTitle id="environment-title">
-                Không gian được thiết kế
+                {t('Landing.Environment.title1')}
                 <br />
-                cho từng giai đoạn phát triển
+                {t('Landing.Environment.title2')}
               </SectionTitle>
               <SectionSubtitle>
-                Mỗi góc nhỏ tại KinderCare đều được cân nhắc kỹ lưỡng — từ ánh sáng, màu sắc đến từng vật liệu
-                tiếp xúc với trẻ.
+                {t('Landing.Environment.subtitle')}
               </SectionSubtitle>
               <Checklist>
-                {ENV_CHECKLIST.map((item) => (
+                {checklist.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </Checklist>
               <CtaWrap>
                 <LinkButton href={`#${SECTION_IDS.ENROLLMENT}`} $variant="primary">
-                  Đăng ký tham quan trường
+                  {t('Landing.Environment.ctaVisit')}
                 </LinkButton>
               </CtaWrap>
             </EnvText>
@@ -65,7 +73,7 @@ export function EnvironmentSection(): React.ReactElement {
             <EnvImageWrap>
               <Image
                 src="/campus.png"
-                alt="Khuôn viên trường"
+                alt={t('Landing.Meta.campusAlt')}
                 width={800}
                 height={600}
                 style={{
@@ -78,8 +86,10 @@ export function EnvironmentSection(): React.ReactElement {
               <AwardBadge>
                 <BadgeIcon>🏆</BadgeIcon>
                 <div>
-                  <BadgeTitle>Top trường mầm non 2024</BadgeTitle>
-                  <BadgeSub>Hiệp hội Giáo dục Mầm non VN</BadgeSub>
+                  <BadgeTitle>{t('Landing.Environment.badgeTitle')}</BadgeTitle>
+                  <BadgeSub>
+                    {t('Landing.Environment.badgeSub')}
+                  </BadgeSub>
                 </div>
               </AwardBadge>
             </EnvImageWrap>
@@ -87,7 +97,7 @@ export function EnvironmentSection(): React.ReactElement {
         </EnvIntro>
 
         <EnvCards>
-          {ENV_CARDS.map((card) => (
+          {envCards.map((card) => (
             <Reveal key={card.title}>
               <EnvCard>
                 <EnvCardIcon>{card.icon}</EnvCardIcon>

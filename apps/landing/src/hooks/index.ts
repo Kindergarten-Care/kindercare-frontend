@@ -1,4 +1,3 @@
-export { useIsMounted } from './useIsMounted';
 export { useScrollReveal } from './useScrollReveal';
 export { useHeroSlider } from './useHeroSlider';
 export { useTechCarousel } from './useTechCarousel';

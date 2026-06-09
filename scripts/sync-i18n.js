@@ -74,7 +74,7 @@ async function syncTranslations() {
       process.exit(1);
     }
 
-    const messagesDir = path.join(__dirname, '../src/resources/locales');
+    const messagesDir = path.join(__dirname, '../packages/resource/locales');
     if (!fs.existsSync(messagesDir)) fs.mkdirSync(messagesDir, { recursive: true });
 
     fs.writeFileSync(

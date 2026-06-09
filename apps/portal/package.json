@@ -14,7 +14,8 @@
     "react-dom": "19.2.4",
     "styled-components": "^6.4.0",
     "@kindercare/core": "*",
-    "@kindercare/ui": "*"
+    "@kindercare/ui": "*",
+    "@kindercare/config": "*"
   },
   "devDependencies": {
     "@types/node": "^20",

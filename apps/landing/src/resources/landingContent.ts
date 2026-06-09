@@ -6,7 +6,6 @@ import type {
   FooterBadge,
   FooterColumn,
   HeroSlide,
-  NavLink,
   PricingPlan,
   PricingPlanValue,
   StatItem,
@@ -14,20 +13,6 @@ import type {
 } from '@/config/types';
 import type { DropdownOption } from '@kindercare/ui';
 import { SECTION_IDS, PORTAL_LOGIN_HREF } from '@/config/constants';
-
-export const NAV_LINKS: NavLink[] = [
-  { href: `#${SECTION_IDS.ENVIRONMENT}`, label: 'Môi trường học' },
-  { href: `#${SECTION_IDS.TECHNOLOGY}`, label: 'Công nghệ' },
-  { href: `#${SECTION_IDS.ENROLLMENT}`, label: 'Tuyển sinh' },
-  { href: `#${SECTION_IDS.CONTACT}`, label: 'Liên hệ' },
-];
-
-export const MOBILE_NAV_LINKS: NavLink[] = [
-  { href: `#${SECTION_IDS.ENVIRONMENT}`, label: 'Môi trường học tập', icon: '🌿' },
-  { href: `#${SECTION_IDS.TECHNOLOGY}`, label: 'Công nghệ', icon: '📱' },
-  { href: `#${SECTION_IDS.ENROLLMENT}`, label: 'Tuyển sinh & Học phí', icon: '🎒' },
-  { href: `#${SECTION_IDS.CONTACT}`, label: 'Liên hệ & Tư vấn', icon: '📞' },
-];
 
 export const PARENT_PORTAL_HREF = PORTAL_LOGIN_HREF;
 
@@ -258,9 +243,6 @@ export const FOOTER_BADGES: FooterBadge[] = [
   { label: '🛡️ ISO 45001' },
   { label: '🌿 Trường Xanh 2024' },
 ];
-
-export const FOOTER_TAGLINE =
-  'Nơi mỗi buổi sáng bắt đầu bằng nụ cười, mỗi buổi chiều kết thúc bằng niềm vui. Chúng tôi ươm mầm những tâm hồn nhỏ để chúng trở thành những con người lớn.';
 
 export const CHILD_AGE_OPTIONS: DropdownOption<ChildAgeValue>[] = [
   { value: '18-24m', label: '18 – 24 tháng' },

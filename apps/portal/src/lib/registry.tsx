@@ -1,38 +1,27 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useServerInsertedHTML } from 'next/navigation';
-import { ServerStyleSheet, StyleSheetManager, ThemeProvider } from 'styled-components';
-import { theme } from '@kindercare/ui';
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
 
-function StyledComponentsRegistryInner({
+export default function StyledComponentsRegistry({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet());
+  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
 
   useServerInsertedHTML(() => {
-    const styles = styledComponentsStyleSheet.getStyleElement();
-    styledComponentsStyleSheet.instance.clearTag();
-    return <>{styles}</>;
-  });
+    const styles = styledComponentsStyleSheet.getStyleElement()
+    styledComponentsStyleSheet.instance.clearTag()
+    return <>{styles}</>
+  })
 
-  if (typeof window !== 'undefined') return <>{children}</>;
+  if (typeof window !== 'undefined') return <>{children}</>
 
   return (
     <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
       {children}
     </StyleSheetManager>
-  );
-}
-
-export default function StyledComponentsRegistry({ children }: { children: React.ReactNode }) {
-  return (
-    <StyledComponentsRegistryInner>
-      <ThemeProvider theme={theme}>
-        {children}
-      </ThemeProvider>
-    </StyledComponentsRegistryInner>
-  );
+  )
 }
