@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export type UserRole = 'admin' | 'principal' | 'teacher';
+export type UserRole = 'principal' | 'teacher';
 
 export interface UseLoginStateReturn {
   role: UserRole;
@@ -21,7 +21,7 @@ export interface UseLoginStateReturn {
 
 export const useLoginState = (): UseLoginStateReturn => {
   const router = useRouter();
-  const [role, setRole] = useState<UserRole>('admin');
+  const [role, setRole] = useState<UserRole>('principal');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -58,7 +58,7 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     const newErrors: { username?: string; password?: string } = {};
     if (!username.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập / mã nhân viên.';
+      newErrors.username = 'Vui lòng nhập email hoặc số điện thoại.';
     }
     if (!password) {
       newErrors.password = 'Vui lòng nhập mật khẩu.';
@@ -73,7 +73,6 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     // Redirect based on role using Next.js router
     const roleRoutes: Record<UserRole, string> = {
-      admin: '/admin',
       principal: '/principal',
       teacher: '/teacher',
     };
