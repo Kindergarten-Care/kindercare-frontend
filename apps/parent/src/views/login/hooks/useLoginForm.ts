@@ -8,7 +8,7 @@ import axios from 'axios';
 const LOGIN_ERRORS: Record<number, string> = {
   400: 'Thiếu thông tin đăng nhập.',
   401: 'Sai tên đăng nhập hoặc mật khẩu.',
-  403: 'Tài khoản bị vô hiệu hóa. Vui lòng liên hệ nhà trường.',
+  403: 'Tài khoản không có quyền truy cập vào hệ thống này',
 };
 
 export interface UseLoginFormReturn {
