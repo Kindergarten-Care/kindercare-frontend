@@ -18,6 +18,9 @@ export interface AuthUser {
   status?: string;
   professionalRank?: string;
   workStatus?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  idCard?: string;
 }
 
 interface AuthContextType {

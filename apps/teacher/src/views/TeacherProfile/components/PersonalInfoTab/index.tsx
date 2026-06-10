@@ -7,6 +7,20 @@ interface PersonalInfoTabProps {
 }
 
 export const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user }) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+      const cleanDate = dateString.split('T')[0];
+      const parts = cleanDate.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div>
       <S.Section>
@@ -24,15 +38,15 @@ export const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user }) => {
           </S.FieldGroup>
           <S.FieldGroup>
             <S.Label>Ngày sinh</S.Label>
-            <S.ValueBox>20/10/1995</S.ValueBox>
+            <S.ValueBox>{formatDate(user?.dateOfBirth) || '20/10/1995'}</S.ValueBox>
           </S.FieldGroup>
           <S.FieldGroup>
             <S.Label>Giới tính</S.Label>
-            <S.ValueBox>Nữ</S.ValueBox>
+            <S.ValueBox>{user?.gender || 'Nữ'}</S.ValueBox>
           </S.FieldGroup>
           <S.FieldGroup>
             <S.Label>Số CCCD</S.Label>
-            <S.ValueBox>079195001234</S.ValueBox>
+            <S.ValueBox>{user?.idCard || '079195001234'}</S.ValueBox>
           </S.FieldGroup>
         </S.GridContainer>
       </S.Section>
