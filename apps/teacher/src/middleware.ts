@@ -11,6 +11,6 @@ export default function middleware(request: any) {
 }
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(vi|en)/:path*']
+  // Match internationalized pathnames and any path that needs locale rewriting
+  matcher: ['/', '/(vi|en)/:path*', '/((?!_next|api|favicon\\.ico|.*\\.).*)']
 };

@@ -2,13 +2,22 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface AuthUser {
+export interface AuthUser {
   userId: number;
   username: string;
   roleId: number;
   roleName: string;
   fullName: string;
   relationship?: string;
+  phone?: string;
+  phoneNumber?: string;
+  email?: string;
+  address?: string;
+  avatarUrl?: string;
+  employeeId?: string;
+  status?: string;
+  professionalRank?: string;
+  workStatus?: string;
 }
 
 interface AuthContextType {
