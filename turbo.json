@@ -1,9 +1,32 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "GOOGLE_SHEET_ID",
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_API_BASE",
+    "NEXT_PUBLIC_SOCKET_URL",
+    "NEXT_PUBLIC_LANDING_APP_URL",
+    "NEXT_PUBLIC_PARENT_APP_URL",
+    "NEXT_PUBLIC_TEACHER_APP_URL",
+    "NEXT_PUBLIC_PRINCIPAL_APP_URL",
+    "NEXT_PUBLIC_ADMIN_APP_URL",
+    "NEXT_PUBLIC_PORTAL_APP_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_API_BASE",
+        "NEXT_PUBLIC_SOCKET_URL",
+        "NEXT_PUBLIC_LANDING_APP_URL",
+        "NEXT_PUBLIC_PARENT_APP_URL",
+        "NEXT_PUBLIC_TEACHER_APP_URL",
+        "NEXT_PUBLIC_PRINCIPAL_APP_URL",
+        "NEXT_PUBLIC_ADMIN_APP_URL",
+        "NEXT_PUBLIC_PORTAL_APP_URL"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

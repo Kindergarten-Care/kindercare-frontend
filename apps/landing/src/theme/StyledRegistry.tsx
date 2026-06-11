@@ -10,7 +10,7 @@ interface StyledRegistryProps {
   children: React.ReactNode;
 }
 
-export function StyledRegistry({ children }: StyledRegistryProps): React.ReactElement {
+function StyledComponentsRegistry({ children }: { children: React.ReactNode }) {
   const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet());
 
   useServerInsertedHTML(() => {
@@ -19,21 +19,22 @@ export function StyledRegistry({ children }: StyledRegistryProps): React.ReactEl
     return <>{styles}</>;
   });
 
-  if (typeof window !== 'undefined') {
-    return (
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        {children}
-      </ThemeProvider>
-    );
-  }
+  if (typeof window !== 'undefined') return <>{children}</>;
 
   return (
     <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
+      {children}
+    </StyleSheetManager>
+  );
+}
+
+export function StyledRegistry({ children }: StyledRegistryProps): React.ReactElement {
+  return (
+    <StyledComponentsRegistry>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         {children}
       </ThemeProvider>
-    </StyleSheetManager>
+    </StyledComponentsRegistry>
   );
 }
