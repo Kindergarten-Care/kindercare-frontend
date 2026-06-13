@@ -1,94 +1,123 @@
+'use client';
+
 import styled from 'styled-components';
 
 export const FeeCard = styled.div`
-  background: var(--surface, #ffffff);
-  border: 1.5px solid #fde68a;
-  border-radius: var(--r-lg, 16px);
-  padding: 16px 18px;
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--warn, #c77b0a);
-  }
-`;
-
-export const Row = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-`;
-
-export const TitleWrap = styled.div`
+  border-radius: 16px;
+  padding: 20px 22px;
+  background: linear-gradient(105deg, #fff8ec 0%, #fef3c7 100%);
+  border: 1px solid #f6e2a8;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 18px;
+  box-shadow: 0 6px 22px -8px rgba(217, 119, 6, 0.22);
+`;
+
+export const Glow = styled.div`
+  position: absolute;
+  right: -40px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.16), transparent 70%);
+  pointer-events: none;
 `;
 
 export const Ico = styled.div`
-  width: 32px;
-  height: 32px;
-  background: var(--warn-light, #fef3c7);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: #d97706;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 22px;
+  box-shadow: 0 8px 18px -6px rgba(217, 119, 6, 0.5);
+`;
+
+export const Body = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const Title = styled.h3`
   font-size: 16px;
+  font-weight: 700;
+  color: #92400e;
 `;
 
-export const TextWrap = styled.div`
-  strong {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  span {
-    font-size: 11px;
-    color: var(--muted, #627062);
-  }
+export const Sub = styled.p`
+  font-size: 13.5px;
+  color: #a86412;
+  margin-top: 3px;
+  font-weight: 500;
 `;
 
-export const Amount = styled.div`
+export const AmtBlock = styled.div`
   text-align: right;
+  flex-shrink: 0;
+`;
 
-  strong {
-    display: block;
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--warn, #c77b0a);
-    letter-spacing: -0.02em;
-  }
-  span {
-    font-size: 11px;
-    color: var(--warn, #c77b0a);
-    font-weight: 700;
-  }
+export const Amt = styled.div`
+  font-size: 19px;
+  font-weight: 800;
+  color: #92400e;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+`;
+
+export const AmtSub = styled.small`
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #b0710f;
+  letter-spacing: 0.02em;
+  margin-top: 3px;
 `;
 
 export const PayBtn = styled.button`
-  width: 100%;
-  background: var(--warn, #c77b0a);
+  background: #d97706;
   color: #fff;
   border: none;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px -6px rgba(217, 119, 6, 0.5);
+  transition: transform 0.12s, background 0.15s;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  transition: background 0.15s;
 
   &:hover {
-    background: #a16207;
+    transform: scale(1.02);
+    background: #c26905;
   }
+`;
+
+export const CloseBtn = styled.button`
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(168, 100, 18, 0.08);
+  color: #a86412;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(168, 100, 18, 0.16); }
 `;

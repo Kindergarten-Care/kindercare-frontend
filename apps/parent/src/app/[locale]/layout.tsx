@@ -1,5 +1,12 @@
 import '../globals.css';
+import { Inter } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
+
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -52,7 +59,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={inter.variable}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>

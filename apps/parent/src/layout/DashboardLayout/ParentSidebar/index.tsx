@@ -2,131 +2,181 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useAuth } from '@kindercare/core';
 import * as S from './styles';
+import {
+  IconHome, IconDiary, IconChat, IconMenu, IconProfile,
+  IconChart, IconCalendar, IconCreditCard, IconReceipt,
+  IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
+  IconChevronDown, IconCheck, IconPlus,
+} from '@/assets/icons/dashboard';
 
-const ParentSidebar: React.FC = () => {
+interface ParentSidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
+
+const CHILDREN_MOCK = [
+  { id: 'c1', name: 'Nguyễn Bảo Châu', className: 'Lớp Hoa Hướng Dương', gradient: 'linear-gradient(140deg,#0a7a4c,#005A36)', initial: 'BC' },
+  { id: 'c2', name: 'Nguyễn Minh Khôi', className: 'Lớp Mặt Trời Nhỏ', gradient: 'linear-gradient(140deg,#1e40af,#2563EB)', initial: 'MK' },
+];
+
+const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) => {
   const pathname = usePathname();
   const locale = useLocale();
   const { user, logout } = useAuth();
-  
-  const [showSettings, setShowSettings] = useState(false);
+
+  const [childIdx, setChildIdx] = useState<number>(0);
+  const [csOpen, setCsOpen] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const csRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
-        setShowSettings(false);
-      }
+    const handler = (e: MouseEvent): void => {
+      if (csRef.current && !csRef.current.contains(e.target as Node)) setCsOpen(false);
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setShowSettings(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleOpenAbsence = () => {
-    alert('Báo nghỉ clicked');
-  };
+  const activeChild = CHILDREN_MOCK[childIdx];
 
-  const handleLogout = async (e: React.MouseEvent) => {
+  const handleLogout = async (e: React.MouseEvent): Promise<void> => {
     e.stopPropagation();
     await logout();
   };
 
   return (
-    <S.SidebarContainer id="sidebar">
-      <S.SidebarLogo>
-        <S.LogoMark>K</S.LogoMark>
-        <S.LogoText>
-          <strong>KinderCare</strong>
-          <span>Cổng phụ huynh</span>
-        </S.LogoText>
-      </S.SidebarLogo>
+    <S.SidebarContainer $collapsed={collapsed}>
+      <S.ToggleBtn onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
+        {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
+      </S.ToggleBtn>
 
-      <S.ChildSwitcher>
-        <S.CsAv>{user?.children?.[0]?.avatarUrl ? <img src={user.children[0].avatarUrl} alt="Avatar" /> : '👧'}</S.CsAv>
-        <S.CsInfo>
-          <strong>{user?.children?.[0]?.fullName || 'Đang tải...'}</strong>
-          <span>{user?.children?.[0]?.className || 'Chưa xếp lớp'}</span>
-        </S.CsInfo>
-        <S.CsChevron>⌄</S.CsChevron>
-      </S.ChildSwitcher>
+      <S.Brand $collapsed={collapsed}>
+        <S.BrandMark>K</S.BrandMark>
+        <S.BrandText $hidden={collapsed}>
+          <S.BrandName>KinderCare</S.BrandName>
+          <S.BrandSub>Cổng phụ huynh</S.BrandSub>
+        </S.BrandText>
+      </S.Brand>
 
-      <S.AbsenceCta onClick={handleOpenAbsence}>
-        <S.AbsenceCtaIcon>🚫</S.AbsenceCtaIcon>
-        <S.AbsenceCtaText>
-          <strong>Báo nghỉ học</strong>
-          <span>Gửi đơn nhanh · Alt N</span>
-        </S.AbsenceCtaText>
-        <S.AbsenceBadge>NHANH</S.AbsenceBadge>
-      </S.AbsenceCta>
+      {/* Child Switcher */}
+      <S.CSwitcher $collapsed={collapsed} ref={csRef}>
+        <S.CSTrigger $collapsed={collapsed} onClick={() => setCsOpen(o => !o)}>
+          <S.CSAv $gradient={activeChild.gradient}>{activeChild.initial}</S.CSAv>
+          <S.CSInfo $hidden={collapsed}>
+            <S.CSName>{activeChild.name}</S.CSName>
+            <S.CSClass>{activeChild.className}</S.CSClass>
+          </S.CSInfo>
+          <S.CSChev $open={csOpen} $hidden={collapsed}>
+            <IconChevronDown size={14} />
+          </S.CSChev>
+        </S.CSTrigger>
 
-      <S.NavSection>
-        <S.NavLabel>Hôm nay</S.NavLabel>
-        <S.NavItem href={`/${locale}/dashboard_view`} $active={pathname.includes('dashboard_view')}>
-          <S.NavIcon>🏠</S.NavIcon>Tổng quan
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>📓</S.NavIcon>Nhật ký bé
-          <S.NavBadge style={{ backgroundColor: '#16a34a' }}>MỚI</S.NavBadge>
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>💬</S.NavIcon>Tin nhắn
-          <S.NavBadge>3</S.NavBadge>
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>🍱</S.NavIcon>Thực đơn & Lịch học
-        </S.NavItem>
-      </S.NavSection>
+        {csOpen && (
+          <S.CSMenu $collapsed={collapsed}>
+            <S.CSMenuH>Chọn hồ sơ bé</S.CSMenuH>
+            {CHILDREN_MOCK.map((child, idx) => (
+              <S.CSOption
+                key={child.id}
+                $active={idx === childIdx}
+                onClick={() => { setChildIdx(idx); setCsOpen(false); }}
+              >
+                <S.CSAv $gradient={child.gradient} style={{ width: 34, height: 34, fontSize: 12 }}>
+                  {child.initial}
+                </S.CSAv>
+                <div>
+                  <S.CSOptName>{child.name}</S.CSOptName>
+                  <S.CSOptClass>{child.className}</S.CSOptClass>
+                </div>
+                {idx === childIdx && (
+                  <S.CSCheck>
+                    <IconCheck size={14} color="#005A36" />
+                  </S.CSCheck>
+                )}
+              </S.CSOption>
+            ))}
+            <S.CSAdd>
+              <IconPlus size={14} /> Thêm hồ sơ bé
+            </S.CSAdd>
+          </S.CSMenu>
+        )}
+      </S.CSwitcher>
 
-      <S.NavSection>
-        <S.NavLabel>Bé & Học tập</S.NavLabel>
-        <S.NavItem href="#">
-          <S.NavIcon>👤</S.NavIcon>Hồ sơ bé
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>📊</S.NavIcon>Lịch sử phát triển
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>📅</S.NavIcon>Lịch & Sự kiện
-        </S.NavItem>
-      </S.NavSection>
+      {/* Nav sections */}
+      <S.NavLabel $hidden={collapsed}>Hôm nay</S.NavLabel>
+      <S.NavItem href={`/${locale}/dashboard`} $active={pathname.includes('/dashboard')} $collapsed={collapsed}>
+        <S.NavIcon><IconHome size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Tổng quan</S.NavSpan>
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconDiary size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Nhật ký bé</S.NavSpan>
+        {!collapsed && <S.NavBadge>MỚI</S.NavBadge>}
+        {collapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconChat size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Tin nhắn</S.NavSpan>
+        {!collapsed && <S.NavBadge>3</S.NavBadge>}
+        {collapsed && <S.NavBadge $collapsed>3</S.NavBadge>}
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconMenu size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Thực đơn & Lịch học</S.NavSpan>
+      </S.NavItem>
 
-      <S.NavSection>
-        <S.NavLabel>Tài chính</S.NavLabel>
-        <S.NavItem href="#">
-          <S.NavIcon>💳</S.NavIcon>Học phí & Lệ phí
-          <S.NavBadge $warn>!</S.NavBadge>
-        </S.NavItem>
-        <S.NavItem href="#">
-          <S.NavIcon>🧾</S.NavIcon>Lịch sử thanh toán
-        </S.NavItem>
-      </S.NavSection>
+      <S.NavLabel $hidden={collapsed}>Bé & Học tập</S.NavLabel>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconProfile size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Hồ sơ bé</S.NavSpan>
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconChart size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Lịch sử phát triển</S.NavSpan>
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
+      </S.NavItem>
 
-      <S.SidebarFooter>
-        <S.ParentRow>
-          <S.ParentAv>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.ParentAv>
-          <S.ParentInfo>
-            <strong>{user?.fullName || user?.username || 'Đang tải...'}</strong>
-            <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
-          </S.ParentInfo>
-          
+      <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconCreditCard size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Học phí & Lệ phí</S.NavSpan>
+        {!collapsed && <S.NavBadge style={{ background: '#d97706' }}>!</S.NavBadge>}
+      </S.NavItem>
+      <S.NavItem href="#" $collapsed={collapsed}>
+        <S.NavIcon><IconReceipt size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Lịch sử thanh toán</S.NavSpan>
+      </S.NavItem>
+
+      {/* Footer */}
+      <S.SideProfile $collapsed={collapsed}>
+        <S.ParentAv>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.ParentAv>
+        <S.ParentInfo $hidden={collapsed}>
+          <strong>{user?.fullName || user?.username || 'Phụ huynh'}</strong>
+          <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
+        </S.ParentInfo>
+
+        {!collapsed && (
           <S.DropdownContainer ref={settingsRef}>
-            <S.SettingsBtn onClick={(e) => {
-              e.stopPropagation();
-              setShowSettings(!showSettings);
-            }}>⚙</S.SettingsBtn>
-            
+            <S.SettingsBtn onClick={e => { e.stopPropagation(); setShowSettings(s => !s); }}>
+              <IconSettings size={16} />
+            </S.SettingsBtn>
             {showSettings && (
               <S.DropdownMenu>
                 <S.DropdownItem onClick={handleLogout}>
-                  🚪 Đăng xuất
+                  <IconLogout size={15} /> Đăng xuất
                 </S.DropdownItem>
               </S.DropdownMenu>
             )}
           </S.DropdownContainer>
-        </S.ParentRow>
-      </S.SidebarFooter>
+        )}
+      </S.SideProfile>
     </S.SidebarContainer>
   );
 };

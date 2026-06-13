@@ -1,24 +1,37 @@
+'use client';
+
 import styled from 'styled-components';
 
 export const HeroContainer = styled.div`
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #dde8d9);
-  border-radius: var(--r-xl, 20px);
-  padding: 16px 20px;
   display: flex;
+  gap: 22px;
   align-items: center;
-  gap: 24px;
+  padding: 24px;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(118deg, #EAF6EF 0%, #F6FBF8 46%, #FFFFFF 100%);
+  border: 1px solid #D9EBE1;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, #4ade80, var(--accent, #005e2c));
+    z-index: 0;
+    top: -90px;
+    right: -50px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 90, 54, 0.10), transparent 66%);
+    pointer-events: none;
+  }
+
+  & > * { position: relative; z-index: 1; }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
   }
 `;
 
@@ -27,172 +40,149 @@ export const AvWrap = styled.div`
   flex-shrink: 0;
 `;
 
-export const Av = styled.div`
-  width: 96px;
-  height: 96px;
-  background: #ffd9b3;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  border: 4px solid var(--border, #dde8d9);
+export const Av = styled.div<{ $gradient: string }>`
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: ${p => p.$gradient};
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 24px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  box-shadow: 0 10px 24px -8px rgba(0, 90, 54, 0.5);
 `;
 
-export const StatusBadge = styled.div`
+export const StatusRing = styled.div`
   position: absolute;
-  bottom: -8px;
-  right: -8px;
-  background: #4ade80;
-  border: 4px solid var(--surface, #ffffff);
+  bottom: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  background: #16a34a;
+  border: 3px solid #fff;
+  display: grid;
+  place-items: center;
+`;
+
+export const PulseDot = styled.div`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
 `;
 
 export const Info = styled.div`
-  flex: 1;
   min-width: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 9px;
 `;
 
-export const Name = styled.div`
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--fg, #181d18);
+export const Name = styled.h2`
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0;
+  line-height: 1.2;
 `;
 
-export const Meta = styled.div`
-  font-size: 14px;
-  color: var(--muted, #3f493f);
-  margin-top: 4px;
+export const MetaRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 9px;
+`;
+
+export const Chip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+  background: #F4F8F5;
+  border: 1px solid var(--border-soft);
+  padding: 5px 11px;
+  border-radius: 9px;
+
+  svg { color: var(--brand); opacity: 0.85; }
 `;
 
 export const Tags = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  flex-wrap: wrap;
+  display: none;
 `;
 
-export const Tag = styled.span<{ $type: 'green' | 'blue' | 'neutral' | 'yellow' }>`
+export const Tag = styled.span<{ $type: 'green' | 'blue' | 'neutral' | 'yellow' }>``;
+
+export const CheckinBadge = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-
-  ${props => {
-    switch (props.$type) {
-      case 'green':
-        return `
-          background: var(--accent-light, #dcfce7);
-          color: var(--accent, #005e2c);
-        `;
-      case 'blue':
-        return `
-          background: var(--info-light, #dbeafe);
-          color: #006495;
-        `;
-      case 'neutral':
-        return `
-          background: #f3f4f6;
-          color: #3f493f;
-        `;
-      case 'yellow':
-        return `
-          background: #fefce8;
-          color: #b45309;
-        `;
-    }
-  }}
+  gap: 8px;
+  margin-top: 4px;
+  background: var(--brand-tint);
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 10px;
+  width: fit-content;
 `;
 
 export const Right = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: stretch;
+  gap: 10px;
   flex-shrink: 0;
-`;
+  min-width: 148px;
 
-export const CheckinCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-`;
-
-export const CheckinLabel = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted, #6f7a6e);
-  margin-bottom: 2px;
-`;
-
-export const CheckinSub = styled.div`
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--accent, #005e2c);
-`;
-
-export const CheckinTime = styled.div`
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--fg, #181d18);
-  letter-spacing: -0.02em;
-`;
-
-export const Actions = styled.div`
-  display: flex;
-  gap: 8px;
+  @media (max-width: 640px) {
+    width: 100%;
+    flex-direction: row;
+  }
 `;
 
 export const BtnAbsence = styled.button`
-  background: var(--danger, #ba1a1a);
+  background: var(--brand);
   color: #fff;
   border: none;
-  padding: 9px 16px;
+  padding: 11px 16px;
   border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: background 0.15s;
+  gap: 7px;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px -6px rgba(0, 90, 54, 0.45);
+  transition: transform 0.12s, background 0.15s;
 
-  &:hover {
-    background: #991b1b;
-  }
+  &:hover { background: var(--brand-hover); transform: scale(1.02); }
 `;
 
 export const BtnMsg = styled.button`
-  background: var(--accent-xlight, #f0f5ec);
-  color: var(--accent, #005e2c);
-  border: 1px solid rgba(0, 94, 44, 0.2);
-  padding: 9px 17px;
+  background: #F4F8F5;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  padding: 11px 16px;
   border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: background 0.15s;
+  gap: 7px;
+  white-space: nowrap;
+  transition: transform 0.12s, background 0.15s, border-color 0.15s;
 
-  &:hover {
-    background: #e6edd9;
-  }
+  &:hover { background: #fff; border-color: #CFE0D5; transform: scale(1.02); }
 `;
-
-

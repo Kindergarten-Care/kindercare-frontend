@@ -1,33 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #005A36;
+  --brand-tint: #E6F3ED;
+  --brand-hover: #004428;
+  --amber: #D97706;
+  --amber-tint: #FEF3C7;
+  --amber-text: #92400E;
+  --red: #DC2626;
+  --red-tint: #FEE2E2;
+  --red-border: #FCA5A5;
+  --canvas: #EFF6F1;
+  --surface: #FFFFFF;
+  --border: #E6EEE9;
+  --border-soft: #EEF4F0;
+  --fg: #1F2937;
+  --muted: #6B7280;
+  --muted-2: #9CA3AF;
+  --purple: #8B5CF6;
+  --purple-tint: #F1ECFE;
+  --orange: #F97316;
+  --orange-tint: #FFEEDF;
+  --blue: #2563EB;
+  --blue-tint: #E3EDFD;
+  --shadow: 0 4px 18px -4px rgba(0,90,54,0.06), 0 2px 6px -1px rgba(0,0,0,0.03);
+  --shadow-lg: 0 18px 48px -12px rgba(0,90,54,0.16), 0 6px 16px -6px rgba(0,0,0,0.06);
+  --radius: 16px;
+
+  /* legacy aliases used by some components */
+  --accent: #005A36;
+  --accent-light: #E6F3ED;
+  --bg: #EFF6F1;
+  --foreground: #1F2937;
+  --background: #EFF6F1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  height: 100%;
+html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--canvas);
+  color: var(--fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 * {
@@ -39,6 +56,11 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+::selection {
+  background: var(--brand-tint);
+  color: var(--brand-hover);
 }
 
 @media (prefers-color-scheme: dark) {
