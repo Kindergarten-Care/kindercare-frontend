@@ -94,6 +94,7 @@ export function ParentDashboard(): React.ReactElement {
         teacher={activeChild.teacher}
         initialMessages={data.messages}
         unreadCount={data.messages.filter(m => m.unread && !m.isMe).length}
+        classroom={activeChild.className}
       />
     </S.DashboardContainer>
   );

@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLocale } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/routing';
+import { LanguageSwitcher } from '@kindercare/ui';
 import ParentSidebar from './ParentSidebar';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
@@ -27,6 +30,14 @@ function getFormattedDate(): string {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const locale = useLocale() as 'vi' | 'en';
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
+    if (nextLocale === locale) return;
+    router.replace(pathname, { locale: nextLocale });
+  };
 
   return (
     <S.DashboardWrapper $collapsed={collapsed}>
@@ -54,6 +65,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <S.IconBtn title="Cài đặt">
                 <IconSettings size={18} />
               </S.IconBtn>
+
+              <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
 
               <S.AvatarWrap>
                 <S.Avatar>M</S.Avatar>

@@ -51,16 +51,19 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
 
   return (
     <S.SidebarContainer $collapsed={collapsed}>
-      <S.ToggleBtn onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
+      <S.ToggleBtn $collapsed={collapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
         {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
       </S.ToggleBtn>
 
       <S.Brand $collapsed={collapsed}>
-        <S.BrandMark>K</S.BrandMark>
-        <S.BrandText $hidden={collapsed}>
-          <S.BrandName>KinderCare</S.BrandName>
-          <S.BrandSub>Cổng phụ huynh</S.BrandSub>
-        </S.BrandText>
+        <S.BrandWrapper $collapsed={collapsed}>
+          <S.LogoImg
+            src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
+            alt="KinderCare"
+            $collapsed={collapsed}
+          />
+          {!collapsed && <S.BrandSubText>Cổng phụ huynh</S.BrandSubText>}
+        </S.BrandWrapper>
       </S.Brand>
 
       {/* Child Switcher */}
@@ -105,6 +108,8 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
           </S.CSMenu>
         )}
       </S.CSwitcher>
+
+      <S.Divider />
 
       {/* Nav sections */}
       <S.NavLabel $hidden={collapsed}>Hôm nay</S.NavLabel>

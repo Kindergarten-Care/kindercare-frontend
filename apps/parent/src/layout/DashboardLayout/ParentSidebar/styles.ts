@@ -9,8 +9,8 @@ const rise = keyframes`
 `;
 
 export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
-  background: var(--surface, #fff);
-  border-right: 1px solid var(--border);
+  background: var(--brand);
+  border-right: 1px solid var(--brand-hover);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -24,10 +24,10 @@ export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
   &::-webkit-scrollbar { display: none; }
 `;
 
-export const ToggleBtn = styled.button`
+export const ToggleBtn = styled.button<{ $collapsed: boolean }>`
   position: absolute;
   top: 30px;
-  right: -13px;
+  right: ${p => p.$collapsed ? '14px' : '16px'};
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -48,41 +48,54 @@ export const ToggleBtn = styled.button`
 export const Brand = styled.div<{ $collapsed: boolean }>`
   display: flex;
   align-items: center;
-  gap: ${p => p.$collapsed ? '0' : '11px'};
-  padding: 6px ${p => p.$collapsed ? '0' : '8px'} 22px;
+  padding: 8px ${p => p.$collapsed ? '0' : '0px'} 10px;
   justify-content: ${p => p.$collapsed ? 'center' : 'flex-start'};
+  width: 100%;
 `;
 
-export const BrandMark = styled.div`
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: var(--brand);
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 18px;
-  flex-shrink: 0;
-  box-shadow: 0 6px 14px -4px rgba(0, 90, 54, 0.4);
+export const BrandWrapper = styled.div<{ $collapsed: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: ${p => p.$collapsed ? 'center' : 'flex-start'};
+  justify-content: center;
+  width: 100%;
+  gap: 1px;
+  background: linear-gradient(135deg, #eaf6f0 0%, #cfe8dc 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 12px;
+  padding: ${p => p.$collapsed ? '6px 8px' : '8px 16px'};
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    inset 0 2px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 20px rgba(0, 0, 0, 0.16),
+      inset 0 2px 3px rgba(255, 255, 255, 0.9),
+      inset 0 -3px 3px rgba(0, 0, 0, 0.03);
+  }
 `;
 
-export const BrandText = styled.div<{ $hidden: boolean }>`
-  display: ${p => p.$hidden ? 'none' : 'block'};
+export const LogoImg = styled.img<{ $collapsed: boolean }>`
+  width: ${p => p.$collapsed ? '28px' : '100%'};
+  max-width: ${p => p.$collapsed ? '28px' : '170px'};
+  height: auto;
+  object-fit: contain;
+  transition: all 0.2s ease-in-out;
+  filter: none;
 `;
 
-export const BrandName = styled.div`
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+export const BrandSubText = styled.div`
+  font-size: 11.5px;
+  color: var(--brand);
+  font-weight: 700;
+  margin-top: 2px;
+  letter-spacing: 0.03em;
   white-space: nowrap;
-`;
-
-export const BrandSub = styled.div`
-  font-size: 11px;
-  color: var(--muted-2);
-  font-weight: 500;
-  margin-top: 1px;
+  opacity: 0.9;
 `;
 
 /* child switcher */
@@ -100,14 +113,14 @@ export const CSTrigger = styled.button<{ $collapsed: boolean }>`
   padding: ${p => p.$collapsed ? '8px' : '8px 10px'};
   justify-content: ${p => p.$collapsed ? 'center' : 'flex-start'};
   border-radius: 13px;
-  border: 1px solid var(--border);
-  background: #f7fbf8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
   font: inherit;
   text-align: left;
   transition: background 0.15s, border-color 0.15s;
 
-  &:hover { background: #f1f7f3; border-color: #d5e5dc; }
+  &:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); }
 `;
 
 export const CSAv = styled.div<{ $gradient: string }>`
@@ -133,7 +146,7 @@ export const CSInfo = styled.div<{ $hidden: boolean }>`
 export const CSName = styled.span`
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--fg);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -141,14 +154,14 @@ export const CSName = styled.span`
 
 export const CSClass = styled.span`
   font-size: 11.5px;
-  color: var(--muted-2);
+  color: var(--brand-tint);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 
 export const CSChev = styled.span<{ $open: boolean; $hidden: boolean }>`
-  color: var(--muted-2);
+  color: var(--brand-tint);
   display: ${p => p.$hidden ? 'none' : 'grid'};
   place-items: center;
   transform: ${p => p.$open ? 'rotate(180deg)' : 'none'};
@@ -238,13 +251,20 @@ export const CSAdd = styled.button`
   &:hover { color: var(--brand-hover); }
 `;
 
+export const Divider = styled.div`
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
+  width: 100%;
+`;
+
 /* nav */
 export const NavLabel = styled.div<{ $hidden: boolean }>`
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--muted-2);
+  color: rgba(255, 255, 255, 0.45);
   padding: 6px 12px;
   margin-top: 8px;
   display: ${p => p.$hidden ? 'none' : 'block'};
@@ -258,18 +278,18 @@ export const NavItem = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>
   width: ${p => p.$collapsed ? '46px' : '100%'};
   ${p => p.$collapsed && 'margin: 2px auto; justify-content: center;'}
   border-radius: 11px;
-  color: ${p => p.$active ? 'var(--brand)' : 'var(--muted)'};
+  color: ${p => p.$active ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
   font-weight: ${p => p.$active ? '600' : '500'};
   font-size: 14px;
-  background: ${p => p.$active ? 'var(--brand-tint)' : 'transparent'};
+  background: ${p => p.$active ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
   cursor: pointer;
   position: relative;
   transition: background 0.15s, color 0.15s;
   text-decoration: none;
 
   &:hover {
-    background: ${p => p.$active ? 'var(--brand-tint)' : '#f4f8f5'};
-    color: ${p => p.$active ? 'var(--brand)' : 'var(--fg)'};
+    background: ${p => p.$active ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.08)'};
+    color: #ffffff;
   }
 
   ${p => p.$active && !p.$collapsed && `
@@ -281,7 +301,7 @@ export const NavItem = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>
       bottom: 8px;
       width: 3px;
       border-radius: 0 3px 3px 0;
-      background: var(--brand);
+      background: #ffffff;
     }
   `}
 `;
@@ -318,7 +338,7 @@ export const NavBadge = styled.span<{ $collapsed?: boolean }>`
 
 export const SideProfile = styled.div<{ $collapsed: boolean }>`
   margin-top: auto;
-  border-top: 1px solid var(--border-soft);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 14px;
   display: flex;
   align-items: center;
@@ -328,14 +348,14 @@ export const SideProfile = styled.div<{ $collapsed: boolean }>`
   padding: 12px ${p => p.$collapsed ? '0' : '8px'};
   justify-content: ${p => p.$collapsed ? 'center' : 'flex-start'};
 
-  &:hover { background: #f4f8f5; }
+  &:hover { background: rgba(255, 255, 255, 0.08); }
 `;
 
 export const ParentAv = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--brand-tint);
+  background: rgba(255, 255, 255, 0.1);
   display: grid;
   place-items: center;
   font-size: 17px;
@@ -347,8 +367,8 @@ export const ParentInfo = styled.div<{ $hidden: boolean }>`
   min-width: 0;
   display: ${p => p.$hidden ? 'none' : 'block'};
 
-  strong { display: block; font-size: 12.5px; font-weight: 600; }
-  span { font-size: 11px; color: var(--muted); }
+  strong { display: block; font-size: 12.5px; font-weight: 600; color: #ffffff; }
+  span { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 `;
 
 export const DropdownContainer = styled.div`
@@ -360,15 +380,15 @@ export const SettingsBtn = styled.button`
   width: 26px;
   height: 26px;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   display: grid;
   place-items: center;
   font-size: 12px;
   cursor: pointer;
-  color: var(--muted);
+  color: #ffffff;
 
-  &:hover { background: #f4f8f5; }
+  &:hover { background: rgba(255, 255, 255, 0.1); }
 `;
 
 export const DropdownMenu = styled.div`

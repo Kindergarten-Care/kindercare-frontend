@@ -57,12 +57,13 @@ export const Panel = styled.div`
   right: 28px;
   z-index: 90;
   width: 380px;
-  max-height: 520px;
+  max-height: 560px;
   border-radius: 20px;
   background: #fff;
-  box-shadow: 0 18px 56px -12px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.16);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   animation: ${rise} 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
 
   @media (max-width: 860px) {
@@ -70,7 +71,7 @@ export const Panel = styled.div`
     right: 12px;
     left: 12px;
     width: auto;
-    max-height: 70vh;
+    max-height: 75vh;
   }
 `;
 
@@ -79,18 +80,22 @@ export const PanelHead = styled.div`
   align-items: center;
   gap: 12px;
   padding: 16px 18px;
-  border-bottom: 1px solid #f3f4f6;
+  background: var(--brand);
+  color: #fff;
 `;
 
 export const TeacherAv = styled.div`
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--brand-tint);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
   display: grid;
   place-items: center;
-  font-size: 20px;
+  font-size: 15px;
+  font-weight: 700;
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 export const TeacherInfo = styled.div`
@@ -99,120 +104,147 @@ export const TeacherInfo = styled.div`
 `;
 
 export const TeacherName = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--fg);
+  color: #ffffff;
 `;
 
 export const TeacherStatus = styled.div`
   font-size: 12px;
-  color: #16a34a;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  margin-top: 3px;
 
   &::before {
     content: '';
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #16a34a;
+    background: #4ade80;
     display: inline-block;
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.2);
   }
 `;
 
 export const CloseBtn = styled.button`
   width: 32px;
   height: 32px;
-  border-radius: 10px;
-  background: #f3f4f6;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
   border: none;
-  color: #6b7280;
+  color: #ffffff;
   cursor: pointer;
   display: grid;
   place-items: center;
   font-size: 16px;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s;
 
-  &:hover { background: #e5e7eb; color: #374151; }
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.05);
+  }
 `;
 
 export const Messages = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 14px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  background: #f8fafc;
   scrollbar-width: thin;
-  scrollbar-color: #e5e7eb transparent;
+  scrollbar-color: #cbd5e1 transparent;
 `;
 
 export const Bubble = styled.div<{ $me: boolean }>`
-  max-width: 78%;
+  max-width: 80%;
   align-self: ${p => p.$me ? 'flex-end' : 'flex-start'};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `;
 
 export const BubbleText = styled.div<{ $me: boolean }>`
-  padding: 10px 13px;
+  padding: 10px 14px;
   border-radius: ${p => p.$me ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};
-  background: ${p => p.$me ? 'var(--brand)' : '#f3f4f6'};
-  color: ${p => p.$me ? '#fff' : 'var(--fg)'};
+  background: ${p => p.$me ? 'var(--brand)' : '#ffffff'};
+  color: ${p => p.$me ? '#ffffff' : '#1f2937'};
   font-size: 13.5px;
   line-height: 1.5;
+  box-shadow: ${p => p.$me ? 'none' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'};
+  border: ${p => p.$me ? 'none' : '1px solid #e2e8f0'};
+  word-break: break-word;
 `;
 
 export const BubbleMeta = styled.div<{ $me: boolean }>`
   font-size: 11px;
-  color: var(--muted-2);
-  margin-top: 4px;
+  color: #9ca3af;
+  margin-top: 2px;
   text-align: ${p => p.$me ? 'right' : 'left'};
   font-weight: 500;
+  padding: 0 4px;
 `;
 
 export const InputRow = styled.div`
   display: flex;
-  gap: 8px;
-  padding: 12px 14px;
-  border-top: 1px solid #f3f4f6;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
 `;
 
 export const Input = styled.input`
   flex: 1;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  padding: 10px 16px;
   font: inherit;
   font-size: 13.5px;
-  color: var(--fg);
-  background: #f9fafb;
+  color: #1f2937;
+  background: #f1f5f9;
   outline: none;
-  transition: border-color 0.15s;
+  transition: background-color 0.15s;
 
   &:focus {
-    border-color: var(--brand);
-    background: #fff;
+    background: #e2e8f0;
   }
 
-  &::placeholder { color: #9ca3af; }
+  &::placeholder {
+    color: #9ca3af;
+  }
 `;
 
 export const SendBtn = styled.button`
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 50%;
   background: var(--brand);
   color: #fff;
   border: none;
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
   flex-shrink: 0;
   transition: background 0.15s, transform 0.12s;
 
-  &:hover { background: var(--brand-hover); transform: scale(1.05); }
-  &:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+  &:hover:not(:disabled) {
+    background: var(--brand-hover);
+    transform: scale(1.05);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  &:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
 `;

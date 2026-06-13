@@ -9,9 +9,21 @@ interface ChatFabProps {
   teacher: string;
   initialMessages: MessageInfo[];
   unreadCount?: number;
+  classroom?: string;
 }
 
-const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount = 2 }) => {
+const getInitials = (name: string): string => {
+  if (!name) return '';
+  const cleanName = name.replace(/^(cô|thầy|anh|chị|ông|bà)\s+/i, '').trim();
+  const parts = cleanName.split(/\s+/);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  const firstInitial = parts[0].charAt(0).toUpperCase();
+  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+  return `${firstInitial}${lastInitial}`;
+};
+
+const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount = 2, classroom }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessageInfo[]>(initialMessages);
   const [draft, setDraft] = useState<string>('');
@@ -55,10 +67,12 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount
       {open && (
         <S.Panel>
           <S.PanelHead>
-            <S.TeacherAv>👩‍🏫</S.TeacherAv>
+            <S.TeacherAv>{getInitials(teacher)}</S.TeacherAv>
             <S.TeacherInfo>
               <S.TeacherName>{teacher}</S.TeacherName>
-              <S.TeacherStatus>Đang hoạt động</S.TeacherStatus>
+              <S.TeacherStatus>
+                Đang hoạt động {classroom ? `· ${classroom}` : ''}
+              </S.TeacherStatus>
             </S.TeacherInfo>
             <S.CloseBtn onClick={() => setOpen(false)}>
               <IconClose size={16} />
@@ -70,7 +84,7 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount
               <S.Bubble key={msg.id} $me={!!msg.isMe}>
                 <S.BubbleText $me={!!msg.isMe}>{msg.preview}</S.BubbleText>
                 <S.BubbleMeta $me={!!msg.isMe}>
-                  {msg.isMe ? 'Bạn' : msg.sender} · {msg.time}
+                  {msg.time}
                 </S.BubbleMeta>
               </S.Bubble>
             ))}
@@ -79,7 +93,7 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount
 
           <S.InputRow>
             <S.Input
-              placeholder="Nhắn tin cho giáo viên..."
+              placeholder="Nhắn tin cho cô..."
               value={draft}
               onChange={e => setDraft(e.target.value)}
               onKeyDown={handleKey}
