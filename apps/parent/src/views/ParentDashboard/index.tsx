@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { parentDashboardService } from '@/services/ParentDashboardService';
 import { ParentDashboardModel } from '@/config/types/dashboard';
+import { useStudent } from '@/contexts/StudentContext';
+import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
+import { formatDateFromBigInt } from '@/utils/Student/Date';
 import * as S from './styles';
 
 import UrgentNoticeBanner from './components/UrgentNoticeBanner';
@@ -19,7 +22,7 @@ import ChatFab from './components/ChatFab';
 export function ParentDashboard(): React.ReactElement {
   const [data, setData] = useState<ParentDashboardModel | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [chatOpen, setChatOpen] = useState<boolean>(false);
+  const { activeStudent } = useStudent();
 
   useEffect(() => {
     parentDashboardService
@@ -29,7 +32,7 @@ export function ParentDashboard(): React.ReactElement {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading || !data) {
+  if (loading || !data || !activeStudent) {
     return (
       <S.DashboardContainer>
         <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
@@ -37,7 +40,22 @@ export function ParentDashboard(): React.ReactElement {
     );
   }
 
-  const activeChild = data.children[data.activeChildIndex];
+  const avatarGradient = getAvatarGradient(activeStudent.studentId);
+  const avatarInitial = getInitials(activeStudent.fullName);
+
+  const childHero = {
+    name: activeStudent.fullName,
+    className: activeStudent.className,
+    teacher: activeStudent.academicYearName,
+    branch: activeStudent.campusName,
+    statusTags: [
+      { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
+      { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
+      { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
+    ],
+    checkinTime: 'Đang học',
+    checkinSub: 'Đúng giờ · Cổng A',
+  };
 
   return (
     <S.DashboardContainer>
@@ -46,9 +64,10 @@ export function ParentDashboard(): React.ReactElement {
 
       {/* Child profile card */}
       <ChildHeroWidget
-        data={data.childHero}
-        avatarGradient={activeChild.avatarColor}
-        avatarInitial={activeChild.avatarInitial}
+        data={childHero}
+        avatarGradient={avatarGradient}
+        avatarInitial={avatarInitial}
+        avatarUrl={activeStudent.avatarUrl}
         onAbsence={() => alert('Báo nghỉ học')}
         onMessage={() => alert('Nhắn tin với giáo viên')}
       />
@@ -77,8 +96,8 @@ export function ParentDashboard(): React.ReactElement {
         <S.RightColumn>
           {/* Camera */}
           <CameraWidget
-            className={activeChild.className}
-            teacher={activeChild.teacher}
+            className={activeStudent.className}
+            teacher={activeStudent.academicYearName}
           />
 
           {/* Daily lesson */}
@@ -91,10 +110,10 @@ export function ParentDashboard(): React.ReactElement {
 
       {/* Floating chat FAB */}
       <ChatFab
-        teacher={activeChild.teacher}
+        teacher={activeStudent.academicYearName}
         initialMessages={data.messages}
         unreadCount={data.messages.filter(m => m.unread && !m.isMe).length}
-        classroom={activeChild.className}
+        classroom={activeStudent.className}
       />
     </S.DashboardContainer>
   );

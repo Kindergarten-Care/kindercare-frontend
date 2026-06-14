@@ -1,4 +1,4 @@
-import { LoginView } from '@/views/login';
+import { LoginView } from '@/views/Login';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 

@@ -56,7 +56,7 @@ export const Brand = styled.div<{ $collapsed: boolean }>`
 export const BrandWrapper = styled.div<{ $collapsed: boolean }>`
   display: flex;
   flex-direction: column;
-  align-items: ${p => p.$collapsed ? 'center' : 'flex-start'};
+  align-items: center;
   justify-content: center;
   width: 100%;
   gap: 1px;

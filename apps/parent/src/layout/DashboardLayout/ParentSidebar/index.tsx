@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@kindercare/core';
+import { useStudent } from '@/contexts/StudentContext';
+import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import * as S from './styles';
 import {
   IconHome, IconDiary, IconChat, IconMenu, IconProfile,
@@ -17,17 +19,12 @@ interface ParentSidebarProps {
   onToggle: () => void;
 }
 
-const CHILDREN_MOCK = [
-  { id: 'c1', name: 'Nguyễn Bảo Châu', className: 'Lớp Hoa Hướng Dương', gradient: 'linear-gradient(140deg,#0a7a4c,#005A36)', initial: 'BC' },
-  { id: 'c2', name: 'Nguyễn Minh Khôi', className: 'Lớp Mặt Trời Nhỏ', gradient: 'linear-gradient(140deg,#1e40af,#2563EB)', initial: 'MK' },
-];
-
 const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) => {
   const pathname = usePathname();
   const locale = useLocale();
   const { user, logout } = useAuth();
+  const { children: kids, activeStudent, setActiveStudent } = useStudent();
 
-  const [childIdx, setChildIdx] = useState<number>(0);
   const [csOpen, setCsOpen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const csRef = useRef<HTMLDivElement>(null);
@@ -42,12 +39,18 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const activeChild = CHILDREN_MOCK[childIdx];
-
   const handleLogout = async (e: React.MouseEvent): Promise<void> => {
     e.stopPropagation();
     await logout();
   };
+
+  const activeChild = activeStudent ? {
+    id: activeStudent.studentId,
+    name: activeStudent.fullName,
+    className: activeStudent.className,
+    gradient: getAvatarGradient(activeStudent.studentId),
+    initial: getInitials(activeStudent.fullName)
+  } : null;
 
   return (
     <S.SidebarContainer $collapsed={collapsed}>
@@ -58,56 +61,72 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.Brand $collapsed={collapsed}>
         <S.BrandWrapper $collapsed={collapsed}>
           <S.LogoImg
-            src="https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png"
+            src="https://media.kindercare.app/KinderCare%20Logo/KC_ParentDashboardLogo.png"
             alt="KinderCare"
             $collapsed={collapsed}
           />
-          {!collapsed && <S.BrandSubText>Cổng phụ huynh</S.BrandSubText>}
         </S.BrandWrapper>
       </S.Brand>
 
       {/* Child Switcher */}
-      <S.CSwitcher $collapsed={collapsed} ref={csRef}>
-        <S.CSTrigger $collapsed={collapsed} onClick={() => setCsOpen(o => !o)}>
-          <S.CSAv $gradient={activeChild.gradient}>{activeChild.initial}</S.CSAv>
-          <S.CSInfo $hidden={collapsed}>
-            <S.CSName>{activeChild.name}</S.CSName>
-            <S.CSClass>{activeChild.className}</S.CSClass>
-          </S.CSInfo>
-          <S.CSChev $open={csOpen} $hidden={collapsed}>
-            <IconChevronDown size={14} />
-          </S.CSChev>
-        </S.CSTrigger>
+      {activeChild && (
+        <S.CSwitcher $collapsed={collapsed} ref={csRef}>
+          <S.CSTrigger $collapsed={collapsed} onClick={() => setCsOpen(o => !o)}>
+            <S.CSAv $gradient={activeChild.gradient}>
+              {activeStudent && activeStudent.avatarUrl ? (
+                <img src={activeStudent.avatarUrl} alt={activeChild.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+              ) : (
+                activeChild.initial
+              )}
+            </S.CSAv>
+            <S.CSInfo $hidden={collapsed}>
+              <S.CSName>{activeChild.name}</S.CSName>
+              <S.CSClass>{activeChild.className}</S.CSClass>
+            </S.CSInfo>
+            <S.CSChev $open={csOpen} $hidden={collapsed}>
+              <IconChevronDown size={14} />
+            </S.CSChev>
+          </S.CSTrigger>
 
-        {csOpen && (
-          <S.CSMenu $collapsed={collapsed}>
-            <S.CSMenuH>Chọn hồ sơ bé</S.CSMenuH>
-            {CHILDREN_MOCK.map((child, idx) => (
-              <S.CSOption
-                key={child.id}
-                $active={idx === childIdx}
-                onClick={() => { setChildIdx(idx); setCsOpen(false); }}
-              >
-                <S.CSAv $gradient={child.gradient} style={{ width: 34, height: 34, fontSize: 12 }}>
-                  {child.initial}
-                </S.CSAv>
-                <div>
-                  <S.CSOptName>{child.name}</S.CSOptName>
-                  <S.CSOptClass>{child.className}</S.CSOptClass>
-                </div>
-                {idx === childIdx && (
-                  <S.CSCheck>
-                    <IconCheck size={14} color="#005A36" />
-                  </S.CSCheck>
-                )}
-              </S.CSOption>
-            ))}
-            <S.CSAdd>
-              <IconPlus size={14} /> Thêm hồ sơ bé
-            </S.CSAdd>
-          </S.CSMenu>
-        )}
-      </S.CSwitcher>
+          {csOpen && (
+            <S.CSMenu $collapsed={collapsed}>
+              <S.CSMenuH>Chọn hồ sơ bé</S.CSMenuH>
+              {kids.map((child) => {
+                const isSelected = child.studentId === activeStudent?.studentId;
+                const grad = getAvatarGradient(child.studentId);
+                const init = getInitials(child.fullName);
+                return (
+                  <S.CSOption
+                    key={child.studentId}
+                    $active={isSelected}
+                    onClick={() => { setActiveStudent(child); setCsOpen(false); }}
+                  >
+                    <S.CSAv $gradient={grad} style={{ width: 34, height: 34, fontSize: 12 }}>
+                      {child.avatarUrl ? (
+                        <img src={child.avatarUrl} alt={child.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                      ) : (
+                        init
+                      )}
+                    </S.CSAv>
+                    <div>
+                      <S.CSOptName>{child.fullName}</S.CSOptName>
+                      <S.CSOptClass>{child.className}</S.CSOptClass>
+                    </div>
+                    {isSelected && (
+                      <S.CSCheck>
+                        <IconCheck size={14} color="#005A36" />
+                      </S.CSCheck>
+                    )}
+                  </S.CSOption>
+                );
+              })}
+              <S.CSAdd>
+                <IconPlus size={14} /> Thêm hồ sơ bé
+              </S.CSAdd>
+            </S.CSMenu>
+          )}
+        </S.CSwitcher>
+      )}
 
       <S.Divider />
 

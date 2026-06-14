@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
+import { useAuth } from '@kindercare/core';
 import ParentSidebar from './ParentSidebar';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
@@ -12,15 +13,20 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-function getGreeting(): string {
+function getGreeting(locale: 'vi' | 'en' = 'vi'): string {
   const h = new Date().getHours();
+  if (locale === 'en') {
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
   if (h < 12) return 'Chào buổi sáng';
   if (h < 18) return 'Chào buổi chiều';
   return 'Chào buổi tối';
 }
 
-function getFormattedDate(): string {
-  return new Date().toLocaleDateString('vi-VN', {
+function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
+  return new Date().toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -33,10 +39,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const locale = useLocale() as 'vi' | 'en';
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
     if (nextLocale === locale) return;
     router.replace(pathname, { locale: nextLocale });
+  };
+
+  const getGreetingText = (): string => {
+    const greeting = getGreeting(locale);
+    if (!user) return `${greeting} 👋`;
+
+    const fullName = user.fullName || user.username || '';
+    const nameParts = fullName.trim().split(/\s+/);
+    const displayNameParts = nameParts.slice(-2);
+    const shortName = displayNameParts.join(' ');
+
+    let rel = user.relationship?.trim().toLowerCase() || '';
+    if (locale === 'en') {
+      if (['cha', 'ba', 'bố', 'father', 'dad', 'daddy'].includes(rel)) rel = 'daddy';
+      else if (['mẹ', 'má', 'mother', 'mom', 'mommy'].includes(rel)) rel = 'mommy';
+      
+      const displayName = rel ? `${rel} ${shortName}` : shortName;
+      return `${greeting}, ${displayName} 👋`;
+    } else {
+      if (['cha', 'ba', 'bố', 'father', 'dad'].includes(rel)) rel = 'ba';
+      else if (['mẹ', 'má', 'mother', 'mom'].includes(rel)) rel = 'mẹ';
+      
+      const displayName = rel ? `${rel} ${shortName}` : shortName;
+      return `${greeting}, ${displayName} 👋`;
+    }
   };
 
   return (
@@ -47,8 +79,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <S.HeaderBand>
           <S.HeaderInner>
             <S.Greet>
-              <S.GreetName>{getGreeting()} 👋</S.GreetName>
-              <S.GreetDate>{getFormattedDate()}</S.GreetDate>
+              <S.GreetName>{getGreetingText()}</S.GreetName>
+              <S.GreetDate>{getFormattedDate(locale)}</S.GreetDate>
             </S.Greet>
 
             <S.Actions>
@@ -69,7 +101,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
 
               <S.AvatarWrap>
-                <S.Avatar>M</S.Avatar>
+                <S.Avatar>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.Avatar>
                 <S.AvatarOnline />
               </S.AvatarWrap>
             </S.Actions>

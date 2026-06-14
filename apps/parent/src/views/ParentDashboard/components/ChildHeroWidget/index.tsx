@@ -9,6 +9,7 @@ interface ChildHeroWidgetProps {
   data: ChildHeroInfo;
   avatarGradient?: string;
   avatarInitial?: string;
+  avatarUrl?: string | null;
   onAbsence?: () => void;
   onMessage?: () => void;
 }
@@ -17,13 +18,20 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
   data,
   avatarGradient = 'linear-gradient(140deg,#0a7a4c,#005A36)',
   avatarInitial = 'BC',
+  avatarUrl,
   onAbsence,
   onMessage,
 }) => {
   return (
     <S.HeroContainer>
       <S.AvWrap>
-        <S.Av $gradient={avatarGradient}>{avatarInitial}</S.Av>
+        <S.Av $gradient={avatarGradient}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+          ) : (
+            avatarInitial
+          )}
+        </S.Av>
         <S.StatusRing>
           <S.PulseDot />
         </S.StatusRing>
