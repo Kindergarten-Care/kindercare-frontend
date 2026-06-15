@@ -18,10 +18,25 @@ import DailyLessonWidget from './components/DailyLessonWidget';
 import FeeAlertWidget from './components/FeeAlertWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
 import ChatFab from './components/ChatFab';
+import LeaveRequestPopup from './components/LeaveRequestPopup';
+import MedicationRequestPopup from './components/MedicationRequestPopup';
+
+const getTeacherDisplayName = (teacher: { fullName: string }) => {
+  if (!teacher) return '';
+  const fullName = teacher.fullName || '';
+  if (/^(cô|thầy)\b/i.test(fullName)) {
+    return fullName;
+  }
+  const isMale = /\b(Văn|Huy|Hùng|Tuấn|Dũng|Hoàng|Minh|Hải|Phong|Đạt|Thành|Nam|Quốc|Sơn|Trung|Đức|Khang|Bách)\b/i.test(fullName);
+  const prefix = isMale ? 'Thầy' : 'Cô';
+  return `${prefix} ${fullName}`;
+};
 
 export function ParentDashboard(): React.ReactElement {
   const [data, setData] = useState<ParentDashboardModel | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
+  const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
   const { activeStudent } = useStudent();
 
   useEffect(() => {
@@ -43,10 +58,13 @@ export function ParentDashboard(): React.ReactElement {
   const avatarGradient = getAvatarGradient(activeStudent.studentId);
   const avatarInitial = getInitials(activeStudent.fullName);
 
+  const leadTeacher = activeStudent.teachers && activeStudent.teachers.length > 0 ? activeStudent.teachers[0] : null;
+
   const childHero = {
     name: activeStudent.fullName,
     className: activeStudent.className,
-    teacher: activeStudent.academicYearName,
+    teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Chưa phân công',
+    academicYear: activeStudent.academicYearName,
     branch: activeStudent.campusName,
     statusTags: [
       { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
@@ -68,7 +86,7 @@ export function ParentDashboard(): React.ReactElement {
         avatarGradient={avatarGradient}
         avatarInitial={avatarInitial}
         avatarUrl={activeStudent.avatarUrl}
-        onAbsence={() => alert('Báo nghỉ học')}
+        onAbsence={() => setIsLeavePopupOpen(true)}
         onMessage={() => alert('Nhắn tin với giáo viên')}
       />
 
@@ -80,8 +98,8 @@ export function ParentDashboard(): React.ReactElement {
 
       {/* Quick actions — 4 compact buttons */}
       <QuickActionsStrip
-        onAbsence={() => alert('Báo nghỉ học')}
-        onMedication={() => alert('Dặn dò thuốc')}
+        onAbsence={() => setIsLeavePopupOpen(true)}
+        onMedication={() => setIsMedicationPopupOpen(true)}
         onFee={() => alert('Đóng học phí')}
         onDiary={() => alert('Nhật ký')}
       />
@@ -110,10 +128,24 @@ export function ParentDashboard(): React.ReactElement {
 
       {/* Floating chat FAB */}
       <ChatFab
-        teacher={activeStudent.academicYearName}
+        teacherName={leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Giáo viên'}
         initialMessages={data.messages}
         unreadCount={data.messages.filter(m => m.unread && !m.isMe).length}
         classroom={activeStudent.className}
+      />
+
+      <LeaveRequestPopup
+        isOpen={isLeavePopupOpen}
+        onClose={() => setIsLeavePopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <MedicationRequestPopup
+        isOpen={isMedicationPopupOpen}
+        onClose={() => setIsMedicationPopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
       />
     </S.DashboardContainer>
   );

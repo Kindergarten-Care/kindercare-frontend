@@ -1,3 +1,11 @@
+export interface TeacherApiDto {
+  teacherId: number;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  roleInClass: string;
+}
+
 export interface StudentApiDto {
   studentId: number;
   fullName: string;
@@ -18,6 +26,15 @@ export interface StudentApiDto {
   campusAddress: string;
   relationship: string;
   isPrimary: number;
+  teachers?: TeacherApiDto[];
+}
+
+export interface TeacherDomainModel {
+  teacherId: number;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  roleInClass: string;
 }
 
 export interface StudentDomainModel {
@@ -40,4 +57,5 @@ export interface StudentDomainModel {
   campusAddress: string;
   relationship: string;
   isPrimary: number;
+  teachers?: TeacherDomainModel[];
 }

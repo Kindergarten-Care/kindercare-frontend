@@ -22,6 +22,13 @@ export class StudentMapper {
       campusAddress: dto.campusAddress,
       relationship: dto.relationship,
       isPrimary: dto.isPrimary,
+      teachers: dto.teachers ? dto.teachers.map(t => ({
+        teacherId: t.teacherId,
+        fullName: t.fullName,
+        phoneNumber: t.phoneNumber,
+        email: t.email,
+        roleInClass: t.roleInClass,
+      })) : [],
     };
   }
 

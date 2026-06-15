@@ -19,6 +19,7 @@ export interface ChildHeroInfo {
   statusTags: { label: string; type: 'green' | 'blue' | 'neutral' | 'yellow' }[];
   checkinTime: string;
   checkinSub: string;
+  academicYear?: string;
 }
 
 export interface ScheduleItem {

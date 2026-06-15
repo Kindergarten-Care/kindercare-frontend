@@ -56,8 +56,8 @@ export const Panel = styled.div`
   bottom: 28px;
   right: 28px;
   z-index: 90;
-  width: 380px;
-  max-height: 560px;
+  width: 440px;
+  max-height: 640px;
   border-radius: 20px;
   background: #fff;
   box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.16);

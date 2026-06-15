@@ -3,7 +3,7 @@
 import React from 'react';
 import * as S from './styles';
 import { ChildHeroInfo } from '@/config/types/dashboard';
-import { IconSchool, IconTeacher, IconPin, IconAbsence, IconChat } from '@/assets/icons/dashboard';
+import { IconSchool, IconTeacher, IconPin, IconAbsence, IconChat, IconCalendar } from '@/assets/icons/dashboard';
 
 interface ChildHeroWidgetProps {
   data: ChildHeroInfo;
@@ -42,6 +42,7 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
         <S.MetaRow>
           <S.Chip><IconSchool size={13} /> {data.className}</S.Chip>
           <S.Chip><IconTeacher size={13} /> {data.teacher}</S.Chip>
+          {data.academicYear && <S.Chip><IconCalendar size={13} /> {data.academicYear}</S.Chip>}
           <S.Chip><IconPin size={13} /> {data.branch}</S.Chip>
         </S.MetaRow>
         <S.CheckinBadge>

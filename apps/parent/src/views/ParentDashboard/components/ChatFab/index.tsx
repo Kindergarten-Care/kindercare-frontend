@@ -6,7 +6,7 @@ import { MessageInfo } from '@/config/types/dashboard';
 import { IconChat, IconClose, IconSend } from '@/assets/icons/dashboard';
 
 interface ChatFabProps {
-  teacher: string;
+  teacherName: string;
   initialMessages: MessageInfo[];
   unreadCount?: number;
   classroom?: string;
@@ -23,7 +23,7 @@ const getInitials = (name: string): string => {
   return `${firstInitial}${lastInitial}`;
 };
 
-const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount = 2, classroom }) => {
+const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadCount = 2, classroom }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessageInfo[]>(initialMessages);
   const [draft, setDraft] = useState<string>('');
@@ -67,11 +67,11 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacher, initialMessages, unreadCount
       {open && (
         <S.Panel>
           <S.PanelHead>
-            <S.TeacherAv>{getInitials(teacher)}</S.TeacherAv>
+            <S.TeacherAv>{getInitials(teacherName)}</S.TeacherAv>
             <S.TeacherInfo>
-              <S.TeacherName>{teacher}</S.TeacherName>
+              <S.TeacherName>{teacherName} - GV Lớp {classroom}</S.TeacherName>
               <S.TeacherStatus>
-                Đang hoạt động {classroom ? `· ${classroom}` : ''}
+                Đang hoạt động
               </S.TeacherStatus>
             </S.TeacherInfo>
             <S.CloseBtn onClick={() => setOpen(false)}>
