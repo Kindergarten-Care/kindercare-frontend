@@ -1,8 +1,14 @@
 import React from 'react';
 import * as S from './styles';
 import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { usePathname, useRouter } from '@/i18n/routing';
 
 export const TeacherSidebar: React.FC = () => {
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  const isDashboardActive = pathname === '/';
+
   return (
     <S.SidebarContainer>
       <S.LogoContainer>
@@ -10,7 +16,7 @@ export const TeacherSidebar: React.FC = () => {
         <h2>KinderCare</h2>
       </S.LogoContainer>
       <S.NavList>
-        <S.NavItem $active>
+        <S.NavItem $active={isDashboardActive} onClick={() => router.push('/')}>
           <LayoutDashboard size={20} />
           Bảng điều khiển
         </S.NavItem>

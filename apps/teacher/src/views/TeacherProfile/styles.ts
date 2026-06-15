@@ -17,6 +17,34 @@ export const ProfileHeader = styled.div`
   width: 100%;
 `;
 
+export const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+
+  &:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+    border-color: #d1d5db;
+  }
+`;
+
 export const ProfileTitle = styled.h1`
   font-size: 24px;
   font-weight: 700;
