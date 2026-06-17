@@ -86,8 +86,24 @@ export function LeaveRequestModal({
         </ModalBody>
 
         <ModalFooter>
-          <RejectBtn onClick={() => onReject(leaveRequest.id)}>Từ chối</RejectBtn>
-          <ApproveBtn onClick={() => onApprove(leaveRequest.id)}>Xác nhận & Duyệt</ApproveBtn>
+          {leaveRequest.status === 'PENDING' ? (
+            <>
+              <RejectBtn onClick={() => onReject(leaveRequest.id)}>Từ chối</RejectBtn>
+              <ApproveBtn onClick={() => onApprove(leaveRequest.id)}>Xác nhận & Duyệt</ApproveBtn>
+            </>
+          ) : (
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: leaveRequest.status === 'APPROVED' ? '#15803d' : '#b91c1c' }}>
+                Trạng thái đơn: {leaveRequest.status === 'APPROVED' ? 'Đã duyệt phép' : 'Đã từ chối'}
+              </span>
+              <button 
+                onClick={onClose}
+                style={{ padding: '8px 16px', fontSize: '0.875rem', fontWeight: 600, background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Đóng
+              </button>
+            </div>
+          )}
         </ModalFooter>
       </ModalCard>
     </ModalBackdrop>

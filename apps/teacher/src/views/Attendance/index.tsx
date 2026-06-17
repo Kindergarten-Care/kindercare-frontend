@@ -55,6 +55,14 @@ import {
   TrackerStatusBadge,
 } from './styles';
 
+const getFormattedToday = (): string => {
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export function AttendanceView(): React.ReactElement {
   const {
     filteredStudents,
@@ -66,6 +74,11 @@ export function AttendanceView(): React.ReactElement {
     setStatusFilter,
     statistics,
     
+    // Classes
+    classes,
+    selectedClassId,
+    setSelectedClassId,
+
     // Quick Attendance Modal
     quickAttendanceModalOpen,
     setQuickAttendanceModalOpen,
@@ -121,7 +134,7 @@ export function AttendanceView(): React.ReactElement {
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            Hôm nay, 18/05/2026
+            Hôm nay, {getFormattedToday()}
           </DateHeader>
 
           <ViewModeToggleContainer>
@@ -256,6 +269,22 @@ export function AttendanceView(): React.ReactElement {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </SearchInputWrapper>
+
+        {classes.length > 0 && (
+          <FilterDropdownWrapper>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#64748b' }}>Lớp học:</span>
+            <CustomSelect 
+              value={selectedClassId || ''} 
+              onChange={(e) => setSelectedClassId(Number(e.target.value))}
+            >
+              {classes.map((cls) => (
+                <option key={cls.classId} value={cls.classId}>
+                  {cls.className} ({cls.studentCount} học sinh)
+                </option>
+              ))}
+            </CustomSelect>
+          </FilterDropdownWrapper>
+        )}
       </FilterBar>
 
       {/* Main Grid View Switch */}
@@ -282,7 +311,7 @@ export function AttendanceView(): React.ReactElement {
                         <StudentMeta>
                           <StudentName>{student.name}</StudentName>
                           <StudentIdBadge>ID: {student.id}</StudentIdBadge>
-                          {student.hasActiveLeaveRequest && student.leaveRequestId && (
+                          {student.leaveRequestId && (
                             <div>
                               <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -292,7 +321,7 @@ export function AttendanceView(): React.ReactElement {
                                   <line x1="16" y1="17" x2="8" y2="17"></line>
                                   <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
-                                Xem đơn xin nghỉ
+                                Xem đơn xin nghỉ {student.hasActiveLeaveRequest ? '(Chờ duyệt)' : '(Đã duyệt)'}
                               </LeaveRequestBadge>
                             </div>
                           )}
@@ -401,7 +430,7 @@ export function AttendanceView(): React.ReactElement {
                       <TrackerInfoRow>
                         <TrackerInfoLabel>Đơn xin nghỉ từ phụ huynh</TrackerInfoLabel>
                         <TrackerInfoValue>
-                          {student.hasActiveLeaveRequest && student.leaveRequestId ? (
+                          {student.leaveRequestId ? (
                             <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -409,11 +438,11 @@ export function AttendanceView(): React.ReactElement {
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
                                 <line x1="16" y1="17" x2="8" y2="17"></line>
                               </svg>
-                              Xem đơn & Chi tiết xin nghỉ
+                              Xem đơn & Chi tiết {student.hasActiveLeaveRequest ? '(Chờ duyệt)' : '(Đã duyệt)'}
                             </LeaveRequestBadge>
                           ) : (
                             <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: '500' }}>
-                              Đã phê duyệt đơn xin nghỉ
+                              Không có đơn xin nghỉ
                             </span>
                           )}
                         </TrackerInfoValue>
