@@ -9,9 +9,15 @@
   ],
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build"
+    "clean": "node scripts/clean-next-cache.js",
+    "prebuild": "node scripts/clean-next-cache.js",
+    "build": "turbo build",
+    "sync-i18n": "node scripts/sync-i18n.js"
   },
   "devDependencies": {
+    "axios": "^1.15.2",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.5",
     "turbo": "latest"
   }
 }

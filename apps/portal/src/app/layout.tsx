@@ -1,4 +1,5 @@
-import StyledComponentsRegistry from '@/lib/registry';
+import StyledComponentsRegistry from '../lib/registry';
+import { ThemeProvider } from '../theme/ThemeProvider';
 
 export const metadata = {
   title: 'KinderCare Portal Login',
@@ -14,9 +15,11 @@ export default function RootLayout({
     <html lang="vi">
       <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>
         <StyledComponentsRegistry>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </StyledComponentsRegistry>
       </body>
     </html>
-  );
+  )
 }

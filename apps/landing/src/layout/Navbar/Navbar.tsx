@@ -3,7 +3,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LinkButton, Responsive } from '@/UIKit';
-import { MOBILE_NAV_LINKS, NAV_LINKS, PARENT_PORTAL_HREF } from '@/resources/landingContent';
+import { LanguageSwitcher, useTranslation } from '@kindercare/ui';
+import { useAppRouter } from '@kindercare/core';
 import { SECTION_IDS } from '@/config/constants';
 import { useNavScroll } from '@/hooks';
 import {
@@ -24,9 +25,20 @@ import {
 export function Navbar(): React.ReactElement {
   const scrolled = useNavScroll();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { locale, t } = useTranslation();
+
+  const { urls } = useAppRouter({ locale });
+  const parentLoginHref = urls.parentLogin;
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const toggleDrawer = useCallback(() => setDrawerOpen((value) => !value), []);
+
+  const handleLocaleChange = useCallback((newLocale: 'vi' | 'en') => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    const newPath = newLocale === 'vi' ? '/' : `/${newLocale}`;
+    window.location.href = `${newPath}${hash}`;
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -35,6 +47,20 @@ export function Navbar(): React.ReactElement {
       document.body.style.overflow = '';
     };
   }, [drawerOpen]);
+
+  const translatedNavLinks = [
+    { href: `#${SECTION_IDS.ENVIRONMENT}`, label: t('Landing.Nav.learningEnvironment') },
+    { href: `#${SECTION_IDS.TECHNOLOGY}`, label: t('Landing.Nav.technology') },
+    { href: `#${SECTION_IDS.ENROLLMENT}`, label: t('Landing.Nav.enrollment') },
+    { href: `#${SECTION_IDS.CONTACT}`, label: t('Landing.Nav.contact') },
+  ];
+
+  const translatedMobileNavLinks = [
+    { href: `#${SECTION_IDS.ENVIRONMENT}`, label: t('Landing.Nav.mobile.learningEnvironment'), icon: '🌿' },
+    { href: `#${SECTION_IDS.TECHNOLOGY}`, label: t('Landing.Nav.technology'), icon: '📱' },
+    { href: `#${SECTION_IDS.ENROLLMENT}`, label: t('Landing.Nav.mobile.enrollmentTuition'), icon: '🎒' },
+    { href: `#${SECTION_IDS.CONTACT}`, label: t('Landing.Nav.mobile.contactConsultation'), icon: '📞' },
+  ];
 
   return (
     <>
@@ -61,7 +87,7 @@ export function Navbar(): React.ReactElement {
           <Responsive from="lg" display="contents">
             <nav aria-label="Main menu">
               <NavLinks>
-                {NAV_LINKS.map((link) => (
+                {translatedNavLinks.map((link) => (
                   <li key={link.href}>
                     <a href={link.href}>{link.label}</a>
                   </li>
@@ -72,12 +98,13 @@ export function Navbar(): React.ReactElement {
 
           <Responsive from="lg" display="contents">
             <NavCta>
-              <LinkButton href={PARENT_PORTAL_HREF} $variant="outline">
-                Đăng nhập phụ huynh
+              <LinkButton href={parentLoginHref} $variant="outline">
+                {t('Landing.Nav.parentPortal')}
               </LinkButton>
               <LinkButton href={`#${SECTION_IDS.CONTACT}`} $variant="primary">
-                Đăng ký tư vấn
+                {t('Landing.Nav.requestConsultation')}
               </LinkButton>
+              <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
             </NavCta>
           </Responsive>
 
@@ -121,7 +148,7 @@ export function Navbar(): React.ReactElement {
             />
           </DrawerHeader>
           <DrawerLinks aria-label="Mobile navigation links">
-            {MOBILE_NAV_LINKS.map((link) => (
+            {translatedMobileNavLinks.map((link) => (
               <a key={link.href} href={link.href} onClick={closeDrawer}>
                 {link.icon ? `${link.icon} ` : ''}
                 {link.label}
@@ -129,15 +156,18 @@ export function Navbar(): React.ReactElement {
             ))}
           </DrawerLinks>
           <DrawerCta>
-            <LinkButton href={PARENT_PORTAL_HREF} $variant="outline" onClick={closeDrawer}>
-              Đăng nhập phụ huynh
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+              <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
+            </div>
+            <LinkButton href={parentLoginHref} $variant="outline" onClick={closeDrawer}>
+              {t('Landing.Nav.parentPortal')}
             </LinkButton>
             <LinkButton
               href={`#${SECTION_IDS.CONTACT}`}
               $variant="primary"
               onClick={closeDrawer}
             >
-              Đăng ký tư vấn ngay
+              {t('Landing.Nav.mobile.registerNow')}
             </LinkButton>
           </DrawerCta>
         </NavDrawer>

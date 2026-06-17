@@ -4,7 +4,6 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
-import LanguageSwitcher from '@/layout/LanguageSwitcher';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -58,7 +57,6 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <SocketProvider>
-              <LanguageSwitcher />
               {children}
             </SocketProvider>
           </StyledComponentsRegistry>

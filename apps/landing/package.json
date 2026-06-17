@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@kindercare/core": "*",
     "@kindercare/ui": "*",
     "next": "16.2.3",
     "react": "19.2.4",
@@ -19,6 +20,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
     "typescript": "^5"
   }
 }

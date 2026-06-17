@@ -1,10 +1,12 @@
+import '../globals.css';
 import StyledComponentsRegistry from '@/lib/registry';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
-import LanguageSwitcher from '@/layout/LanguageSwitcher';
+import { AuthProvider } from '@kindercare/core';
+import ClientAppWrapper from '@/components/ClientAppWrapper';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -54,13 +56,16 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              <LanguageSwitcher />
-              {children}
-            </SocketProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <ClientAppWrapper>
+                  {children}
+                </ClientAppWrapper>
+              </SocketProvider>
+            </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>
