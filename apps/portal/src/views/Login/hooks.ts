@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient, setSession } from '@kindercare/core';
 
 export type UserRole = 'principal' | 'teacher';
 
@@ -53,7 +54,7 @@ export const useLoginState = (): UseLoginStateReturn => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const newErrors: { username?: string; password?: string } = {};
@@ -71,13 +72,32 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     setIsSubmitting(true);
 
-    // Redirect based on role using Next.js router
-    const roleRoutes: Record<UserRole, string> = {
-      principal: '/principal',
-      teacher: '/teacher',
-    };
+    try {
+      const endpoint = role === 'teacher' ? '/auth/teacher/login' : '/auth/principal/login';
+      const response = await apiClient.post(endpoint, {
+        identifier: username,
+        password: password,
+      });
 
-    router.push(roleRoutes[role]);
+      const { token } = response.data.data;
+      
+      // Save session in sessionStorage (expires in 30 minutes, or longer if rememberMe is checked, e.g. 3 days)
+      const expireMinutes = rememberMe ? 3 * 24 * 60 : 30;
+      setSession(token, role, expireMinutes);
+
+      // Redirect based on role using full URL for separate ports in local development
+      const nextUrl = role === 'teacher'
+        ? (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher'
+        : (process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL || 'http://localhost:3002') + '/principal';
+
+      window.location.href = nextUrl;
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const apiMessage = error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.';
+      setErrors({ username: apiMessage });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
@@ -94,3 +114,4 @@ export const useLoginState = (): UseLoginStateReturn => {
     handleSubmit,
   };
 };
+
