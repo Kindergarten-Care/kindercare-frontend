@@ -95,8 +95,8 @@ export const useLoginState = (): UseLoginStateReturn => {
 
       // Redirect based on role
       const domainMapping: Record<UserRole, string> = {
-        principal: 'http://localhost:3002',
-        teacher: 'http://localhost:3001/teacher',
+        principal: process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL || 'http://localhost:3002',
+        teacher: `${process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001'}/teacher`,
       };
 
       const redirectUrl = new URL(domainMapping[role]);

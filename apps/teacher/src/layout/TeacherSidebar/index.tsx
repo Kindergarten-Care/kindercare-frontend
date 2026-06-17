@@ -2,10 +2,12 @@ import React from 'react';
 import * as S from './styles';
 import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const TeacherSidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
   
   const isDashboardActive = pathname === '/';
   const isAttendanceActive = pathname === '/attendance';
@@ -47,7 +49,7 @@ export const TeacherSidebar: React.FC = () => {
           <HelpCircle size={20} />
           Trợ giúp
         </S.NavItem>
-        <S.NavItem onClick={() => window.location.href = 'http://localhost:3005/login'}>
+        <S.NavItem onClick={logout}>
           <LogOut size={20} />
           Đăng xuất
         </S.NavItem>
