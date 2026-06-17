@@ -8,6 +8,7 @@ export const TeacherSidebar: React.FC = () => {
   const router = useRouter();
   
   const isDashboardActive = pathname === '/';
+  const isAttendanceActive = pathname === '/attendance';
 
   return (
     <S.SidebarContainer>
@@ -24,7 +25,7 @@ export const TeacherSidebar: React.FC = () => {
           <Users size={20} />
           Danh sách lớp
         </S.NavItem>
-        <S.NavItem>
+        <S.NavItem $active={isAttendanceActive} onClick={() => router.push('/attendance')}>
           <CheckSquare size={20} />
           Điểm danh
         </S.NavItem>

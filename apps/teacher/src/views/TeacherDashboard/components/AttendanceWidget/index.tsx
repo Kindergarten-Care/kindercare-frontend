@@ -1,7 +1,10 @@
 import React from 'react';
+import { useRouter } from '@/i18n/routing';
 import * as S from './styles';
 
 export const AttendanceWidget: React.FC = () => {
+  const router = useRouter();
+
   return (
     <S.WidgetContainer>
       <S.WidgetHeader>
@@ -41,7 +44,7 @@ export const AttendanceWidget: React.FC = () => {
         </S.StatItem>
       </S.StatsList>
 
-      <S.ActionButton>Điểm danh ngay</S.ActionButton>
+      <S.ActionButton onClick={() => router.push('/attendance')}>Điểm danh ngay</S.ActionButton>
     </S.WidgetContainer>
   );
 };
