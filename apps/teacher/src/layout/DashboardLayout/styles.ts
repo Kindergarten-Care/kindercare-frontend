@@ -8,7 +8,7 @@ export const DashboardContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background: ${props => props.theme.colors.bg};
-  font-family: ${props => props.theme.colors.fg};
+  font-family: ${props => props.theme.fonts.body};
 `;
 
 export const MainContent = styled.main`
@@ -70,7 +70,7 @@ export const SearchInput = styled.input`
   border: none;
   background: transparent;
   outline: none;
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-family: ${props => props.theme.fonts.body};
   font-size: 14px;
   color: #181D18;
   width: 100%;
@@ -141,7 +141,7 @@ export const ProfileInfo = styled.div`
 `;
 
 export const ProfileName = styled.span`
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-family: ${props => props.theme.fonts.body};
   font-size: 14px;
   font-weight: 700;
   color: #181D18;
@@ -149,7 +149,7 @@ export const ProfileName = styled.span`
 `;
 
 export const ProfileRole = styled.span`
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-family: ${props => props.theme.fonts.body};
   font-size: 12px;
   font-weight: 400;
   color: #3F493D;

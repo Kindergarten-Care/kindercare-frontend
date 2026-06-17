@@ -24,8 +24,8 @@ export const theme: AppTheme = {
     white: '#ffffff',
   },
   fonts: {
-    display: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif",
-    body: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif",
+    display: "var(--font-montserrat), 'Montserrat', sans-serif",
+    body: "var(--font-montserrat), 'Montserrat', sans-serif",
   },
   radius: {
     sm: '6px',
