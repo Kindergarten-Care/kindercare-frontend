@@ -29,7 +29,7 @@ export const TeacherSidebar: React.FC = () => {
           <CheckSquare size={20} />
           Điểm danh
         </S.NavItem>
-        <S.NavItem>
+        <S.NavItem $active={pathname === '/activities'} onClick={() => router.push('/activities')}>
           <Calendar size={20} />
           Hoạt động
         </S.NavItem>
