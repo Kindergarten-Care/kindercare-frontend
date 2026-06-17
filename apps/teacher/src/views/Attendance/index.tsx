@@ -93,16 +93,6 @@ export function AttendanceView(): React.ReactElement {
     });
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid #22c55e', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>Đang tải dữ liệu điểm danh...</span>
-        <style dangerouslySetInnerHTML={{ __html: '@keyframes spin { to { transform: rotate(360deg); } }' }} />
-      </div>
-    );
-  }
-
   const [viewMode, setViewMode] = React.useState<'EDIT' | 'TRACKER'>('TRACKER');
 
   const handleCallParent = (studentName: string) => {
