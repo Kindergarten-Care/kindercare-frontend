@@ -8,109 +8,135 @@ export const SideNavContainer = styled.nav`
   left: 0;
   width: 280px;
   height: 100vh;
-  background: #ffffff;
-  border-right: 1px solid #f1f5f9;
+  background: #F0F5EC;
+  border-right: 1px solid rgba(190, 202, 188, 0.3);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   z-index: 100;
-  filter: drop-shadow(4px 0px 12px rgba(0, 0, 0, 0.02));
-  font-family: 'Montserrat', sans-serif;
+  box-shadow: 0px 1px 2px rgba(0, 94, 44, 0.05);
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  padding: 16px 0;
+  box-sizing: border-box;
 `;
 
 export const BrandSection = styled.div`
-  padding: 24px 24px 32px 24px;
+  padding: 16px 32px 24px 32px;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
 `;
 
-export const BrandIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  background: #005314;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    width: 13.5px;
-    height: 13.5px;
-    color: white;
-  }
+export const BrandName = styled.h1`
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #005E2C;
+  line-height: 32px;
+  margin: 0;
+  letter-spacing: -0.5px;
 `;
 
-export const BrandInfo = styled.div`
+export const ClassSelectorContainer = styled.div`
+  padding: 0 16px 24px 16px;
+`;
+
+export const ClassSelector = styled.div`
+  background: rgba(223, 228, 220, 0.5);
+  border: 1px solid rgba(190, 202, 188, 0.2);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    background: rgba(223, 228, 220, 0.7);
+  }
 `;
 
-export const BrandName = styled.span`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 18px;
-  color: #14532d;
-  letter-spacing: -0.45px;
-  line-height: 18px;
-`;
-
-export const BrandSub = styled.span`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  font-size: 10px;
-  color: #6f7a6c;
-  letter-spacing: 0.5px;
+export const ClassSelectorLabel = styled.span`
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #3F493F;
   text-transform: uppercase;
-  line-height: 12.5px;
+  letter-spacing: 0.6px;
+  line-height: 16px;
+`;
+
+export const ClassSelectorTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+export const ClassSelectorTitle = styled.span`
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #181D18;
+  line-height: 24px;
+`;
+
+export const ClassSelectorSub = styled.span`
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6F7A6C;
+  line-height: 16.5px;
 `;
 
 export const NavLinks = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 0 18px;
+  padding: 0 16px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 `;
 
 export const NavLink = styled.a<{ $active?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 20px;
-  border-radius: 0 8px 8px 0;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
   border-left: 4px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  min-height: 40px;
+  min-height: 48px;
+  box-sizing: border-box;
 
   ${({ $active }) =>
     $active
       ? css`
-          background: #f0fdf4;
-          border-left-color: #15803d;
+          background: #E2EBE6;
+          border-left-color: #005E2C;
         `
       : css`
           background: transparent;
           border-left-color: transparent;
 
           &:hover {
-            background: #f8fafc;
+            background: rgba(226, 235, 230, 0.5);
           }
         `}
 `;
 
 export const NavIcon = styled.div<{ $active?: boolean }>`
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: ${({ $active }) => ($active ? '#046e1e' : '#475569')};
+  color: ${({ $active }) => ($active ? '#00522F' : '#3F493F')};
 
   svg {
     width: 100%;
@@ -119,17 +145,58 @@ export const NavIcon = styled.div<{ $active?: boolean }>`
 `;
 
 export const NavLabel = styled.span<{ $active?: boolean }>`
-  font-family: 'Montserrat', sans-serif;
-  font-size: 14px;
-  line-height: 17.5px;
-  color: ${({ $active }) => ($active ? '#046e1e' : '#475569')};
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: ${({ $active }) => ($active ? '#00522F' : '#3F493F')};
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
 `;
 
 export const BottomSection = styled.div`
-  border-top: 1px solid #f1f5f9;
-  padding: 17px 18px 0;
+  border-top: 1px solid rgba(191, 202, 185, 1);
+  padding: 16px 16px 0 16px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+`;
+
+export const BottomNavLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 36px;
+  box-sizing: border-box;
+
+  &:hover {
+    background: rgba(226, 235, 230, 0.5);
+  }
+`;
+
+export const BottomNavIcon = styled.div`
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #3F493D;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+export const BottomNavLabel = styled.span`
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3F493D;
+  line-height: 17px;
+  letter-spacing: 0.28px;
 `;
