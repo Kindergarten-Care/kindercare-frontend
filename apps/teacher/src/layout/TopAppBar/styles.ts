@@ -1,91 +1,119 @@
 import styled from 'styled-components';
 
 export const HeaderContainer = styled.header`
-  background-color: #f6fbf2;
-  border-bottom: 1px solid rgba(190, 202, 188, 0.1);
+  background-color: #F6FAF2;
+  border-bottom: none;
   height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  box-shadow: 0px 4px 10px rgba(14, 121, 60, 0.05);
+  box-shadow: 0px 4px 20px rgba(14, 121, 60, 0.05);
   position: relative;
   z-index: 2;
   width: 100%;
+  box-sizing: border-box;
 `;
 
-export const GreetingSection = styled.div`
+export const SearchWrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  background: #F0F5EC;
+  border: 1px solid #BECABC;
+  border-radius: 9999px;
+  height: 40px;
+  padding: 0 16px;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: ${props => props.theme.colors.green || '#15803d'};
+    box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+  }
 `;
 
-export const GreetingTitle = styled.h2`
-  color: #005e2c;
-  font-size: 24px;
-  font-weight: bold;
-  font-family: 'Montserrat', sans-serif;
-  margin: 0;
-  line-height: 1.4;
-  padding-top: 4px; /* extra space for top accents */
-`;
+export const SearchInput = styled.input`
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #181D18;
+  width: 100%;
 
-export const GreetingDate = styled.p`
-  color: #3f493f;
-  font-size: 16px;
-  font-family: 'Montserrat', sans-serif;
-  margin: 0;
-  margin-top: 4px;
+  &::placeholder {
+    color: #6B7280;
+  }
 `;
 
 export const ActionsSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 `;
 
 export const NotificationWrapper = styled.div`
   position: relative;
 `;
 
-export const NotificationButton = styled.div`
+export const ActionButton = styled.button`
   position: relative;
-  width: 36px;
-  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #3F493D;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #181D18;
+  }
 `;
 
-export const NotificationBadge = styled.div`
+export const NotificationBadge = styled.span`
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 8px;
+  right: 8px;
   width: 8px;
   height: 8px;
-  background-color: #ba1a1a;
+  background-color: #BA1A1A;
   border-radius: 50%;
-  border: 2px solid #f6fbf2;
+`;
+
+export const VerticalDivider = styled.div`
+  width: 1px;
+  height: 40px;
+  background-color: #BECABC;
+  margin: 0 8px;
 `;
 
 export const ProfileSection = styled.div`
-  background-color: #dcfce7;
-  border-radius: 12px;
-  padding: 8px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  min-width: 200px;
+  background: transparent;
+  border: none;
+  padding: 0;
 `;
 
 export const Avatar = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid #97f7ac;
+  border: 2px solid #97F7AC;
   overflow: hidden;
+  background: #F0F5EC;
+  flex-shrink: 0;
+  
   img {
     width: 100%;
     height: 100%;
@@ -96,18 +124,21 @@ export const Avatar = styled.div`
 export const ProfileInfo = styled.div`
   display: flex;
   flex-direction: column;
+  text-align: right;
 `;
 
 export const ProfileName = styled.span`
-  color: #181d18;
+  color: #181D18;
   font-size: 14px;
-  font-weight: bold;
-  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
   line-height: 1.4;
 `;
 
 export const ProfileRole = styled.span`
-  color: #6f7a6e;
+  color: #3F493D;
   font-size: 12px;
-  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  line-height: 1.3;
 `;

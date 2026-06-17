@@ -6,7 +6,22 @@ import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import type { Metadata } from 'next';
+import { Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
 import '../globals.css';
+
+const montserrat = Montserrat({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-montserrat',
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-plus-jakarta',
+});
 
 export async function generateMetadata({
   params
@@ -53,7 +68,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${montserrat.variable} ${plusJakarta.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>

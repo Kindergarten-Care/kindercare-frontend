@@ -2,11 +2,21 @@ import React from 'react';
 import {
   SideNavContainer,
   BrandSection,
+  BrandName,
+  ClassSelectorContainer,
+  ClassSelector,
+  ClassSelectorLabel,
+  ClassSelectorTitleRow,
+  ClassSelectorTitle,
+  ClassSelectorSub,
   NavLinks,
   NavLink,
   NavIcon,
   NavLabel,
   BottomSection,
+  BottomNavLink,
+  BottomNavIcon,
+  BottomNavLabel,
 } from './styles';
 import { 
   OverviewIcon, 
@@ -30,6 +40,8 @@ export interface SidebarProps {
   bottomNavItems?: NavItem[];
   brandLogoUrl?: string;
   brandName?: string;
+  classNameView?: string;
+  schoolYearView?: string;
 }
 
 const defaultMainNavItems: NavItem[] = [
@@ -45,37 +57,62 @@ const defaultBottomNavItems: NavItem[] = [
   { label: 'Đăng xuất', icon: <LogoutIcon size={18} />, href: '/logout' },
 ];
 
+const ChevronDownIcon = ({ size = 12, color = '#005E2C' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
 export function Sidebar({ 
   mainNavItems = defaultMainNavItems, 
   bottomNavItems = defaultBottomNavItems,
   brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png",
-  brandName = "KinderCare Guardian System"
+  brandName = "KinderCare",
+  classNameView = "Lớp Mầm Non 1",
+  schoolYearView = "Năm học 2023-2024"
 }: SidebarProps): React.ReactElement {
   return (
     <SideNavContainer>
-      <BrandSection>
-        <img 
-          src={brandLogoUrl} 
-          alt={brandName} 
-          style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
-        />
-      </BrandSection>
+      <div>
+        <BrandSection>
+          {brandLogoUrl && !brandLogoUrl.includes("KinderCare_LogoTextHorizontal") ? (
+            <img 
+              src={brandLogoUrl} 
+              alt={brandName} 
+              style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+            />
+          ) : (
+            <BrandName>KinderCare</BrandName>
+          )}
+        </BrandSection>
 
-      <NavLinks>
-        {mainNavItems.map((item) => (
-          <NavLink key={item.href} href={item.href} $active={item.active}>
-            <NavIcon $active={item.active}>{item.icon}</NavIcon>
-            <NavLabel $active={item.active}>{item.label}</NavLabel>
-          </NavLink>
-        ))}
-      </NavLinks>
+        <ClassSelectorContainer>
+          <ClassSelector>
+            <ClassSelectorLabel>ĐANG XEM</ClassSelectorLabel>
+            <ClassSelectorTitleRow>
+              <ClassSelectorTitle>{classNameView}</ClassSelectorTitle>
+              <ChevronDownIcon size={12} color="#005E2C" />
+            </ClassSelectorTitleRow>
+            <ClassSelectorSub>{schoolYearView}</ClassSelectorSub>
+          </ClassSelector>
+        </ClassSelectorContainer>
+
+        <NavLinks>
+          {mainNavItems.map((item) => (
+            <NavLink key={item.href} href={item.href} $active={item.active}>
+              <NavIcon $active={item.active}>{item.icon}</NavIcon>
+              <NavLabel $active={item.active}>{item.label}</NavLabel>
+            </NavLink>
+          ))}
+        </NavLinks>
+      </div>
 
       <BottomSection>
         {bottomNavItems.map((item) => (
-          <NavLink key={item.href} href={item.href}>
-            <NavIcon>{item.icon}</NavIcon>
-            <NavLabel>{item.label}</NavLabel>
-          </NavLink>
+          <BottomNavLink key={item.href} href={item.href}>
+            <BottomNavIcon>{item.icon}</BottomNavIcon>
+            <BottomNavLabel>{item.label}</BottomNavLabel>
+          </BottomNavLink>
         ))}
       </BottomSection>
     </SideNavContainer>
