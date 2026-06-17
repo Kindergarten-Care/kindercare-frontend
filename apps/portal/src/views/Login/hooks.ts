@@ -72,10 +72,9 @@ export const useLoginState = (): UseLoginStateReturn => {
     setIsSubmitting(true);
 
     try {
-      // Dùng proxy Next.js để tránh lỗi CORS
-      // NEXT_PUBLIC_API_URL = .../api/v1, proxy: /api/* → /api/v1/*
-      // Nên chỉ cần /api/auth/... (không thêm /v1 vì proxy đã có)
-      const apiUrl = `/api/auth/${role}/login`;
+      // Gọi trực tiếp API URL (proxy rewrite không hoạt động trong standalone mode)
+      const baseApiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+      const apiUrl = `${baseApiUrl}/auth/${role}/login`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
