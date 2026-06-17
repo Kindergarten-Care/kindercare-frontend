@@ -1,4 +1,4 @@
-import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
+import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, ScheduleItem } from '@/config/types/activities';
 
 // Mock student lists representing DB entries
 const MOCK_MEALS_DB: StudentMealRecord[] = [
@@ -210,4 +210,36 @@ export class ActivitiesService {
     mockActivitiesState = [...records];
     return true;
   }
+
+  /**
+   * Fetch daily schedule items for a class.
+   */
+  public static async getDailySchedule(classId: string, date: string): Promise<ScheduleItem[]> {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return [...mockScheduleState];
+  }
+
+  /**
+   * Update schedule items.
+   */
+  public static async updateDailySchedule(classId: string, date: string, items: ScheduleItem[]): Promise<boolean> {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    mockScheduleState = [...items];
+    return true;
+  }
 }
+
+const MOCK_SCHEDULE_DB: ScheduleItem[] = [
+  { id: '1', timeSlot: '07:15 - 08:00', activityName: 'Đón trẻ & Kiểm tra vệ sinh sáng', completed: true },
+  { id: '2', timeSlot: '08:00 - 08:30', activityName: 'Thể dục buổi sáng ngoài sân', completed: true, classPhoto: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&auto=format&fit=crop&q=60' },
+  { id: '3', timeSlot: '08:30 - 09:00', activityName: 'Ăn sáng & Vệ sinh cá nhân', completed: true },
+  { id: '4', timeSlot: '09:00 - 10:15', activityName: 'Học tập chuyên đề: Nhận biết con vật', completed: false },
+  { id: '5', timeSlot: '10:15 - 11:15', activityName: 'Vui chơi tự do ở góc học tập', completed: false },
+  { id: '6', timeSlot: '11:15 - 12:00', activityName: 'Ăn trưa & chuẩn bị giờ ngủ trưa', completed: false },
+  { id: '7', timeSlot: '12:00 - 14:00', activityName: 'Giấc ngủ trưa của trẻ', completed: false },
+  { id: '8', timeSlot: '14:00 - 14:30', activityName: 'Ăn xế chiều', completed: false },
+  { id: '9', timeSlot: '14:30 - 16:00', activityName: 'Hoạt động kể chuyện cổ tích', completed: false },
+  { id: '10', timeSlot: '16:00 - 17:00', activityName: 'Vệ sinh & Trả trẻ cho phụ huynh', completed: false }
+];
+
+let mockScheduleState = [...MOCK_SCHEDULE_DB];

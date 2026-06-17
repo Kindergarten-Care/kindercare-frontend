@@ -511,3 +511,160 @@ export const AddPhotoBtn = styled.button`
     background: rgba(34, 197, 94, 0.05);
   }
 `;
+
+export const TimelineContainer = styled.div`
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.radius.lg};
+  box-shadow: ${props => props.theme.shadows.soft};
+  border: 1px solid ${props => props.theme.colors.border};
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+`;
+
+export const TimelineItem = styled.div`
+  display: flex;
+  gap: 24px;
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: -24px;
+    width: 2px;
+    background: ${props => props.theme.colors.border};
+  }
+`;
+
+export const TimelineDot = styled.div<{ $completed: boolean }>`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: ${props => props.$completed ? props.theme.colors.greenLight : props.theme.colors.bg};
+  border: 2px solid ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.muted};
+  font-weight: bold;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+`;
+
+export const TimelineBody = styled.div`
+  flex: 1;
+  background: #fafcf9;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.md};
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f6fbf2;
+    box-shadow: ${props => props.theme.shadows.soft};
+  }
+`;
+
+export const TimelineLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const TimelineTime = styled.span`
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.greenMid};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+export const TimelineTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.fg};
+  margin: 0;
+`;
+
+export const TimelineRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+`;
+
+export const ClassPhotoUpload = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+`;
+
+export const ClassPhotoPreview = styled.div`
+  width: 120px;
+  height: 70px;
+  border-radius: ${props => props.theme.radius.md};
+  border: 1px solid ${props => props.theme.colors.border};
+  overflow: hidden;
+  position: relative;
+  background: ${props => props.theme.colors.bg};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+export const ClassPhotoPlaceholder = styled.div`
+  width: 120px;
+  height: 70px;
+  border-radius: ${props => props.theme.radius.md};
+  border: 1px dashed ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.bg};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: ${props => props.theme.colors.muted};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.colors.greenMid};
+    color: ${props => props.theme.colors.greenMid};
+    background: rgba(34, 197, 94, 0.02);
+  }
+`;
+
+export const TimelineCheckBtn = styled.button<{ $completed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.border};
+  background: ${props => props.$completed ? props.theme.colors.greenLight : 'white'};
+  color: ${props => props.$completed ? props.theme.colors.greenDark : props.theme.colors.fg};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${props => props.theme.shadows.soft};
+  }
+`;
