@@ -39,6 +39,7 @@ export function ActivitiesView(): React.ReactElement {
     // Filtered lists
     filteredMeals,
     filteredActivities,
+    scheduleItems,
 
     // Actions
     handleMealStatusChange,
@@ -46,6 +47,8 @@ export function ActivitiesView(): React.ReactElement {
     handleActivityNapChange,
     handleActivityParticipationChange,
     handleActivityNoteChange,
+    handleScheduleStatusChange,
+    handleSchedulePhotoChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
@@ -85,6 +88,9 @@ export function ActivitiesView(): React.ReactElement {
         </S.TabButton>
         <S.TabButton $active={activeTab === 'activities'} onClick={() => setActiveTab('activities')}>
           Hoạt động & Ngủ nghỉ
+        </S.TabButton>
+        <S.TabButton $active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')}>
+          Lịch trình trong ngày
         </S.TabButton>
       </S.TabBar>
 
@@ -438,6 +444,75 @@ export function ActivitiesView(): React.ReactElement {
             </S.Table>
           </S.GridContainer>
         </>
+      )}
+
+      {/* TAB 3: DAILY SCHEDULE TIMELINE */}
+      {activeTab === 'schedule' && (
+        <S.TimelineContainer>
+          {scheduleItems.map((item, index) => (
+            <S.TimelineItem key={item.id}>
+              <S.TimelineDot $completed={item.completed}>
+                {index + 1}
+              </S.TimelineDot>
+              
+              <S.TimelineBody>
+                <S.TimelineLeft>
+                  <S.TimelineTime>{item.timeSlot}</S.TimelineTime>
+                  <S.TimelineTitle>{item.activityName}</S.TimelineTitle>
+                </S.TimelineLeft>
+                
+                <S.TimelineRight>
+                  {/* Class Photo Upload/Preview section */}
+                  <S.ClassPhotoUpload>
+                    {item.classPhoto ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <S.ClassPhotoPreview>
+                          <img src={item.classPhoto} alt="Ảnh hoạt động tập thể lớp" />
+                        </S.ClassPhotoPreview>
+                        <S.AddPhotoBtn 
+                          onClick={() => handleSchedulePhotoChange(item.id, undefined)}
+                          title="Xóa ảnh"
+                          style={{ color: '#ef4444', borderColor: '#fca5a5', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          ✕
+                        </S.AddPhotoBtn>
+                      </div>
+                    ) : (
+                      <S.ClassPhotoPlaceholder onClick={() => {
+                        const urls = [
+                          'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&auto=format&fit=crop&q=60',
+                          'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&auto=format&fit=crop&q=60',
+                          'https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=400&auto=format&fit=crop&q=60',
+                          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60'
+                        ];
+                        const chosenUrl = urls[index % urls.length];
+                        handleSchedulePhotoChange(item.id, chosenUrl);
+                      }}>
+                        <ImageIcon size={18} />
+                        Tải ảnh tập thể
+                      </S.ClassPhotoPlaceholder>
+                    )}
+                  </S.ClassPhotoUpload>
+
+                  {/* Completion check btn */}
+                  <S.TimelineCheckBtn 
+                    $completed={item.completed}
+                    onClick={() => handleScheduleStatusChange(item.id, !item.completed)}
+                  >
+                    {item.completed ? (
+                      <>
+                        <Check size={16} />
+                        Đã hoàn thành
+                      </>
+                    ) : (
+                      'Đánh dấu xong'
+                    )}
+                  </S.TimelineCheckBtn>
+                </S.TimelineRight>
+              </S.TimelineBody>
+            </S.TimelineItem>
+          ))}
+        </S.TimelineContainer>
       )}
     </S.ActivitiesPageContainer>
   );

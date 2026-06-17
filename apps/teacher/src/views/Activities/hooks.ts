@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
+import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, ScheduleItem } from '@/config/types/activities';
 import { ActivitiesService } from '@/services/activities';
 
 export function useActivities() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'meals' | 'activities'>('meals');
+  const [activeTab, setActiveTab] = useState<'meals' | 'activities' | 'schedule'>('meals');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Menu State
@@ -25,20 +25,23 @@ export function useActivities() {
   // Records State
   const [mealRecords, setMealRecords] = useState<StudentMealRecord[]>([]);
   const [activityRecords, setActivityRecords] = useState<StudentActivityRecord[]>([]);
+  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [menuData, mealsData, activitiesData] = await Promise.all([
+        const [menuData, mealsData, activitiesData, scheduleData] = await Promise.all([
           ActivitiesService.getMenuOfTheDay('today'),
           ActivitiesService.getStudentMealRecords('M1', 'today'),
-          ActivitiesService.getStudentActivityRecords('M1', 'today')
+          ActivitiesService.getStudentActivityRecords('M1', 'today'),
+          ActivitiesService.getDailySchedule('M1', 'today')
         ]);
         setMenu(menuData);
         setEditedMenu(menuData);
         setMealRecords(mealsData);
         setActivityRecords(activitiesData);
+        setScheduleItems(scheduleData);
       } catch (error) {
         console.error('Error fetching activities data:', error);
       } finally {
@@ -88,6 +91,22 @@ export function useActivities() {
     );
   };
 
+  const handleScheduleStatusChange = (id: string, completed: boolean) => {
+    setScheduleItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, completed } : item
+      )
+    );
+  };
+
+  const handleSchedulePhotoChange = (id: string, photoUrl: string | undefined) => {
+    setScheduleItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, classPhoto: photoUrl } : item
+      )
+    );
+  };
+
   // Bulk status appliers
   const handleBulkMarkMealsAll = () => {
     setMealRecords(prev =>
@@ -121,8 +140,10 @@ export function useActivities() {
         ]);
         setMenu(editedMenu);
         setIsMenuEditing(false);
-      } else {
+      } else if (activeTab === 'activities') {
         await ActivitiesService.updateStudentActivityRecords('M1', 'today', activityRecords);
+      } else {
+        await ActivitiesService.updateDailySchedule('M1', 'today', scheduleItems);
       }
       alert('Đã lưu thành công dữ liệu ngày hôm nay!');
     } catch (error) {
@@ -163,6 +184,7 @@ export function useActivities() {
     // Records
     mealRecords,
     activityRecords,
+    scheduleItems,
     filteredMeals,
     filteredActivities,
 
@@ -172,6 +194,8 @@ export function useActivities() {
     handleActivityNapChange,
     handleActivityParticipationChange,
     handleActivityNoteChange,
+    handleScheduleStatusChange,
+    handleSchedulePhotoChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
