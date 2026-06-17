@@ -1,7 +1,12 @@
+'use client';
+
 import React from 'react';
 import * as S from './styles';
+import { useRouter } from '@/i18n/routing';
 
 export const TimelineWidget: React.FC = () => {
+  const router = useRouter();
+
   return (
     <S.WidgetContainer>
       <S.WidgetTitle>Lịch trình trong ngày</S.WidgetTitle>
@@ -27,7 +32,7 @@ export const TimelineWidget: React.FC = () => {
             <S.ActiveDesc>
               Thực đơn: Cơm trắng, Thịt viên sốt cà chua, Canh bí đỏ, Chuối tráng miệng.
             </S.ActiveDesc>
-            <S.UpdateButton>
+            <S.UpdateButton onClick={() => router.push('/activities')}>
               <S.UpdateIcon>🍽</S.UpdateIcon>
               Cập nhật khẩu phần ăn
             </S.UpdateButton>
