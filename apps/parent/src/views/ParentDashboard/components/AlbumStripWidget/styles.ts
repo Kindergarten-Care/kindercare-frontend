@@ -11,15 +11,19 @@ export const Card = styled.div`
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
 `;
 
 export const Head = styled.div`
   display: flex;
   align-items: center;
   gap: 13px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 `;
 
 export const HeadIco = styled.div`
@@ -97,6 +101,7 @@ export const Rail = styled.div`
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
   scrollbar-color: #cfe0d5 transparent;
+  margin-top: auto;
 
   &::-webkit-scrollbar { height: 6px; }
   &::-webkit-scrollbar-thumb { background: #cfe0d5; border-radius: 99px; }

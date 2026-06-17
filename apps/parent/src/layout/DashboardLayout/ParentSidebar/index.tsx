@@ -7,11 +7,13 @@ import { useAuth } from '@kindercare/core';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import * as S from './styles';
+import ChildSelectorModal from './ChildSelectorModal';
+import ChildSelectorDropdown from './ChildSelectorDropdown';
 import {
   IconHome, IconDiary, IconChat, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard, IconReceipt,
   IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
-  IconChevronDown, IconCheck, IconPlus,
+  IconChevronDown,
 } from '@/assets/icons/dashboard';
 
 interface ParentSidebarProps {
@@ -53,10 +55,8 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
   } : null;
 
   return (
-    <S.SidebarContainer $collapsed={collapsed}>
-      <S.ToggleBtn $collapsed={collapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
-        {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
-      </S.ToggleBtn>
+    <S.SidebarWrapper>
+      <S.SidebarContainer $collapsed={collapsed}>
 
       <S.Brand $collapsed={collapsed}>
         <S.BrandWrapper $collapsed={collapsed}>
@@ -88,43 +88,22 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
             </S.CSChev>
           </S.CSTrigger>
 
-          {csOpen && (
-            <S.CSMenu $collapsed={collapsed}>
-              <S.CSMenuH>Chọn hồ sơ bé</S.CSMenuH>
-              {kids.map((child) => {
-                const isSelected = child.studentId === activeStudent?.studentId;
-                const grad = getAvatarGradient(child.studentId);
-                const init = getInitials(child.fullName);
-                return (
-                  <S.CSOption
-                    key={child.studentId}
-                    $active={isSelected}
-                    onClick={() => { setActiveStudent(child); setCsOpen(false); }}
-                  >
-                    <S.CSAv $gradient={grad} style={{ width: 34, height: 34, fontSize: 12 }}>
-                      {child.avatarUrl ? (
-                        <img src={child.avatarUrl} alt={child.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                      ) : (
-                        init
-                      )}
-                    </S.CSAv>
-                    <div>
-                      <S.CSOptName>{child.fullName}</S.CSOptName>
-                      <S.CSOptClass>{child.className}</S.CSOptClass>
-                    </div>
-                    {isSelected && (
-                      <S.CSCheck>
-                        <IconCheck size={14} color="#005A36" />
-                      </S.CSCheck>
-                    )}
-                  </S.CSOption>
-                );
-              })}
-              <S.CSAdd>
-                <IconPlus size={14} /> Thêm hồ sơ bé
-              </S.CSAdd>
-            </S.CSMenu>
-          )}
+          <ChildSelectorDropdown
+            isOpen={csOpen && !collapsed}
+            onClose={() => setCsOpen(false)}
+            kids={kids}
+            activeStudent={activeStudent}
+            setActiveStudent={setActiveStudent}
+            collapsed={collapsed}
+          />
+
+          <ChildSelectorModal
+            isOpen={csOpen && collapsed}
+            onClose={() => setCsOpen(false)}
+            kids={kids}
+            activeStudent={activeStudent}
+            setActiveStudent={setActiveStudent}
+          />
         </S.CSwitcher>
       )}
 
@@ -202,6 +181,10 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         )}
       </S.SideProfile>
     </S.SidebarContainer>
+    <S.ToggleBtn $collapsed={collapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
+      {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
+    </S.ToggleBtn>
+  </S.SidebarWrapper>
   );
 };
 

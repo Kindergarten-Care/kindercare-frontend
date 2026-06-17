@@ -55,7 +55,7 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
         </S.Head>
 
         <S.Rail>
-          {photos.map((photo, idx) => (
+          {photos.slice(0, 3).map((photo, idx) => (
             <S.Photo
               key={photo.id}
               $bg={photo.color}

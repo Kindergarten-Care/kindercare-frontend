@@ -38,7 +38,7 @@ const CameraWidget: React.FC<CameraWidgetProps> = ({
         </S.CamLive>
         {time && <S.CamTime>{time}</S.CamTime>}
         <S.CamPlay className="play">
-          <IconPlay size={22} color="#fff" />
+          <IconPlay size={22} color="var(--brand)" />
         </S.CamPlay>
         <S.CamLabel>CAM 01 — {className}</S.CamLabel>
       </S.CamFeed>

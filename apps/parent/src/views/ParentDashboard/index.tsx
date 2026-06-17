@@ -17,6 +17,7 @@ import CameraWidget from './components/CameraWidget';
 import DailyLessonWidget from './components/DailyLessonWidget';
 import FeeAlertWidget from './components/FeeAlertWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
+import GrowthWidget from './components/GrowthWidget';
 import ChatFab from './components/ChatFab';
 import LeaveRequestPopup from './components/LeaveRequestPopup';
 import MedicationRequestPopup from './components/MedicationRequestPopup';
@@ -90,39 +91,47 @@ export function ParentDashboard(): React.ReactElement {
         onMessage={() => alert('Nhắn tin với giáo viên')}
       />
 
-      {/* Today's album — full width, compact strip */}
-      <AlbumStripWidget photos={data.albumPhotos} />
-
       {/* Fee alert banner */}
       <FeeAlertWidget fee={data.fee} />
-
-      {/* Quick actions — 4 compact buttons */}
-      <QuickActionsStrip
-        onAbsence={() => setIsLeavePopupOpen(true)}
-        onMedication={() => setIsMedicationPopupOpen(true)}
-        onFee={() => alert('Đóng học phí')}
-        onDiary={() => alert('Nhật ký')}
-      />
 
       {/* Two-column grid */}
       <S.MainGrid>
         <S.LeftColumn>
+          <S.LeftTopGrid>
+            <S.ColumnStack>
+              {/* Quick actions — moved here to align width and height */}
+              <QuickActionsStrip
+                onAbsence={() => setIsLeavePopupOpen(true)}
+                onMedication={() => setIsMedicationPopupOpen(true)}
+                onFee={() => alert('Đóng học phí')}
+                onDiary={() => alert('Nhật ký')}
+                onPickup={() => alert('Đăng ký người đón hộ')}
+              />
+
+              {/* Today's album — moved here side-by-side with Camera */}
+              <AlbumStripWidget photos={data.albumPhotos} />
+            </S.ColumnStack>
+
+            {/* Growth metrics */}
+            <GrowthWidget />
+          </S.LeftTopGrid>
+
           {/* Live schedule — realtime current activity */}
           <LiveScheduleWidget schedule={data.schedule} />
         </S.LeftColumn>
 
         <S.RightColumn>
-          {/* Camera */}
+          {/* Camera — moved here side-by-side with Album */}
           <CameraWidget
             className={activeStudent.className}
             teacher={activeStudent.academicYearName}
           />
 
-          {/* Daily lesson */}
-          <DailyLessonWidget lessons={data.dailyLessons} />
-
           {/* Attendance calendar */}
           <MiniCalendarWidget days={data.calendarDays} stats={data.attendanceStats} />
+
+          {/* Daily lesson */}
+          <DailyLessonWidget lessons={data.dailyLessons} />
         </S.RightColumn>
       </S.MainGrid>
 

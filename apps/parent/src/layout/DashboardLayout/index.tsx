@@ -6,6 +6,7 @@ import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
 import { useAuth } from '@kindercare/core';
 import ParentSidebar from './ParentSidebar';
+import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
 
@@ -36,6 +37,8 @@ function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
+  const [hasUnreadNotif, setHasUnreadNotif] = useState<boolean>(true);
   const locale = useLocale() as 'vi' | 'en';
   const router = useRouter();
   const pathname = usePathname();
@@ -89,9 +92,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <input placeholder="Tìm kiếm..." />
               </S.SearchBar>
 
-              <S.IconBtn title="Thông báo">
+              <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
                 <IconBell size={18} />
-                <S.NotifDot />
+                {hasUnreadNotif && <S.NotifDot />}
               </S.IconBtn>
 
               <S.IconBtn title="Cài đặt">
@@ -110,6 +113,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         <S.PageArea>{children}</S.PageArea>
       </S.MainContent>
+      
+      <NotificationPopup isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
     </S.DashboardWrapper>
   );
 };

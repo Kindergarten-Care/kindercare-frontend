@@ -12,15 +12,23 @@ export const Card = styled.div`
   background: var(--surface, #fff);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 22px;
+  padding: 16px 18px;
   box-shadow: var(--shadow);
+  height: 276px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  @media (max-width: 960px) {
+    height: auto;
+  }
 `;
 
 export const CardHead = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 `;
 
 export const CardTitle = styled.h3`
@@ -31,8 +39,8 @@ export const CardTitle = styled.h3`
 
 export const CamFeed = styled.button`
   position: relative;
-  aspect-ratio: 16 / 10;
-  border-radius: 13px;
+  height: 174px;
+  border-radius: 12px;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -129,7 +137,7 @@ export const CamFoot = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 13px;
+  margin-top: 10px;
   font-size: 12.5px;
   color: var(--muted);
   font-weight: 500;

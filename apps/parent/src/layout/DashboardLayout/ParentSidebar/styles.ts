@@ -8,14 +8,20 @@ const rise = keyframes`
   to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
+export const SidebarWrapper = styled.div`
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+`;
+
 export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
   background: var(--brand);
   border-right: 1px solid var(--brand-hover);
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+  height: 100%;
+  width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   padding: ${p => p.$collapsed ? '24px 14px 18px' : '24px 16px 18px'};
@@ -26,23 +32,32 @@ export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
 
 export const ToggleBtn = styled.button<{ $collapsed: boolean }>`
   position: absolute;
-  top: 30px;
-  right: ${p => p.$collapsed ? '14px' : '16px'};
+  top: 36px;
+  right: -13px;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--border);
-  color: var(--muted);
+  color: var(--brand);
   cursor: pointer;
   display: grid;
   place-items: center;
-  z-index: 6;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  font-size: 12px;
-  transition: color 0.15s, border-color 0.15s;
+  z-index: 50;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease-in-out;
 
-  &:hover { color: var(--brand); border-color: #cfe0d5; }
+  &:hover {
+    background: var(--brand-tint);
+    color: var(--brand-hover);
+    border-color: var(--brand);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 90, 54, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 `;
 
 export const Brand = styled.div<{ $collapsed: boolean }>`
@@ -419,3 +434,88 @@ export const DropdownItem = styled.div`
 
   &:hover { background: #fee2e2; }
 `;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const scaleIn = keyframes`
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+`;
+
+export const CSModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: ${fadeIn} 0.2s ease-out;
+`;
+
+export const CSModalContainer = styled.div`
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 90, 54, 0.08), 
+    0 20px 48px -10px rgba(15, 23, 42, 0.15);
+  animation: ${scaleIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--border);
+`;
+
+export const CSModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 12px;
+`;
+
+export const CSModalTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+`;
+
+export const CSModalClose = styled.button`
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #e2e8f0;
+    color: var(--fg);
+  }
+`;
+
+export const CSModalList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+`;
+

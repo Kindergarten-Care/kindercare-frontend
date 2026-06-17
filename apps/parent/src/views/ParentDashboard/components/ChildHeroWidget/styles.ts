@@ -9,10 +9,12 @@ export const HeroContainer = styled.div`
   padding: 24px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(118deg, #EAF6EF 0%, #F6FBF8 46%, #FFFFFF 100%);
-  border: 1px solid #D9EBE1;
+  background: linear-gradient(118deg, #D5ECD9 0%, #EAF5ED 50%, #F5FBF7 100%);
+  border: 1.5px solid #B0DCBE;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 90, 54, 0.1), 
+    0 8px 16px -6px rgba(0, 0, 0, 0.05);
 
   &::after {
     content: '';
