@@ -4,8 +4,10 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import type { Metadata } from 'next';
 import { Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
+import '../globals.css';
 
 const montserrat = Montserrat({
   subsets: ['vietnamese', 'latin'],
@@ -20,8 +22,6 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
   variable: '--font-plus-jakarta',
 });
-
-
 
 export async function generateMetadata({
   params
@@ -52,9 +52,11 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  console.log("LAYOUT LOCALE IS:", locale);
 
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as typeof routing.locales[number])) {
+    console.log("NOT FOUND LOCALE", locale);
     notFound();
   }
 
@@ -73,9 +75,11 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              {children}
-            </SocketProvider>
+            <AuthProvider>
+              <SocketProvider>
+                {children}
+              </SocketProvider>
+            </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>

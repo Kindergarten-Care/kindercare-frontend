@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export type UserRole = 'admin' | 'principal' | 'teacher';
+export type UserRole = 'principal' | 'teacher';
 
 export interface UseLoginStateReturn {
   role: UserRole;
@@ -21,7 +21,7 @@ export interface UseLoginStateReturn {
 
 export const useLoginState = (): UseLoginStateReturn => {
   const router = useRouter();
-  const [role, setRole] = useState<UserRole>('admin');
+  const [role, setRole] = useState<UserRole>('principal');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -53,12 +53,12 @@ export const useLoginState = (): UseLoginStateReturn => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const newErrors: { username?: string; password?: string } = {};
     if (!username.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập / mã nhân viên.';
+      newErrors.username = 'Vui lòng nhập email hoặc số điện thoại.';
     }
     if (!password) {
       newErrors.password = 'Vui lòng nhập mật khẩu.';
@@ -71,14 +71,43 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     setIsSubmitting(true);
 
-    // Redirect based on role using Next.js router
-    const roleRoutes: Record<UserRole, string> = {
-      admin: '/admin',
-      principal: '/principal',
-      teacher: '/teacher',
-    };
+    try {
+      // Dùng proxy Next.js để tránh lỗi CORS
+      const apiUrl = `/api/v1/auth/${role}/login`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ identifier: username, password }),
+      });
 
-    router.push(roleRoutes[role]);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ username: data.message || 'Đăng nhập thất bại. Vui lòng thử lại.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Store token
+      localStorage.setItem('token', data.data.token);
+
+      // Redirect based on role
+      const domainMapping: Record<UserRole, string> = {
+        principal: 'http://localhost:3002',
+        teacher: 'http://localhost:3001/teacher',
+      };
+
+      const redirectUrl = new URL(domainMapping[role]);
+      redirectUrl.searchParams.set('token', data.data.token);
+
+      window.location.href = redirectUrl.toString();
+    } catch (error) {
+      setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
