@@ -34,9 +34,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — only root .env.development is committed
+# env files
 .env*
-!.env.development
 
 # vercel
 .vercel
@@ -44,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# MCP & local configs
+mcp_config.json
+fetch-swagger.js
