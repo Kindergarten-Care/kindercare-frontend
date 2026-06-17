@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { Button, Input, Checkbox } from '@kindercare/ui';
+import { getSession } from '@kindercare/core';
 import { useLoginState, UserRole } from './hooks';
 import * as S from './styles';
 
@@ -66,7 +67,18 @@ export const LoginView: React.FC = () => {
     handleSubmit,
   } = useLoginState();
 
+  useEffect(() => {
+    const session = getSession();
+    if (session) {
+      const nextUrl = session.role === 'teacher'
+        ? (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher'
+        : (process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL || 'http://localhost:3002') + '/principal';
+      window.location.href = nextUrl;
+    }
+  }, []);
+
   const content = ROLE_CONTENT[role];
+
 
   return (
     <S.Container>
