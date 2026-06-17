@@ -7,17 +7,39 @@ interface PersonalInfoTabProps {
 }
 
 export const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ user }) => {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
+  const formatDate = (dateVal?: string | number): string => {
+    if (!dateVal) return '';
     try {
+      const num = Number(dateVal);
+      if (!isNaN(num)) {
+        const ms = num < 32503680000 ? num * 1000 : num;
+        const date = new Date(ms);
+        if (!isNaN(date.getTime())) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
+      }
+
+      const dateString = String(dateVal);
       const cleanDate = dateString.split('T')[0];
       const parts = cleanDate.split('-');
       if (parts.length === 3) {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
+
+      const parsedDate = new Date(dateString);
+      if (!isNaN(parsedDate.getTime())) {
+        const day = String(parsedDate.getDate()).padStart(2, '0');
+        const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+        const year = parsedDate.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+
       return dateString;
     } catch {
-      return dateString;
+      return String(dateVal);
     }
   };
 
