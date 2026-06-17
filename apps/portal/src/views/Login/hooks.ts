@@ -73,7 +73,9 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     try {
       // Dùng proxy Next.js để tránh lỗi CORS
-      const apiUrl = `/api/v1/auth/${role}/login`;
+      // NEXT_PUBLIC_API_URL = .../api/v1, proxy: /api/* → /api/v1/*
+      // Nên chỉ cần /api/auth/... (không thêm /v1 vì proxy đã có)
+      const apiUrl = `/api/auth/${role}/login`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
