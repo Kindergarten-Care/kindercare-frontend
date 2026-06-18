@@ -38,12 +38,31 @@ export const HeaderActionsSection = styled.div`
 `;
 
 export const DateHeader = styled.div`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${props => props.theme.colors.muted};
-  display: flex;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.03);
+
+  &:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.05);
+  }
+
+  svg {
+    color: #10B981;
+  }
 `;
 
 export const ActionsGroup = styled.div`
@@ -70,51 +89,70 @@ export const StatsGrid = styled.div`
 `;
 
 export const StatCard = styled.div<{ $borderType?: 'green' | 'amber' | 'neutral' }>`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.lg};
+  background: #ffffff;
+  border-radius: 24px;
   padding: 24px;
-  box-shadow: ${props => props.theme.shadows.soft};
-  border-left: 5px solid ${props => {
-    if (props.$borderType === 'green') return props.theme.colors.greenMid;
-    if (props.$borderType === 'amber') return props.theme.colors.amberMid;
-    return props.theme.colors.muted;
-  }};
+  border: 1px solid rgba(16, 24, 40, 0.04);
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: ${props => {
+      if (props.$borderType === 'green') return 'linear-gradient(90deg, #10B981, #059669)';
+      if (props.$borderType === 'amber') return 'linear-gradient(90deg, #F59E0B, #D97706)';
+      return 'linear-gradient(90deg, #9CA3AF, #6B7280)';
+    }};
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadows.lg};
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
+    border-color: rgba(16, 24, 40, 0.08);
   }
 `;
 
 export const StatLabel = styled.span`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${props => props.theme.colors.muted};
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9CA3AF;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 export const StatValue = styled.span`
-  font-size: 2.25rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 36px;
   font-weight: 800;
-  color: ${props => props.theme.colors.fg};
+  color: #1F2937;
   line-height: 1;
+  letter-spacing: -0.02em;
 `;
 
 export const StatSub = styled.span`
-  font-size: 0.75rem;
-  color: ${props => props.theme.colors.muted};
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
 `;
 
 export const FilterBar = styled.div`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.md};
+  background: #ffffff;
+  border-radius: 20px;
   padding: 16px 24px;
-  box-shadow: ${props => props.theme.shadows.soft};
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.03);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -142,18 +180,25 @@ export const SearchInputWrapper = styled.div`
 
 export const SearchField = styled.input`
   width: 100%;
-  padding: 10px 14px 10px 42px;
-  font-size: 0.875rem;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px solid ${props => props.theme.colors.border};
+  padding: 12px 16px 12px 46px;
+  font-size: 14px;
+  border-radius: 999px;
+  border: 1.5px solid #E3F0E8;
   outline: none;
-  background: ${props => props.theme.colors.bg};
-  transition: all 0.2s ease;
+  background: #F0F5EC;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::placeholder {
+    color: #9CA3AF;
+  }
 
   &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
-    background: ${props => props.theme.colors.surface};
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    border-color: #10B981;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
   }
 `;
 
@@ -161,20 +206,30 @@ export const FilterDropdownWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  font-family: 'Montserrat', sans-serif;
 `;
 
 export const CustomSelect = styled.select`
-  padding: 10px 14px;
-  font-size: 0.875rem;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px solid ${props => props.theme.colors.border};
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid #E3F0E8;
   outline: none;
-  background: ${props => props.theme.colors.surface};
+  background: #F7FBF8;
+  color: #374151;
   cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
   transition: all 0.2s ease;
 
+  &:hover {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+  }
+
   &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
+    border-color: #10B981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
   }
 `;
 
@@ -364,18 +419,26 @@ export const QuickFillBtn = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  background: ${props => props.theme.colors.bg};
-  color: ${props => props.theme.colors.fg};
-  border: 1px solid ${props => props.theme.colors.border};
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 14px;
+  background: #F7FBF8;
+  color: #374151;
+  border: 1px solid #E3F0E8;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: ${props => props.theme.colors.border};
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.06);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -384,34 +447,39 @@ export const LeaveRequestsBtn = styled.button`
   align-items: center;
   position: relative;
   gap: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  background: #fef3c7;
-  color: #d97706;
-  border: 1px solid #f59e0b;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 14px;
+  background: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FCD34D;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: #fde68a;
+    background: #FDE68A;
     transform: translateY(-1px);
-    box-shadow: ${props => props.theme.shadows.soft};
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 export const LeaveRequestsBadgeCount = styled.span`
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #ef4444;
+  top: -6px;
+  right: -6px;
+  background: #EF4444;
   color: white;
-  border-radius: 9999px;
-  padding: 2px 6px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -422,25 +490,32 @@ export const SaveBtn = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  background: ${props => props.theme.colors.greenMid};
+  padding: 11px 22px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #10B981, #059669);
   color: white;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
 
   &:hover {
-    background: ${props => props.theme.colors.green};
+    background: linear-gradient(135deg, #059669, #047857);
     transform: translateY(-1px);
-    box-shadow: ${props => props.theme.shadows.soft};
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
@@ -612,35 +687,36 @@ export const CancelBtn = styled.button`
 
 export const ViewModeToggleContainer = styled.div`
   display: flex;
-  background: ${props => props.theme.colors.bg};
+  background: #F0F5EC;
   padding: 4px;
-  border-radius: ${props => props.theme.radius.lg};
-  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 16px;
+  border: 1px solid #E3F0E8;
 `;
 
 export const ViewModeBtn = styled.button<{ $active: boolean }>`
-  padding: 8px 16px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
+  padding: 8px 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 12px;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
-  background: ${props => props.$active ? props.theme.colors.surface : 'transparent'};
-  color: ${props => props.$active ? props.theme.colors.fg : props.theme.colors.muted};
-  box-shadow: ${props => props.$active ? props.theme.shadows.soft : 'none'};
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: ${props => props.$active ? '#FFFFFF' : 'transparent'};
+  color: ${props => props.$active ? '#10B981' : '#9CA3AF'};
+  box-shadow: ${props => props.$active ? '0 4px 12px rgba(16, 185, 129, 0.08)' : 'none'};
 
   &:hover {
-    color: ${props => props.theme.colors.fg};
+    color: ${props => props.$active ? '#10B981' : '#374151'};
   }
 `;
 
 export const TabContainer = styled.div`
   display: flex;
   gap: 12px;
-  border-bottom: 2px solid ${props => props.theme.colors.border};
-  padding-bottom: 8px;
-  margin-top: 16px;
+  border-bottom: 2px solid #E3F0E8;
+  padding-bottom: 12px;
+  margin-top: 20px;
   overflow-x: auto;
 
   &::-webkit-scrollbar {
@@ -652,68 +728,66 @@ export const TabButton = styled.button<{ $active: boolean; $type: 'all' | 'prese
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  border-radius: ${props => props.theme.radius.md};
+  padding: 10px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid transparent;
   background: transparent;
-  color: ${props => props.theme.colors.muted};
+  color: #9CA3AF;
   position: relative;
 
-  ${props => props.$active && `
-    font-weight: 700;
-  `}
-
   ${props => props.$active && props.$type === 'all' && `
-    background: ${props.theme.colors.bg};
-    border-color: ${props.theme.colors.border};
-    color: ${props.theme.colors.fg};
+    background: #F3F4F6;
+    border-color: #E5E7EB;
+    color: #1F2937;
   `}
 
   ${props => props.$active && props.$type === 'present' && `
-    background: ${props.theme.colors.greenLight};
-    border-color: ${props.theme.colors.greenMid};
-    color: ${props.theme.colors.greenDark};
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    color: #065F46;
   `}
 
   ${props => props.$active && props.$type === 'permission' && `
-    background: ${props.theme.colors.amberLight};
-    border-color: ${props.theme.colors.amberMid};
-    color: ${props.theme.colors.amber};
+    background: #FEF3C7;
+    border-color: #FCD34D;
+    color: #92400E;
   `}
 
   ${props => props.$active && props.$type === 'unexcused' && `
-    background: #fef2f2;
-    border-color: #f87171;
-    color: #b91c1c;
+    background: #FEE2E2;
+    border-color: #FCA5A5;
+    color: #991B1B;
   `}
 
   &:hover {
-    background: ${props => !props.$active ? props.theme.colors.bg : ''};
+    background: ${props => !props.$active ? '#F3F4F6' : ''};
   }
 `;
 
 export const TabBadge = styled.span<{ $active: boolean; $type: 'all' | 'present' | 'permission' | 'unexcused' }>`
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
   padding: 2px 8px;
-  border-radius: 9999px;
+  border-radius: 999px;
 
   background: ${props => {
-    if (props.$type === 'present') return props.$active ? props.theme.colors.greenMid : 'rgba(34, 197, 94, 0.1)';
-    if (props.$type === 'permission') return props.$active ? props.theme.colors.amberMid : 'rgba(245, 158, 11, 0.1)';
-    if (props.$type === 'unexcused') return props.$active ? '#ef4444' : 'rgba(239, 68, 68, 0.1)';
-    return props.$active ? props.theme.colors.muted : props.theme.colors.bg;
+    if (props.$type === 'present') return props.$active ? '#10B981' : 'rgba(16, 185, 129, 0.12)';
+    if (props.$type === 'permission') return props.$active ? '#F59E0B' : 'rgba(245, 158, 11, 0.12)';
+    if (props.$type === 'unexcused') return props.$active ? '#EF4444' : 'rgba(239, 68, 68, 0.12)';
+    return props.$active ? '#9CA3AF' : '#E5E7EB';
   }};
 
   color: ${props => {
-    if (props.$type === 'present') return props.$active ? 'white' : props.theme.colors.greenDark;
-    if (props.$type === 'permission') return props.$active ? 'white' : props.theme.colors.amber;
-    if (props.$type === 'unexcused') return props.$active ? 'white' : '#b91c1c';
-    return props.$active ? 'white' : props.theme.colors.fg;
+    if (props.$type === 'present') return props.$active ? '#FFFFFF' : '#047857';
+    if (props.$type === 'permission') return props.$active ? '#FFFFFF' : '#B45309';
+    if (props.$type === 'unexcused') return props.$active ? '#FFFFFF' : '#B91C1C';
+    return props.$active ? '#FFFFFF' : '#374151';
   }};
 `;
 
@@ -722,42 +796,47 @@ export const TrackerGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 
-  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+  @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
 export const TrackerCard = styled.div<{ $status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.lg};
+  background: #ffffff;
+  border-radius: 20px;
   border: 1px solid ${props => {
-    if (props.$status === 'PRESENT') return 'rgba(34, 197, 94, 0.2)';
-    if (props.$status === 'PERMISSION_ABSENCE') return 'rgba(245, 158, 11, 0.2)';
-    return 'rgba(239, 68, 68, 0.2)';
+    if (props.$status === 'PRESENT') return 'rgba(16, 185, 129, 0.14)';
+    if (props.$status === 'PERMISSION_ABSENCE') return 'rgba(245, 158, 11, 0.14)';
+    return 'rgba(239, 68, 68, 0.14)';
   }};
-  box-shadow: ${props => props.theme.shadows.soft};
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadows.lg};
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
+    border-color: ${props => {
+      if (props.$status === 'PRESENT') return 'rgba(16, 185, 129, 0.3)';
+      if (props.$status === 'PERMISSION_ABSENCE') return 'rgba(245, 158, 11, 0.3)';
+      return 'rgba(239, 68, 68, 0.3)';
+    }};
   }
 `;
 
 export const TrackerCardHeader = styled.div`
   padding: 16px 20px;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
+  border-bottom: 1px solid #F3F4F6;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: ${props => props.theme.colors.bg};
+  background: #FAFBFA;
 `;
 
 export const TrackerCardBody = styled.div`
@@ -770,10 +849,10 @@ export const TrackerCardBody = styled.div`
 
 export const TrackerCardFooter = styled.div`
   padding: 16px 20px;
-  border-top: 1px solid ${props => props.theme.colors.border};
+  border-top: 1px solid #F3F4F6;
   display: flex;
   justify-content: flex-end;
-  background: ${props => props.theme.colors.bg};
+  background: #FAFBFA;
 `;
 
 export const TrackerInfoRow = styled.div`
@@ -783,21 +862,23 @@ export const TrackerInfoRow = styled.div`
 `;
 
 export const TrackerInfoLabel = styled.span`
-  font-size: 0.75rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: ${props => props.theme.colors.muted};
+  color: #9CA3AF;
   letter-spacing: 0.05em;
 `;
 
 export const TrackerInfoValue = styled.div<{ $highlight?: 'green' | 'amber' | 'red' }>`
-  font-size: 0.875rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
   font-weight: 600;
   color: ${props => {
-    if (props.$highlight === 'green') return props.theme.colors.greenDark;
-    if (props.$highlight === 'amber') return props.theme.colors.amber;
-    if (props.$highlight === 'red') return '#b91c1c';
-    return props.theme.colors.fg;
+    if (props.$highlight === 'green') return '#047857';
+    if (props.$highlight === 'amber') return '#D97706';
+    if (props.$highlight === 'red') return '#B91C1C';
+    return '#374151';
   }};
 `;
 
@@ -805,40 +886,49 @@ export const CallParentBtn = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fee2e2;
-  border-radius: ${props => props.theme.radius.md};
+  padding: 8px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border: 1px solid #FCA5A5;
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: #fee2e2;
+    background: #EF4444;
+    color: #FFFFFF;
+    border-color: #EF4444;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 export const TrackerStatusBadge = styled.span<{ $status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>`
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
   padding: 4px 10px;
-  border-radius: 9999px;
+  border-radius: 999px;
 
   ${props => props.$status === 'PRESENT' && `
-    background: ${props.theme.colors.greenLight};
-    color: ${props.theme.colors.greenDark};
+    background: #ECFDF5;
+    color: #047857;
   `}
 
   ${props => props.$status === 'PERMISSION_ABSENCE' && `
-    background: ${props.theme.colors.amberLight};
-    color: ${props.theme.colors.amber};
+    background: #FEF3C7;
+    color: #B45309;
   `}
 
   ${props => props.$status === 'UNEXCUSED_ABSENCE' && `
-    background: #fef2f2;
-    color: #b91c1c;
+    background: #FEE2E2;
+    color: #B91C1C;
   `}
 `;
