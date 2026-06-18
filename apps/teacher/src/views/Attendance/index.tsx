@@ -66,6 +66,14 @@ const getFormattedToday = (): string => {
   return `${day}/${month}/${year}`;
 };
 
+const getTodayDateString = (): string => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const formatDateStringToDisplay = (dateStr: string): string => {
   if (!dateStr) return '';
   const parts = dateStr.split('-');
@@ -189,7 +197,16 @@ export function AttendanceView(): React.ReactElement {
               ref={dateInputRef}
               type="date" 
               value={selectedDate} 
-              onChange={(e) => setSelectedDate(e.target.value)}
+              max={getTodayDateString()}
+              onChange={(e) => {
+                const val = e.target.value;
+                const today = getTodayDateString();
+                if (val > today) {
+                  alert('Không thể chọn ngày ở tương lai');
+                  return;
+                }
+                setSelectedDate(val);
+              }}
               style={{
                 position: 'absolute',
                 top: 0,
