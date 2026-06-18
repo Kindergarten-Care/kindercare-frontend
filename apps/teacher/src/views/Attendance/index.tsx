@@ -1317,7 +1317,7 @@ export function AttendanceView(): React.ReactElement {
               backgroundColor: '#0f172a',
               position: 'relative',
               aspectRatio: '4/3',
-              border: '2px solid #cbd5e1'
+              border: 'none'
             }}>
               <div id="reader" style={{ width: '100%', height: '100%' }}></div>
               
@@ -1370,6 +1370,15 @@ export function AttendanceView(): React.ReactElement {
                 0% { top: 0%; }
                 50% { top: 100%; }
                 100% { top: 0%; }
+              }
+              #reader, #reader-dashboard {
+                border: none !important;
+              }
+              #reader__scan_region, #reader-dashboard__scan_region {
+                border: none !important;
+              }
+              #reader canvas, #reader-dashboard canvas {
+                display: none !important;
               }
             `}} />
           </div>
