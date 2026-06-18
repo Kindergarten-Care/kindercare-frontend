@@ -3,10 +3,10 @@ import styled from 'styled-components';
 export const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
-  width: calc(100% - 280px);
-  margin-left: 280px;
+  width: calc(100% - 80px);
+  margin-left: 80px;
   overflow: hidden;
-  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  background: linear-gradient(90deg, #F8FAF8 0%, #ffffff 100%);
   box-sizing: border-box;
 
   @media (max-width: ${props => props.theme.breakpoints.lg}) {
