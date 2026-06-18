@@ -452,7 +452,7 @@ export function AttendanceView(): React.ReactElement {
                     <>
                       <TrackerInfoRow>
                         <TrackerInfoLabel>Lý do xin nghỉ</TrackerInfoLabel>
-                        <TrackerInfoValue $highlight="amber">{student.healthNote || 'Xin nghỉ học có phép'}</TrackerInfoValue>
+                        <TrackerInfoValue $highlight="amber">{student.leaveRequestReason || student.healthNote || 'Xin nghỉ học có phép'}</TrackerInfoValue>
                       </TrackerInfoRow>
                       <TrackerInfoRow>
                         <TrackerInfoLabel>Đơn xin nghỉ từ phụ huynh</TrackerInfoLabel>
@@ -484,8 +484,34 @@ export function AttendanceView(): React.ReactElement {
                     <>
                       <TrackerInfoRow>
                         <TrackerInfoLabel>Trạng thái vắng mặt</TrackerInfoLabel>
-                        <TrackerInfoValue $highlight="red">Không phép (Chưa rõ lý do)</TrackerInfoValue>
+                        <TrackerInfoValue $highlight="red">
+                          {student.leaveRequestReason ? 'Không phép (Bị từ chối phép)' : 'Không phép (Chưa rõ lý do)'}
+                        </TrackerInfoValue>
                       </TrackerInfoRow>
+                      {student.leaveRequestReason && (
+                        <TrackerInfoRow>
+                          <TrackerInfoLabel>Lý do xin nghỉ (Bị từ chối)</TrackerInfoLabel>
+                          <TrackerInfoValue style={{ color: '#ef4444', fontWeight: '500' }}>
+                            {student.leaveRequestReason}
+                          </TrackerInfoValue>
+                        </TrackerInfoRow>
+                      )}
+                      {student.leaveRequestId && (
+                        <TrackerInfoRow>
+                          <TrackerInfoLabel>Đơn xin nghỉ từ phụ huynh</TrackerInfoLabel>
+                          <TrackerInfoValue>
+                            <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                              </svg>
+                              Xem đơn & Chi tiết (Từ chối)
+                            </LeaveRequestBadge>
+                          </TrackerInfoValue>
+                        </TrackerInfoRow>
+                      )}
                       <TrackerInfoRow>
                         <TrackerInfoLabel>Hành động cần thiết</TrackerInfoLabel>
                         <TrackerInfoValue style={{ marginTop: '4px' }}>

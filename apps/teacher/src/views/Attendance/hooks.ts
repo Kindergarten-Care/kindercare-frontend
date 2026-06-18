@@ -201,7 +201,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
       
       let matchStatus = true;
       if (statusFilter === 'PRESENT') {
-        matchStatus = s.attendanceStatus === 'PRESENT';
+        matchStatus = s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest;
       } else if (statusFilter === 'ABSENT') {
         matchStatus = s.attendanceStatus === 'PERMISSION_ABSENCE' || s.attendanceStatus === 'UNEXCUSED_ABSENCE';
       } else if (statusFilter === 'PERMISSION_ABSENCE') {
@@ -217,7 +217,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
   // Statistics
   const statistics = useMemo(() => {
     const total = students.length;
-    const present = students.filter(s => s.attendanceStatus === 'PRESENT').length;
+    const present = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest).length;
     const absentPermission = students.filter(s => s.attendanceStatus === 'PERMISSION_ABSENCE').length;
     const absentUnexcused = students.filter(s => s.attendanceStatus === 'UNEXCUSED_ABSENCE').length;
     const totalAbsent = absentPermission + absentUnexcused;
@@ -233,11 +233,11 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
 
   const classLeaveRequests = useMemo(() => {
     if (selectedClassId === null) return [];
-    return allLeaveRequests.filter(r => r.classId === selectedClassId);
+    return allLeaveRequests.filter(r => r.classId === selectedClassId && r.status === 'PENDING');
   }, [allLeaveRequests, selectedClassId]);
 
   const pendingClassLeaveRequestsCount = useMemo(() => {
-    return classLeaveRequests.filter(r => r.status === 'PENDING').length;
+    return classLeaveRequests.length;
   }, [classLeaveRequests]);
 
   return {

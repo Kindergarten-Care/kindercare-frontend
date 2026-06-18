@@ -10,6 +10,7 @@ export interface Student {
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;
+  leaveRequestReason?: string;
 }
 
 export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';

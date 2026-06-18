@@ -34,13 +34,38 @@ export function formatTimestampToTimeStr(timestamp: number | null): string {
 // Mappers converting raw API structure to defined domain models
 function mapApiStudentToDomain(raw: any): Student {
   let domainStatus: AttendanceStatus = 'PRESENT';
-  if (raw.status === 'Excused') domainStatus = 'PERMISSION_ABSENCE';
-  if (raw.status === 'Absent') domainStatus = 'UNEXCUSED_ABSENCE';
+
+  const statusStr = typeof raw.status === 'string' ? raw.status.trim().toLowerCase() : '';
+
+  if (statusStr === 'present' || statusStr === 'có mặt') {
+    domainStatus = 'PRESENT';
+  } else if (statusStr === 'excused' || statusStr === 'vắng có phép' || statusStr === 'phép' || statusStr === 'vắng phép') {
+    domainStatus = 'PERMISSION_ABSENCE';
+  } else if (statusStr === 'absent' || statusStr === 'vắng' || statusStr === 'vắng không phép' || statusStr === 'không phép') {
+    domainStatus = 'UNEXCUSED_ABSENCE';
+  } else if (!raw.status) {
+    // No attendance record exists for this student on this date
+    // Default to PRESENT (teacher hasn't taken attendance yet)
+    domainStatus = 'PRESENT';
+  }
 
   let leaveReqStatus: LeaveRequestStatus | undefined = undefined;
-  if (raw.leaveRequest?.status === 'Pending') leaveReqStatus = 'PENDING';
-  if (raw.leaveRequest?.status === 'Approved') leaveReqStatus = 'APPROVED';
-  if (raw.leaveRequest?.status === 'Rejected') leaveReqStatus = 'REJECTED';
+  const leaveStatusLower = typeof raw.leaveRequest?.status === 'string' ? raw.leaveRequest.status.trim().toLowerCase() : '';
+  if (leaveStatusLower === 'pending') leaveReqStatus = 'PENDING';
+  if (leaveStatusLower === 'approved') leaveReqStatus = 'APPROVED';
+  if (leaveStatusLower === 'rejected') leaveReqStatus = 'REJECTED';
+
+  // If the student has already been explicitly checked in as PRESENT, keep them PRESENT.
+  // Otherwise, let the leave request status dictate their default category.
+  if (statusStr !== 'present' && statusStr !== 'có mặt') {
+    if (leaveReqStatus === 'APPROVED') {
+      domainStatus = 'PERMISSION_ABSENCE';
+    } else if (leaveReqStatus === 'REJECTED') {
+      domainStatus = 'UNEXCUSED_ABSENCE';
+    } else if (leaveReqStatus === 'PENDING') {
+      domainStatus = 'PRESENT';
+    }
+  }
 
   return {
     id: String(raw.studentId),
@@ -49,9 +74,10 @@ function mapApiStudentToDomain(raw: any): Student {
     attendanceStatus: domainStatus,
     arrivalTime: formatTimestampToTimeStr(raw.checkInTime),
     healthNote: raw.healthNote || '',
-    hasActiveLeaveRequest: raw.leaveRequest?.status === 'Pending',
+    hasActiveLeaveRequest: leaveStatusLower === 'pending',
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
     leaveRequestStatus: leaveReqStatus,
+    leaveRequestReason: raw.leaveRequest?.reason || undefined,
   };
 }
 
