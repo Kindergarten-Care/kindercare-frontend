@@ -1,16 +1,15 @@
 import styled from 'styled-components';
 
 export const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  width: 100%;
 `;
 
 export const ActionCard = styled.div`
   background: white;
-  border-radius: 12px;
-  padding: 20px 30px;
-  box-shadow: 0px 4px 10px rgba(14, 121, 60, 0.05);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.03);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,10 +17,12 @@ export const ActionCard = styled.div`
   gap: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0px 6px 15px rgba(14, 121, 60, 0.1);
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
   }
 `;
 
