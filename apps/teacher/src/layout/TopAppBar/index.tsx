@@ -83,10 +83,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
             <S.ProfileRole>{roleTitle}</S.ProfileRole>
           </S.ProfileInfo>
           <S.Avatar>
-            <img 
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&auto=format&fit=crop&q=60" 
-              alt={fullName} 
-            />
+            {fullName ? fullName.trim().split(' ').pop()?.charAt(0).toUpperCase() : 'H'}
           </S.Avatar>
         </S.ProfileSection>
       </S.ActionsSection>
