@@ -12,9 +12,12 @@ interface StudentLog {
 }
 
 interface QuickLogWidgetProps {
-  students: { id: string; name: string }[];
+  students: { id: string; name: string; eatingStatus?: string }[];
+  menuInfo?: any[];
+  onUpdateMeal?: (studentId: string, status: string) => void;
+  onUpdateAll?: (status: string) => void;
 }
-export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students }) => {
+export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, menuInfo, onUpdateMeal, onUpdateAll }) => {
   const [logs, setLogs] = useState<StudentLog[]>([]);
 
   React.useEffect(() => {
@@ -22,32 +25,48 @@ export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students }) => {
     const mappedLogs = students.map((s, index) => {
       const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
       const color = colors[index % colors.length];
+
+      let widgetStatus: StatusType = 'none';
+      if (s.eatingStatus === 'Ăn hết') widgetStatus = 'eat-all';
+      else if (s.eatingStatus === 'Ăn chậm') widgetStatus = 'slow-eater';
+      else if (s.eatingStatus === 'Không ăn') widgetStatus = 'skip-meal';
+
       return {
         id: s.id,
         name: s.name,
         initial,
         color,
-        status: 'none' as StatusType
+        status: widgetStatus
       };
     });
     setLogs(mappedLogs);
   }, [students]);
 
   const cycleStatus = (id: string) => {
-    setLogs(prev => prev.map(student => {
-      if (student.id !== id) return student;
-      let nextStatus: StatusType = 'none';
-      if (student.status === 'none') nextStatus = 'eat-all';
-      else if (student.status === 'eat-all') nextStatus = 'slow-eater';
-      else if (student.status === 'slow-eater') nextStatus = 'skip-meal';
-      else if (student.status === 'skip-meal') nextStatus = 'none';
-      
-      return { ...student, status: nextStatus };
-    }));
+    const student = logs.find(s => s.id === id);
+    if (!student) return;
+
+    let nextStatus: StatusType = 'none';
+    let dbStatus = '';
+
+    if (student.status === 'none') { nextStatus = 'eat-all'; dbStatus = 'Ăn hết'; }
+    else if (student.status === 'eat-all') { nextStatus = 'slow-eater'; dbStatus = 'Ăn chậm'; }
+    else if (student.status === 'slow-eater') { nextStatus = 'skip-meal'; dbStatus = 'Không ăn'; }
+    else if (student.status === 'skip-meal') { nextStatus = 'none'; dbStatus = ''; }
+    
+    // Optistic local update
+    setLogs(prev => prev.map(s => s.id === id ? { ...s, status: nextStatus } : s));
+
+    if (onUpdateMeal && dbStatus) {
+      onUpdateMeal(id, dbStatus);
+    }
   };
 
   const markAllEatAll = () => {
     setLogs(prev => prev.map(student => ({ ...student, status: 'eat-all' })));
+    if (onUpdateAll) {
+      onUpdateAll('Ăn hết');
+    }
   };
 
   const getStatusBadge = (status: StatusType) => {
@@ -57,14 +76,23 @@ export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students }) => {
     return null;
   };
 
+  const getMenuDisplay = () => {
+    if (!menuInfo || menuInfo.length === 0) return 'Chưa có thực đơn hôm nay';
+    const m = menuInfo[0];
+    return `${m.mealType || 'Bữa ăn'}: ${m.dishName || 'Chưa cập nhật'}`;
+  };
+
   return (
     <S.WidgetContainer>
       <S.HeaderRow>
-        <S.Title>📋 Sinh hoạt nhanh · Bữa trưa</S.Title>
+        <S.Title>📋 Sinh hoạt nhanh</S.Title>
         <S.BatchButton onClick={markAllEatAll}>
           🍚 Cả lớp ăn hết suất
         </S.BatchButton>
       </S.HeaderRow>
+      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '8px', marginTop: '-8px' }}>
+        {getMenuDisplay()}
+      </div>
 
       <S.SubtitleRow>
         <span>✓ Ăn hết</span>

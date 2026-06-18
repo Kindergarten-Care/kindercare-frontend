@@ -7,6 +7,7 @@ export interface Student {
   attendanceStatus: AttendanceStatus;
   arrivalTime: string; // e.g. "07:45" or "--:--"
   healthNote: string;
+  eatingStatus?: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;
