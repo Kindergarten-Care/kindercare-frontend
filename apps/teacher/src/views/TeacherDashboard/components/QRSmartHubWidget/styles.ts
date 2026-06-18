@@ -110,6 +110,22 @@ export const CameraContainer = styled.div`
   overflow: hidden;
   background: radial-gradient(120% 120% at 30% 20%, #e0f2fe 0%, #ede9fe 45%, #dcfce7 100%);
   border: 1.5px solid #E3F0E8;
+
+  #reader-dashboard {
+    border: none !important;
+  }
+  #reader-dashboard__scan_region {
+    border: none !important;
+  }
+  #reader-dashboard canvas {
+    display: none !important;
+  }
+  #reader-dashboard video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 18px !important;
+  }
 `;
 
 export const GridOverlay = styled.div`

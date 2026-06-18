@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
 
 interface LiveFeedItem {
@@ -14,7 +14,7 @@ interface QRSmartHubWidgetProps {
   presentCount: number;
   totalCount: number;
   liveFeed: LiveFeedItem[];
-  onScanSuccess: (name: string, note: string | null) => void;
+  onScanSuccess: (name: string, note: string | null, studentId?: string) => void;
 }
 
 const CHECK_IN_QUEUE = [
@@ -36,8 +36,170 @@ export const QRSmartHubWidget: React.FC<QRSmartHubWidgetProps> = ({
 }) => {
   const [queueIndex, setQueueIndex] = useState(0);
   const [scanFlash, setScanFlash] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const qrScannerRef = useRef<any>(null);
+
+  // Dynamically load html5-qrcode library from CDN
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const existingScript = document.getElementById('html5-qrcode-cdn');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.id = 'html5-qrcode-cdn';
+        script.src = 'https://unpkg.com/html5-qrcode';
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }
+  }, []);
+
+  // Cleanup camera scanning on unmount
+  useEffect(() => {
+    return () => {
+      if (qrScannerRef.current) {
+        try {
+          if (qrScannerRef.current.isScanning) {
+            qrScannerRef.current.stop();
+          }
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
+    };
+  }, []);
+
+  const playBeepSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 1000;
+      gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioCtx.close();
+      }, 150);
+    } catch (err) {
+      console.warn('Audio beep failed', err);
+    }
+  };
+
+  const startCameraWithMode = (mode: 'user' | 'environment') => {
+    if (typeof window !== 'undefined' && (window as any).Html5Qrcode) {
+      try {
+        const Html5QrcodeClass = (window as any).Html5Qrcode;
+        const html5QrCode = new Html5QrcodeClass("reader-dashboard");
+        qrScannerRef.current = html5QrCode;
+
+        html5QrCode.start(
+          { facingMode: mode },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          (decodedText: string) => {
+            playBeepSound();
+            setScanFlash(true);
+            setTimeout(() => setScanFlash(false), 500);
+
+            // Automatically stop camera after scan
+            html5QrCode.stop().then(() => {
+              setIsCameraActive(false);
+
+              let studentId = undefined;
+              let studentName = '';
+              let note = null;
+
+              try {
+                const data = JSON.parse(decodedText);
+                studentId = data.studentId ? String(data.studentId) : undefined;
+                studentName = data.studentName || data.name || '';
+                note = data.note || data.healthNote || null;
+              } catch (e) {
+                const num = Number(decodedText.trim());
+                if (!isNaN(num) && num > 0) {
+                  studentId = String(num);
+                } else {
+                  studentName = decodedText.trim();
+                }
+              }
+
+              onScanSuccess(studentName, note, studentId);
+            }).catch((err: any) => {
+              console.error("Failed to stop scanner after scan", err);
+              setIsCameraActive(false);
+            });
+          },
+          () => {
+            // Ignore scan failure frames
+          }
+        ).catch((err: any) => {
+          console.error("Failed to start Html5Qrcode scanner", err);
+          alert("Không thể khởi động camera: " + err);
+          setIsCameraActive(false);
+        });
+      } catch (e) {
+        console.error("Html5Qrcode constructor failed", e);
+        alert("Lỗi cấu hình camera");
+        setIsCameraActive(false);
+      }
+    } else {
+      alert("Thư viện quét camera đang được tải. Vui lòng thử lại sau vài giây.");
+      setIsCameraActive(false);
+    }
+  };
+
+  const handleStartCamera = () => {
+    setIsCameraActive(true);
+    setTimeout(() => {
+      startCameraWithMode(facingMode);
+    }, 350); // Small delay to let container mount
+  };
+
+  const handleStopCamera = () => {
+    if (qrScannerRef.current) {
+      try {
+        if (qrScannerRef.current.isScanning) {
+          qrScannerRef.current.stop().then(() => {
+            setIsCameraActive(false);
+          }).catch((err: any) => {
+            console.error(err);
+            setIsCameraActive(false);
+          });
+        } else {
+          setIsCameraActive(false);
+        }
+      } catch (e) {
+        setIsCameraActive(false);
+      }
+    } else {
+      setIsCameraActive(false);
+    }
+  };
+
+  const toggleCameraFacing = () => {
+    if (!isCameraActive) return;
+
+    if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+      qrScannerRef.current.stop().then(() => {
+        const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+        setFacingMode(nextMode);
+        setTimeout(() => {
+          startCameraWithMode(nextMode);
+        }, 250);
+      }).catch((e: any) => {
+        console.error("Failed to switch camera", e);
+      });
+    }
+  };
 
   const triggerSimulation = () => {
+    playBeepSound();
     setScanFlash(true);
     setTimeout(() => setScanFlash(false), 500);
 
@@ -73,8 +235,21 @@ export const QRSmartHubWidget: React.FC<QRSmartHubWidgetProps> = ({
             <S.GridOverlay />
             <S.LiveBadge>
               <S.PulseDot />
-              LIVE · Cam lớp Mầm 1
+              {isCameraActive ? `LIVE · Cam quét QR (${facingMode === 'environment' ? 'Sau' : 'Trước'})` : 'OFF · Cam lớp Mầm 1'}
             </S.LiveBadge>
+
+            {/* Video Reader Element */}
+            {isCameraActive && (
+              <div id="reader-dashboard" style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 1,
+                borderRadius: '18px',
+                overflow: 'hidden'
+              }} />
+            )}
 
             {/* Scanning viewport guidance corners */}
             <S.CornerGuide $pos="tl" />
@@ -83,24 +258,36 @@ export const QRSmartHubWidget: React.FC<QRSmartHubWidgetProps> = ({
             <S.CornerGuide $pos="br" />
 
             {/* Neon sweeping line */}
-            <S.LaserLine />
+            {isCameraActive && <S.LaserLine />}
 
-            <S.CenterInfo>
-              <S.BoxIcon>▣</S.BoxIcon>
-              <S.HelpText>Đưa mã QR vào khung</S.HelpText>
-            </S.CenterInfo>
+            {!isCameraActive && (
+              <S.CenterInfo>
+                <S.BoxIcon>📷</S.BoxIcon>
+                <S.HelpText>Camera đang tắt</S.HelpText>
+              </S.CenterInfo>
+            )}
 
             {/* Flash feedback overlay */}
             <S.FlashOverlay $active={scanFlash} />
           </S.CameraContainer>
 
-          <S.TriggerButton onClick={triggerSimulation}>
-            ▣ Mô phỏng một lượt quét
-          </S.TriggerButton>
+          {isCameraActive ? (
+            <S.TriggerButton onClick={handleStopCamera} style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}>
+              🛑 Tắt camera quét QR
+            </S.TriggerButton>
+          ) : (
+            <S.TriggerButton onClick={handleStartCamera}>
+              📷 Bật camera quét QR
+            </S.TriggerButton>
+          )}
 
           <S.ButtonRow>
-            <S.ActionButton onClick={triggerSimulation}>🔄 Đổi camera</S.ActionButton>
-            <S.ActionButton onClick={triggerSimulation}>📝 Điểm danh thủ công</S.ActionButton>
+            <S.ActionButton onClick={toggleCameraFacing} disabled={!isCameraActive}>
+              🔄 Đổi camera
+            </S.ActionButton>
+            <S.ActionButton onClick={triggerSimulation}>
+              ⚡ Mô phỏng quét (Demo)
+            </S.ActionButton>
           </S.ButtonRow>
         </S.ScannerColumn>
 
