@@ -128,6 +128,17 @@ export function AttendanceView(): React.ReactElement {
   };
 
   const [viewMode, setViewMode] = React.useState<'EDIT' | 'TRACKER'>('TRACKER');
+  const dateInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleDatePickerTrigger = () => {
+    if (dateInputRef.current) {
+      try {
+        dateInputRef.current.showPicker();
+      } catch (err) {
+        console.error('showPicker failed:', err);
+      }
+    }
+  };
 
   const handleCallParent = (studentName: string) => {
     alert(`Đang kết nối cuộc gọi đến phụ huynh học sinh ${studentName}...`);
@@ -148,8 +159,21 @@ export function AttendanceView(): React.ReactElement {
       {/* Top Header & Save Controls */}
       <HeaderActionsSection>
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-          <DateHeader style={{ position: 'relative', cursor: 'pointer' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e', marginRight: '4px' }}>
+          <DateHeader 
+            onClick={handleDatePickerTrigger}
+            style={{ 
+              position: 'relative', 
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 12px',
+              backgroundColor: '#f1f5f9',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -158,7 +182,11 @@ export function AttendanceView(): React.ReactElement {
             <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1e293b' }}>
               {formatDateStringToDisplay(selectedDate)}
             </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#64748b', marginLeft: '4px' }}>
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
             <input 
+              ref={dateInputRef}
               type="date" 
               value={selectedDate} 
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -169,8 +197,8 @@ export function AttendanceView(): React.ReactElement {
                 width: '100%',
                 height: '100%',
                 opacity: 0,
-                cursor: 'pointer',
-                zIndex: 1
+                pointerEvents: 'none',
+                zIndex: -1
               }}
             />
           </DateHeader>
