@@ -16,11 +16,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   fullName,
   roleTitle
 }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
   return (
     <S.LayoutContainer>
-      <TeacherSidebar />
+      <TeacherSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      
+      {isSidebarOpen && (
+        <S.SidebarOverlay onClick={() => setIsSidebarOpen(false)} />
+      )}
+      
       <S.MainContent>
-        <TopAppBar fullName={fullName} roleTitle={roleTitle} />
+        <TopAppBar 
+          fullName={fullName} 
+          roleTitle={roleTitle} 
+          onMenuClick={() => setIsSidebarOpen(true)} 
+        />
         <S.PageContent>
           {children}
         </S.PageContent>
@@ -28,3 +39,4 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </S.LayoutContainer>
   );
 };
+

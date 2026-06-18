@@ -8,7 +8,35 @@ export const LayoutContainer = styled.div`
   overflow: hidden;
   background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
   box-sizing: border-box;
+
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    width: 100%;
+    margin-left: 0;
+  }
 `;
+
+export const SidebarOverlay = styled.div`
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
 
 export const MainContent = styled.main`
   flex: 1;
