@@ -124,3 +124,15 @@ export const ActionButton = styled.button`
     color: white;
   }
 `;
+
+export const QrScanButton = styled(ActionButton)`
+  background: #0e793c;
+  color: white;
+  border-color: #0e793c;
+  margin-top: -8px;
+  
+  &:hover {
+    background: #0a5d2e;
+    border-color: #0a5d2e;
+  }
+`;

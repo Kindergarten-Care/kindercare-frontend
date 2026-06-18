@@ -156,6 +156,34 @@ export function AttendanceView(): React.ReactElement {
     checkInTime: string;
   } | null>(null);
 
+  const [isCameraScanning, setIsCameraScanning] = React.useState<boolean>(false);
+  const qrScannerRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const existingScript = document.getElementById('html5-qrcode-cdn');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.id = 'html5-qrcode-cdn';
+        script.src = 'https://unpkg.com/html5-qrcode';
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+        try {
+          qrScannerRef.current.stop();
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
+    };
+  }, []);
+
   React.useEffect(() => {
     if (students && students.length > 0) {
       const presentWithTime = students.filter(s => s.attendanceStatus === 'PRESENT' && s.arrivalTime && s.arrivalTime !== '--:--');
@@ -193,6 +221,142 @@ export function AttendanceView(): React.ReactElement {
       }, 150);
     } catch (err) {
       console.error('Audio beep failed', err);
+    }
+  };
+
+  const handleQrCodeScanned = (decodedText: string) => {
+    let studentId = '';
+    let parentName = '';
+    let relationship = '';
+
+    try {
+      const data = JSON.parse(decodedText);
+      studentId = String(data.studentId);
+      parentName = data.parentName || '';
+      relationship = data.relationship || '';
+    } catch (e) {
+      const num = Number(decodedText.trim());
+      if (!isNaN(num) && num > 0) {
+        studentId = String(num);
+      }
+    }
+
+    if (!studentId) {
+      alert("Mã QR không đúng định dạng điểm danh!");
+      return;
+    }
+
+    const student = students.find(s => s.id === studentId);
+    if (!student) {
+      alert(`Không tìm thấy học sinh với ID ${studentId} trong lớp này!`);
+      return;
+    }
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const finalParentName = parentName || (student.leaveRequestId ? 'Phụ huynh' : 'Người thân');
+    const finalRelationship = relationship || 'Người đưa đón';
+
+    playBeepSound();
+
+    setQrSuccessModal({
+      isOpen: true,
+      studentName: student.name,
+      parentName: finalParentName,
+      relationship: finalRelationship,
+      checkInTime: timeStr
+    });
+
+    setTimeout(() => {
+      setQrSuccessModal(null);
+    }, 2500);
+
+    handleStatusChange(studentId, 'PRESENT');
+    handleArrivalTimeChange(studentId, timeStr);
+
+    const newEvent: QrCheckInEvent = {
+      studentId,
+      studentName: student.name,
+      parentName: finalParentName,
+      relationship: finalRelationship,
+      checkInTime: timeStr
+    };
+    setQrHistory(prev => [newEvent, ...prev]);
+
+    try {
+      const updatedRecords = [{
+        studentId: student.id,
+        status: 'PRESENT' as const,
+        arrivalTime: timeStr,
+        healthNote: student.healthNote || ''
+      }];
+      AttendanceService.updateAttendance(selectedClassId || 'MN1', selectedDate, updatedRecords);
+    } catch (e) {
+      console.error('Auto save QR attendance failed', e);
+    }
+  };
+
+  const handleStartCameraScan = () => {
+    setIsCameraScanning(true);
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && (window as any).Html5Qrcode) {
+        try {
+          const Html5QrcodeClass = (window as any).Html5Qrcode;
+          const html5QrCode = new Html5QrcodeClass("reader");
+          qrScannerRef.current = html5QrCode;
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 220, height: 220 }
+            },
+            (decodedText: string) => {
+              html5QrCode.stop().then(() => {
+                setIsCameraScanning(false);
+                handleQrCodeScanned(decodedText);
+              }).catch((err: any) => {
+                console.error(err);
+                setIsCameraScanning(false);
+              });
+            },
+            () => {
+              // Ignore failure frames
+            }
+          ).catch((err: any) => {
+            console.error(err);
+            alert("Không thể khởi động camera: " + err);
+            setIsCameraScanning(false);
+          });
+        } catch (e) {
+          console.error(e);
+          alert("Lỗi cấu hình trình quét camera");
+          setIsCameraScanning(false);
+        }
+      } else {
+        alert("Thư viện quét camera chưa tải xong. Vui lòng thử lại sau vài giây.");
+      }
+    }, 300);
+  };
+
+  const handleStopCameraScan = () => {
+    if (qrScannerRef.current) {
+      try {
+        if (qrScannerRef.current.isScanning) {
+          qrScannerRef.current.stop().then(() => {
+            setIsCameraScanning(false);
+          }).catch((err: any) => {
+            console.error(err);
+            setIsCameraScanning(false);
+          });
+        } else {
+          setIsCameraScanning(false);
+        }
+      } catch (e) {
+        setIsCameraScanning(false);
+      }
+    } else {
+      setIsCameraScanning(false);
     }
   };
 
@@ -790,6 +954,55 @@ export function AttendanceView(): React.ReactElement {
               </span>
             </div>
 
+            {/* Real Camera Scanner Card */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '16px', 
+              padding: '24px', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#0e793c' }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                Quét Mã QR Bằng Camera (Thực Tế)
+              </h4>
+              <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
+                Kích hoạt camera của thiết bị giáo viên để quét trực tiếp mã QR do phụ huynh cung cấp.
+              </p>
+              
+              <button 
+                onClick={handleStartCameraScan}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#0e793c',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.975rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 12px rgba(14, 121, 60, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                Mở Camera Quét Mã
+              </button>
+            </div>
+
             {/* QR Simulator Card */}
             <div style={{ 
               backgroundColor: 'white', 
@@ -1043,6 +1256,125 @@ export function AttendanceView(): React.ReactElement {
           handleSelectLeaveRequest(id);
         }}
       />
+      {/* Camera Scanner Modal */}
+      {isCameraScanning && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9998,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '24px',
+            padding: '24px',
+            width: '90%',
+            maxWidth: '500px',
+            position: 'relative',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                Quét Mã QR Phụ Huynh
+              </h3>
+              <button 
+                onClick={handleStopCameraScan}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
+              Căn chỉnh mã QR của Phụ huynh nằm trong khung camera bên dưới.
+            </p>
+
+            {/* Video Reader Element */}
+            <div style={{
+              width: '100%',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              backgroundColor: '#0f172a',
+              position: 'relative',
+              aspectRatio: '4/3',
+              border: '2px solid #cbd5e1'
+            }}>
+              <div id="reader" style={{ width: '100%', height: '100%' }}></div>
+              
+              {/* Overlay Laser Scan Frame */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '200px',
+                height: '200px',
+                border: '2px dashed #22c55e',
+                borderRadius: '8px',
+                boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.5)',
+                pointerEvents: 'none',
+                zIndex: 10
+              }}>
+                {/* Scanner laser line */}
+                <div style={{
+                  width: '100%',
+                  height: '2px',
+                  backgroundColor: '#22c55e',
+                  boxShadow: '0 0 8px #22c55e',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  animation: 'laserSweep 2s linear infinite'
+                }}></div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleStopCameraScan}
+              style={{
+                padding: '10px',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '0.875rem'
+              }}
+            >
+              Hủy bỏ quét
+            </button>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes laserSweep {
+                0% { top: 0%; }
+                50% { top: 100%; }
+                100% { top: 0%; }
+              }
+            `}} />
+          </div>
+        </div>
+      )}
     </AttendancePageContainer>
   );
 }
