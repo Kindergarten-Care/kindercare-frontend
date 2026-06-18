@@ -10,9 +10,10 @@ const getTodayDateString = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-export function useAttendance(classId: string = 'MN1', date: string = getTodayDateString()) {
+export function useAttendance(classId: string = 'MN1') {
   const [classes, setClasses] = useState<TeacherClass[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
   
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -66,14 +67,14 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     if (selectedClassId === null) return;
     try {
       setLoading(true);
-      const data = await AttendanceService.getDailyAttendance(selectedClassId, date);
+      const data = await AttendanceService.getDailyAttendance(selectedClassId, selectedDate);
       setStudents(data);
     } catch (error) {
       console.error('Failed to fetch attendance data:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedClassId, date]);
+  }, [selectedClassId, selectedDate]);
 
   useEffect(() => {
     fetchAttendance();
@@ -181,7 +182,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
         arrivalTime: s.arrivalTime,
         healthNote: s.healthNote,
       }));
-      await AttendanceService.updateAttendance(selectedClassId, date, payload);
+      await AttendanceService.updateAttendance(selectedClassId, selectedDate, payload);
       alert('Lưu điểm danh & đồng bộ thành công!');
       return true;
     } catch (error) {
@@ -191,7 +192,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     } finally {
       setSaving(false);
     }
-  }, [selectedClassId, date, students]);
+  }, [selectedClassId, selectedDate, students]);
 
   // Filtered lists
   const filteredStudents = useMemo(() => {
@@ -251,6 +252,10 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     setStatusFilter,
     statistics,
     
+    // Date state
+    selectedDate,
+    setSelectedDate,
+
     // Classes state
     classes,
     selectedClassId,
