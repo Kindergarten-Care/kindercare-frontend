@@ -11,27 +11,27 @@ interface StudentLog {
   status: StatusType;
 }
 
-const INITIAL_LOGS: StudentLog[] = [
-  { id: 'g0', name: 'Minh Khôi', initial: 'K', color: '#FCA5A5', status: 'none' },
-  { id: 'g1', name: 'Khánh Linh', initial: 'L', color: '#FCD34D', status: 'none' },
-  { id: 'g2', name: 'An Nhiên', initial: 'N', color: '#6EE7B7', status: 'none' },
-  { id: 'g3', name: 'Gia Huy', initial: 'H', color: '#93C5FD', status: 'none' },
-  { id: 'g4', name: 'Bảo Trâm', initial: 'T', color: '#C4B5FD', status: 'none' },
-  { id: 'g5', name: 'Hoàng Long', initial: 'L', color: '#F9A8D4', status: 'none' },
-  { id: 'g6', name: 'Ngọc Diệp', initial: 'D', color: '#FDBA74', status: 'none' },
-  { id: 'g7', name: 'Tường Vy', initial: 'V', color: '#67E8F9', status: 'none' },
-  { id: 'g8', name: 'Đăng Khoa', initial: 'K', color: '#A5B4FC', status: 'none' },
-  { id: 'g9', name: 'Mỹ Anh', initial: 'A', color: '#5EEAD4', status: 'none' },
-  { id: 'g10', name: 'Quốc Bảo', initial: 'B', color: '#FCA5A5', status: 'none' },
-  { id: 'g11', name: 'Hà My', initial: 'M', color: '#FCD34D', status: 'none' },
-  { id: 'g12', name: 'Nhật Nam', initial: 'N', color: '#6EE7B7', status: 'none' },
-  { id: 'g13', name: 'Yến Nhi', initial: 'N', color: '#93C5FD', status: 'none' },
-  { id: 'g14', name: 'Trí Dũng', initial: 'D', color: '#C4B5FD', status: 'none' },
-  { id: 'g15', name: 'Khánh Vân', initial: 'V', color: '#F9A8D4', status: 'none' },
-];
+interface QuickLogWidgetProps {
+  students: { id: string; name: string }[];
+}
+export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students }) => {
+  const [logs, setLogs] = useState<StudentLog[]>([]);
 
-export const QuickLogWidget: React.FC = () => {
-  const [logs, setLogs] = useState<StudentLog[]>(INITIAL_LOGS);
+  React.useEffect(() => {
+    const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9', '#A5B4FC', '#5EEAD4'];
+    const mappedLogs = students.map((s, index) => {
+      const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+      const color = colors[index % colors.length];
+      return {
+        id: s.id,
+        name: s.name,
+        initial,
+        color,
+        status: 'none' as StatusType
+      };
+    });
+    setLogs(mappedLogs);
+  }, [students]);
 
   const cycleStatus = (id: string) => {
     setLogs(prev => prev.map(student => {

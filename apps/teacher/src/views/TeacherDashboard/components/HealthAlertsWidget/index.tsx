@@ -12,14 +12,32 @@ interface MedItem {
   done: boolean;
 }
 
-const INITIAL_MEDS: MedItem[] = [
-  { id: 'm1', name: 'Bé Khang', med: 'Siro ho Prospan', dose: '5ml', time: '11:00', initial: 'K', color: '#F9A8D4', done: false },
-  { id: 'm2', name: 'Bé Bảo Long', med: 'Thuốc kháng dị ứng', dose: '1 viên', time: 'Sau ăn trưa', initial: 'L', color: '#FDBA74', done: false },
-  { id: 'm3', name: 'Bé Hải Anh', med: 'Hạ sốt (nếu >38°)', dose: 'Theo dõi', time: 'Cả ngày', initial: 'A', color: '#93C5FD', done: false },
-];
+interface HealthAlertsWidgetProps {
+  students: { id: string; name: string; healthNote?: string }[];
+}
 
-export const HealthAlertsWidget: React.FC = () => {
-  const [meds, setMeds] = useState<MedItem[]>(INITIAL_MEDS);
+export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students }) => {
+  const [meds, setMeds] = useState<MedItem[]>([]);
+
+  React.useEffect(() => {
+    const alerts = students.filter(s => s.healthNote && s.healthNote.trim().length > 0);
+    const colors = ['#F9A8D4', '#FDBA74', '#93C5FD', '#FCA5A5', '#6EE7B7', '#C4B5FD'];
+    const mapped = alerts.map((s, idx) => {
+      const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+      const color = colors[idx % colors.length];
+      return {
+        id: s.id,
+        name: s.name,
+        med: s.healthNote || '',
+        dose: 'Lưu ý',
+        time: 'Trong ngày',
+        initial,
+        color,
+        done: false
+      };
+    });
+    setMeds(mapped);
+  }, [students]);
 
   const toggleMed = (id: string) => {
     setMeds(prev => prev.map(m => m.id === id ? { ...m, done: !m.done } : m));

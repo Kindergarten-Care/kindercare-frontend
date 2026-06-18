@@ -4,7 +4,6 @@ import { QRSmartHubWidget } from './components/QRSmartHubWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { QuickLogWidget } from './components/QuickLogWidget';
-import { QuickActionsWidget } from './components/QuickActionsWidget';
 import { ParentChatDrawer } from './components/ParentChatDrawer';
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
@@ -267,14 +266,13 @@ export const TeacherDashboardView: React.FC = () => {
       {/* 2. THREE-COLUMN ACTION WIDGETS GRID */}
       <S.DashboardGrid3Col>
         <S.Column>
-          <HealthAlertsWidget />
+          <HealthAlertsWidget students={studentsList} />
         </S.Column>
         <S.Column>
           <LeaveApprovalWidget onAction={addToast} />
-          <QuickActionsWidget />
         </S.Column>
         <S.Column>
-          <QuickLogWidget />
+          <QuickLogWidget students={studentsList} />
         </S.Column>
       </S.DashboardGrid3Col>
 
