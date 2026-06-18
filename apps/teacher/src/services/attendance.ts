@@ -74,6 +74,7 @@ function mapApiStudentToDomain(raw: any): Student {
     attendanceStatus: domainStatus,
     arrivalTime: formatTimestampToTimeStr(raw.checkInTime),
     healthNote: raw.healthNote || '',
+    eatingStatus: raw.eatingStatus,
     hasActiveLeaveRequest: leaveStatusLower === 'pending',
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
     leaveRequestStatus: leaveReqStatus,
@@ -189,5 +190,39 @@ export class AttendanceService {
     });
 
     return true;
+  }
+
+  /**
+   * Submit quick meal logs.
+   */
+  public static async submitQuickMealLogs(
+    classId: number | string,
+    date: string,
+    mealData: { studentId: string; eatingStatus: string }[]
+  ): Promise<boolean> {
+    const dateTimestamp = getUtcTimestampInSeconds(date);
+    const data = mealData.map(m => ({
+      studentId: Number(m.studentId),
+      eatingStatus: m.eatingStatus,
+    }));
+
+    await apiClient.post('/teacher/attendance/meals', {
+      classId: Number(classId),
+      date: dateTimestamp,
+      mealData: data,
+    });
+
+    return true;
+  }
+
+  /**
+   * Get class meal menu
+   */
+  public static async getClassMenu(classId: number | string, date: string): Promise<any[]> {
+    const dateTimestamp = getUtcTimestampInSeconds(date);
+    const res = await apiClient.get(`/teacher/classes/${classId}/menu`, {
+      params: { date: dateTimestamp }
+    });
+    return res.data?.data || [];
   }
 }

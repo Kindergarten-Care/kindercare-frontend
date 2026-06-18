@@ -232,6 +232,34 @@ export const TeacherDashboardView: React.FC = () => {
     }
   };
 
+  const handleUpdateMealStatus = async (studentId: string, status: string) => {
+    if (!activeClassId) return;
+    try {
+      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), [
+        { studentId, eatingStatus: status }
+      ]);
+      setStudentsList(prev => prev.map(s => s.id === studentId ? { ...s, eatingStatus: status } : s));
+      addToast(`Cập nhật trạng thái bữa ăn thành công`);
+    } catch (e) {
+      addToast('Cập nhật trạng thái bữa ăn thất bại');
+    }
+  };
+
+  const handleUpdateAllMealStatus = async (status: string) => {
+    if (!activeClassId || studentsList.length === 0) return;
+    try {
+      const payload = studentsList.map(s => ({
+        studentId: s.id,
+        eatingStatus: status
+      }));
+      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), payload);
+      setStudentsList(prev => prev.map(s => ({ ...s, eatingStatus: status })));
+      addToast(`Đã ghi nhận cả lớp ăn hết suất`);
+    } catch (e) {
+      addToast('Cập nhật trạng thái bữa ăn thất bại');
+    }
+  };
+
   return (
     <S.DashboardContainer>
       {/* CONFETTI LAYER */}
@@ -272,7 +300,11 @@ export const TeacherDashboardView: React.FC = () => {
           <LeaveApprovalWidget onAction={addToast} />
         </S.Column>
         <S.Column>
-          <QuickLogWidget students={studentsList} />
+          <QuickLogWidget 
+            students={studentsList} 
+            onUpdateMeal={handleUpdateMealStatus} 
+            onUpdateAll={handleUpdateAllMealStatus} 
+          />
         </S.Column>
       </S.DashboardGrid3Col>
 
