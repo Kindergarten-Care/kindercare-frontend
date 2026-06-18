@@ -40,6 +40,7 @@ export const TeacherDashboardView: React.FC = () => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confetti, setConfetti] = useState<ConfettiItem[]>([]);
   const [dateStr, setDateStr] = useState('Hôm nay');
+  const [menuToday, setMenuToday] = useState<any[]>([]);
 
   const getTodayDateString = () => {
     const d = new Date();
@@ -59,6 +60,9 @@ export const TeacherDashboardView: React.FC = () => {
         const todayDate = getTodayDateString();
         const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
         setStudentsList(students);
+
+        const menu = await AttendanceService.getClassMenu(firstClass.classId, todayDate);
+        setMenuToday(menu);
 
         // Filter already checked-in students
         const checkedIn = students.filter(s => s.arrivalTime && s.arrivalTime !== '--:--');
@@ -302,6 +306,7 @@ export const TeacherDashboardView: React.FC = () => {
         <S.Column>
           <QuickLogWidget 
             students={studentsList} 
+            menuInfo={menuToday}
             onUpdateMeal={handleUpdateMealStatus} 
             onUpdateAll={handleUpdateAllMealStatus} 
           />

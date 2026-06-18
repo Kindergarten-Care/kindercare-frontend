@@ -13,10 +13,11 @@ interface StudentLog {
 
 interface QuickLogWidgetProps {
   students: { id: string; name: string; eatingStatus?: string }[];
+  menuInfo?: any[];
   onUpdateMeal?: (studentId: string, status: string) => void;
   onUpdateAll?: (status: string) => void;
 }
-export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, onUpdateMeal, onUpdateAll }) => {
+export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, menuInfo, onUpdateMeal, onUpdateAll }) => {
   const [logs, setLogs] = useState<StudentLog[]>([]);
 
   React.useEffect(() => {
@@ -75,14 +76,23 @@ export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, onUpda
     return null;
   };
 
+  const getMenuDisplay = () => {
+    if (!menuInfo || menuInfo.length === 0) return 'Chưa có thực đơn hôm nay';
+    const m = menuInfo[0];
+    return `${m.mealType || 'Bữa ăn'}: ${m.dishName || 'Chưa cập nhật'}`;
+  };
+
   return (
     <S.WidgetContainer>
       <S.HeaderRow>
-        <S.Title>📋 Sinh hoạt nhanh · Bữa trưa</S.Title>
+        <S.Title>📋 Sinh hoạt nhanh</S.Title>
         <S.BatchButton onClick={markAllEatAll}>
           🍚 Cả lớp ăn hết suất
         </S.BatchButton>
       </S.HeaderRow>
+      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '8px', marginTop: '-8px' }}>
+        {getMenuDisplay()}
+      </div>
 
       <S.SubtitleRow>
         <span>✓ Ăn hết</span>
