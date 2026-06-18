@@ -89,10 +89,12 @@ export const StatsGrid = styled.div`
 `;
 
 export const StatCard = styled.div<{ $borderType?: 'green' | 'amber' | 'neutral' }>`
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 24px;
   padding: 24px;
-  border: 1px solid rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.05);
   box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
   position: relative;
   overflow: hidden;
@@ -120,6 +122,7 @@ export const StatCard = styled.div<{ $borderType?: 'green' | 'amber' | 'neutral'
     box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
     border-color: rgba(16, 24, 40, 0.08);
   }
+
 `;
 
 export const StatLabel = styled.span`
@@ -148,11 +151,13 @@ export const StatSub = styled.span`
 `;
 
 export const FilterBar = styled.div`
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 20px;
   padding: 16px 24px;
   box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
-  border: 1px solid rgba(16, 24, 40, 0.03);
+  border: 1px solid rgba(16, 24, 40, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -234,11 +239,13 @@ export const CustomSelect = styled.select`
 `;
 
 export const GridContainer = styled.div`
-  background: ${props => props.theme.colors.surface};
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: ${props => props.theme.radius.lg};
   box-shadow: ${props => props.theme.shadows.soft};
   overflow: hidden;
-  border: 1px solid ${props => props.theme.colors.border};
+  border: 1px solid rgba(16, 24, 40, 0.05);
 `;
 
 export const Table = styled.table`
@@ -537,7 +544,9 @@ export const ModalBackdrop = styled.div`
 `;
 
 export const ModalCard = styled.div`
-  background: ${props => props.theme.colors.surface};
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: ${props => props.theme.radius.xl};
   max-width: 560px;
   width: 100%;
@@ -546,14 +555,16 @@ export const ModalCard = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.4);
 `;
 
 export const ModalHeader = styled.div`
   padding: 24px;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
+  border-bottom: 1px solid rgba(16, 24, 40, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: rgba(255, 255, 255, 0.4);
 `;
 
 export const ModalTitle = styled.h3`
@@ -587,8 +598,8 @@ export const ModalBody = styled.div`
 
 export const ModalFooter = styled.div`
   padding: 20px 24px;
-  border-top: 1px solid ${props => props.theme.colors.border};
-  background: ${props => props.theme.colors.bg};
+  border-top: 1px solid rgba(16, 24, 40, 0.05);
+  background: rgba(255, 255, 255, 0.4);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -806,7 +817,9 @@ export const TrackerGrid = styled.div`
 `;
 
 export const TrackerCard = styled.div<{ $status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>`
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 20px;
   border: 1px solid ${props => {
     if (props.$status === 'PRESENT') return 'rgba(16, 185, 129, 0.14)';
@@ -932,3 +945,501 @@ export const TrackerStatusBadge = styled.span<{ $status: 'PRESENT' | 'PERMISSION
     color: #B91C1C;
   `}
 `;
+
+/* ──────────────────────────────────────────────
+   QR Mode — Glassmorphic Styled Components
+   ────────────────────────────────────────────── */
+
+const pop = keyframes`
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+`;
+
+const laserSweep = keyframes`
+  0%  { top: 0%; }
+  50% { top: 100%; }
+  100%{ top: 0%; }
+`;
+
+const scaleUp = keyframes`
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+`;
+
+export const QrLayoutGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  margin-top: 24px;
+  animation: ${pop} 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const QrCard = styled.div`
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    box-shadow: 0 8px 30px rgba(16, 24, 40, 0.07);
+  }
+`;
+
+export const QrCardTitle = styled.h3`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+`;
+
+export const QrCardDescription = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  color: #64748b;
+  max-width: 400px;
+  margin-bottom: 24px;
+`;
+
+export const QrCodeWrapper = styled.div`
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 16px;
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 6px rgba(16, 24, 40, 0.03);
+`;
+
+export const QrStatusBadge = styled.span`
+  margin-top: 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ECFDF5;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid #A7F3D0;
+`;
+
+export const QrSectionCard = styled.div`
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const QrSectionTitle = styled.h4`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const QrSectionText = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+`;
+
+export const QrCameraBtn = styled.button`
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.975rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+export const QrSimulatorRow = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
+export const QrSimulatorSelect = styled.select`
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1.5px solid #E3F0E8;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  outline: none;
+  background: #F0F5EC;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:focus {
+    border-color: #10B981;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+  }
+`;
+
+export const QrSimulatorBtn = styled.button<{ $disabled?: boolean }>`
+  padding: 10px 20px;
+  background: ${props => props.$disabled ? '#E5E7EB' : 'linear-gradient(135deg, #10B981, #059669)'};
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: ${props => props.$disabled ? 'none' : '0 4px 14px rgba(16, 185, 129, 0.2)'};
+
+  &:hover {
+    ${props => !props.$disabled && `
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+    `}
+  }
+`;
+
+export const QrHistoryFeed = styled.div`
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: 600px;
+`;
+
+export const QrHistoryTitle = styled.h3`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const QrHistoryBadge = styled.span`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  background: rgba(241, 245, 249, 0.8);
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+export const QrHistoryScroll = styled.div`
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 999px;
+  }
+`;
+
+export const QrHistoryItem = styled.div<{ $isLatest?: boolean }>`
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: ${props => props.$isLatest ? 'rgba(236, 253, 245, 0.7)' : 'rgba(248, 250, 252, 0.6)'};
+  border: 1px solid ${props => props.$isLatest ? '#A7F3D0' : 'rgba(16, 24, 40, 0.05)'};
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  ${props => props.$isLatest && `animation: ${pop} 0.35s cubic-bezier(0.16, 1, 0.3, 1);`}
+
+  &:hover {
+    background: rgba(236, 253, 245, 0.5);
+  }
+`;
+
+export const QrHistoryCheckmark = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ECFDF5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  flex-shrink: 0;
+  font-weight: 700;
+`;
+
+export const QrHistoryMeta = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const QrHistoryName = styled.h4`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+`;
+
+export const QrHistoryParent = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+`;
+
+export const QrHistoryTime = styled.span`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+`;
+
+export const QrHistoryEmpty = styled.div`
+  text-align: center;
+  padding: 40px 0;
+  color: #9CA3AF;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+`;
+
+/* Camera Scanner Modal */
+export const CameraScannerOverlay = styled.div`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  animation: ${backdropFadeIn} 0.3s ease-out;
+  padding: 20px;
+`;
+
+export const CameraScannerCard = styled.div`
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: ${modalSlideUp} 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+`;
+
+export const CameraViewport = styled.div`
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f172a;
+  position: relative;
+  aspect-ratio: 4/3;
+  border: none;
+`;
+
+export const LaserFrame = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #10B981;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.5);
+  pointer-events: none;
+  z-index: 10;
+`;
+
+export const LaserLine = styled.div`
+  width: 100%;
+  height: 2px;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: ${laserSweep} 2s linear infinite;
+`;
+
+export const CameraCancelBtn = styled.button`
+  padding: 10px;
+  background: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #DC2626;
+  }
+`;
+
+/* QR Success Popup */
+export const QrSuccessOverlay = styled.div`
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: ${backdropFadeIn} 0.2s ease-out;
+`;
+
+export const QrSuccessCard = styled.div`
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  padding: 32px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  animation: ${scaleUp} 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+`;
+
+export const SuccessCheckmark = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ECFDF5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  color: #059669;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+`;
+
+export const SuccessTitle = styled.h3`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+`;
+
+export const SuccessSubtitle = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 24px;
+`;
+
+export const SuccessInfoGrid = styled.div`
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  margin-bottom: 8px;
+`;
+
+export const SuccessInfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+export const SuccessInfoLabel = styled.span`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  color: #64748b;
+`;
+
+export const SuccessInfoValue = styled.span<{ $highlight?: boolean }>`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: ${props => props.$highlight ? '#059669' : '#0f172a'};
+`;
+
+export const EmptyStateBox = styled.div`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  color: #9CA3AF;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  border: 1px solid rgba(16, 24, 40, 0.05);
+  font-family: 'Montserrat', sans-serif;
+`;
+

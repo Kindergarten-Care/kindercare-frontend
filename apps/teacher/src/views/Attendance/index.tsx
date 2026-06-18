@@ -51,13 +51,57 @@ import {
   TrackerCard,
   TrackerCardHeader,
   TrackerCardBody,
-  TrackerCardFooter,
   TrackerInfoRow,
   TrackerInfoLabel,
   TrackerInfoValue,
   CallParentBtn,
   TrackerStatusBadge,
+  EmptyStateBox,
+  // QR Mode
+  QrLayoutGrid,
+  QrCard,
+  QrCardTitle,
+  QrCardDescription,
+  QrCodeWrapper,
+  QrStatusBadge,
+  QrSectionCard,
+  QrSectionTitle,
+  QrSectionText,
+  QrCameraBtn,
+  QrSimulatorRow,
+  QrSimulatorSelect,
+  QrSimulatorBtn,
+  QrHistoryFeed,
+  QrHistoryTitle,
+  QrHistoryBadge,
+  QrHistoryScroll,
+  QrHistoryItem,
+  QrHistoryCheckmark,
+  QrHistoryMeta,
+  QrHistoryName,
+  QrHistoryParent,
+  QrHistoryTime,
+  QrHistoryEmpty,
+  // Camera & Success
+  CameraScannerOverlay,
+  CameraScannerCard,
+  CameraViewport,
+  LaserFrame,
+  LaserLine,
+  CameraCancelBtn,
+  QrSuccessOverlay,
+  QrSuccessCard,
+  SuccessCheckmark,
+  SuccessTitle,
+  SuccessSubtitle,
+  SuccessInfoGrid,
+  SuccessInfoRow,
+  SuccessInfoLabel,
+  SuccessInfoValue,
+  ModalCloseBtn,
+  ModalTitle,
 } from './styles';
+
 
 const getFormattedToday = (): string => {
   const d = new Date();
@@ -441,20 +485,7 @@ export function AttendanceView(): React.ReactElement {
       {/* Top Header & Save Controls */}
       <HeaderActionsSection>
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-          <DateHeader 
-            onClick={handleDatePickerTrigger}
-            style={{ 
-              position: 'relative', 
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 12px',
-              backgroundColor: '#f1f5f9',
-              borderRadius: '8px',
-              border: '1px solid #cbd5e1'
-            }}
-          >
+          <DateHeader onClick={handleDatePickerTrigger}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -884,48 +915,26 @@ export function AttendanceView(): React.ReactElement {
               </TrackerCard>
             ))
           ) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px', color: '#64748b', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <EmptyStateBox>
               Không tìm thấy học sinh nào phù hợp.
-            </div>
+            </EmptyStateBox>
           )}
         </TrackerGrid>
       )}
 
       {/* QR Mode View Layout */}
       {viewMode === 'QR' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', marginTop: '24px' }}>
+        <QrLayoutGrid>
           {/* Left: QR Display & Simulator */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* QR Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '32px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              textAlign: 'center',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
-                Mã QR Điểm Danh Hôm Nay
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: '400px', marginBottom: '24px' }}>
+            <QrCard>
+              <QrCardTitle>Mã QR Điểm Danh Hôm Nay</QrCardTitle>
+              <QrCardDescription>
                 Phụ huynh quét mã này trên ứng dụng di động để điểm danh đưa con đến lớp.
-              </p>
+              </QrCardDescription>
               
-              {/* QR Image */}
-              <div style={{ 
-                padding: '16px', 
-                backgroundColor: '#f8fafc', 
-                borderRadius: '12px', 
-                border: '1px solid #e2e8f0',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
-              }}>
+              <QrCodeWrapper>
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=0e793c&data=${encodeURIComponent(
                     JSON.stringify({
@@ -938,103 +947,51 @@ export function AttendanceView(): React.ReactElement {
                   alt="QR Code Điểm Danh"
                   style={{ width: '200px', height: '200px' }}
                 />
-              </div>
+              </QrCodeWrapper>
 
-              <span style={{ 
-                marginTop: '16px', 
-                fontSize: '0.875rem', 
-                fontWeight: 600, 
-                color: '#0e793c',
-                backgroundColor: '#f0fdf4',
-                padding: '6px 16px',
-                borderRadius: '9999px',
-                border: '1px solid #bbf7d0'
-              }}>
+              <QrStatusBadge>
                 ● Mã QR hoạt động • Lớp {classes.find(c => c.classId === selectedClassId)?.className || ''}
-              </span>
-            </div>
+              </QrStatusBadge>
+            </QrCard>
 
             {/* Real Camera Scanner Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '24px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px'
-            }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#0e793c' }}>
+            <QrSectionCard>
+              <QrSectionTitle>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#059669' }}>
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                   <circle cx="12" cy="13" r="4"></circle>
                 </svg>
                 Quét Mã QR Bằng Camera (Thực Tế)
-              </h4>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
+              </QrSectionTitle>
+              <QrSectionText>
                 Kích hoạt camera của thiết bị giáo viên để quét trực tiếp mã QR do phụ huynh cung cấp.
-              </p>
+              </QrSectionText>
               
-              <button 
-                onClick={handleStartCameraScan}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#0e793c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.975rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 4px 12px rgba(14, 121, 60, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
+              <QrCameraBtn onClick={handleStartCameraScan}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                   <circle cx="12" cy="13" r="4"></circle>
                 </svg>
                 Mở Camera Quét Mã
-              </button>
-            </div>
+              </QrCameraBtn>
+            </QrSectionCard>
 
             {/* QR Simulator Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '24px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
+            <QrSectionCard>
+              <QrSectionTitle>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#10B981' }}>
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                 </svg>
                 Trình Giả Lập Quét Mã QR Phụ Huynh (Kiểm Thử)
-              </h4>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '16px' }}>
+              </QrSectionTitle>
+              <QrSectionText>
                 Chọn học sinh bên dưới để giả lập hành động phụ huynh quét mã QR điểm danh đưa trẻ đến lớp.
-              </p>
+              </QrSectionText>
               
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <select 
+              <QrSimulatorRow>
+                <QrSimulatorSelect
                   value={simSelectedStudentId} 
                   onChange={(e) => setSimSelectedStudentId(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.875rem',
-                    color: '#1e293b',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc'
-                  }}
                 >
                   <option value="">-- Chọn học sinh cần quét mã --</option>
                   {students
@@ -1043,190 +1000,79 @@ export function AttendanceView(): React.ReactElement {
                       <option key={s.id} value={s.id}>{s.name} ({s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'Vắng phép' : 'Chưa điểm danh'})</option>
                     ))
                   }
-                </select>
+                </QrSimulatorSelect>
                 
-                <button 
+                <QrSimulatorBtn
+                  $disabled={!simSelectedStudentId}
                   onClick={() => {
                     handleSimulateQrScan(simSelectedStudentId);
                     setSimSelectedStudentId('');
                   }}
                   disabled={!simSelectedStudentId}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: simSelectedStudentId ? '#0e793c' : '#cbd5e1',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    cursor: simSelectedStudentId ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s',
-                    boxShadow: simSelectedStudentId ? '0 4px 12px rgba(14, 121, 60, 0.2)' : 'none'
-                  }}
                 >
                   Giả Lập Quét QR
-                </button>
-              </div>
-            </div>
+                </QrSimulatorBtn>
+              </QrSimulatorRow>
+            </QrSectionCard>
           </div>
 
           {/* Right: QR History Feed */}
-          <div style={{ 
-            backgroundColor: 'white', 
-            borderRadius: '16px', 
-            padding: '24px', 
-            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'fit-content',
-            maxHeight: '600px'
-          }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <QrHistoryFeed>
+            <QrHistoryTitle>
               <span>Lịch Sử Quét Mã QR</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, backgroundColor: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
-                Hôm nay
-              </span>
-            </h3>
+              <QrHistoryBadge>Hôm nay</QrHistoryBadge>
+            </QrHistoryTitle>
 
-            <div style={{ 
-              overflowY: 'auto', 
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '12px',
-              paddingRight: '4px'
-            }}>
+            <QrHistoryScroll>
               {qrHistory.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b', fontSize: '0.875rem' }}>
+                <QrHistoryEmpty>
                   Chưa có lượt quét QR nào trong ngày.
-                </div>
+                </QrHistoryEmpty>
               ) : (
                 qrHistory.map((ev, idx) => (
-                  <div key={`${ev.studentId}-${idx}`} style={{ 
-                    display: 'flex', 
-                    alignItems: 'start', 
-                    gap: '12px', 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    backgroundColor: idx === 0 ? '#f0fdf4' : '#f8fafc',
-                    border: idx === 0 ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s'
-                  }}>
-                    <div style={{ 
-                      width: '32px', 
-                      height: '32px', 
-                      borderRadius: '50%', 
-                      backgroundColor: '#dcfce7', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      color: '#15803d',
-                      flexShrink: 0
-                    }}>
-                      ✓
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-                        {ev.studentName}
-                      </h4>
-                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0 0' }}>
+                  <QrHistoryItem key={`${ev.studentId}-${idx}`} $isLatest={idx === 0}>
+                    <QrHistoryCheckmark>✓</QrHistoryCheckmark>
+                    <QrHistoryMeta>
+                      <QrHistoryName>{ev.studentName}</QrHistoryName>
+                      <QrHistoryParent>
                         Phụ huynh: {ev.parentName} ({ev.relationship})
-                      </p>
-                    </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
-                      {ev.checkInTime}
-                    </span>
-                  </div>
+                      </QrHistoryParent>
+                    </QrHistoryMeta>
+                    <QrHistoryTime>{ev.checkInTime}</QrHistoryTime>
+                  </QrHistoryItem>
                 ))
               )}
-            </div>
-          </div>
-        </div>
+            </QrHistoryScroll>
+          </QrHistoryFeed>
+        </QrLayoutGrid>
       )}
 
       {/* QR Check-in Success Popup */}
       {qrSuccessModal && qrSuccessModal.isOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15, 23, 42, 0.6)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          animation: 'fadeIn 0.2s ease-out'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '32px',
-            width: '90%',
-            maxWidth: '400px',
-            textAlign: 'center',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            border: '1px solid #e2e8f0',
-            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          }}>
-            {/* Animated Checkmark Circle */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              backgroundColor: '#dcfce7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px auto',
-              color: '#15803d',
-              fontSize: '2.5rem',
-              boxShadow: '0 4px 10px rgba(21, 128, 61, 0.15)'
-            }}>
-              ✓
-            </div>
-
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
-              ĐIỂM DANH THÀNH CÔNG
-            </h3>
-            <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '24px' }}>
+        <QrSuccessOverlay>
+          <QrSuccessCard>
+            <SuccessCheckmark>✓</SuccessCheckmark>
+            <SuccessTitle>ĐIỂM DANH THÀNH CÔNG</SuccessTitle>
+            <SuccessSubtitle>
               Học sinh đã được quét mã check-in thành công.
-            </p>
+            </SuccessSubtitle>
 
-            <div style={{
-              backgroundColor: '#f8fafc',
-              borderRadius: '16px',
-              padding: '16px',
-              textAlign: 'left',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              border: '1px solid #e2e8f0',
-              marginBottom: '8px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Học sinh:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.studentName}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Phụ huynh:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Giờ check-in:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#15803d' }}>{qrSuccessModal.checkInTime}</span>
-              </div>
-            </div>
-            
-            <style dangerouslySetInnerHTML={{ __html: `
-              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-              @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-            `}} />
-          </div>
-        </div>
+            <SuccessInfoGrid>
+              <SuccessInfoRow>
+                <SuccessInfoLabel>Học sinh:</SuccessInfoLabel>
+                <SuccessInfoValue>{qrSuccessModal.studentName}</SuccessInfoValue>
+              </SuccessInfoRow>
+              <SuccessInfoRow>
+                <SuccessInfoLabel>Phụ huynh:</SuccessInfoLabel>
+                <SuccessInfoValue>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</SuccessInfoValue>
+              </SuccessInfoRow>
+              <SuccessInfoRow>
+                <SuccessInfoLabel>Giờ check-in:</SuccessInfoLabel>
+                <SuccessInfoValue $highlight>{qrSuccessModal.checkInTime}</SuccessInfoValue>
+              </SuccessInfoRow>
+            </SuccessInfoGrid>
+          </QrSuccessCard>
+        </QrSuccessOverlay>
       )}
 
       {/* Leave Request Approval Details Modal */}
@@ -1256,121 +1102,32 @@ export function AttendanceView(): React.ReactElement {
           handleSelectLeaveRequest(id);
         }}
       />
+
       {/* Camera Scanner Modal */}
       {isCameraScanning && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9998,
-          animation: 'fadeIn 0.2s ease-out'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '24px',
-            width: '90%',
-            maxWidth: '500px',
-            position: 'relative',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
-          }}>
+        <CameraScannerOverlay>
+          <CameraScannerCard>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                Quét Mã QR Phụ Huynh
-              </h3>
-              <button 
-                onClick={handleStopCameraScan}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: '#64748b',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
-              >
-                ✕
-              </button>
+              <ModalTitle style={{ margin: 0 }}>Quét Mã QR Phụ Huynh</ModalTitle>
+              <ModalCloseBtn onClick={handleStopCameraScan}>✕</ModalCloseBtn>
             </div>
             
-            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
+            <QrSectionText>
               Căn chỉnh mã QR của Phụ huynh nằm trong khung camera bên dưới.
-            </p>
+            </QrSectionText>
 
-            {/* Video Reader Element */}
-            <div style={{
-              width: '100%',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              backgroundColor: '#0f172a',
-              position: 'relative',
-              aspectRatio: '4/3',
-              border: 'none'
-            }}>
+            <CameraViewport>
               <div id="reader" style={{ width: '100%', height: '100%' }}></div>
-              
-              {/* Overlay Laser Scan Frame */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '200px',
-                height: '200px',
-                border: '2px dashed #22c55e',
-                borderRadius: '8px',
-                boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.5)',
-                pointerEvents: 'none',
-                zIndex: 10
-              }}>
-                {/* Scanner laser line */}
-                <div style={{
-                  width: '100%',
-                  height: '2px',
-                  backgroundColor: '#22c55e',
-                  boxShadow: '0 0 8px #22c55e',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  animation: 'laserSweep 2s linear infinite'
-                }}></div>
-              </div>
-            </div>
+              <LaserFrame>
+                <LaserLine />
+              </LaserFrame>
+            </CameraViewport>
 
-            <button 
-              onClick={handleStopCameraScan}
-              style={{
-                padding: '10px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: '0.875rem'
-              }}
-            >
+            <CameraCancelBtn onClick={handleStopCameraScan}>
               Hủy bỏ quét
-            </button>
+            </CameraCancelBtn>
 
             <style dangerouslySetInnerHTML={{ __html: `
-              @keyframes laserSweep {
-                0% { top: 0%; }
-                50% { top: 100%; }
-                100% { top: 0%; }
-              }
               #reader, #reader-dashboard {
                 border: none !important;
               }
@@ -1381,8 +1138,8 @@ export function AttendanceView(): React.ReactElement {
                 display: none !important;
               }
             `}} />
-          </div>
-        </div>
+          </CameraScannerCard>
+        </CameraScannerOverlay>
       )}
     </AttendancePageContainer>
   );
