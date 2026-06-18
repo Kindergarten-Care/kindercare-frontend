@@ -5,6 +5,7 @@ import { useAttendance } from './hooks';
 import { LeaveRequestModal } from './components/LeaveRequestModal';
 import { QuickAttendanceModal } from './components/QuickAttendanceModal';
 import { LeaveRequestsListModal } from './components/LeaveRequestsListModal';
+import { AttendanceService } from '@/services/attendance';
 import {
   AttendancePageContainer,
   HeaderActionsSection,
@@ -135,7 +136,116 @@ export function AttendanceView(): React.ReactElement {
     });
   };
 
-  const [viewMode, setViewMode] = React.useState<'EDIT' | 'TRACKER'>('TRACKER');
+  const [viewMode, setViewMode] = React.useState<'EDIT' | 'TRACKER' | 'QR'>('TRACKER');
+
+  interface QrCheckInEvent {
+    studentId: string;
+    studentName: string;
+    parentName: string;
+    relationship: string;
+    checkInTime: string;
+  }
+
+  const [qrHistory, setQrHistory] = React.useState<QrCheckInEvent[]>([]);
+  const [simSelectedStudentId, setSimSelectedStudentId] = React.useState<string>('');
+  const [qrSuccessModal, setQrSuccessModal] = React.useState<{
+    isOpen: boolean;
+    studentName: string;
+    parentName: string;
+    relationship: string;
+    checkInTime: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (students && students.length > 0) {
+      const presentWithTime = students.filter(s => s.attendanceStatus === 'PRESENT' && s.arrivalTime && s.arrivalTime !== '--:--');
+      const mappedEvents: QrCheckInEvent[] = presentWithTime.map((s, index) => {
+        const pNames = ['Anh Tuấn', 'Công Danh', 'Thanh Hải', 'Minh Đăng', 'Quang Vinh'];
+        const relationships = ['Ba', 'Mẹ', 'Ông nội', 'Bà ngoại'];
+        const pName = `Nguyễn ${pNames[index % pNames.length]}`;
+        const rel = relationships[index % relationships.length];
+        return {
+          studentId: s.id,
+          studentName: s.name,
+          parentName: pName,
+          relationship: rel,
+          checkInTime: s.arrivalTime
+        };
+      });
+      setQrHistory(mappedEvents);
+    }
+  }, [students]);
+
+  const playBeepSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 1000;
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioCtx.close();
+      }, 150);
+    } catch (err) {
+      console.error('Audio beep failed', err);
+    }
+  };
+
+  const handleSimulateQrScan = async (studentId: string) => {
+    if (!studentId) return;
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const pNames = ['Anh Tuấn', 'Công Danh', 'Thanh Hải', 'Minh Đăng', 'Quang Vinh'];
+    const relationships = ['Ba', 'Mẹ', 'Ông nội', 'Bà ngoại'];
+    const mockParentName = `Nguyễn ${pNames[Math.floor(Math.random() * pNames.length)]}`;
+    const mockRelationship = relationships[Math.floor(Math.random() * relationships.length)];
+
+    playBeepSound();
+
+    setQrSuccessModal({
+      isOpen: true,
+      studentName: student.name,
+      parentName: mockParentName,
+      relationship: mockRelationship,
+      checkInTime: timeStr
+    });
+
+    setTimeout(() => {
+      setQrSuccessModal(null);
+    }, 2500);
+
+    handleStatusChange(studentId, 'PRESENT');
+    handleArrivalTimeChange(studentId, timeStr);
+
+    const newEvent: QrCheckInEvent = {
+      studentId,
+      studentName: student.name,
+      parentName: mockParentName,
+      relationship: mockRelationship,
+      checkInTime: timeStr
+    };
+    setQrHistory(prev => [newEvent, ...prev]);
+
+    try {
+      const updatedRecords = [{
+        studentId: student.id,
+        status: 'PRESENT' as const,
+        arrivalTime: timeStr,
+        healthNote: student.healthNote || ''
+      }];
+      await AttendanceService.updateAttendance(selectedClassId || 'MN1', selectedDate, updatedRecords);
+    } catch (e) {
+      console.error('Auto save QR attendance failed', e);
+    }
+  };
   const dateInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDatePickerTrigger = () => {
@@ -232,6 +342,12 @@ export function AttendanceView(): React.ReactElement {
               onClick={() => setViewMode('EDIT')}
             >
               Nhập điểm danh
+            </ViewModeBtn>
+            <ViewModeBtn 
+              $active={viewMode === 'QR'} 
+              onClick={() => setViewMode('QR')}
+            >
+              Điểm danh QR
             </ViewModeBtn>
           </ViewModeToggleContainer>
         </div>
@@ -386,7 +502,7 @@ export function AttendanceView(): React.ReactElement {
       </FilterBar>
 
       {/* Main Grid View Switch */}
-      {viewMode === 'EDIT' ? (
+      {viewMode === 'EDIT' && (
         <GridContainer>
           <Table>
             <TableHead>
@@ -487,7 +603,8 @@ export function AttendanceView(): React.ReactElement {
             </TBody>
           </Table>
         </GridContainer>
-      ) : (
+      )}
+      {viewMode === 'TRACKER' && (
         <TrackerGrid>
           {filteredStudents.length > 0 ? (
             filteredStudents.map((student) => (
@@ -608,6 +725,295 @@ export function AttendanceView(): React.ReactElement {
             </div>
           )}
         </TrackerGrid>
+      )}
+
+      {/* QR Mode View Layout */}
+      {viewMode === 'QR' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', marginTop: '24px' }}>
+          {/* Left: QR Display & Simulator */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* QR Card */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '16px', 
+              padding: '32px', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              textAlign: 'center',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+                Mã QR Điểm Danh Hôm Nay
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: '400px', marginBottom: '24px' }}>
+                Phụ huynh quét mã này trên ứng dụng di động để điểm danh đưa con đến lớp.
+              </p>
+              
+              {/* QR Image */}
+              <div style={{ 
+                padding: '16px', 
+                backgroundColor: '#f8fafc', 
+                borderRadius: '12px', 
+                border: '1px solid #e2e8f0',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+              }}>
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=0e793c&data=${encodeURIComponent(
+                    JSON.stringify({
+                      classId: selectedClassId,
+                      date: selectedDate,
+                      type: 'checkin',
+                      token: `kc_qr_${selectedClassId}_${selectedDate}`
+                    })
+                  )}`} 
+                  alt="QR Code Điểm Danh"
+                  style={{ width: '200px', height: '200px' }}
+                />
+              </div>
+
+              <span style={{ 
+                marginTop: '16px', 
+                fontSize: '0.875rem', 
+                fontWeight: 600, 
+                color: '#0e793c',
+                backgroundColor: '#f0fdf4',
+                padding: '6px 16px',
+                borderRadius: '9999px',
+                border: '1px solid #bbf7d0'
+              }}>
+                ● Mã QR hoạt động • Lớp {classes.find(c => c.classId === selectedClassId)?.className || ''}
+              </span>
+            </div>
+
+            {/* QR Simulator Card */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '16px', 
+              padding: '24px', 
+              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+                Trình Giả Lập Quét Mã QR Phụ Huynh (Kiểm Thử)
+              </h4>
+              <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '16px' }}>
+                Chọn học sinh bên dưới để giả lập hành động phụ huynh quét mã QR điểm danh đưa trẻ đến lớp.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <select 
+                  value={simSelectedStudentId} 
+                  onChange={(e) => setSimSelectedStudentId(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.875rem',
+                    color: '#1e293b',
+                    outline: 'none',
+                    backgroundColor: '#f8fafc'
+                  }}
+                >
+                  <option value="">-- Chọn học sinh cần quét mã --</option>
+                  {students
+                    .filter(s => s.attendanceStatus !== 'PRESENT')
+                    .map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'Vắng phép' : 'Chưa điểm danh'})</option>
+                    ))
+                  }
+                </select>
+                
+                <button 
+                  onClick={() => {
+                    handleSimulateQrScan(simSelectedStudentId);
+                    setSimSelectedStudentId('');
+                  }}
+                  disabled={!simSelectedStudentId}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: simSelectedStudentId ? '#0e793c' : '#cbd5e1',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: simSelectedStudentId ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s',
+                    boxShadow: simSelectedStudentId ? '0 4px 12px rgba(14, 121, 60, 0.2)' : 'none'
+                  }}
+                >
+                  Giả Lập Quét QR
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: QR History Feed */}
+          <div style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '16px', 
+            padding: '24px', 
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            border: '1px solid #e2e8f0',
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'fit-content',
+            maxHeight: '600px'
+          }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Lịch Sử Quét Mã QR</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, backgroundColor: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
+                Hôm nay
+              </span>
+            </h3>
+
+            <div style={{ 
+              overflowY: 'auto', 
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '12px',
+              paddingRight: '4px'
+            }}>
+              {qrHistory.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b', fontSize: '0.875rem' }}>
+                  Chưa có lượt quét QR nào trong ngày.
+                </div>
+              ) : (
+                qrHistory.map((ev, idx) => (
+                  <div key={`${ev.studentId}-${idx}`} style={{ 
+                    display: 'flex', 
+                    alignItems: 'start', 
+                    gap: '12px', 
+                    padding: '12px', 
+                    borderRadius: '12px', 
+                    backgroundColor: idx === 0 ? '#f0fdf4' : '#f8fafc',
+                    border: idx === 0 ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                    transition: 'all 0.3s'
+                  }}>
+                    <div style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#dcfce7', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: '#15803d',
+                      flexShrink: 0
+                    }}>
+                      ✓
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
+                        {ev.studentName}
+                      </h4>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0 0' }}>
+                        Phụ huynh: {ev.parentName} ({ev.relationship})
+                      </p>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
+                      {ev.checkInTime}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Check-in Success Popup */}
+      {qrSuccessModal && qrSuccessModal.isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '24px',
+            padding: '32px',
+            width: '90%',
+            maxWidth: '400px',
+            textAlign: 'center',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid #e2e8f0',
+            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            {/* Animated Checkmark Circle */}
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: '#dcfce7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px auto',
+              color: '#15803d',
+              fontSize: '2.5rem',
+              boxShadow: '0 4px 10px rgba(21, 128, 61, 0.15)'
+            }}>
+              ✓
+            </div>
+
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              ĐIỂM DANH THÀNH CÔNG
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '24px' }}>
+              Học sinh đã được quét mã check-in thành công.
+            </p>
+
+            <div style={{
+              backgroundColor: '#f8fafc',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'left',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              border: '1px solid #e2e8f0',
+              marginBottom: '8px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Học sinh:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.studentName}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Phụ huynh:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Giờ check-in:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#15803d' }}>{qrSuccessModal.checkInTime}</span>
+              </div>
+            </div>
+            
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            `}} />
+          </div>
+        </div>
       )}
 
       {/* Leave Request Approval Details Modal */}
