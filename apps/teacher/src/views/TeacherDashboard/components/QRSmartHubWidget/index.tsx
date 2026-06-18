@@ -239,17 +239,16 @@ export const QRSmartHubWidget: React.FC<QRSmartHubWidgetProps> = ({
             </S.LiveBadge>
 
             {/* Video Reader Element */}
-            {isCameraActive && (
-              <div id="reader-dashboard" style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                zIndex: 1,
-                borderRadius: '18px',
-                overflow: 'hidden'
-              }} />
-            )}
+            <div id="reader-dashboard" style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 1,
+              borderRadius: '18px',
+              overflow: 'hidden',
+              display: isCameraActive ? 'block' : 'none'
+            }} />
 
             {/* Scanning viewport guidance corners */}
             <S.CornerGuide $pos="tl" />
