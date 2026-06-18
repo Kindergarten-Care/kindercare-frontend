@@ -1,105 +1,134 @@
 import styled, { css } from 'styled-components';
 
-export const WidgetContainer = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0px 4px 20px rgba(14, 121, 60, 0.05);
+export const WidgetContainer = styled.section`
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
+  border-top: 4px solid #F43F5E;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  border-left: 1px solid rgba(16, 24, 40, 0.03);
+  border-right: 1px solid rgba(16, 24, 40, 0.03);
+  border-bottom: 1px solid rgba(16, 24, 40, 0.03);
 `;
 
-export const WidgetHeader = styled.div`
+export const HeaderRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
 `;
 
-export const Icon = styled.span`
-  font-size: 20px;
-`;
-
-export const WidgetTitle = styled.h3`
-  font-size: 18px;
-  font-weight: bold;
-  color: #181d18;
+export const Title = styled.h3`
+  font-size: 16px;
+  font-weight: 800;
+  color: #1F2937;
   margin: 0;
   font-family: 'Montserrat', sans-serif;
 `;
 
-export const AlertsList = styled.div`
+export const CounterBadge = styled.span`
+  font-size: 11px;
+  font-weight: 800;
+  color: #E11D48;
+  background: #FFF1F2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+export const MedList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
 `;
 
-export const AlertCard = styled.div<{ severity: string }>`
-  background-color: #fef2f2;
-  border-radius: 12px;
-  padding: 18px;
+export const MedRow = styled.div<{ $done?: boolean }>`
   display: flex;
+  align-items: center;
   gap: 12px;
-  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #FDFDFD;
+  border: 1px solid rgba(16, 24, 40, 0.03);
+  transition: all 0.2s ease;
 
-  ${props => props.severity === 'high' && css`
-    border: 2px solid #fecaca;
-  `}
-
-  ${props => props.severity === 'medium' && css`
-    border: 1px solid #fee2e2;
+  ${props => props.$done && css`
+    opacity: 0.65;
+    background: #F9FAF9;
   `}
 `;
 
-export const AlertIcon = styled.div<{ severity: string }>`
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+export const AvatarCircle = styled.span<{ $color: string }>`
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #374151;
+  background: ${props => props.$color};
+  font-family: 'Montserrat', sans-serif;
+`;
 
-  ${props => props.severity === 'high' && css`
-    background-color: #ba1a1a;
-  `}
+export const InfoCol = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
 
-  ${props => props.severity === 'medium' && css`
-    background-color: #f59e0b;
+export const MedName = styled.div<{ $done?: boolean }>`
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1F2937;
+  font-family: 'Montserrat', sans-serif;
+  
+  ${props => props.$done && css`
+    text-decoration: line-through;
+    color: #9CA3AF;
   `}
 `;
 
-export const AlertContent = styled.div`
+export const MedDose = styled.div`
+  font-size: 11.5px;
+  color: #6B7280;
+  font-weight: 500;
+  margin-top: 2px;
+  font-family: 'Montserrat', sans-serif;
+`;
+
+export const CheckBox = styled.button<{ $done?: boolean }>`
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1.5px solid #E2E8F0;
+  background: #ffffff;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+
+  &:hover {
+    border-color: #F43F5E;
+    transform: scale(1.05);
+  }
+
+  ${props => props.$done && css`
+    background: #F43F5E;
+    border-color: #F43F5E;
+  `}
 `;
 
-export const AlertName = styled.span<{ severity: string }>`
-  font-size: 16px;
+export const CheckIcon = styled.span`
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1;
   font-weight: bold;
-  font-family: 'Montserrat', sans-serif;
-
-  ${props => props.severity === 'high' && css`
-    color: #ba1a1a;
-  `}
-
-  ${props => props.severity === 'medium' && css`
-    color: #181d18;
-  `}
-`;
-
-export const AlertDesc = styled.span<{ severity: string }>`
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-
-  ${props => props.severity === 'high' && css`
-    color: #7f1d1d;
-    font-weight: 500;
-  `}
-
-  ${props => props.severity === 'medium' && css`
-    color: #3f493f;
-  `}
 `;
