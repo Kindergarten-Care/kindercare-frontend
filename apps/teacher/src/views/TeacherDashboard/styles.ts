@@ -70,7 +70,7 @@ export const GreetingTitle = styled.h1`
   color: #1F2937;
   letter-spacing: -0.02em;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const GreetingSubtitle = styled.p`
@@ -79,7 +79,7 @@ export const GreetingSubtitle = styled.p`
   font-weight: 500;
   margin: 0;
   text-transform: capitalize;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const DashboardGrid3Col = styled.div`

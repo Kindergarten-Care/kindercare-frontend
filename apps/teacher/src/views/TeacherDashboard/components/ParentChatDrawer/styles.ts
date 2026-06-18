@@ -42,7 +42,7 @@ export const UnreadBadge = styled.span`
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 0 3px #F8FAF8;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ChatDrawerContainer = styled.div`
@@ -82,7 +82,7 @@ export const ContactAvatar = styled.span<{ $color: string }>`
   justify-content: center;
   font-weight: 800;
   color: #374151;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const OnlineIndicator = styled.span`
@@ -105,14 +105,14 @@ export const ContactName = styled.div`
   font-weight: 800;
   font-size: 14px;
   color: #1F2937;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ContactStatus = styled.div`
   font-size: 11px;
   color: #10B981;
   font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const CloseChatButton = styled.button`
@@ -154,7 +154,7 @@ export const MessageBubble = styled.div<{ $isMe: boolean }>`
   font-weight: 600;
   max-width: 240px;
   word-wrap: break-word;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 
   ${props => props.$isMe ? css`
     background: linear-gradient(135deg, #10B981, #059669);
@@ -173,7 +173,7 @@ export const MessageTime = styled.div<{ $isMe: boolean }>`
   color: #9CA3AF;
   margin-top: 4px;
   text-align: ${props => props.$isMe ? 'right' : 'left'};
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const QuickRepliesContainer = styled.div`
@@ -191,7 +191,7 @@ export const QuickRepliesHeader = styled.div`
   font-weight: 700;
   color: #9CA3AF;
   margin-bottom: 1px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const QuickReplyButton = styled.button`
@@ -201,7 +201,7 @@ export const QuickReplyButton = styled.button`
   border: 1px solid #E3F0E8;
   background: #F7FBF8;
   color: #374151;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -244,7 +244,7 @@ export const ChatInput = styled.input`
   border: 1px solid #E3F0E8;
   border-radius: 12px;
   padding: 0 14px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   font-size: 13.5px;
   outline: none;
   background: #F7FBF8;

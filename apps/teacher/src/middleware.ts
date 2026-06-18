@@ -5,6 +5,15 @@ import { NextRequest, NextResponse } from 'next/server';
 const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
+  // Rewrite /teacher/* → /vi/* so users can access /teacher/attendance etc.
+  const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith('/teacher')) {
+    const rewrittenPath = pathname.replace(/^\/teacher/, '/vi');
+    const url = request.nextUrl.clone();
+    url.pathname = rewrittenPath;
+    return NextResponse.rewrite(url);
+  }
+
   const response = intlMiddleware(request);
 
   // Preserve query params (especially token) through locale redirects
@@ -30,6 +39,5 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
   // Match internationalized pathnames and any path that needs locale rewriting
-  matcher: ['/', '/(vi|en)/:path*', '/((?!_next|api|favicon\\.ico|.*\\.).*)'
-]
+  matcher: ['/', '/(vi|en)/:path*', '/teacher/:path*', '/((?!_next|api|favicon\\.ico|.*\\.).*)']
 };

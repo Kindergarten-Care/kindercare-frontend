@@ -35,5 +35,5 @@ export const ActionTitle = styled.div`
   font-weight: bold;
   color: #181d18;
   text-align: center;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;

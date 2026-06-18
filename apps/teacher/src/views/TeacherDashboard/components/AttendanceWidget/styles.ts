@@ -21,7 +21,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const MoreIcon = styled.div`
@@ -52,7 +52,7 @@ export const ChartNumber = styled.span`
   font-size: 30px;
   font-weight: bold;
   color: #005e2c;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ChartLabel = styled.span`
@@ -95,7 +95,7 @@ export const StatName = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #181d18;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const StatValue = styled.div<{ bg: string; color: string }>`
@@ -116,7 +116,7 @@ export const ActionButton = styled.button`
   padding: 14px 2px;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   transition: all 0.2s;
   
   &:hover {
