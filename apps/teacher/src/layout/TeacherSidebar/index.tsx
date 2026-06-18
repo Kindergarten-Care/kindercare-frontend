@@ -4,7 +4,12 @@ import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Settings,
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
-export const TeacherSidebar: React.FC = () => {
+interface TeacherSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
@@ -13,11 +18,17 @@ export const TeacherSidebar: React.FC = () => {
   const isAttendanceActive = pathname === '/attendance';
 
   return (
-    <S.SidebarContainer>
+    <S.SidebarContainer $isOpen={isOpen}>
       <S.LogoContainer>
         {/* Placeholder for Logo */}
         <h2>KinderCare</h2>
+        {onClose && (
+          <S.CloseButton onClick={onClose} aria-label="Close sidebar">
+            ✕
+          </S.CloseButton>
+        )}
       </S.LogoContainer>
+
       <S.NavList>
         <S.NavItem $active={isDashboardActive} onClick={() => router.push('/')}>
           <LayoutDashboard size={20} />

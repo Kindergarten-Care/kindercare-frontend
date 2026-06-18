@@ -32,6 +32,10 @@ export const SearchWrapper = styled.div`
     border-color: ${props => props.theme.colors.green || '#15803d'};
     box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
   }
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    display: none;
+  }
 `;
 
 export const SearchInput = styled.input`
@@ -125,6 +129,10 @@ export const ProfileInfo = styled.div`
   display: flex;
   flex-direction: column;
   text-align: right;
+
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    display: none;
+  }
 `;
 
 export const ProfileName = styled.span`
@@ -142,3 +150,28 @@ export const ProfileRole = styled.span`
   font-family: var(--font-montserrat), 'Montserrat', sans-serif;
   line-height: 1.3;
 `;
+
+export const MenuButton = styled.button`
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #3F493D;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #181D18;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    display: flex;
+  }
+`;
+
