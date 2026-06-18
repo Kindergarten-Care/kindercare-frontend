@@ -379,6 +379,45 @@ export const QuickFillBtn = styled.button`
   }
 `;
 
+export const LeaveRequestsBtn = styled.button`
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.radius.md};
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #f59e0b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+    box-shadow: ${props => props.theme.shadows.soft};
+  }
+`;
+
+export const LeaveRequestsBadgeCount = styled.span`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+`;
+
 export const SaveBtn = styled.button`
   display: flex;
   align-items: center;

@@ -37,6 +37,11 @@ function mapApiStudentToDomain(raw: any): Student {
   if (raw.status === 'Excused') domainStatus = 'PERMISSION_ABSENCE';
   if (raw.status === 'Absent') domainStatus = 'UNEXCUSED_ABSENCE';
 
+  let leaveReqStatus: LeaveRequestStatus | undefined = undefined;
+  if (raw.leaveRequest?.status === 'Pending') leaveReqStatus = 'PENDING';
+  if (raw.leaveRequest?.status === 'Approved') leaveReqStatus = 'APPROVED';
+  if (raw.leaveRequest?.status === 'Rejected') leaveReqStatus = 'REJECTED';
+
   return {
     id: String(raw.studentId),
     name: raw.fullName,
@@ -46,6 +51,7 @@ function mapApiStudentToDomain(raw: any): Student {
     healthNote: raw.healthNote || '',
     hasActiveLeaveRequest: raw.leaveRequest?.status === 'Pending',
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
+    leaveRequestStatus: leaveReqStatus,
   };
 }
 
@@ -63,6 +69,9 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     reason: raw.reason,
     attachmentUrl: raw.evidenceUrl || undefined,
     status: domainStatus,
+    classId: raw.classId ? Number(raw.classId) : undefined,
+    fromDate: raw.fromDate,
+    toDate: raw.toDate,
   };
 }
 
@@ -85,6 +94,15 @@ export class AttendanceService {
     });
     const list = res.data?.data || [];
     return list.map(mapApiStudentToDomain);
+  }
+
+  /**
+   * Fetch all leave requests for the logged-in teacher.
+   */
+  public static async getAllLeaveRequests(): Promise<LeaveRequest[]> {
+    const res = await apiClient.get('/teacher/leave-requests');
+    const list = res.data?.data || [];
+    return list.map(mapApiLeaveRequestToDomain);
   }
 
   /**

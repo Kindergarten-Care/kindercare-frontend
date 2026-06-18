@@ -24,6 +24,10 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
   const [leaveRequestModalOpen, setLeaveRequestModalOpen] = useState<boolean>(false);
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
 
+  // Leave Requests List modal state
+  const [leaveRequestsListModalOpen, setLeaveRequestsListModalOpen] = useState<boolean>(false);
+  const [allLeaveRequests, setAllLeaveRequests] = useState<LeaveRequest[]>([]);
+
   // Quick Attendance modal state
   const [quickAttendanceModalOpen, setQuickAttendanceModalOpen] = useState<boolean>(false);
 
@@ -48,6 +52,15 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     loadClasses();
   }, []);
 
+  const fetchLeaveRequests = useCallback(async (): Promise<void> => {
+    try {
+      const list = await AttendanceService.getAllLeaveRequests();
+      setAllLeaveRequests(list);
+    } catch (error) {
+      console.error('Failed to fetch leave requests:', error);
+    }
+  }, []);
+
   // Fetch initial records
   const fetchAttendance = useCallback(async (): Promise<void> => {
     if (selectedClassId === null) return;
@@ -64,7 +77,8 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
 
   useEffect(() => {
     fetchAttendance();
-  }, [fetchAttendance]);
+    fetchLeaveRequests();
+  }, [fetchAttendance, fetchLeaveRequests]);
 
   // Update status for a specific student
   const handleStatusChange = useCallback((studentId: string, status: AttendanceStatus): void => {
@@ -145,6 +159,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
       const success = await AttendanceService.processLeaveRequest(requestId, status);
       if (success) {
         await fetchAttendance();
+        await fetchLeaveRequests();
         setLeaveRequestModalOpen(false);
         setSelectedLeaveRequest(null);
       }
@@ -153,7 +168,7 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     } finally {
       setSaving(false);
     }
-  }, [fetchAttendance]);
+  }, [fetchAttendance, fetchLeaveRequests]);
 
   // Persist current page values to server db
   const handleSave = useCallback(async (): Promise<boolean> => {
@@ -216,6 +231,15 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     };
   }, [students]);
 
+  const classLeaveRequests = useMemo(() => {
+    if (selectedClassId === null) return [];
+    return allLeaveRequests.filter(r => r.classId === selectedClassId);
+  }, [allLeaveRequests, selectedClassId]);
+
+  const pendingClassLeaveRequestsCount = useMemo(() => {
+    return classLeaveRequests.filter(r => r.status === 'PENDING').length;
+  }, [classLeaveRequests]);
+
   return {
     students,
     filteredStudents,
@@ -243,6 +267,13 @@ export function useAttendance(classId: string = 'MN1', date: string = getTodayDa
     selectedLeaveRequest,
     handleSelectLeaveRequest,
     handleProcessLeaveRequest,
+
+    // Leave Requests List Modal
+    leaveRequestsListModalOpen,
+    setLeaveRequestsListModalOpen,
+    classLeaveRequests,
+    pendingClassLeaveRequestsCount,
+    fetchLeaveRequests,
 
     // Actions
     handleStatusChange,

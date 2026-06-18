@@ -9,6 +9,7 @@ export interface Student {
   healthNote: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
+  leaveRequestStatus?: LeaveRequestStatus;
 }
 
 export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -22,4 +23,7 @@ export interface LeaveRequest {
   reason: string;
   attachmentUrl?: string;
   status: LeaveRequestStatus;
+  classId?: number;
+  fromDate?: number;
+  toDate?: number;
 }
