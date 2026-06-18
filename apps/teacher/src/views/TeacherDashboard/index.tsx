@@ -157,14 +157,28 @@ export const TeacherDashboardView: React.FC = () => {
     }, 1200);
   };
 
-  const handleScanSuccess = async (name: string, note: string | null) => {
+  const handleScanSuccess = async (name: string, note: string | null, studentId?: string) => {
     if (!activeClassId) return;
 
-    // 1. Find the first student in database list who is not yet checked in
-    const targetStudent = studentsList.find(s => !s.arrivalTime || s.arrivalTime === '--:--');
+    // 1. Find the student to check-in: matching id first, then name, then first unchecked
+    let targetStudent = null;
+    if (studentId) {
+      targetStudent = studentsList.find(s => String(s.id) === String(studentId));
+    }
+    if (!targetStudent && name) {
+      targetStudent = studentsList.find(s => s.name.toLowerCase().includes(name.toLowerCase()));
+    }
+    if (!targetStudent) {
+      targetStudent = studentsList.find(s => !s.arrivalTime || s.arrivalTime === '--:--');
+    }
 
     if (!targetStudent) {
       addToast('🎉 Tất cả học sinh trong lớp đều đã có mặt!');
+      return;
+    }
+
+    if (targetStudent.arrivalTime && targetStudent.arrivalTime !== '--:--') {
+      addToast(`Bé ${targetStudent.name} đã được điểm danh trước đó lúc ${targetStudent.arrivalTime}.`);
       return;
     }
 
