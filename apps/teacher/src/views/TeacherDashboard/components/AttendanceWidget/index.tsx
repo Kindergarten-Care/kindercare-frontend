@@ -415,6 +415,9 @@ export const AttendanceWidget: React.FC = () => {
               #reader__scan_region, #reader-dashboard__scan_region {
                 border: none !important;
               }
+              #reader canvas, #reader-dashboard canvas {
+                display: none !important;
+              }
             `}} />
           </div>
         </div>
