@@ -379,6 +379,45 @@ export const QuickFillBtn = styled.button`
   }
 `;
 
+export const LeaveRequestsBtn = styled.button`
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.radius.md};
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #f59e0b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+    box-shadow: ${props => props.theme.shadows.soft};
+  }
+`;
+
+export const LeaveRequestsBadgeCount = styled.span`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+`;
+
 export const SaveBtn = styled.button`
   display: flex;
   align-items: center;
@@ -569,4 +608,237 @@ export const CancelBtn = styled.button`
   &:hover {
     background: ${props => props.theme.colors.bg};
   }
+`;
+
+export const ViewModeToggleContainer = styled.div`
+  display: flex;
+  background: ${props => props.theme.colors.bg};
+  padding: 4px;
+  border-radius: ${props => props.theme.radius.lg};
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+export const ViewModeBtn = styled.button<{ $active: boolean }>`
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  background: ${props => props.$active ? props.theme.colors.surface : 'transparent'};
+  color: ${props => props.$active ? props.theme.colors.fg : props.theme.colors.muted};
+  box-shadow: ${props => props.$active ? props.theme.shadows.soft : 'none'};
+
+  &:hover {
+    color: ${props => props.theme.colors.fg};
+  }
+`;
+
+export const TabContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid ${props => props.theme.colors.border};
+  padding-bottom: 8px;
+  margin-top: 16px;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const TabButton = styled.button<{ $active: boolean; $type: 'all' | 'present' | 'permission' | 'unexcused' }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  color: ${props => props.theme.colors.muted};
+  position: relative;
+
+  ${props => props.$active && `
+    font-weight: 700;
+  `}
+
+  ${props => props.$active && props.$type === 'all' && `
+    background: ${props.theme.colors.bg};
+    border-color: ${props.theme.colors.border};
+    color: ${props.theme.colors.fg};
+  `}
+
+  ${props => props.$active && props.$type === 'present' && `
+    background: ${props.theme.colors.greenLight};
+    border-color: ${props.theme.colors.greenMid};
+    color: ${props.theme.colors.greenDark};
+  `}
+
+  ${props => props.$active && props.$type === 'permission' && `
+    background: ${props.theme.colors.amberLight};
+    border-color: ${props.theme.colors.amberMid};
+    color: ${props.theme.colors.amber};
+  `}
+
+  ${props => props.$active && props.$type === 'unexcused' && `
+    background: #fef2f2;
+    border-color: #f87171;
+    color: #b91c1c;
+  `}
+
+  &:hover {
+    background: ${props => !props.$active ? props.theme.colors.bg : ''};
+  }
+`;
+
+export const TabBadge = styled.span<{ $active: boolean; $type: 'all' | 'present' | 'permission' | 'unexcused' }>`
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+
+  background: ${props => {
+    if (props.$type === 'present') return props.$active ? props.theme.colors.greenMid : 'rgba(34, 197, 94, 0.1)';
+    if (props.$type === 'permission') return props.$active ? props.theme.colors.amberMid : 'rgba(245, 158, 11, 0.1)';
+    if (props.$type === 'unexcused') return props.$active ? '#ef4444' : 'rgba(239, 68, 68, 0.1)';
+    return props.$active ? props.theme.colors.muted : props.theme.colors.bg;
+  }};
+
+  color: ${props => {
+    if (props.$type === 'present') return props.$active ? 'white' : props.theme.colors.greenDark;
+    if (props.$type === 'permission') return props.$active ? 'white' : props.theme.colors.amber;
+    if (props.$type === 'unexcused') return props.$active ? 'white' : '#b91c1c';
+    return props.$active ? 'white' : props.theme.colors.fg;
+  }};
+`;
+
+export const TrackerGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const TrackerCard = styled.div<{ $status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>`
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.radius.lg};
+  border: 1px solid ${props => {
+    if (props.$status === 'PRESENT') return 'rgba(34, 197, 94, 0.2)';
+    if (props.$status === 'PERMISSION_ABSENCE') return 'rgba(245, 158, 11, 0.2)';
+    return 'rgba(239, 68, 68, 0.2)';
+  }};
+  box-shadow: ${props => props.theme.shadows.soft};
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadows.lg};
+  }
+`;
+
+export const TrackerCardHeader = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: ${props => props.theme.colors.bg};
+`;
+
+export const TrackerCardBody = styled.div`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+`;
+
+export const TrackerCardFooter = styled.div`
+  padding: 16px 20px;
+  border-top: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  justify-content: flex-end;
+  background: ${props => props.theme.colors.bg};
+`;
+
+export const TrackerInfoRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const TrackerInfoLabel = styled.span`
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: ${props => props.theme.colors.muted};
+  letter-spacing: 0.05em;
+`;
+
+export const TrackerInfoValue = styled.div<{ $highlight?: 'green' | 'amber' | 'red' }>`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${props => {
+    if (props.$highlight === 'green') return props.theme.colors.greenDark;
+    if (props.$highlight === 'amber') return props.theme.colors.amber;
+    if (props.$highlight === 'red') return '#b91c1c';
+    return props.theme.colors.fg;
+  }};
+`;
+
+export const CallParentBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fee2e2;
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+  }
+`;
+
+export const TrackerStatusBadge = styled.span<{ $status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>`
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+
+  ${props => props.$status === 'PRESENT' && `
+    background: ${props.theme.colors.greenLight};
+    color: ${props.theme.colors.greenDark};
+  `}
+
+  ${props => props.$status === 'PERMISSION_ABSENCE' && `
+    background: ${props.theme.colors.amberLight};
+    color: ${props.theme.colors.amber};
+  `}
+
+  ${props => props.$status === 'UNEXCUSED_ABSENCE' && `
+    background: #fef2f2;
+    color: #b91c1c;
+  `}
 `;

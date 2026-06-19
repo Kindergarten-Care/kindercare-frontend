@@ -28,16 +28,39 @@ const ChatBubbleIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle }) => {
+interface TopAppBarProps {
+  fullName: string;
+  roleTitle: string;
+  onMenuClick?: () => void;
+}
+
+const MenuIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="4" y1="12" x2="20" y2="12"></line>
+    <line x1="4" y1="6" x2="20" y2="6"></line>
+    <line x1="4" y1="18" x2="20" y2="18"></line>
+  </svg>
+);
+
+export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   return (
     <S.HeaderContainer>
-      <S.SearchWrapper>
-        <SearchIcon size={18} />
-        <S.SearchInput type="text" placeholder="Tìm kiếm hồ sơ..." />
-      </S.SearchWrapper>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+        {onMenuClick && (
+          <S.MenuButton onClick={onMenuClick} aria-label="Open sidebar">
+            <MenuIcon size={22} />
+          </S.MenuButton>
+        )}
+        
+        <S.SearchWrapper>
+          <SearchIcon size={18} />
+          <S.SearchInput type="text" placeholder="Tìm kiếm hồ sơ..." />
+        </S.SearchWrapper>
+      </div>
+
       
       <S.ActionsSection>
         <S.NotificationWrapper>
@@ -60,10 +83,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle }) => 
             <S.ProfileRole>{roleTitle}</S.ProfileRole>
           </S.ProfileInfo>
           <S.Avatar>
-            <img 
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&auto=format&fit=crop&q=60" 
-              alt={fullName} 
-            />
+            {fullName ? fullName.trim().split(' ').pop()?.charAt(0).toUpperCase() : 'H'}
           </S.Avatar>
         </S.ProfileSection>
       </S.ActionsSection>

@@ -1,57 +1,86 @@
 import React from 'react';
 import * as S from './styles';
-import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Heart, HelpCircle, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
-export const TeacherSidebar: React.FC = () => {
+interface TeacherSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
   
   const isDashboardActive = pathname === '/';
   const isAttendanceActive = pathname === '/attendance';
+  const isActivitiesActive = pathname === '/activities';
 
   return (
-    <S.SidebarContainer>
+    <S.SidebarContainer $isOpen={isOpen}>
       <S.LogoContainer>
-        {/* Placeholder for Logo */}
-        <h2>KinderCare</h2>
+        <S.LogoBlock>K</S.LogoBlock>
+        <S.LogoText>KinderCare</S.LogoText>
+        {onClose && (
+          <S.CloseButton onClick={onClose} aria-label="Close sidebar">
+            ✕
+          </S.CloseButton>
+        )}
       </S.LogoContainer>
+
       <S.NavList>
         <S.NavItem $active={isDashboardActive} onClick={() => router.push('/')}>
-          <LayoutDashboard size={20} />
-          Bảng điều khiển
+          <S.IconWrapper>
+            <LayoutDashboard size={23} />
+          </S.IconWrapper>
+          <S.Label>Bảng điều khiển</S.Label>
         </S.NavItem>
-        <S.NavItem>
-          <Users size={20} />
-          Danh sách lớp
+        <S.NavItem onClick={() => router.push('/')}>
+          <S.IconWrapper>
+            <Users size={23} />
+          </S.IconWrapper>
+          <S.Label>Danh sách lớp</S.Label>
         </S.NavItem>
         <S.NavItem $active={isAttendanceActive} onClick={() => router.push('/attendance')}>
-          <CheckSquare size={20} />
-          Điểm danh
+          <S.IconWrapper>
+            <CheckSquare size={23} />
+          </S.IconWrapper>
+          <S.Label>Điểm danh</S.Label>
         </S.NavItem>
-        <S.NavItem $active={pathname === '/activities'} onClick={() => router.push('/activities')}>
-          <Calendar size={20} />
-          Hoạt động
+        <S.NavItem $active={isActivitiesActive} onClick={() => router.push('/activities')}>
+          <S.IconWrapper>
+            <Calendar size={23} />
+          </S.IconWrapper>
+          <S.Label>Hoạt động</S.Label>
         </S.NavItem>
-        <S.NavItem>
-          <MessageSquare size={20} />
-          Liên lạc phụ huynh
+        <S.NavItem onClick={() => router.push('/')}>
+          <S.IconWrapper>
+            <MessageSquare size={23} />
+          </S.IconWrapper>
+          <S.Label>Liên lạc phụ huynh</S.Label>
         </S.NavItem>
-        <S.NavItem>
-          <Settings size={20} />
-          Cài đặt
+        <S.NavItem onClick={() => router.push('/')}>
+          <S.IconWrapper>
+            <Heart size={23} />
+          </S.IconWrapper>
+          <S.Label>Y tế & Dinh dưỡng</S.Label>
         </S.NavItem>
       </S.NavList>
+      
       <S.BottomNav>
-        <S.NavItem>
-          <HelpCircle size={20} />
-          Trợ giúp
+        <S.NavItem onClick={() => router.push('/')}>
+          <S.IconWrapper>
+            <HelpCircle size={23} />
+          </S.IconWrapper>
+          <S.Label>Trợ giúp</S.Label>
         </S.NavItem>
         <S.NavItem onClick={logout}>
-          <LogOut size={20} />
-          Đăng xuất
+          <S.IconWrapper>
+            <LogOut size={23} />
+          </S.IconWrapper>
+          <S.Label>Đăng xuất</S.Label>
         </S.NavItem>
       </S.BottomNav>
     </S.SidebarContainer>

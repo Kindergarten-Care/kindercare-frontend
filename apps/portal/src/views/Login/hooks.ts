@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient, setSession } from '@kindercare/core';
 
 export type UserRole = 'principal' | 'teacher';
 
@@ -91,8 +92,11 @@ export const useLoginState = (): UseLoginStateReturn => {
         return;
       }
 
-      // Store token
-      localStorage.setItem('token', data.data.token);
+      const token = data.data.token;
+      
+      // Save session in sessionStorage (expires in 30 minutes, or longer if rememberMe is checked, e.g. 3 days)
+      const expireMinutes = rememberMe ? 3 * 24 * 60 : 30;
+      setSession(token, role, expireMinutes);
 
       // Redirect based on role
       const domainMapping: Record<UserRole, string> = {
@@ -100,11 +104,16 @@ export const useLoginState = (): UseLoginStateReturn => {
         teacher: `${process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001'}/teacher`,
       };
 
-      const redirectUrl = new URL(domainMapping[role]);
-      redirectUrl.searchParams.set('token', data.data.token);
+      const nextUrl = domainMapping[role];
+      const redirectUrl = nextUrl.startsWith('http')
+        ? new URL(nextUrl)
+        : new URL(nextUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3005');
+
+      redirectUrl.searchParams.set('token', token);
 
       window.location.href = redirectUrl.toString();
     } catch (error) {
+      console.error('Login error:', error);
       setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
     } finally {
       setIsSubmitting(false);
@@ -125,3 +134,4 @@ export const useLoginState = (): UseLoginStateReturn => {
     handleSubmit,
   };
 };
+

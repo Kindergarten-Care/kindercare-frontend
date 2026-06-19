@@ -1,16 +1,18 @@
 import styled from 'styled-components';
 
 export const HeaderContainer = styled.header`
-  background-color: #F6FAF2;
-  border-bottom: none;
+  background: rgba(248, 250, 248, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(16, 24, 40, 0.04);
   height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  box-shadow: 0px 4px 20px rgba(14, 121, 60, 0.05);
-  position: relative;
-  z-index: 2;
+  position: sticky;
+  top: 0;
+  z-index: 30;
   width: 100%;
   box-sizing: border-box;
 `;
@@ -18,19 +20,24 @@ export const HeaderContainer = styled.header`
 export const SearchWrapper = styled.div`
   display: flex;
   align-items: center;
-  background: #F0F5EC;
-  border: 1px solid #BECABC;
+  background: #ffffff;
+  border: 1px solid #EAEFEA;
   border-radius: 9999px;
-  height: 40px;
-  padding: 0 16px;
-  gap: 10px;
+  height: 46px;
+  padding: 0 18px;
+  gap: 11px;
   width: 100%;
   max-width: 480px;
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.03);
   transition: all 0.2s ease;
 
   &:focus-within {
-    border-color: ${props => props.theme.colors.green || '#15803d'};
-    box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+    border-color: #10B981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    display: none;
   }
 `;
 
@@ -40,11 +47,11 @@ export const SearchInput = styled.input`
   outline: none;
   font-family: var(--font-montserrat), 'Montserrat', sans-serif;
   font-size: 14px;
-  color: #181D18;
+  color: #1F2937;
   width: 100%;
 
   &::placeholder {
-    color: #6B7280;
+    color: #9CA3AF;
   }
 `;
 
@@ -60,39 +67,40 @@ export const NotificationWrapper = styled.div`
 
 export const ActionButton = styled.button`
   position: relative;
-  background: transparent;
-  border: none;
+  background: #ffffff;
+  border: 1px solid #EAEFEA;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  color: #3F493D;
-  transition: all 0.2s ease;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: #374151;
+  transition: transform 0.15s, box-shadow 0.15s;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.04);
-    color: #181D18;
+    transform: scale(1.05);
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
   }
 `;
 
 export const NotificationBadge = styled.span`
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background-color: #BA1A1A;
+  top: 9px;
+  right: 11px;
+  width: 9px;
+  height: 9px;
+  background-color: #F43F5E;
   border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff;
 `;
 
 export const VerticalDivider = styled.div`
   width: 1px;
-  height: 40px;
-  background-color: #BECABC;
-  margin: 0 8px;
+  height: 30px;
+  background-color: rgba(16, 24, 40, 0.08);
+  margin: 0 4px;
 `;
 
 export const ProfileSection = styled.div`
@@ -100,18 +108,29 @@ export const ProfileSection = styled.div`
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 0;
+  background: #ffffff;
+  border: 1px solid #EAEFEA;
+  padding: 6px 8px 6px 18px;
+  border-radius: 9999px;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
+  }
 `;
 
 export const Avatar = styled.div`
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border: 2px solid #97F7AC;
   overflow: hidden;
-  background: #F0F5EC;
+  background: linear-gradient(135deg, #34D399, #10B981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
   flex-shrink: 0;
   
   img {
@@ -124,21 +143,50 @@ export const Avatar = styled.div`
 export const ProfileInfo = styled.div`
   display: flex;
   flex-direction: column;
-  text-align: right;
+  text-align: left;
+
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    display: none;
+  }
 `;
 
 export const ProfileName = styled.span`
-  color: #181D18;
-  font-size: 14px;
+  color: #1F2937;
+  font-size: 13.5px;
   font-weight: 700;
   font-family: var(--font-montserrat), 'Montserrat', sans-serif;
-  line-height: 1.4;
+  line-height: 1.1;
 `;
 
 export const ProfileRole = styled.span`
-  color: #3F493D;
-  font-size: 12px;
-  font-weight: 400;
+  color: #9CA3AF;
+  font-size: 11.5px;
+  font-weight: 500;
   font-family: var(--font-montserrat), 'Montserrat', sans-serif;
   line-height: 1.3;
+  margin-top: 1px;
+`;
+
+export const MenuButton = styled.button`
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #3F493D;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #181D18;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    display: flex;
+  }
 `;

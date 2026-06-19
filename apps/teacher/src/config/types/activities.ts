@@ -26,3 +26,11 @@ export interface MenuOfTheDay {
   lunchMenu: string;
   afternoonSnackMenu: string;
 }
+
+export interface ScheduleItem {
+  id: string;
+  timeSlot: string;
+  activityName: string;
+  completed: boolean;
+  classPhoto?: string;
+}

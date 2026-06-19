@@ -15,7 +15,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const TimelineList = styled.div`
@@ -48,13 +48,13 @@ export const TimeLabel = styled.div`
   color: #6f7a6e;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActivityText = styled.div<{ $completed?: boolean }>`
   font-size: 16px;
   color: #3f493f;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   ${props => props.$completed && css`
     text-decoration: line-through;
     opacity: 0.6;
@@ -127,7 +127,7 @@ export const ActiveStatus = styled.div`
   color: #0e793c;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActiveBadge = styled.div`
@@ -138,7 +138,7 @@ export const ActiveBadge = styled.div`
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 4px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActiveTitle = styled.h4`
@@ -146,14 +146,14 @@ export const ActiveTitle = styled.h4`
   font-weight: bold;
   color: #005e2c;
   margin: 4px 0 0 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActiveDesc = styled.p`
   font-size: 14px;
   color: #3f493f;
   margin: 0 0 12px 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const UpdateButton = styled.button`
@@ -168,7 +168,7 @@ export const UpdateButton = styled.button`
   color: #0e793c;
   font-size: 14px;
   font-weight: bold;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   cursor: pointer;
 
   &:hover {

@@ -1,30 +1,72 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as S from './styles';
 
-const ALERTS = [
-  { id: 1, name: 'Bé Bảo Long', alert: 'Dị ứng đậu phộng (Rất nghiêm trọng)', severity: 'high' },
-  { id: 2, name: 'Bé Hải Anh', alert: 'Đang sốt nhẹ 37.5. Cần theo dõi thêm.', severity: 'medium' },
-];
+interface MedItem {
+  id: string;
+  name: string;
+  med: string;
+  dose: string;
+  time: string;
+  initial: string;
+  color: string;
+  done: boolean;
+}
 
-export const HealthAlertsWidget: React.FC = () => {
+interface HealthAlertsWidgetProps {
+  students: { id: string; name: string; healthNote?: string }[];
+}
+
+export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students }) => {
+  const [meds, setMeds] = useState<MedItem[]>([]);
+
+  React.useEffect(() => {
+    const alerts = students.filter(s => s.healthNote && s.healthNote.trim().length > 0);
+    const colors = ['#F9A8D4', '#FDBA74', '#93C5FD', '#FCA5A5', '#6EE7B7', '#C4B5FD'];
+    const mapped = alerts.map((s, idx) => {
+      const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+      const color = colors[idx % colors.length];
+      return {
+        id: s.id,
+        name: s.name,
+        med: s.healthNote || '',
+        dose: 'Lưu ý',
+        time: 'Trong ngày',
+        initial,
+        color,
+        done: false
+      };
+    });
+    setMeds(mapped);
+  }, [students]);
+
+  const toggleMed = (id: string) => {
+    setMeds(prev => prev.map(m => m.id === id ? { ...m, done: !m.done } : m));
+  };
+
+  const pendingCount = meds.filter(m => !m.done).length;
+
   return (
     <S.WidgetContainer>
-      <S.WidgetHeader>
-        <S.Icon>⚠️</S.Icon>
-        <S.WidgetTitle>Lưu ý y tế</S.WidgetTitle>
-      </S.WidgetHeader>
-      
-      <S.AlertsList>
-        {ALERTS.map(alert => (
-          <S.AlertCard key={alert.id} severity={alert.severity}>
-            <S.AlertIcon severity={alert.severity}>!</S.AlertIcon>
-            <S.AlertContent>
-              <S.AlertName severity={alert.severity}>{alert.name}</S.AlertName>
-              <S.AlertDesc severity={alert.severity}>{alert.alert}</S.AlertDesc>
-            </S.AlertContent>
-          </S.AlertCard>
+      <S.HeaderRow>
+        <S.Title>💊 Lưu ý Y tế hôm nay</S.Title>
+        <S.CounterBadge>{pendingCount} cần làm</S.CounterBadge>
+      </S.HeaderRow>
+
+      <S.MedList>
+        {meds.map(m => (
+          <S.MedRow key={m.id} $done={m.done}>
+            <S.AvatarCircle $color={m.color}>{m.initial}</S.AvatarCircle>
+            <S.InfoCol>
+              <S.MedName $done={m.done}>{m.name} · {m.med}</S.MedName>
+              <S.MedDose>Liều: {m.dose} · Lúc {m.time}</S.MedDose>
+            </S.InfoCol>
+            <S.CheckBox $done={m.done} onClick={() => toggleMed(m.id)}>
+              {m.done && <S.CheckIcon>✓</S.CheckIcon>}
+            </S.CheckBox>
+          </S.MedRow>
         ))}
-      </S.AlertsList>
+      </S.MedList>
     </S.WidgetContainer>
   );
 };
+export const MedicalAlertsWidget = HealthAlertsWidget;

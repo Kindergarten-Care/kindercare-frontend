@@ -3,9 +3,6 @@ import * as S from './styles';
 
 const ACTIONS = [
   { id: 1, title: 'Viết nhật ký lớp', icon: '📝' },
-  { id: 2, title: 'Đánh giá sự kiện', icon: '⭐' },
-  { id: 3, title: 'Yêu cầu vật tư', icon: '📦' },
-  { id: 4, title: 'Gọi điện nội bộ', icon: '📞' },
 ];
 
 export const QuickActionsWidget: React.FC = () => {

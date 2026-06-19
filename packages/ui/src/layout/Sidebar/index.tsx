@@ -2,24 +2,20 @@ import React from 'react';
 import {
   SideNavContainer,
   BrandSection,
-  BrandName,
   NavLinks,
   NavLink,
   NavIcon,
   NavLabel,
   BottomSection,
-  BottomNavLink,
-  BottomNavIcon,
-  BottomNavLabel,
 } from './styles';
-import { 
-  OverviewIcon, 
-  SchoolYearIcon, 
-  FeeIcon, 
-  ParentIcon, 
-  AuditIcon, 
-  SupportIcon, 
-  LogoutIcon 
+import {
+  OverviewIcon,
+  SchoolYearIcon,
+  FeeIcon,
+  ParentIcon,
+  AuditIcon,
+  SupportIcon,
+  LogoutIcon
 } from '../../svgs/Icons';
 
 export interface NavItem {
@@ -49,43 +45,37 @@ const defaultBottomNavItems: NavItem[] = [
   { label: 'Đăng xuất', icon: <LogoutIcon size={18} />, href: '/logout' },
 ];
 
-export function Sidebar({ 
-  mainNavItems = defaultMainNavItems, 
+export function Sidebar({
+  mainNavItems = defaultMainNavItems,
   bottomNavItems = defaultBottomNavItems,
   brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png",
   brandName = "KinderCare",
 }: SidebarProps): React.ReactElement {
   return (
     <SideNavContainer>
-      <div>
-        <BrandSection>
-          {brandLogoUrl && !brandLogoUrl.includes("KinderCare_LogoTextHorizontal") ? (
-            <img 
-              src={brandLogoUrl} 
-              alt={brandName} 
-              style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
-            />
-          ) : (
-            <BrandName>KinderCare</BrandName>
-          )}
-        </BrandSection>
+      <BrandSection>
+        <img
+          src={brandLogoUrl}
+          alt={brandName}
+          style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+        />
+      </BrandSection>
 
-        <NavLinks>
-          {mainNavItems.map((item) => (
-            <NavLink key={item.href} href={item.href} $active={item.active}>
-              <NavIcon $active={item.active}>{item.icon}</NavIcon>
-              <NavLabel $active={item.active}>{item.label}</NavLabel>
-            </NavLink>
-          ))}
-        </NavLinks>
-      </div>
+      <NavLinks>
+        {mainNavItems.map((item) => (
+          <NavLink key={item.href} href={item.href} $active={item.active}>
+            <NavIcon $active={item.active}>{item.icon}</NavIcon>
+            <NavLabel $active={item.active}>{item.label}</NavLabel>
+          </NavLink>
+        ))}
+      </NavLinks>
 
       <BottomSection>
         {bottomNavItems.map((item) => (
-          <BottomNavLink key={item.href} href={item.href}>
-            <BottomNavIcon>{item.icon}</BottomNavIcon>
-            <BottomNavLabel>{item.label}</BottomNavLabel>
-          </BottomNavLink>
+          <NavLink key={item.href} href={item.href}>
+            <NavIcon>{item.icon}</NavIcon>
+            <NavLabel>{item.label}</NavLabel>
+          </NavLink>
         ))}
       </BottomSection>
     </SideNavContainer>
