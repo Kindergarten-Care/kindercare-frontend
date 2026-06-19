@@ -679,8 +679,8 @@ export function AttendanceView(): React.ReactElement {
             </TableHead>
             <TBody>
               {filteredStudents.length > 0 ? (
-                filteredStudents.map((student) => (
-                  <Tr key={student.id}>
+                filteredStudents.map((student, index) => (
+                  <Tr key={`${student.id}-${index}`}>
                     <Td>
                       <StudentProfileCell>
                         <StudentAvatar>
@@ -771,8 +771,8 @@ export function AttendanceView(): React.ReactElement {
       {viewMode === 'TRACKER' && (
         <TrackerGrid>
           {filteredStudents.length > 0 ? (
-            filteredStudents.map((student) => (
-              <TrackerCard key={student.id} $status={student.attendanceStatus}>
+            filteredStudents.map((student, index) => (
+              <TrackerCard key={`${student.id}-${index}`} $status={student.attendanceStatus}>
                 <TrackerCardHeader>
                   <StudentProfileCell>
                     <StudentAvatar>
