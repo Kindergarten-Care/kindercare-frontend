@@ -3,6 +3,15 @@ import * as S from './styles';
 import { AttendanceService } from '@/services/attendance';
 import { LeaveRequest } from '@/config/types/attendance';
 
+const formatDate = (timestamp: number | undefined): string => {
+  if (!timestamp) return '...';
+  const d = new Date(timestamp * 1000);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 interface LeaveApprovalWidgetProps {
   onAction: (message: string) => void;
 }
@@ -88,7 +97,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
                 <S.AvatarCircle $color={color}>{initial}</S.AvatarCircle>
                 <S.InfoCol>
                   <S.ChildName>{r.studentName}</S.ChildName>
-                  <S.RequestDetails>{r.reason} · {r.fromDate} → {r.toDate}</S.RequestDetails>
+                  <S.RequestDetails>{r.reason} · {formatDate(r.fromDate)} → {formatDate(r.toDate)}</S.RequestDetails>
                 </S.InfoCol>
                 <S.ActionButtons>
                   <S.ApproveButton 
