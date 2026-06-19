@@ -3,67 +3,159 @@
 import React, { useEffect, useState } from 'react';
 import { parentDashboardService } from '@/services/ParentDashboardService';
 import { ParentDashboardModel } from '@/config/types/dashboard';
+import { useStudent } from '@/contexts/StudentContext';
+import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
+import { formatDateFromBigInt } from '@/utils/Student/Date';
 import * as S from './styles';
 
+import UrgentNoticeBanner from './components/UrgentNoticeBanner';
+import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
-import TimelineWidget from './components/TimelineWidget';
-import MessagesWidget from './components/MessagesWidget';
+import LiveScheduleWidget from './components/LiveScheduleWidget';
 import CameraWidget from './components/CameraWidget';
+import DailyLessonWidget from './components/DailyLessonWidget';
 import FeeAlertWidget from './components/FeeAlertWidget';
-import AttendanceStatsWidget from './components/AttendanceStatsWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
-import UpcomingEventsWidget from './components/UpcomingEventsWidget';
+import GrowthWidget from './components/GrowthWidget';
+import ChatFab from './components/ChatFab';
+import LeaveRequestPopup from './components/LeaveRequestPopup';
+import MedicationRequestPopup from './components/MedicationRequestPopup';
+
+const getTeacherDisplayName = (teacher: { fullName: string }) => {
+  if (!teacher) return '';
+  const fullName = teacher.fullName || '';
+  if (/^(cô|thầy)\b/i.test(fullName)) {
+    return fullName;
+  }
+  const isMale = /\b(Văn|Huy|Hùng|Tuấn|Dũng|Hoàng|Minh|Hải|Phong|Đạt|Thành|Nam|Quốc|Sơn|Trung|Đức|Khang|Bách)\b/i.test(fullName);
+  const prefix = isMale ? 'Thầy' : 'Cô';
+  return `${prefix} ${fullName}`;
+};
 
 export function ParentDashboard(): React.ReactElement {
   const [data, setData] = useState<ParentDashboardModel | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
+  const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
+  const { activeStudent } = useStudent();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dashboardData = await parentDashboardService.getDashboardData();
-        setData(dashboardData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    parentDashboardService
+      .getDashboardData()
+      .then(setData)
+      .catch(err => console.error('Dashboard fetch failed:', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading || !data) {
+  if (loading || !data || !activeStudent) {
     return (
       <S.DashboardContainer>
-        <div>Đang tải dữ liệu...</div>
+        <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
       </S.DashboardContainer>
     );
   }
 
+  const avatarGradient = getAvatarGradient(activeStudent.studentId);
+  const avatarInitial = getInitials(activeStudent.fullName);
+
+  const leadTeacher = activeStudent.teachers && activeStudent.teachers.length > 0 ? activeStudent.teachers[0] : null;
+
+  const childHero = {
+    name: activeStudent.fullName,
+    className: activeStudent.className,
+    teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Chưa phân công',
+    academicYear: activeStudent.academicYearName,
+    branch: activeStudent.campusName,
+    statusTags: [
+      { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
+      { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
+      { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
+    ],
+    checkinTime: 'Đang học',
+    checkinSub: 'Đúng giờ · Cổng A',
+  };
+
   return (
     <S.DashboardContainer>
-      {/* Hero Section - Full width */}
-      <ChildHeroWidget data={data.childHero} />
-      
-      {/* Quick Access Strip - Full width */}
-      <QuickActionsStrip />
+      {/* Urgent notices — top of everything */}
+      <UrgentNoticeBanner notices={data.urgentNotices} />
 
+      {/* Child profile card */}
+      <ChildHeroWidget
+        data={childHero}
+        avatarGradient={avatarGradient}
+        avatarInitial={avatarInitial}
+        avatarUrl={activeStudent.avatarUrl}
+        onAbsence={() => setIsLeavePopupOpen(true)}
+        onMessage={() => alert('Nhắn tin với giáo viên')}
+      />
+
+      {/* Fee alert banner */}
+      <FeeAlertWidget fee={data.fee} />
+
+      {/* Two-column grid */}
       <S.MainGrid>
         <S.LeftColumn>
-          <TimelineWidget events={data.timeline} />
-          <MessagesWidget messages={data.messages} />
+          <S.LeftTopGrid>
+            <S.ColumnStack>
+              {/* Quick actions — moved here to align width and height */}
+              <QuickActionsStrip
+                onAbsence={() => setIsLeavePopupOpen(true)}
+                onMedication={() => setIsMedicationPopupOpen(true)}
+                onFee={() => alert('Đóng học phí')}
+                onDiary={() => alert('Nhật ký')}
+                onPickup={() => alert('Đăng ký người đón hộ')}
+              />
+
+              {/* Today's album — moved here side-by-side with Camera */}
+              <AlbumStripWidget photos={data.albumPhotos} />
+            </S.ColumnStack>
+
+            {/* Growth metrics */}
+            <GrowthWidget />
+          </S.LeftTopGrid>
+
+          {/* Live schedule — realtime current activity */}
+          <LiveScheduleWidget schedule={data.schedule} />
         </S.LeftColumn>
 
         <S.RightColumn>
-          <CameraWidget />
-          <FeeAlertWidget fee={data.fee} />
-          <AttendanceStatsWidget stats={data.attendanceStats} />
-          <MiniCalendarWidget />
-          <UpcomingEventsWidget events={data.upcomingEvents} />
+          {/* Camera — moved here side-by-side with Album */}
+          <CameraWidget
+            className={activeStudent.className}
+            teacher={activeStudent.academicYearName}
+          />
+
+          {/* Attendance calendar */}
+          <MiniCalendarWidget days={data.calendarDays} stats={data.attendanceStats} />
+
+          {/* Daily lesson */}
+          <DailyLessonWidget lessons={data.dailyLessons} />
         </S.RightColumn>
       </S.MainGrid>
+
+      {/* Floating chat FAB */}
+      <ChatFab
+        teacherName={leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Giáo viên'}
+        initialMessages={data.messages}
+        unreadCount={data.messages.filter(m => m.unread && !m.isMe).length}
+        classroom={activeStudent.className}
+      />
+
+      <LeaveRequestPopup
+        isOpen={isLeavePopupOpen}
+        onClose={() => setIsLeavePopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <MedicationRequestPopup
+        isOpen={isMedicationPopupOpen}
+        onClose={() => setIsMedicationPopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
     </S.DashboardContainer>
   );
 }

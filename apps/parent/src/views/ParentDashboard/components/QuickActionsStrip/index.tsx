@@ -1,32 +1,52 @@
+'use client';
+
 import React from 'react';
 import * as S from './styles';
+import { IconAbsence, IconMedicine, IconCreditCard, IconDiary, IconProfile } from '@/assets/icons/dashboard';
 
-const QuickActionsStrip: React.FC = () => {
+interface QuickActionsStripProps {
+  onAbsence?: () => void;
+  onMedication?: () => void;
+  onFee?: () => void;
+  onDiary?: () => void;
+  onPickup?: () => void;
+}
+
+const ACTIONS = [
+  { id: 'absence',    label: 'Báo nghỉ',      Icon: IconAbsence,     bg: '#fee2e2', color: '#dc2626' },
+  { id: 'medication', label: 'Dặn dò thuốc',  Icon: IconMedicine,    bg: '#fef3c7', color: '#d97706' },
+  { id: 'fee',        label: 'Học phí',       Icon: IconCreditCard,  bg: '#dbeafe', color: '#2563eb', badge: '!' },
+  { id: 'diary',      label: 'Nhật ký',       Icon: IconDiary,       bg: '#f3e8ff', color: '#7c3aed' },
+  { id: 'pickup',     label: 'Đăng ký đón hộ', Icon: IconProfile,     bg: '#e2f8f0', color: '#0f766e' },
+];
+
+const QuickActionsStrip: React.FC<QuickActionsStripProps> = ({
+  onAbsence,
+  onMedication,
+  onFee,
+  onDiary,
+  onPickup,
+}) => {
+  const handlers: Record<string, (() => void) | undefined> = {
+    absence: onAbsence,
+    medication: onMedication,
+    fee: onFee,
+    diary: onDiary,
+    pickup: onPickup,
+  };
+
   return (
-    <S.StripContainer>
-      <S.Pill $variant="primary" onClick={() => alert('Báo nghỉ')}>
-        <S.PillIco>🚫</S.PillIco>Báo nghỉ học
-      </S.Pill>
-      <S.Pill onClick={() => alert('Nhắn giáo viên')}>
-        <S.PillIco>💬</S.PillIco>Nhắn giáo viên
-        <S.PillBadge>3</S.PillBadge>
-      </S.Pill>
-      <S.Pill $variant="warn" onClick={() => alert('Đóng học phí')}>
-        <S.PillIco>💳</S.PillIco>Đóng học phí
-      </S.Pill>
-      <S.Pill onClick={() => alert('Thực đơn')}>
-        <S.PillIco>🍱</S.PillIco>Xem thực đơn
-      </S.Pill>
-      <S.Pill onClick={() => alert('Kết quả học tập')}>
-        <S.PillIco>📊</S.PillIco>Kết quả học tập
-      </S.Pill>
-      <S.Pill onClick={() => alert('Hồ sơ bé')}>
-        <S.PillIco>👤</S.PillIco>Hồ sơ bé
-      </S.Pill>
-      <S.Pill onClick={() => alert('Xem camera')}>
-        <S.PillIco>📷</S.PillIco>Xem camera
-      </S.Pill>
-    </S.StripContainer>
+    <S.Bar>
+      {ACTIONS.map(({ id, label, Icon, bg, color, badge }) => (
+        <S.Btn key={id} onClick={handlers[id]}>
+          <S.BtnIco $bg={bg} $color={color}>
+            <Icon size={16} color={color} />
+          </S.BtnIco>
+          <S.BtnLabel>{label}</S.BtnLabel>
+          {badge && <S.BtnBadge>{badge}</S.BtnBadge>}
+        </S.Btn>
+      ))}
+    </S.Bar>
   );
 };
 

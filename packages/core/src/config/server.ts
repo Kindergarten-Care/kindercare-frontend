@@ -16,4 +16,7 @@ export const SERVER = {
     refresh: '/auth/refresh',
     me:      '/auth/me',
   },
+  parent: {
+    getChildren: '/parent/children',
+  },
 } as const;

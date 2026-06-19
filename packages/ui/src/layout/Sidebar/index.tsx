@@ -8,14 +8,14 @@ import {
   NavLabel,
   BottomSection,
 } from './styles';
-import { 
-  OverviewIcon, 
-  SchoolYearIcon, 
-  FeeIcon, 
-  ParentIcon, 
-  AuditIcon, 
-  SupportIcon, 
-  LogoutIcon 
+import {
+  OverviewIcon,
+  SchoolYearIcon,
+  FeeIcon,
+  ParentIcon,
+  AuditIcon,
+  SupportIcon,
+  LogoutIcon
 } from '../../svgs/Icons';
 
 export interface NavItem {
@@ -45,18 +45,18 @@ const defaultBottomNavItems: NavItem[] = [
   { label: 'Đăng xuất', icon: <LogoutIcon size={18} />, href: '/logout' },
 ];
 
-export function Sidebar({ 
-  mainNavItems = defaultMainNavItems, 
+export function Sidebar({
+  mainNavItems = defaultMainNavItems,
   bottomNavItems = defaultBottomNavItems,
   brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png",
-  brandName = "KinderCare Guardian System"
+  brandName = "KinderCare",
 }: SidebarProps): React.ReactElement {
   return (
     <SideNavContainer>
       <BrandSection>
-        <img 
-          src={brandLogoUrl} 
-          alt={brandName} 
+        <img
+          src={brandLogoUrl}
+          alt={brandName}
           style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
         />
       </BrandSection>
@@ -81,3 +81,4 @@ export function Sidebar({
     </SideNavContainer>
   );
 }
+

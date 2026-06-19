@@ -1,11 +1,19 @@
 import '../globals.css';
+import { Inter } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
+
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@kindercare/core';
+import { StudentProvider } from '@/contexts/StudentContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
 import type { Metadata } from 'next';
 
@@ -52,7 +60,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={inter.variable}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
@@ -60,11 +68,13 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <AuthProvider>
-              <SocketProvider>
-                <ClientAppWrapper>
-                  {children}
-                </ClientAppWrapper>
-              </SocketProvider>
+              <StudentProvider>
+                <SocketProvider>
+                  <ClientAppWrapper>
+                    {children}
+                  </ClientAppWrapper>
+                </SocketProvider>
+              </StudentProvider>
             </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>

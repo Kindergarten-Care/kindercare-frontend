@@ -3,6 +3,41 @@ import { ParentDashboardModel } from '@/config/types/dashboard';
 class ParentDashboardService {
   async getDashboardData(): Promise<ParentDashboardModel> {
     return {
+      children: [
+        {
+          id: 'c1',
+          name: 'Nguyễn Bảo Châu',
+          className: 'Lớp Hoa Hướng Dương',
+          teacher: 'Cô Phạm Thị Hương',
+          branch: 'KinderCare Bình Thạnh',
+          avatarColor: 'linear-gradient(140deg,#0a7a4c,#005A36)',
+          avatarInitial: 'BC',
+          statusTags: [
+            { label: '✅ Đã đến trường', type: 'green' },
+            { label: '😴 Đang ngủ trưa', type: 'neutral' },
+            { label: '⭐ 96% chuyên cần', type: 'neutral' },
+          ],
+          checkinTime: '7:42 SA',
+          checkinSub: 'Đúng giờ · Cổng A',
+        },
+        {
+          id: 'c2',
+          name: 'Nguyễn Minh Khôi',
+          className: 'Lớp Mặt Trời Nhỏ',
+          teacher: 'Cô Lê Ngọc Anh',
+          branch: 'KinderCare Bình Thạnh',
+          avatarColor: 'linear-gradient(140deg,#1e40af,#2563EB)',
+          avatarInitial: 'K',
+          statusTags: [
+            { label: '✅ Đã đến trường', type: 'green' },
+            { label: '🍽️ Ăn trưa xong', type: 'blue' },
+            { label: '⭐ 92% chuyên cần', type: 'neutral' },
+          ],
+          checkinTime: '7:55 SA',
+          checkinSub: 'Đúng giờ · Cổng B',
+        },
+      ],
+      activeChildIndex: 0,
       childHero: {
         name: 'Nguyễn Bảo Châu',
         className: 'Lớp Hoa Hướng Dương',
@@ -15,8 +50,20 @@ class ParentDashboardService {
           { label: '⭐ 96% chuyên cần', type: 'neutral' },
         ],
         checkinTime: '7:42 SA',
-        checkinSub: 'Đúng giờ · Cổng A'
+        checkinSub: 'Đúng giờ · Cổng A',
       },
+      schedule: [
+        { id: 's1', time: '7:30', endTime: '8:00', title: 'Đón bé & Chào hỏi', note: 'Cổng A', icon: '👋', color: '#16a34a' },
+        { id: 's2', time: '8:00', endTime: '8:30', title: 'Ăn sáng', note: 'Cháo yến mạch + sữa', icon: '🍽️', color: '#d97706' },
+        { id: 's3', time: '8:30', endTime: '10:00', title: 'Hoạt động sáng tạo', note: 'Vẽ tranh & tô màu', icon: '🎨', color: '#8b5cf6' },
+        { id: 's4', time: '10:00', endTime: '11:00', title: 'Vận động ngoài trời', note: 'Sân vườn · Chơi tự do', icon: '🌳', color: '#059669' },
+        { id: 's5', time: '11:00', endTime: '11:30', title: 'Ăn trưa', note: 'Cơm + canh + thịt', icon: '🍱', color: '#d97706' },
+        { id: 's6', time: '11:30', endTime: '13:00', title: 'Ngủ trưa', note: 'Phòng ngủ · 25°C', icon: '😴', color: '#6b7280' },
+        { id: 's7', time: '13:00', endTime: '14:00', title: 'Giờ chơi nhóm', note: 'Xếp hình & kể chuyện', icon: '🧩', color: '#2563eb' },
+        { id: 's8', time: '14:00', endTime: '14:30', title: 'Học tiếng Anh', note: 'Từ vựng chủ đề con vật', icon: '🔤', color: '#dc2626' },
+        { id: 's9', time: '14:30', endTime: '15:00', title: 'Ăn xế', note: 'Bánh mì + sữa chua', icon: '🥐', color: '#d97706' },
+        { id: 's10', time: '17:00', endTime: '17:30', title: 'Giờ tan học', note: 'Cổng chính', icon: '🏠', color: '#005A36' },
+      ],
       timeline: [
         {
           id: '1',
@@ -24,7 +71,7 @@ class ParentDashboardService {
           title: 'Check-in tại trường',
           description: 'Bé vào lớp vui vẻ, chào cô và các bạn. Cổng A · Cô Hương đón.',
           type: 'done',
-          icon: '✅'
+          icon: '✅',
         },
         {
           id: '2',
@@ -32,7 +79,7 @@ class ParentDashboardService {
           title: 'Ăn sáng',
           description: 'Cháo yến mạch + sữa Vinamilk. Bé ăn hết phần, ngoan ✓',
           type: 'done',
-          icon: '🍽️'
+          icon: '🍽️',
         },
         {
           id: '3',
@@ -41,7 +88,7 @@ class ParentDashboardService {
           description: 'Vẽ tranh "Gia đình yêu thương". Tô màu cẩn thận, tự chọn màu sắc.',
           type: 'done',
           icon: '🎨',
-          photos: ['🖼️', '📸', '🎨']
+          photos: ['🖼️', '📸', '🎨'],
         },
         {
           id: '4',
@@ -50,7 +97,7 @@ class ParentDashboardService {
           description: 'Từ 11:30 · Dự kiến thức 13:00 · Phòng ngủ · 25°C · Nhạc nhẹ',
           type: 'current',
           icon: '😴',
-          isNow: true
+          isNow: true,
         },
         {
           id: '5',
@@ -58,24 +105,8 @@ class ParentDashboardService {
           title: 'Giờ chơi nhóm',
           description: 'Sắp tới · Xếp hình & kể chuyện sáng tạo',
           type: 'upcoming',
-          icon: '🧩'
+          icon: '🧩',
         },
-        {
-          id: '6',
-          time: '14:30',
-          title: 'Ăn xế',
-          description: 'Sắp tới · Bánh mì + sữa chua',
-          type: 'upcoming',
-          icon: '🥐'
-        },
-        {
-          id: '7',
-          time: '17:00',
-          title: 'Giờ tan học',
-          description: 'Cổng chính · Bà ngoại đón theo lịch',
-          type: 'upcoming',
-          icon: '🏠'
-        }
       ],
       messages: [
         {
@@ -84,78 +115,147 @@ class ParentDashboardService {
           avatar: '👩‍🏫',
           preview: 'Hôm nay bé Châu rất ngoan, chị xem ảnh lúc vẽ tranh ạ 😊',
           time: '9:30',
-          unread: true
+          unread: true,
         },
         {
           id: '2',
-          sender: 'Ban Giám Hiệu',
-          avatar: '📢',
-          avatarColor: '#e0f2fe',
-          preview: 'Thông báo: Họp phụ huynh HK2 · Thứ Bảy 22/06 lúc 8:00 SA',
-          time: '8:00',
-          unread: true
+          sender: 'Phụ huynh (Bạn)',
+          avatar: '👩',
+          preview: 'Cảm ơn cô, chiều cháu học thêm tiếng Anh không ạ?',
+          time: '9:45',
+          unread: false,
+          isMe: true,
         },
         {
           id: '3',
-          sender: 'Thực đơn tuần 20–24/05',
-          avatar: '🍱',
-          avatarColor: '#fef3c7',
-          preview: 'T2 – Cháo thịt; T3 – Mì trứng; T4 – Cơm gà; T5 – Phở bò',
-          time: 'T2',
-          unread: false
-        }
+          sender: 'Cô Phạm Thị Hương',
+          avatar: '👩‍🏫',
+          preview: 'Dạ có ạ, 14:00-14:30 là tiếng Anh về chủ đề con vật nhé chị!',
+          time: '9:50',
+          unread: true,
+        },
       ],
       fee: {
         title: 'Học phí tháng 6',
-        deadline: '25/06/2025',
-        amount: 2850000,
-        daysLeft: 41
+        deadline: '18/06/2025',
+        amount: 3500000,
+        daysLeft: 5,
       },
       attendanceStats: {
-        percentage: 96,
-        present: 22,
-        absent: 0,
+        percentage: 93,
+        present: 13,
+        absent: 1,
         excused: 1,
-        totalDays: 23
+        totalDays: 15,
       },
+      calendarDays: [
+        { day: 1, status: 'none' },
+        { day: 2, status: 'present', checkinTime: '7:38' },
+        { day: 3, status: 'present', checkinTime: '7:45' },
+        { day: 4, status: 'present', checkinTime: '7:50' },
+        { day: 5, status: 'present', checkinTime: '7:42' },
+        { day: 6, status: 'weekend' },
+        { day: 7, status: 'weekend' },
+        { day: 8, status: 'holiday' },
+        { day: 9, status: 'present', checkinTime: '8:02' },
+        { day: 10, status: 'present', checkinTime: '7:35' },
+        { day: 11, status: 'present', checkinTime: '7:48' },
+        { day: 12, status: 'absent' },
+        { day: 13, status: 'present', checkinTime: '7:42' },
+        { day: 14, status: 'weekend' },
+        { day: 15, status: 'weekend' },
+        { day: 16, status: 'present', checkinTime: '7:39' },
+        { day: 17, status: 'none' },
+      ],
+      urgentNotices: [
+        {
+          id: 'n1',
+          severity: 'urgent',
+          title: 'Nghỉ học do bão số 2',
+          detail: 'Trường thông báo cho học sinh nghỉ học ngày 14/06 do ảnh hưởng của bão số 2. Phụ huynh lưu ý đảm bảo an toàn cho gia đình.',
+          date: '13/06',
+          icon: '🌀',
+        },
+        {
+          id: 'n2',
+          severity: 'important',
+          title: 'Khám sức khỏe định kỳ ngày mai (14/06)',
+          detail: 'Trường tổ chức khám sức khỏe định kỳ cho học sinh vào ngày 14/06. Phụ huynh cho bé mặc quần áo thoải mái và mang theo sổ theo dõi sức khỏe.',
+          date: '13/06',
+          icon: '🏥',
+        },
+        {
+          id: 'n3',
+          severity: 'info',
+          title: 'Đổi giờ xe đưa đón tuyến Quận 7',
+          detail: 'Từ ngày 15/06, xe đưa đón tuyến Quận 7 sẽ xuất phát lúc 6:45 SA thay vì 7:00 SA do điều chỉnh lộ trình. Phụ huynh vui lòng lưu ý.',
+          date: '12/06',
+          icon: '🚌',
+        },
+      ],
+      albumPhotos: [
+        { id: 'p1', caption: 'Giờ ăn sáng', time: '8:20', color: '#fef3c7', icon: '🍽️' },
+        { id: 'p2', caption: 'Vẽ tranh gia đình', time: '9:05', color: '#dcfce7', icon: '🎨' },
+        { id: 'p3', caption: 'Chơi sân vườn', time: '10:15', color: '#dbeafe', icon: '🌳' },
+        { id: 'p4', caption: 'Học tiếng Anh', time: '14:10', color: '#f3e8ff', icon: '🔤' },
+        { id: 'p5', caption: 'Giờ âm nhạc', time: '15:30', color: '#fce7f3', icon: '🎵' },
+        { id: 'p6', caption: 'Bé và các bạn', time: '16:00', color: '#ffedd5', icon: '👫' },
+      ],
+      dailyLessons: [
+        {
+          id: 'l1',
+          subject: 'Tạo hình',
+          title: 'Học vẽ hình tròn',
+          description: 'Bé tập vẽ các hình tròn và tô màu tự do',
+          icon: '🎨',
+          color: '#8b5cf6',
+        },
+        {
+          id: 'l2',
+          subject: 'Tiếng Anh',
+          title: 'Từ vựng về con vật',
+          description: 'Cat, Dog, Bird, Fish — học qua bài hát vui nhộn',
+          icon: '🔤',
+          color: '#2563eb',
+        },
+        {
+          id: 'l3',
+          subject: 'Âm nhạc',
+          title: 'Hát "Cả nhà thương nhau"',
+          description: 'Ôn lại bài hát quen thuộc, tập gõ nhịp',
+          icon: '🎵',
+          color: '#e11d48',
+        },
+      ],
       upcomingEvents: [
         {
-          id: '1',
+          id: 'e1',
           day: 17,
-          month: 'T5',
+          month: 'T6',
           title: 'Phụ huynh tình nguyện',
           timeOrAmount: 'Trồng cây · 8:00 SA',
           tag: 'Trường',
-          tagType: 'school'
+          tagType: 'school',
         },
         {
-          id: '2',
+          id: 'e2',
           day: 22,
-          month: 'T5',
+          month: 'T6',
           title: 'Ngày hội thiếu nhi',
           timeOrAmount: 'Biểu diễn · 9:00 SA',
           tag: 'Trường',
-          tagType: 'school'
+          tagType: 'school',
         },
         {
-          id: '3',
-          day: 25,
+          id: 'e3',
+          day: 18,
           month: 'T6',
           title: 'Hạn đóng học phí',
-          timeOrAmount: '2.850.000 đ',
+          timeOrAmount: '3.500.000 đ',
           tag: 'Phí',
-          tagType: 'payment'
+          tagType: 'payment',
         },
-        {
-          id: '4',
-          day: 2,
-          month: 'T6',
-          title: 'Nghỉ hè bắt đầu',
-          timeOrAmount: 'Chương trình hè KinderCare',
-          tag: 'Nghỉ',
-          tagType: 'holiday'
-        }
-      ]
+      ],
     };
   }
 }
