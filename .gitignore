@@ -47,3 +47,10 @@ next-env.d.ts
 # MCP & local configs
 mcp_config.json
 fetch-swagger.js
+
+# Agent config & logs
+.agent/
+.agent
+.agents/
+.agents
+

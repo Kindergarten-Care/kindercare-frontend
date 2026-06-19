@@ -299,8 +299,8 @@ export const QRSmartHubWidget: React.FC<QRSmartHubWidgetProps> = ({
           </S.FeedHeaderRow>
 
           <S.FeedList>
-            {liveFeed.map((item) => (
-              <S.FeedItem key={item.id} $color={item.color}>
+            {liveFeed.map((item, index) => (
+              <S.FeedItem key={`${item.id}-${index}`} $color={item.color}>
                 <S.FeedAvatar $color={item.color}>{item.initial}</S.FeedAvatar>
                 <S.FeedInfo>
                   <S.FeedNameRow>

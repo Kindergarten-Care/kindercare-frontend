@@ -44,9 +44,9 @@ export const AttendanceView: React.FC = () => {
       try {
         const classes = await AttendanceService.getTeacherClasses();
         if (classes.length > 0) {
-          setClassId(classes[0].classId);
+          setClassId(String(classes[0].classId));
           setClassName(classes[0].className);
-          fetchAttendance(classes[0].classId, dateMs);
+          fetchAttendance(String(classes[0].classId), dateMs);
         }
       } catch (error) {
         console.error('Failed to get classes:', error);
@@ -112,16 +112,33 @@ export const AttendanceView: React.FC = () => {
     try {
       await AttendanceService.processLeaveRequest(requestId, status);
       
+      // Update attendance status in database to sync
+      const targetStudent = students.find(s => s.leaveRequestId === requestId);
+      if (targetStudent) {
+        const dateObj = new Date(dateMs);
+        const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        const newDomainStatus = status === 'APPROVED' ? 'PERMISSION_ABSENCE' : 'UNEXCUSED_ABSENCE';
+        
+        await AttendanceService.updateAttendance(classId, dateStr, [{
+          studentId: targetStudent.id,
+          status: newDomainStatus,
+          arrivalTime: undefined,
+          healthNote: targetStudent.healthNote || ''
+        }]);
+      }
+
       if (leaveReqDetail) {
         setLeaveReqDetail({ ...leaveReqDetail, status });
       }
 
       setStudents(prev => prev.map(s => {
         if (s.leaveRequestId === requestId) {
+          const newDomainStatus = status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'UNEXCUSED_ABSENCE' : s.attendanceStatus);
           return {
             ...s,
             leaveRequestStatus: status,
-            attendanceStatus: status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'UNEXCUSED_ABSENCE' : s.attendanceStatus)
+            attendanceStatus: newDomainStatus,
+            arrivalTime: newDomainStatus !== 'PRESENT' ? '--:--' : s.arrivalTime
           };
         }
         return s;

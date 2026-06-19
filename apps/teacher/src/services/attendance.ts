@@ -61,8 +61,6 @@ function mapApiStudentToDomain(raw: any): Student {
       domainStatus = 'PERMISSION_ABSENCE';
     } else if (leaveReqStatus === 'REJECTED') {
       domainStatus = 'UNEXCUSED_ABSENCE';
-    } else if (leaveReqStatus === 'PENDING' && domainStatus !== 'NOT_YET') {
-      domainStatus = 'PRESENT';
     }
   }
 

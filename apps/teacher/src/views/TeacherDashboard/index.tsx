@@ -62,7 +62,7 @@ export const TeacherDashboardView: React.FC = () => {
         setStudentsList(students);
 
         // Filter already checked-in students
-        const checkedIn = students.filter(s => s.arrivalTime && s.arrivalTime !== '--:--');
+        const checkedIn = students.filter(s => s.attendanceStatus === 'PRESENT');
         setPresentCount(checkedIn.length);
 
         // Map and pre-populate live check-in logs
@@ -182,6 +182,11 @@ export const TeacherDashboardView: React.FC = () => {
       return;
     }
 
+    if (targetStudent.hasActiveLeaveRequest || targetStudent.leaveRequestStatus === 'PENDING') {
+      addToast(`Không thể điểm danh bé ${targetStudent.name} qua QR vì có đơn xin nghỉ đang chờ duyệt!`);
+      return;
+    }
+
     const checkInTime = getNowTime();
 
     try {
@@ -226,7 +231,7 @@ export const TeacherDashboardView: React.FC = () => {
       addToast(`✓ Đã điểm danh thành công bé ${targetStudent.name}`);
 
       // 7. Update local students array state copy so they won't be checked-in again
-      setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime } : s));
+      setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime, attendanceStatus: 'PRESENT' } : s));
     } catch (e) {
       console.warn('Failed to commit attendance check-in to SQL Database:', e);
       addToast('Gặp lỗi khi ghi nhận điểm danh vào CSDL.');
@@ -270,7 +275,7 @@ export const TeacherDashboardView: React.FC = () => {
           <HealthAlertsWidget />
         </S.Column>
         <S.Column>
-          <LeaveApprovalWidget onAction={addToast} />
+          <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
           <QuickActionsWidget />
         </S.Column>
         <S.Column>

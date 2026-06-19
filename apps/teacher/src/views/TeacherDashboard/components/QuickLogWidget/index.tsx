@@ -74,8 +74,8 @@ export const QuickLogWidget: React.FC = () => {
       </S.SubtitleRow>
 
       <S.AvatarGrid>
-        {logs.map(g => (
-          <S.StudentButton key={g.id} onClick={() => cycleStatus(g.id)}>
+        {logs.map((g, index) => (
+          <S.StudentButton key={`${g.id}-${index}`} onClick={() => cycleStatus(g.id)}>
             <S.AvatarRing $status={g.status} $color={g.color}>
               {g.initial}
               {g.status !== 'none' && (
