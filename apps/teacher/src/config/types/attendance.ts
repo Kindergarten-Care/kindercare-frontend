@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE';
+export type AttendanceStatus = 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' | 'NOT_YET';
 
 export interface Student {
   id: string;
