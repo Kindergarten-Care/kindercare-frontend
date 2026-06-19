@@ -80,7 +80,7 @@ export const AttendanceView: React.FC = () => {
 
   const ST = {
     present:   { label: 'Có mặt',          c: '#059669', bg: '#ECFDF5', bd: '#A7F3D0', ring: '#10B981', dim: false },
-    excused:   { label: 'Vắng có phép',    c: '#4B5563', bg: '#F3F4F6', bd: '#E5E7EB', ring: '#9CA3AF', dim: true },
+    excused:   { label: 'Vắng có phép',    c: '#D97706', bg: '#FEF3C7', bd: '#FDE68A', ring: '#F59E0B', dim: false },
     unexcused: { label: 'Vắng không phép', c: '#E11D48', bg: '#FFF1F2', bd: '#FECDD3', ring: '#F43F5E', dim: true },
     absent:    { label: 'Chưa điểm danh',  c: '#6B7280', bg: '#F3F4F6', bd: '#E5E7EB', ring: '#9CA3AF', dim: true }, // Default backend state
   };
