@@ -5,10 +5,10 @@ export class StudentMapper {
     return {
       studentId: dto.studentId,
       fullName: dto.fullName,
-      dateOfBirth: BigInt(dto.dateOfBirth),
+      dateOfBirth: dto.dateOfBirth != null ? BigInt(dto.dateOfBirth) : null,
       gender: dto.gender,
       allergies: dto.allergies,
-      admissionDate: BigInt(dto.admissionDate),
+      admissionDate: dto.admissionDate != null ? BigInt(dto.admissionDate) : null,
       enrollmentStatus: dto.enrollmentStatus,
       avatarUrl: dto.avatarUrl,
       classId: dto.classId,

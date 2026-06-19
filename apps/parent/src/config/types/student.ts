@@ -9,10 +9,10 @@ export interface TeacherApiDto {
 export interface StudentApiDto {
   studentId: number;
   fullName: string;
-  dateOfBirth: number; // Unix timestamp in seconds or milliseconds
+  dateOfBirth: number | null; // Unix timestamp in seconds or milliseconds
   gender: string;
   allergies: string | null;
-  admissionDate: number; // Unix timestamp in seconds or milliseconds
+  admissionDate: number | null; // Unix timestamp in seconds or milliseconds
   enrollmentStatus: string;
   avatarUrl: string | null;
   classId: number;
@@ -40,10 +40,10 @@ export interface TeacherDomainModel {
 export interface StudentDomainModel {
   studentId: number;
   fullName: string;
-  dateOfBirth: bigint; // Epoch time as BigInt
+  dateOfBirth: bigint | null; // Epoch time as BigInt
   gender: string;
   allergies: string | null;
-  admissionDate: bigint; // Epoch time as BigInt
+  admissionDate: bigint | null; // Epoch time as BigInt
   enrollmentStatus: string;
   avatarUrl: string | null;
   classId: number;
