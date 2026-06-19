@@ -6,6 +6,7 @@ import { Student, LeaveRequest } from '../../config/types/attendance';
 export const AttendanceView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'time' | 'pending_leave'>('name');
   const [dateMs, setDateMs] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -234,13 +235,61 @@ export const AttendanceView: React.FC = () => {
     return { initial, color: palette[h % palette.length] };
   };
 
+
   const isFuture = () => {
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
     return dateMs > today.getTime();
   };
 
   const filtered = students.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+  
+  const sortedAndFiltered = (() => {
+    const copy = [...filtered];
+    
+    const getVietnameseSortKeys = (fullName: string) => {
+      const parts = fullName.trim().split(/\s+/);
+      const givenName = parts[parts.length - 1] || '';
+      const rest = parts.slice(0, -1).join(' ');
+      return { givenName, rest };
+    };
+
+    const sortByName = (a: Student, b: Student) => {
+      const aKeys = getVietnameseSortKeys(a.name);
+      const bKeys = getVietnameseSortKeys(b.name);
+      
+      const compGiven = aKeys.givenName.localeCompare(bKeys.givenName, 'vi', { sensitivity: 'base' });
+      if (compGiven !== 0) return compGiven;
+      
+      return aKeys.rest.localeCompare(bKeys.rest, 'vi', { sensitivity: 'base' });
+    };
+
+    if (sortBy === 'name') {
+      return copy.sort(sortByName);
+    } else if (sortBy === 'time') {
+      return copy.sort((a, b) => {
+        const aTime = a.arrivalTime && /^\d{2}:\d{2}$/.test(a.arrivalTime) ? a.arrivalTime : '99:99';
+        const bTime = b.arrivalTime && /^\d{2}:\d{2}$/.test(b.arrivalTime) ? b.arrivalTime : '99:99';
+        
+        if (aTime !== bTime) {
+          return aTime.localeCompare(bTime);
+        }
+        return sortByName(a, b);
+      });
+    } else if (sortBy === 'pending_leave') {
+      return copy.sort((a, b) => {
+        const aPending = a.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        const bPending = b.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        
+        if (aPending !== bPending) {
+          return bPending - aPending;
+        }
+        return sortByName(a, b);
+      });
+    }
+    
+    return copy;
+  })();
   
   let stTotal = students.length;
   let stPresent = 0;
@@ -352,30 +401,31 @@ export const AttendanceView: React.FC = () => {
           <div style={{ fontSize: '14px', color: '#6B7280', fontWeight: 600 }}>
             Hiển thị <span style={{ color: '#1F2937', fontWeight: 800 }}>{filtered.length}</span> / {stTotal} bé
           </div>
-          <S.ViewToggle>
-            <S.ToggleBtn $active={viewMode === 'list'} onClick={() => setViewMode('list')}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              Danh sách
-            </S.ToggleBtn>
-            <S.ToggleBtn $active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
-              Lưới
-            </S.ToggleBtn>
-          </S.ViewToggle>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <S.SortControl>
+              <S.SortLabel>Sắp xếp:</S.SortLabel>
+              <S.SortSelect value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'time' | 'pending_leave')}>
+                <option value="name">Tên từ A → Z</option>
+                <option value="time">Giờ điểm danh</option>
+                <option value="pending_leave">Đơn chưa duyệt</option>
+              </S.SortSelect>
+            </S.SortControl>
+
+            <S.ViewToggle>
+              <S.ToggleBtn $active={viewMode === 'list'} onClick={() => setViewMode('list')}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                Danh sách
+              </S.ToggleBtn>
+              <S.ToggleBtn $active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+                Lưới
+              </S.ToggleBtn>
+            </S.ViewToggle>
+          </div>
         </S.ToolbarRow>
 
         <S.Board>
-          {isFuture() ? (
-            <S.EmptyState>
-              <S.FloatEmoji>🗓️</S.FloatEmoji>
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: '#1F2937' }}>Chưa có dữ liệu điểm danh cho ngày này</div>
-                <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '6px', maxWidth: '380px' }}>
-                  Đây là ngày trong tương lai. Dữ liệu sẽ xuất hiện khi các bé bắt đầu điểm danh.
-                </div>
-              </div>
-            </S.EmptyState>
-          ) : filtered.length === 0 ? (
+          {filtered.length === 0 ? (
             <S.EmptyState>
               <span style={{ fontSize: '56px' }}>🔍</span>
               <div style={{ fontSize: '16px', fontWeight: 700, color: '#6B7280' }}>
@@ -394,7 +444,7 @@ export const AttendanceView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((s, index) => {
+                  {sortedAndFiltered.map((s, index) => {
                     const sk = getStatusKey(s);
                     const st = ST[sk as keyof typeof ST];
                     const a = av(s.name);
@@ -414,13 +464,13 @@ export const AttendanceView: React.FC = () => {
                             $bg={st.bg} $color={st.c} $borderColor={st.bd} $dim={st.dim}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (s.hasActiveLeaveRequest) {
-                                handleOpenLeaveRequest(s);
-                              } else {
-                                setMenuPos({ x: e.clientX, y: e.clientY });
-                                setOpenMenuId(s.id);
-                                setMenuStage('options');
+                              if (isFuture()) {
+                                addToast('Không thể điểm danh trước cho ngày tương lai!');
+                                return;
                               }
+                              setMenuPos({ x: e.clientX, y: e.clientY });
+                              setOpenMenuId(s.id);
+                              setMenuStage('options');
                             }}
                           >
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: st.ring }}></span>
@@ -447,7 +497,7 @@ export const AttendanceView: React.FC = () => {
             </S.ListContainer>
           ) : (
             <S.GridContainer>
-              {filtered.map((s, index) => {
+              {sortedAndFiltered.map((s, index) => {
                 const sk = getStatusKey(s);
                 const st = ST[sk as keyof typeof ST];
                 const a = av(s.name);
@@ -456,13 +506,13 @@ export const AttendanceView: React.FC = () => {
                 return (
                   <S.GridCard key={`${s.id}-${index}`} onClick={(e) => {
                     e.stopPropagation();
-                    if (s.hasActiveLeaveRequest) {
-                      handleOpenLeaveRequest(s);
-                    } else {
-                      setMenuPos({ x: e.clientX, y: e.clientY });
-                      setOpenMenuId(s.id);
-                      setMenuStage('options');
+                    if (isFuture()) {
+                      addToast('Không thể điểm danh trước cho ngày tương lai!');
+                      return;
                     }
+                    setMenuPos({ x: e.clientX, y: e.clientY });
+                    setOpenMenuId(s.id);
+                    setMenuStage('options');
                   }}>
                     <S.GridAvatar $color={a.color} $ring={st.ring} $dim={st.dim}>
                       {a.initial}
@@ -597,10 +647,11 @@ export const AttendanceView: React.FC = () => {
             )}
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              {(leaveReqDetail && leaveReqDetail.status === 'PENDING') ? (
+              {((leaveReqDetail && leaveReqDetail.status === 'PENDING') ||
+                 (!leaveReqDetail && selectedLeaveRequest.leaveRequestStatus === 'PENDING')) ? (
                 <>
-                  <S.ModalRejectBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail.id, 'REJECTED')}>Từ chối</S.ModalRejectBtn>
-                  <S.ModalApproveBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail.id, 'APPROVED')}>Xác nhận & Duyệt</S.ModalApproveBtn>
+                  <S.ModalRejectBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail?.id || selectedLeaveRequest.leaveRequestId!, 'REJECTED')}>Từ chối</S.ModalRejectBtn>
+                  <S.ModalApproveBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail?.id || selectedLeaveRequest.leaveRequestId!, 'APPROVED')}>Xác nhận & Duyệt</S.ModalApproveBtn>
                 </>
               ) : (
                 <button 

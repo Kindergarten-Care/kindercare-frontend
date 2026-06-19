@@ -11,32 +11,24 @@ export const toastin = keyframes`
 `;
 
 export const PageContainer = styled.div`
-  margin-left: 80px;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #F8FAF8;
   font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   color: #1F2937;
   -webkit-font-smoothing: antialiased;
+  width: 100%;
 `;
 
 export const TopBar = styled.header`
-  position: sticky;
-  top: 0;
-  z-index: 30;
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 16px 32px;
-  background: rgba(248, 250, 248, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 16px 0;
   border-bottom: 1px solid rgba(16, 24, 40, 0.04);
 `;
 
 export const ContentContainer = styled.div`
-  padding: 26px 32px 48px;
+  padding: 26px 0 48px;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -167,6 +159,41 @@ export const ViewToggle = styled.div`
   border-radius: 13px;
   padding: 4px;
   gap: 4px;
+`;
+
+export const SortControl = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #EAEFEA;
+  border-radius: 13px;
+  padding: 0 14px;
+  height: 46px;
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.03);
+`;
+
+export const SortLabel = styled.span`
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 600;
+  white-space: nowrap;
+`;
+
+export const SortSelect = styled.select`
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #1F2937;
+  cursor: pointer;
+  padding-right: 4px;
+  
+  &:focus {
+    color: #10B981;
+  }
 `;
 
 interface ToggleBtnProps {
