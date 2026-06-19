@@ -35,62 +35,6 @@ export const BrandName = styled.h1`
   margin: 0;
   letter-spacing: -0.5px;
 `;
-
-export const ClassSelectorContainer = styled.div`
-  padding: 0 16px 24px 16px;
-`;
-
-export const ClassSelector = styled.div`
-  background: rgba(223, 228, 220, 0.5);
-  border: 1px solid rgba(190, 202, 188, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
-
-  &:hover {
-    background: rgba(223, 228, 220, 0.7);
-  }
-`;
-
-export const ClassSelectorLabel = styled.span`
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  color: #3F493F;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  line-height: 16px;
-`;
-
-export const ClassSelectorTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-`;
-
-export const ClassSelectorTitle = styled.span`
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: #181D18;
-  line-height: 24px;
-`;
-
-export const ClassSelectorSub = styled.span`
-  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 400;
-  color: #6F7A6C;
-  line-height: 16.5px;
-`;
-
 export const NavLinks = styled.div`
   flex: 1;
   overflow-y: auto;

@@ -1,69 +1,79 @@
+'use client';
+
 import styled from 'styled-components';
 
-export const StripContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  
-  &::-webkit-scrollbar {
-    display: none;
+export const Bar = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+
+  @media (max-width: 580px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 380px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
-export const Pill = styled.div<{ $variant?: 'primary' | 'warn' }>`
+export const Btn = styled.button<{ $variant?: 'danger' | 'warn' | 'green' | 'default' }>`
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #dde8d9);
+  gap: 8px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #eaefea);
   border-radius: 12px;
+  padding: 8px 10px;
   cursor: pointer;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg, #181d18);
-  transition: box-shadow 0.13s, transform 0.1s, background 0.12s;
-  flex-shrink: 0;
+  box-shadow: var(--shadow);
+  position: relative;
+  transition: transform 0.14s, box-shadow 0.14s, border-color 0.14s;
+  font: inherit;
+  text-align: left;
+  min-width: 0;
 
   &:hover {
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
-    transform: translateY(-1px);
-    background: var(--accent-xlight, #f0faf3);
-    color: var(--accent, #005e2c);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: #dce7df;
   }
 
-  ${props => {
-    switch (props.$variant) {
-      case 'primary':
-        return `
-          background: #fff5f5;
-          border-color: #fca5a5;
-          color: var(--danger, #b91c1c);
-          &:hover {
-            background: var(--danger-light, #fee2e2);
-          }
-        `;
-      case 'warn':
-        return `
-          background: var(--warn-light, #fef3c7);
-          border-color: #fde68a;
-          color: var(--warn, #c77b0a);
-        `;
-    }
-  }}
+  &:active { transform: translateY(0); }
 `;
 
-export const PillIco = styled.span`
+export const BtnIco = styled.div<{ $bg: string; $color: string }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: ${p => p.$bg};
+  color: ${p => p.$color};
+  display: grid;
+  place-items: center;
   font-size: 16px;
+  flex-shrink: 0;
 `;
 
-export const PillBadge = styled.span`
-  font-size: 9px;
-  font-weight: 700;
-  color: #fff;
-  background: var(--accent, #005e2c);
-  padding: 1px 5px;
-  border-radius: 8px;
+export const BtnLabel = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg, #1f2937);
+  line-height: 1.2;
 `;
+
+export const BtnBadge = styled.span`
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--canvas);
+`;
+

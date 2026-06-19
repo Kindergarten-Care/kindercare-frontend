@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { token, user } = res.data;
       setToken(token, options?.rememberMe);
-      setStoredUser(user);
+      setStoredUser(user, options?.rememberMe);
       dispatch({ type: 'AUTHENTICATED', user });
     },
     [],

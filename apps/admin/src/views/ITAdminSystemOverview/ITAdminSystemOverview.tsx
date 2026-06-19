@@ -46,7 +46,7 @@ import {
   XAxisLabels,
   XAxisLabel,
 } from './styles';
-import { Sidebar, AccountIcon, OnlineIcon, WarningIcon, ArrowUpIcon, MoreDotsIcon } from '@kindercare/ui';
+import { AccountIcon, OnlineIcon, WarningIcon, ArrowUpIcon, MoreDotsIcon } from '@kindercare/ui';
 import ITAdminTopAppBar from '@/layout/ITAdminTopAppBar';
 
 /* ─── Role Colors Mapping ─── */
