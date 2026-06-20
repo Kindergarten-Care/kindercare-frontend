@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { Button, Input, Checkbox } from '@kindercare/ui';
+import { getSession } from '@kindercare/core';
 import { useLoginState, UserRole } from './hooks';
 import * as S from './styles';
 
@@ -14,28 +15,21 @@ interface RoleContent {
 }
 
 const ROLE_CONTENT: Record<UserRole, RoleContent> = {
-  admin: {
-    title: 'Đăng nhập quyền IT Admin',
-    subtitle: 'Vui lòng nhập thông tin xác thực hệ thống.',
-    inputLabel: 'Tên đăng nhập / Mã nhân viên',
-    inputPlaceholder: 'Nhập mã nhân viên...',
-  },
   principal: {
     title: 'Đăng nhập quyền Hiệu Trưởng',
     subtitle: 'Vui lòng nhập thông tin tài khoản Hiệu trưởng nhà trường.',
-    inputLabel: 'Email công tác',
-    inputPlaceholder: 'Nhập email của bạn...',
+    inputLabel: 'Email / Số điện thoại',
+    inputPlaceholder: 'Nhập email hoặc số điện thoại...',
   },
   teacher: {
     title: 'Đăng nhập quyền Giáo Viên',
     subtitle: 'Vui lòng nhập thông tin tài khoản Giáo viên.',
-    inputLabel: 'Tên tài khoản / Email',
-    inputPlaceholder: 'Nhập tên tài khoản...',
+    inputLabel: 'Email / Số điện thoại',
+    inputPlaceholder: 'Nhập email hoặc số điện thoại...',
   },
 };
 
 const ROLE_TABS: { key: UserRole; label: string }[] = [
-  { key: 'admin', label: 'IT Admin' },
   { key: 'principal', label: 'Hiệu Trưởng' },
   { key: 'teacher', label: 'Giáo Viên' },
 ];
@@ -73,7 +67,18 @@ export const LoginView: React.FC = () => {
     handleSubmit,
   } = useLoginState();
 
+  useEffect(() => {
+    const session = getSession();
+    if (session) {
+      const nextUrl = session.role === 'teacher'
+        ? (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher'
+        : (process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL || 'http://localhost:3002') + '/principal';
+      window.location.href = nextUrl;
+    }
+  }, []);
+
   const content = ROLE_CONTENT[role];
+
 
   return (
     <S.Container>
