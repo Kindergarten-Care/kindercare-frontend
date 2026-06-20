@@ -14,7 +14,7 @@ import {
   IconHome, IconDiary, IconChat, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard, IconReceipt,
   IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
-  IconChevronDown,
+  IconChevronDown, IconRequest,
 } from '@/assets/icons/dashboard';
 
 interface ParentSidebarProps {
@@ -146,6 +146,10 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.NavItem href="#" $collapsed={collapsed}>
         <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
+      </S.NavItem>
+      <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={collapsed}>
+        <S.NavIcon><IconRequest size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Yêu cầu phụ huynh</S.NavSpan>
       </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>

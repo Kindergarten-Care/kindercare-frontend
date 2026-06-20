@@ -354,3 +354,117 @@ export const SubmitBtn = styled.button`
     transform: scale(0.98);
   }
 `;
+
+/* Mini Calendar inside Form */
+export const MiniCalWrapper = styled.div`
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const MiniCalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+`;
+
+export const MiniCalTitle = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+`;
+
+export const MiniCalNavs = styled.div`
+  display: flex;
+  gap: 4px;
+`;
+
+export const MiniCalNavBtn = styled.button`
+  border: none;
+  background: #ffffff;
+  color: #64748b;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+  }
+`;
+
+export const MiniCalGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+`;
+
+export const MiniCalWeekday = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  padding: 4px 0;
+`;
+
+export const MiniCalDay = styled.button<{
+  $selected?: boolean;
+  $inRange?: boolean;
+  $today?: boolean;
+  $empty?: boolean;
+}>`
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: ${p => p.$empty ? 'default' : 'pointer'};
+  background: ${p => {
+    if (p.$selected) return 'var(--brand)';
+    if (p.$inRange) return 'var(--brand-tint)';
+    return '#ffffff';
+  }};
+  color: ${p => {
+    if (p.$selected) return '#ffffff';
+    if (p.$inRange) return 'var(--brand)';
+    if (p.$today) return 'var(--brand)';
+    return '#475569';
+  }};
+  border: ${p => {
+    if (p.$selected) return '1px solid var(--brand)';
+    if (p.$today) return '1px solid var(--brand)';
+    return '1px solid #e2e8f0';
+  }};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: ${p => p.$empty ? 'none' : 'auto'};
+  transition: all 0.1s ease;
+
+  &:hover {
+    background: ${p => p.$selected ? 'var(--brand)' : '#f1f5f9'};
+    border-color: ${p => p.$selected ? 'var(--brand)' : '#cbd5e1'};
+  }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #cbd5e1;
+    border: 1px solid #f1f5f9;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+`;
+

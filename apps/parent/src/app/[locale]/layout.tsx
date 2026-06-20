@@ -16,6 +16,9 @@ import { AuthProvider } from '@kindercare/core';
 import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
+import { ToastContainer } from '@kindercare/ui';
+import GlobalChatFab from '@/components/GlobalChatFab';
+import NextTopLoader from 'nextjs-toploader';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -66,6 +69,17 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
+        <NextTopLoader
+          color="#10b981"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #10b981, 0 0 5px #10b981"
+        />
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <AuthProvider>
@@ -75,6 +89,8 @@ export default async function RootLayout({
                     <ClientAppWrapper>
                       {children}
                     </ClientAppWrapper>
+                    <ToastContainer />
+                    <GlobalChatFab />
                   </SocketProvider>
                 </StudentProvider>
               </ParentProvider>

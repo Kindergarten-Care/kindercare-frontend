@@ -8,12 +8,12 @@ import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
 import LiveScheduleWidget from './components/LiveScheduleWidget';
+import DevelopmentalDomainsWidget from './components/DevelopmentalDomainsWidget';
 import CameraWidget from './components/CameraWidget';
 import DailyLessonWidget from './components/DailyLessonWidget';
 import FeeAlertWidget from './components/FeeAlertWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
 import GrowthWidget from './components/GrowthWidget';
-import ChatFab from './components/ChatFab';
 import LeaveRequestPopup from './components/LeaveRequestPopup';
 import MedicationRequestPopup from './components/MedicationRequestPopup';
 import AttendanceQrPopup from './components/AttendanceQrPopup';
@@ -77,16 +77,22 @@ export function ParentDashboard(): React.ReactElement {
                 onPickup={() => alert('Đăng ký người đón hộ')}
               />
 
-              {/* Today's album — moved here side-by-side with Camera */}
-              <AlbumStripWidget photos={data.albumPhotos} />
+              {/* 5 developmental domains metrics */}
+              <DevelopmentalDomainsWidget />
             </S.ColumnStack>
 
             {/* Growth metrics */}
             <GrowthWidget />
           </S.LeftTopGrid>
 
-          {/* Live schedule — realtime current activity */}
-          <LiveScheduleWidget schedule={data.schedule} />
+          {/* Collapsed schedule and today's album side-by-side */}
+          <S.BottomGrid>
+            <LiveScheduleWidget schedule={data.schedule} />
+            <S.ColumnStack>
+              <AlbumStripWidget photos={data.albumPhotos} />
+              <DailyLessonWidget lessons={data.dailyLessons} />
+            </S.ColumnStack>
+          </S.BottomGrid>
         </S.LeftColumn>
 
         <S.RightColumn>
@@ -98,19 +104,9 @@ export function ParentDashboard(): React.ReactElement {
 
           {/* Attendance calendar */}
           <MiniCalendarWidget days={data.calendarDays} stats={data.attendanceStats} />
-
-          {/* Daily lesson */}
-          <DailyLessonWidget lessons={data.dailyLessons} />
         </S.RightColumn>
       </S.MainGrid>
 
-      {/* Floating chat FAB */}
-      <ChatFab
-        teacherName={leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Giáo viên'}
-        initialMessages={data.messages}
-        unreadCount={data.messages.filter(m => m.unread && !m.isMe).length}
-        classroom={activeStudent.className}
-      />
 
       <LeaveRequestPopup
         isOpen={isLeavePopupOpen}
