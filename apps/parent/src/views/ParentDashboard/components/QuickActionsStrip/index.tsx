@@ -2,7 +2,7 @@
 
 import React from 'react';
 import * as S from './styles';
-import { IconAbsence, IconMedicine, IconCreditCard, IconDiary, IconProfile } from '@/assets/icons/dashboard';
+import { IconMedicine, IconCreditCard, IconDiary, IconProfile } from '@/assets/icons/dashboard';
 
 interface QuickActionsStripProps {
   onAbsence?: () => void;
@@ -13,7 +13,6 @@ interface QuickActionsStripProps {
 }
 
 const ACTIONS = [
-  { id: 'absence',    label: 'Báo nghỉ',      Icon: IconAbsence,     bg: '#fee2e2', color: '#dc2626' },
   { id: 'medication', label: 'Dặn dò thuốc',  Icon: IconMedicine,    bg: '#fef3c7', color: '#d97706' },
   { id: 'fee',        label: 'Học phí',       Icon: IconCreditCard,  bg: '#dbeafe', color: '#2563eb', badge: '!' },
   { id: 'diary',      label: 'Nhật ký',       Icon: IconDiary,       bg: '#f3e8ff', color: '#7c3aed' },

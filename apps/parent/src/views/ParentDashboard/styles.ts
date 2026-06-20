@@ -53,11 +53,9 @@ export const LeftTopGrid = styled.div`
   gap: 32px;
   align-items: stretch;
   width: 100%;
-  height: 276px;
 
   @media (max-width: 960px) {
     grid-template-columns: minmax(0, 1fr);
-    height: auto;
   }
 `;
 
@@ -65,5 +63,16 @@ export const ColumnStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 32px;
+`;
+
+export const BottomGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 

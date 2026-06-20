@@ -169,10 +169,10 @@ export const BtnAbsence = styled.button`
   &:hover { background: var(--brand-hover); transform: scale(1.02); }
 `;
 
-export const BtnMsg = styled.button`
-  background: #F4F8F5;
-  color: var(--fg);
-  border: 1px solid var(--border);
+export const BtnQrCode = styled.button`
+  background: #ffffff;
+  color: var(--brand);
+  border: 1.5px solid var(--brand);
   padding: 11px 16px;
   border-radius: 12px;
   font: inherit;
@@ -184,7 +184,11 @@ export const BtnMsg = styled.button`
   justify-content: center;
   gap: 7px;
   white-space: nowrap;
-  transition: transform 0.12s, background 0.15s, border-color 0.15s;
+  box-shadow: 0 6px 14px -6px rgba(0, 90, 54, 0.15);
+  transition: transform 0.12s, background 0.15s;
 
-  &:hover { background: #fff; border-color: #CFE0D5; transform: scale(1.02); }
+  &:hover {
+    background: var(--brand-tint);
+    transform: scale(1.02);
+  }
 `;

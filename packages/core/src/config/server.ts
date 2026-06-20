@@ -18,5 +18,10 @@ export const SERVER = {
   },
   parent: {
     getChildren: '/parent/children',
+    getProfile:  '/parent/profile',
+    getHealthRecords: '/parent/children/:studentId/health-records',
+    createLeaveRequest: '/parent/leave-requests',
+    createMedicationRequest: '/parent/medication-requests',
+    getAttendance: '/parent/children/:studentId/attendance',
   },
 } as const;

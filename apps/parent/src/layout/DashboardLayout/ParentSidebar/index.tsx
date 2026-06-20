@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@kindercare/core';
 import { useStudent } from '@/contexts/StudentContext';
+import { useParent } from '@/contexts/ParentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import * as S from './styles';
 import ChildSelectorModal from './ChildSelectorModal';
@@ -13,7 +14,7 @@ import {
   IconHome, IconDiary, IconChat, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard, IconReceipt,
   IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
-  IconChevronDown,
+  IconChevronDown, IconRequest,
 } from '@/assets/icons/dashboard';
 
 interface ParentSidebarProps {
@@ -26,6 +27,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
   const locale = useLocale();
   const { user, logout } = useAuth();
   const { children: kids, activeStudent, setActiveStudent } = useStudent();
+  const { parentProfile } = useParent();
 
   const [csOpen, setCsOpen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -145,6 +147,10 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
       </S.NavItem>
+      <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={collapsed}>
+        <S.NavIcon><IconRequest size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Yêu cầu phụ huynh</S.NavSpan>
+      </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
       <S.NavItem href="#" $collapsed={collapsed}>
@@ -159,9 +165,19 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
 
       {/* Footer */}
       <S.SideProfile $collapsed={collapsed}>
-        <S.ParentAv>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.ParentAv>
+        <S.ParentAv>
+          {parentProfile?.avatarUrl ? (
+            <img 
+              src={parentProfile.avatarUrl} 
+              alt={parentProfile.fullName} 
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+            />
+          ) : (
+            user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'
+          )}
+        </S.ParentAv>
         <S.ParentInfo $hidden={collapsed}>
-          <strong>{user?.fullName || user?.username || 'Phụ huynh'}</strong>
+          <strong>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</strong>
           <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
         </S.ParentInfo>
 

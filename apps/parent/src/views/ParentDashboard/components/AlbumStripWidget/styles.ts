@@ -15,8 +15,6 @@ export const Card = styled.div`
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  flex: 1;
-  height: 100%;
 `;
 
 export const Head = styled.div`

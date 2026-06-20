@@ -6,7 +6,8 @@
   "types": "./index.ts",
   "dependencies": {
     "@kindercare/public": "*",
-    "@kindercare/resource": "*"
+    "@kindercare/resource": "*",
+    "react-toastify": "^11.1.0"
   },
   "peerDependencies": {
     "react": "^19",

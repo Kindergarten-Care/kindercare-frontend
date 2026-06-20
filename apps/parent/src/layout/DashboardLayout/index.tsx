@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
 import { useAuth } from '@kindercare/core';
+import { useParent } from '@/contexts/ParentContext';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
@@ -43,6 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
+  const { parentProfile } = useParent();
 
   const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
     if (nextLocale === locale) return;
@@ -53,7 +55,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const greeting = getGreeting(locale);
     if (!user) return `${greeting} 👋`;
 
-    const fullName = user.fullName || user.username || '';
+    const fullName = parentProfile?.fullName || user.fullName || user.username || '';
     const nameParts = fullName.trim().split(/\s+/);
     const displayNameParts = nameParts.slice(-2);
     const shortName = displayNameParts.join(' ');
@@ -104,7 +106,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
 
               <S.AvatarWrap>
-                <S.Avatar>{user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'}</S.Avatar>
+                <S.Avatar>
+                  {parentProfile?.avatarUrl ? (
+                    <img 
+                      src={parentProfile.avatarUrl} 
+                      alt={parentProfile.fullName} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+                    />
+                  ) : (
+                    user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'
+                  )}
+                </S.Avatar>
                 <S.AvatarOnline />
               </S.AvatarWrap>
             </S.Actions>
