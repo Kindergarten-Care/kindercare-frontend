@@ -13,6 +13,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@kindercare/core';
+import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
 import type { Metadata } from 'next';
@@ -68,13 +69,15 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
             <AuthProvider>
-              <StudentProvider>
-                <SocketProvider>
-                  <ClientAppWrapper>
-                    {children}
-                  </ClientAppWrapper>
-                </SocketProvider>
-              </StudentProvider>
+              <ParentProvider>
+                <StudentProvider>
+                  <SocketProvider>
+                    <ClientAppWrapper>
+                      {children}
+                    </ClientAppWrapper>
+                  </SocketProvider>
+                </StudentProvider>
+              </ParentProvider>
             </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>

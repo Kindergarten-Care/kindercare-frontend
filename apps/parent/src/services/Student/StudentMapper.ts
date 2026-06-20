@@ -28,6 +28,7 @@ export class StudentMapper {
         phoneNumber: t.phoneNumber,
         email: t.email,
         roleInClass: t.roleInClass,
+        gender: t.gender,
       })) : [],
     };
   }

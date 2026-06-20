@@ -1,11 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { parentDashboardService } from '@/services/ParentDashboardService';
-import { ParentDashboardModel } from '@/config/types/dashboard';
-import { useStudent } from '@/contexts/StudentContext';
-import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
-import { formatDateFromBigInt } from '@/utils/Student/Date';
+import React from 'react';
 import * as S from './styles';
 
 import UrgentNoticeBanner from './components/UrgentNoticeBanner';
@@ -21,60 +16,33 @@ import GrowthWidget from './components/GrowthWidget';
 import ChatFab from './components/ChatFab';
 import LeaveRequestPopup from './components/LeaveRequestPopup';
 import MedicationRequestPopup from './components/MedicationRequestPopup';
-
-const getTeacherDisplayName = (teacher: { fullName: string }) => {
-  if (!teacher) return '';
-  const fullName = teacher.fullName || '';
-  if (/^(cô|thầy)\b/i.test(fullName)) {
-    return fullName;
-  }
-  const isMale = /\b(Văn|Huy|Hùng|Tuấn|Dũng|Hoàng|Minh|Hải|Phong|Đạt|Thành|Nam|Quốc|Sơn|Trung|Đức|Khang|Bách)\b/i.test(fullName);
-  const prefix = isMale ? 'Thầy' : 'Cô';
-  return `${prefix} ${fullName}`;
-};
+import AttendanceQrPopup from './components/AttendanceQrPopup';
+import { useParentDashboard, getTeacherDisplayName } from './hooks/useParentDashboard';
 
 export function ParentDashboard(): React.ReactElement {
-  const [data, setData] = useState<ParentDashboardModel | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
-  const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
-  const { activeStudent } = useStudent();
+  const {
+    data,
+    loading,
+    activeStudent,
+    isLeavePopupOpen,
+    setIsLeavePopupOpen,
+    isMedicationPopupOpen,
+    setIsMedicationPopupOpen,
+    isQrPopupOpen,
+    setIsQrPopupOpen,
+    childHero,
+    avatarGradient,
+    avatarInitial,
+    leadTeacher,
+  } = useParentDashboard();
 
-  useEffect(() => {
-    parentDashboardService
-      .getDashboardData()
-      .then(setData)
-      .catch(err => console.error('Dashboard fetch failed:', err))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading || !data || !activeStudent) {
+  if (loading || !data || !activeStudent || !childHero) {
     return (
       <S.DashboardContainer>
         <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
       </S.DashboardContainer>
     );
   }
-
-  const avatarGradient = getAvatarGradient(activeStudent.studentId);
-  const avatarInitial = getInitials(activeStudent.fullName);
-
-  const leadTeacher = activeStudent.teachers && activeStudent.teachers.length > 0 ? activeStudent.teachers[0] : null;
-
-  const childHero = {
-    name: activeStudent.fullName,
-    className: activeStudent.className,
-    teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Chưa phân công',
-    academicYear: activeStudent.academicYearName,
-    branch: activeStudent.campusName,
-    statusTags: [
-      { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
-      { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
-      { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
-    ],
-    checkinTime: 'Đang học',
-    checkinSub: 'Đúng giờ · Cổng A',
-  };
 
   return (
     <S.DashboardContainer>
@@ -89,6 +57,7 @@ export function ParentDashboard(): React.ReactElement {
         avatarUrl={activeStudent.avatarUrl}
         onAbsence={() => setIsLeavePopupOpen(true)}
         onMessage={() => alert('Nhắn tin với giáo viên')}
+        onCheckinQr={() => setIsQrPopupOpen(true)}
       />
 
       {/* Fee alert banner */}
@@ -155,6 +124,18 @@ export function ParentDashboard(): React.ReactElement {
         onClose={() => setIsMedicationPopupOpen(false)}
         studentName={activeStudent.fullName}
         className={activeStudent.className}
+      />
+
+      <AttendanceQrPopup
+        isOpen={isQrPopupOpen}
+        onClose={() => setIsQrPopupOpen(false)}
+        student={{
+          studentId: activeStudent.studentId,
+          fullName: activeStudent.fullName,
+          className: activeStudent.className,
+          academicYearName: activeStudent.academicYearName,
+          campusName: activeStudent.campusName,
+        }}
       />
     </S.DashboardContainer>
   );

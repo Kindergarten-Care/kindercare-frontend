@@ -5,6 +5,16 @@ import * as S from './styles';
 import { ChildHeroInfo } from '@/config/types/dashboard';
 import { IconSchool, IconTeacher, IconPin, IconAbsence, IconChat, IconCalendar } from '@/assets/icons/dashboard';
 
+const IconQrCode: React.FC<{ size?: number; color?: string }> = ({ size = 15, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+    <path d="M7 17h.01M17 17h.01M17 7h.01M7 7h.01" />
+  </svg>
+);
+
 interface ChildHeroWidgetProps {
   data: ChildHeroInfo;
   avatarGradient?: string;
@@ -12,6 +22,7 @@ interface ChildHeroWidgetProps {
   avatarUrl?: string | null;
   onAbsence?: () => void;
   onMessage?: () => void;
+  onCheckinQr?: () => void;
 }
 
 const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
@@ -21,6 +32,7 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
   avatarUrl,
   onAbsence,
   onMessage,
+  onCheckinQr,
 }) => {
   return (
     <S.HeroContainer>
@@ -55,9 +67,9 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
         <S.BtnAbsence onClick={onAbsence}>
           <IconAbsence size={15} color="#fff" /> Báo nghỉ học
         </S.BtnAbsence>
-        <S.BtnMsg onClick={onMessage}>
-          <IconChat size={15} /> Nhắn giáo viên
-        </S.BtnMsg>
+        <S.BtnQrCode onClick={onCheckinQr}>
+          <IconQrCode size={15} /> Điểm danh QR
+        </S.BtnQrCode>
       </S.Right>
     </S.HeroContainer>
   );
