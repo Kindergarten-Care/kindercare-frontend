@@ -1,86 +1,126 @@
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
+
+export const fadeOut = keyframes`
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateX(16px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+`;
 
 export const WidgetContainer = styled.section`
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.04);
-  border-top: 4px solid #F59E0B;
-  padding: 22px;
+  background: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.lg};
+  box-shadow: ${props => props.theme.shadows.soft};
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: 100%;
-  box-sizing: border-box;
-  border-left: 1px solid rgba(16, 24, 40, 0.03);
-  border-right: 1px solid rgba(16, 24, 40, 0.03);
-  border-bottom: 1px solid rgba(16, 24, 40, 0.03);
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
+  }
 `;
 
 export const HeaderRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 9px;
+  margin-bottom: 14px;
 `;
 
-export const Title = styled.h3`
-  font-size: 16px;
-  font-weight: 800;
-  color: #1F2937;
-  margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+export const HeaderIconWrapper = styled.span`
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: ${props => props.theme.radius.md};
+  background: ${props => props.theme.colors.amberLight};
+  color: ${props => props.theme.colors.amberMid};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const WidgetTitle = styled.span`
+  font-family: ${props => props.theme.fonts.display};
+  font-weight: 700;
+  font-size: 15px;
+  color: ${props => props.theme.colors.fg};
+  flex: 1;
 `;
 
 export const CounterBadge = styled.span`
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: ${props => props.theme.radius.pill};
+  background: ${props => props.theme.colors.amberMid};
+  color: ${props => props.theme.colors.white};
   font-size: 11px;
-  font-weight: 800;
-  color: #B45309;
-  background: #FFFBEB;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const RequestList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  overflow: auto;
+  max-height: 430px;
+  padding-right: 2px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cfe0d6;
+    border-radius: 4px;
+  }
 `;
 
 export const RequestRow = styled.div<{ $removing?: boolean }>`
+  padding: 13px;
+  border-radius: 14px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  transition: all 0.3s;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: #FDFDFD;
-  border: 1px solid rgba(16, 24, 40, 0.03);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-direction: column;
+  gap: 10px;
 
   ${props => props.$removing && css`
-    opacity: 0;
-    transform: scale(0.9) translateX(20px);
+    animation: ${fadeOut} 0.3s forwards;
     pointer-events: none;
-    height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-top: -12px;
-    overflow: hidden;
   `}
 `;
 
-export const AvatarCircle = styled.span<{ $color: string }>`
+export const StudentRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const AvatarCircle = styled.span<{ $background: string }>`
   flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: ${props => props.theme.radius.pill};
+  background: ${props => props.$background};
+  color: ${props => props.theme.colors.white};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 15px;
-  color: #374151;
-  background: ${props => props.$color};
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: ${props => props.theme.fonts.display};
 `;
 
 export const InfoCol = styled.div`
@@ -89,53 +129,54 @@ export const InfoCol = styled.div`
 `;
 
 export const ChildName = styled.div`
-  font-weight: 700;
   font-size: 13.5px;
-  color: #1F2937;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-weight: 700;
+  color: ${props => props.theme.colors.fg};
 `;
 
 export const RequestDetails = styled.div`
   font-size: 11.5px;
   color: #92400E;
+  margin-top: 1px;
   font-weight: 500;
-  margin-top: 2px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActionButtons = styled.div`
   display: flex;
-  gap: 7px;
-  flex-shrink: 0;
+  gap: 8px;
 `;
 
 export const ApproveButton = styled.button`
-  width: 36px;
+  flex: 1;
   height: 36px;
-  border-radius: 11px;
+  border-radius: 10px;
   border: none;
-  background: #10B981;
-  color: #fff;
-  font-size: 16px;
+  background: ${props => props.theme.colors.green};
+  color: ${props => props.theme.colors.white};
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s;
+  gap: 6px;
+  transition: transform 0.15s, background 0.15s;
 
   &:hover {
-    transform: scale(1.08);
+    transform: scale(1.03);
+    background: ${props => props.theme.colors.greenDark};
   }
 `;
 
 export const RejectButton = styled.button`
-  width: 36px;
+  flex: none;
+  width: 42px;
   height: 36px;
-  border-radius: 11px;
-  border: 1px solid #FECDD3;
-  background: #fff;
-  color: #F43F5E;
-  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #FCA5A5;
+  background: ${props => props.theme.colors.white};
+  color: #DC2626;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -143,7 +184,7 @@ export const RejectButton = styled.button`
   transition: transform 0.15s, background 0.15s;
 
   &:hover {
-    transform: scale(1.08);
-    background: #FFF1F2;
+    transform: scale(1.03);
+    background: #FEE2E2;
   }
 `;

@@ -1,5 +1,21 @@
 import styled, { css, keyframes } from 'styled-components';
-import { kcLaser, kcCorner, kcRipple } from '../../styles';
+
+export const kcCorner = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+`;
+
+export const kcRipple = keyframes`
+  0% { transform: scale(0.6); opacity: 0.55; }
+  100% { transform: scale(2.4); opacity: 0; }
+`;
+
+export const kcLaser = keyframes`
+  0% { top: 8%; opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { top: 88%; opacity: 0; }
+`;
 
 export const WidgetContainer = styled.section`
   background: #ffffff;

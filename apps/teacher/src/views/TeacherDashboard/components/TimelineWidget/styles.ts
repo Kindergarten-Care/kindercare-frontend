@@ -1,181 +1,171 @@
 import styled, { css } from 'styled-components';
 
-export const WidgetContainer = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0px 4px 10px rgba(14, 121, 60, 0.05);
+export const WidgetContainer = styled.section`
+  background: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.lg};
+  box-shadow: ${props => props.theme.shadows.soft};
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
+  }
 `;
 
-export const WidgetTitle = styled.h3`
-  font-size: 18px;
-  font-weight: bold;
-  color: #181d18;
-  margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+export const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+`;
+
+export const WidgetTitle = styled.span`
+  font-family: ${props => props.theme.fonts.display};
+  font-weight: 700;
+  font-size: 16px;
+  color: ${props => props.theme.colors.fg};
+  letter-spacing: -0.01em;
+`;
+
+export const StatusPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${props => props.theme.colors.green};
+  background: ${props => props.theme.colors.greenLight};
+  padding: 5px 12px;
+  border-radius: 8px;
+`;
+
+export const StatusDot = styled.span`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: ${props => props.theme.colors.green};
 `;
 
 export const TimelineList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  padding-left: 32px;
   position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 11px;
-    width: 2px;
-    background-color: rgba(190, 202, 188, 0.3);
-  }
+  flex: 1;
 `;
 
 export const TimelineItem = styled.div`
-  display: flex;
-  flex-direction: column;
   position: relative;
+  display: flex;
+  gap: 16px;
+  padding-bottom: 18px;
 `;
 
-export const TimeLabel = styled.div`
-  font-size: 12px;
-  font-weight: bold;
-  color: #6f7a6e;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+export const TimeLabel = styled.div<{ $isNext?: boolean }>`
+  flex: none;
+  width: 56px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: ${props => props.$isNext ? props.theme.colors.muted : props.theme.colors.green};
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+  font-family: ${props => props.theme.fonts.display};
 `;
 
-export const ActivityText = styled.div<{ $completed?: boolean }>`
-  font-size: 16px;
-  color: #3f493f;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-  ${props => props.$completed && css`
-    text-decoration: line-through;
-    opacity: 0.6;
-  `}
-`;
-
-export const CircleIcon = styled.div<{ variant: 'completed' | 'active' | 'upcoming' }>`
-  position: absolute;
-  left: -28px;
-  top: 4px;
-  border-radius: 50%;
-  
-  ${props => props.variant === 'completed' && css`
-    width: 20px;
-    height: 20px;
-    background-color: #becabc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0px 0px 0px 4px white;
-  `}
-
-  ${props => props.variant === 'active' && css`
-    width: 20px;
-    height: 20px;
-    background-color: #005e2c;
-    box-shadow: 0px 0px 0px 4px #0e793c;
-  `}
-
-  ${props => props.variant === 'upcoming' && css`
-    width: 24px;
-    height: 24px;
-    background-color: white;
-    border: 2px solid #becabc;
-    left: -30px;
-    top: 2px;
-    box-shadow: 0px 0px 0px 4px white;
-  `}
-`;
-
-export const CheckIcon = styled.div`
-  width: 10px;
-  height: 7px;
-  border-left: 2px solid white;
-  border-bottom: 2px solid white;
-  transform: rotate(-45deg);
-  margin-top: -2px;
-`;
-
-export const ActiveActivityCard = styled.div`
-  background-color: #dcfce7;
-  border: 1px solid #0e793c;
-  border-radius: 12px;
-  padding: 21px;
+export const DotCol = styled.div`
+  flex: none;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  box-shadow: 0px 1px 1px rgba(0,0,0,0.05);
+  align-items: center;
 `;
 
-export const ActiveHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
-
-export const ActiveStatus = styled.div`
-  font-size: 12px;
-  font-weight: bold;
-  color: #0e793c;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-`;
-
-export const ActiveBadge = styled.div`
-  background-color: #0e793c;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-`;
-
-export const ActiveTitle = styled.h4`
-  font-size: 18px;
-  font-weight: bold;
-  color: #005e2c;
-  margin: 4px 0 0 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-`;
-
-export const ActiveDesc = styled.p`
-  font-size: 14px;
-  color: #3f493f;
-  margin: 0 0 12px 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-`;
-
-export const UpdateButton = styled.button`
-  background: white;
-  border: 1px solid #0e793c;
-  border-radius: 8px;
-  padding: 9px;
+export const CircleDot = styled.span<{ $dotColor: string }>`
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: ${props => props.$dotColor};
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #0e793c;
-  font-size: 14px;
-  font-weight: bold;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-  cursor: pointer;
+  z-index: 1;
+`;
 
-  &:hover {
-    background: #f6fbf2;
+export const PulseCircle = styled.span`
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: ${props => props.theme.colors.green};
+  animation: pulseRing 1.8s ease-out infinite;
+
+  @keyframes pulseRing {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
   }
 `;
 
-export const UpdateIcon = styled.span`
-  font-size: 16px;
+export const VerticalLine = styled.span`
+  position: absolute;
+  top: 16px;
+  bottom: -18px;
+  width: 2px;
+  background: #E6EEE9;
+`;
+
+export const ActivityContent = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 2px;
+`;
+
+export const InfoBlock = styled.div``;
+
+export const ActivityTitle = styled.div<{ $isNext?: boolean }>`
+  font-size: 14.5px;
+  font-weight: 700;
+  color: ${props => props.$isNext ? props.theme.colors.muted : props.theme.colors.fg};
+`;
+
+export const ActivitySub = styled.div`
+  font-size: 12.5px;
+  color: ${props => props.theme.colors.muted};
+  margin-top: 1px;
+`;
+
+export const PillBadge = styled.span<{ $pillStyle: 'done' | 'current' | 'next' }>`
+  flex: none;
+  font-size: 11px;
+  padding: 4px 11px;
+  border-radius: 8px;
+
+  ${props => props.$pillStyle === 'done' && css`
+    font-weight: 600;
+    color: ${props => props.theme.colors.muted};
+    background: #F1F4F1;
+  `}
+
+  ${props => props.$pillStyle === 'current' && css`
+    font-weight: 700;
+    color: ${props => props.theme.colors.white};
+    background: ${props => props.theme.colors.green};
+  `}
+
+  ${props => props.$pillStyle === 'next' && css`
+    font-weight: 600;
+    color: #92400E;
+    background: #FEF3C7;
+  `}
 `;

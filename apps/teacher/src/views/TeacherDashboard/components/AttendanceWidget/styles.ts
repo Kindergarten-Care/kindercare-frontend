@@ -1,138 +1,157 @@
 import styled from 'styled-components';
 
-export const WidgetContainer = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0px 4px 10px rgba(14, 121, 60, 0.05);
+export const WidgetContainer = styled.section`
+  background: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.lg};
+  box-shadow: ${props => props.theme.shadows.soft};
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
+  }
 `;
 
-export const WidgetHeader = styled.div`
+export const HeaderRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 `;
 
-export const WidgetTitle = styled.h3`
-  font-size: 18px;
-  font-weight: bold;
-  color: #181d18;
-  margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+export const WidgetTitle = styled.span`
+  font-family: ${props => props.theme.fonts.display};
+  font-weight: 700;
+  font-size: 16px;
+  color: ${props => props.theme.colors.fg};
+  letter-spacing: -0.01em;
 `;
 
-export const MoreIcon = styled.div`
-  color: #6f7a6e;
+export const DetailLink = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${props => props.theme.colors.green};
   cursor: pointer;
-  font-weight: bold;
+  transition: color 0.15s;
+
+  &:hover {
+    color: ${props => props.theme.colors.greenDark};
+  }
 `;
 
-export const ChartContainer = styled.div`
+export const LayoutGrid = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 16px 0;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 `;
 
-export const ChartCircle = styled.div`
-  width: 160px;
-  height: 160px;
+export const DonutOuter = styled.div<{ $donutGradient: string }>`
+  position: relative;
+  flex: none;
+  width: 158px;
+  height: 158px;
   border-radius: 50%;
-  border: 12px solid #0e793c;
+  background: ${props => props.$donutGradient};
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 `;
 
-export const ChartNumber = styled.span`
-  font-size: 30px;
-  font-weight: bold;
-  color: #005e2c;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-`;
-
-export const ChartLabel = styled.span`
-  font-size: 10px;
-  font-weight: bold;
-  color: #6f7a6e;
-  letter-spacing: 1px;
-`;
-
-export const StatsList = styled.div`
+export const DonutInner = styled.div`
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: ${props => props.theme.colors.white};
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 6px rgba(0, 90, 54, 0.05);
 `;
 
-export const StatItem = styled.div<{ variant: string }>`
-  background-color: #f0f5ec;
-  border: 1px solid rgba(190, 202, 188, 0.1);
-  border-radius: 8px;
-  padding: 9px;
+export const DonutRate = styled.span`
+  font-family: ${props => props.theme.fonts.display};
+  font-size: 34px;
+  font-weight: 800;
+  color: ${props => props.theme.colors.green};
+  letter-spacing: -0.02em;
+  line-height: 1;
+`;
+
+export const DonutLabel = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${props => props.theme.colors.muted};
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-top: 3px;
+`;
+
+export const StatsBlock = styled.div`
+  flex: 1;
+  min-width: 200px;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const ClassTotalRow = styled.div`
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #EEF4F0;
 `;
 
-export const StatInfo = styled.div`
+export const TotalLabel = styled.span`
+  font-size: 13px;
+  color: ${props => props.theme.colors.muted};
+  font-weight: 500;
+`;
+
+export const TotalNumber = styled.span`
+  font-family: ${props => props.theme.fonts.display};
+  font-size: 26px;
+  font-weight: 800;
+  color: ${props => props.theme.colors.fg};
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+`;
+
+export const StatRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 `;
 
-export const Dot = styled.div<{ color: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: ${props => props.color};
+export const ColorDot = styled.span<{ $color: string }>`
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: ${props => props.$color};
 `;
 
 export const StatName = styled.span`
-  font-size: 14px;
+  flex: 1;
+  font-size: 13.5px;
+  color: #374151;
   font-weight: 500;
-  color: #181d18;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
-export const StatValue = styled.div<{ bg: string; color: string }>`
-  background-color: ${props => props.bg};
-  color: ${props => props.color};
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-`;
-
-export const ActionButton = styled.button`
-  border: 2px solid #005e2c;
-  background: white;
-  color: #005e2c;
-  font-size: 16px;
-  font-weight: bold;
-  padding: 14px 2px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #005e2c;
-    color: white;
-  }
-`;
-
-export const QrScanButton = styled(ActionButton)`
-  background: #0e793c;
-  color: white;
-  border-color: #0e793c;
-  margin-top: -8px;
-  
-  &:hover {
-    background: #0a5d2e;
-    border-color: #0a5d2e;
-  }
+export const StatCount = styled.span<{ $color: string }>`
+  font-family: ${props => props.theme.fonts.display};
+  font-size: 18px;
+  font-weight: 800;
+  color: ${props => props.$color};
+  font-variant-numeric: tabular-nums;
 `;
