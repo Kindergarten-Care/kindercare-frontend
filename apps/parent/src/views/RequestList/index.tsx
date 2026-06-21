@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import * as S from './styles';
 import { useStudent } from '@/contexts/StudentContext';
+import { useAuth } from '@kindercare/core';
 import { toast } from '@kindercare/ui';
 import {
   IconSearch, IconBell, IconPlus, IconMedicine, IconRequest, IconSchedule
 } from '@/assets/icons/dashboard';
 import LeaveRequestPopup from '@/views/ParentDashboard/components/LeaveRequestPopup';
 import MedicationRequestPopup from '@/views/ParentDashboard/components/MedicationRequestPopup';
+import { leaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
+import { medicationRequestService } from '@/services/MedicationRequest/MedicationRequestService';
 
 interface RequestItem {
   id: string;
@@ -20,94 +23,145 @@ interface RequestItem {
   timeToTake?: string;
   sentTime: string;
   note?: string;
-  status: 'pending' | 'approved' | 'completed' | 'cancelled';
+  status: 'pending' | 'approved' | 'completed' | 'cancelled' | 'rejected';
   color: string;
   bg: string;
+  rawDate: number;
+  medicines?: {
+    name: string;
+    dosage: string;
+    timeToTake?: string;
+  }[];
 }
 
-const INITIAL_REQUESTS: RequestItem[] = [
-  {
-    id: 'r1',
-    type: 'leave',
-    title: 'Đơn xin nghỉ',
-    detail: 'Xin nghỉ ngày 15/06/2026',
-    reason: 'Khám sức khỏe định kỳ',
-    sentTime: 'Hôm nay · 08:10',
-    note: 'Bé đi khám tổng quát buổi sáng, chiều có thể đến lớp ạ.',
-    status: 'pending',
-    color: '#2563eb', // Blue
-    bg: '#eff6ff',
-  },
-  {
-    id: 'r2',
-    type: 'medication',
-    title: 'Dặn dò thuốc',
-    detail: 'Dặn cô cho bé uống Siro ho Prospan',
-    dosage: '5 ml',
-    timeToTake: 'Sau ăn trưa (11:00)',
-    sentTime: 'Hôm nay · 07:32',
-    note: 'Bé ho nhiều từ sáng, nhờ cô cho uống sau khi ăn trưa giúp em.',
-    status: 'pending',
-    color: '#ea580c', // Orange
-    bg: '#fff7ed',
-  },
-  {
-    id: 'r3',
-    type: 'medication',
-    title: 'Dặn dò thuốc',
-    detail: 'Dặn cô cho bé uống Men tiêu hóa Enterogermina',
-    dosage: '1 ống',
-    timeToTake: 'Sau ăn sáng (08:30)',
-    sentTime: 'Hôm qua · 06:40',
-    note: 'Nhờ cô cho uống thuốc trước ăn sáng 15 phút. Cảm ơn cô.',
-    status: 'completed',
-    color: '#ea580c',
-    bg: '#fff7ed',
-  },
-  {
-    id: 'r4',
-    type: 'leave',
-    title: 'Đơn xin nghỉ',
-    detail: 'Xin nghỉ từ ngày 10/06/2026 đến 12/06/2026',
-    reason: 'Gia đình có việc riêng về quê',
-    sentTime: '09/06/2026 · 14:15',
-    status: 'approved',
-    color: '#2563eb',
-    bg: '#eff6ff',
-  },
-  {
-    id: 'r5',
-    type: 'medication',
-    title: 'Dặn dò thuốc',
-    detail: 'Dặn cô cho bé uống Siro thảo dược Astex',
-    dosage: '1 gói',
-    timeToTake: 'Sau ăn trưa (11:30)',
-    sentTime: '08/06/2026 · 07:15',
-    status: 'completed',
-    color: '#ea580c',
-    bg: '#fff7ed',
-  },
-  {
-    id: 'r6',
-    type: 'leave',
-    title: 'Đơn xin nghỉ',
-    detail: 'Xin nghỉ ngày 02/06/2026',
-    reason: 'Bé bị sốt phát ban',
-    sentTime: '02/06/2026 · 06:30',
-    status: 'approved',
-    color: '#2563eb',
-    bg: '#eff6ff',
-  },
-];
-
 export const RequestList: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const { activeStudent } = useStudent();
-  const [requests, setRequests] = useState<RequestItem[]>(INITIAL_REQUESTS);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'leave' | 'medication'>('all');
 
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
   const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
+
+  const fetchRequests = useCallback(async () => {
+    if (!activeStudent?.studentId) return;
+    setLoading(true);
+    try {
+      const [leaves, medications] = await Promise.all([
+        leaveRequestService.getLeaveRequests(activeStudent.studentId),
+        medicationRequestService.getMedicationRequests(activeStudent.studentId),
+      ]);
+
+      const formatDate = (timestampSec: bigint | number): string => {
+        const d = new Date(Number(timestampSec) * 1000);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
+
+      const mappedLeaves: RequestItem[] = leaves.map(l => {
+        const fromStr = formatDate(l.fromDate);
+        const toStr = formatDate(l.toDate);
+        const detail = fromStr === toStr ? `Xin nghỉ ngày ${fromStr}` : `Xin nghỉ từ ngày ${fromStr} đến ${toStr}`;
+        const normalizedStatus = (l.status || 'Pending').toLowerCase() as any;
+
+        return {
+          id: `leave-${l.requestId}`,
+          type: 'leave',
+          title: 'Đơn xin nghỉ',
+          detail,
+          reason: l.reason,
+          sentTime: fromStr,
+          note: l.parentNotes,
+          status: normalizedStatus,
+          color: '#2563eb', // Blue
+          bg: '#eff6ff',
+          rawDate: Number(l.fromDate),
+        };
+      });
+
+      // Group medication requests by requestDate
+      const medGroups: { [key: string]: typeof medications } = {};
+      medications.forEach(m => {
+        const key = String(m.requestDate);
+        if (!medGroups[key]) {
+          medGroups[key] = [];
+        }
+        medGroups[key].push(m);
+      });
+
+      const mappedMedications: RequestItem[] = Object.entries(medGroups).map(([_, group]) => {
+        const rep = group[0];
+        const reqStr = formatDate(rep.requestDate);
+        
+        // Resolve status of grouped requests
+        let normalizedStatus: any = 'pending';
+        const statuses = group.map(g => (g.status || 'Pending').toLowerCase());
+        if (statuses.includes('pending')) {
+          normalizedStatus = 'pending';
+        } else if (statuses.includes('completed')) {
+          normalizedStatus = 'completed';
+        } else if (statuses.includes('approved')) {
+          normalizedStatus = 'approved';
+        } else if (statuses.includes('cancelled')) {
+          normalizedStatus = 'cancelled';
+        } else if (statuses.includes('rejected')) {
+          normalizedStatus = 'rejected';
+        } else {
+          normalizedStatus = statuses[0] || 'pending';
+        }
+
+        const groupMedicines = group.map(m => ({
+          name: m.medicineDetails,
+          dosage: m.dosage,
+          timeToTake: m.timeToTake || undefined,
+        }));
+
+        const detail = groupMedicines.length > 1
+          ? `Dặn cô cho bé uống ${groupMedicines.length} loại thuốc`
+          : `Dặn cô cho bé uống ${rep.medicineDetails}`;
+
+        // Combine unique parent notes in the group
+        const uniqueNotes = Array.from(new Set(group.map(g => g.parentNote?.trim()).filter(Boolean)));
+        const combinedNote = uniqueNotes.join('; ') || undefined;
+
+        return {
+          id: `med-group-${rep.requestDate}-${rep.medRequestId}`,
+          type: 'medication',
+          title: 'Dặn dò thuốc',
+          detail,
+          dosage: groupMedicines.length === 1 ? rep.dosage : undefined,
+          timeToTake: groupMedicines.length === 1 ? rep.timeToTake || undefined : undefined,
+          sentTime: reqStr,
+          note: combinedNote,
+          status: normalizedStatus,
+          color: '#ea580c', // Orange
+          bg: '#fff7ed',
+          rawDate: Number(rep.requestDate),
+          medicines: groupMedicines,
+        };
+      });
+
+      const combined = [...mappedLeaves, ...mappedMedications].sort((a, b) => b.rawDate - a.rawDate);
+      setRequests(combined);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Không thể tải danh sách đơn từ');
+    } finally {
+      setLoading(false);
+    }
+  }, [activeStudent?.studentId]);
+
+  useEffect(() => {
+    if (isAuthenticated && activeStudent?.studentId) {
+      fetchRequests();
+    } else {
+      setRequests([]);
+    }
+  }, [isAuthenticated, activeStudent?.studentId, fetchRequests]);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -149,11 +203,17 @@ export const RequestList: React.FC = () => {
   };
 
   const handleShowDetail = (r: RequestItem) => {
+    let medDetailsStr = '';
+    if (r.type === 'medication' && r.medicines && r.medicines.length > 1) {
+      medDetailsStr = r.medicines.map((m, idx) => `  ${idx + 1}. Tên thuốc: ${m.name}\n     Liều: ${m.dosage}\n     Thời gian: ${m.timeToTake || 'Chưa ghi rõ'}`).join('\n');
+    }
+
     alert(
       `Chi tiết đơn:\n- Loại đơn: ${r.title}\n- Chi tiết: ${r.detail}\n` +
       (r.reason ? `- Lý do: ${r.reason}\n` : '') +
-      (r.dosage ? `- Liều dùng: ${r.dosage}\n` : '') +
-      (r.timeToTake ? `- Thời gian uống: ${r.timeToTake}\n` : '') +
+      (r.dosage && (!r.medicines || r.medicines.length <= 1) ? `- Liều dùng: ${r.dosage}\n` : '') +
+      (r.timeToTake && (!r.medicines || r.medicines.length <= 1) ? `- Thời gian uống: ${r.timeToTake}\n` : '') +
+      (medDetailsStr ? `- Danh sách thuốc:\n${medDetailsStr}\n` : '') +
       `- Trạng thái: ${r.status === 'pending' ? 'Chờ phản hồi' : r.status === 'approved' ? 'Đã duyệt' : r.status === 'completed' ? 'Đã thực hiện' : 'Đã hủy'}\n` +
       `- Thời gian gửi: ${r.sentTime}`
     );
@@ -239,7 +299,12 @@ export const RequestList: React.FC = () => {
       </S.FilterTabs>
 
       {/* Cards List */}
-      {filteredRequests.length > 0 ? (
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px 40px', color: 'var(--muted, #6b7280)', fontSize: '14px', fontWeight: 500 }}>
+          <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: '8px' }}>🌀</span>
+          Đang tải danh sách đơn...
+        </div>
+      ) : filteredRequests.length > 0 ? (
         <S.CardList>
           {filteredRequests.map(r => (
             <S.RequestCard key={r.id} $color={r.color}>
@@ -256,7 +321,28 @@ export const RequestList: React.FC = () => {
                   </S.CardDetail>
                 )}
 
-                {r.type === 'medication' && (r.dosage || r.timeToTake) && (
+                {r.type === 'medication' && r.medicines && r.medicines.length > 1 && (
+                  <S.MedicinesListContainer>
+                    {r.medicines.map((med, index) => (
+                      <S.NestedMedicineRow key={index}>
+                        <S.NestedLeft>
+                          <S.NestedIndexBadge>{index + 1}</S.NestedIndexBadge>
+                          <S.NestedName>{med.name}</S.NestedName>
+                        </S.NestedLeft>
+                        <S.NestedRight>
+                          <S.DosagePill>+ {med.dosage}</S.DosagePill>
+                          {med.timeToTake && (
+                            <S.TimePill>
+                              <IconSchedule size={12} /> {med.timeToTake}
+                            </S.TimePill>
+                          )}
+                        </S.NestedRight>
+                      </S.NestedMedicineRow>
+                    ))}
+                  </S.MedicinesListContainer>
+                )}
+
+                {r.type === 'medication' && (!r.medicines || r.medicines.length <= 1) && (r.dosage || r.timeToTake) && (
                   <S.CardPills>
                     {r.dosage && <S.DosagePill>+ Liều: {r.dosage}</S.DosagePill>}
                     {r.timeToTake && (
@@ -279,6 +365,7 @@ export const RequestList: React.FC = () => {
                   {r.status === 'pending' && '⏱ Chờ phản hồi'}
                   {r.status === 'approved' && '✓ Đã duyệt'}
                   {r.status === 'completed' && '✓ Đã cho uống'}
+                  {r.status === 'rejected' && '✕ Từ chối'}
                   {r.status === 'cancelled' && '✕ Đã hủy'}
                 </S.StatusBadge>
 
@@ -305,6 +392,7 @@ export const RequestList: React.FC = () => {
           <LeaveRequestPopup
             isOpen={isLeavePopupOpen}
             onClose={() => setIsLeavePopupOpen(false)}
+            onSubmitSuccess={fetchRequests}
             studentName={activeStudent.fullName}
             className={activeStudent.className}
           />
@@ -312,6 +400,7 @@ export const RequestList: React.FC = () => {
           <MedicationRequestPopup
             isOpen={isMedicationPopupOpen}
             onClose={() => setIsMedicationPopupOpen(false)}
+            onSubmitSuccess={fetchRequests}
             studentName={activeStudent.fullName}
             className={activeStudent.className}
           />

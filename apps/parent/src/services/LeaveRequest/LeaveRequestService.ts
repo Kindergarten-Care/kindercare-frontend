@@ -28,6 +28,15 @@ class LeaveRequestService {
     }
     return LeaveRequestMapper.toDomain(res.data);
   }
+
+  async getLeaveRequests(studentId: number | string): Promise<LeaveRequestDomainModel[]> {
+    const url = SERVER.parent.getLeaveRequests.replace(':studentId', studentId.toString());
+    const { data: res } = await apiClient.get<ApiResponse<LeaveRequestApiDto[]>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return LeaveRequestMapper.toDomainList(res.data);
+  }
 }
 
 export const leaveRequestService = new LeaveRequestService();

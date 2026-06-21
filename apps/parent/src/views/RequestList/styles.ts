@@ -408,7 +408,7 @@ export const CardRight = styled.div`
   }
 `;
 
-export const StatusBadge = styled.span<{ $status: 'pending' | 'approved' | 'completed' | 'cancelled' }>`
+export const StatusBadge = styled.span<{ $status: 'pending' | 'approved' | 'completed' | 'cancelled' | 'rejected' }>`
   font-size: 11.5px;
   font-weight: 700;
   padding: 4px 10px;
@@ -427,6 +427,8 @@ export const StatusBadge = styled.span<{ $status: 'pending' | 'approved' | 'comp
         return 'background: #f0fdf4; color: #15803d;';
       case 'cancelled':
         return 'background: #f1f5f9; color: #64748b;';
+      case 'rejected':
+        return 'background: #fef2f2; color: #dc2626;';
     }
   }}
 `;
@@ -493,4 +495,62 @@ export const EmptyState = styled.div`
   svg {
     opacity: 0.6;
   }
+`;
+
+export const MedicinesListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
+`;
+
+export const NestedMedicineRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffdfa;
+  border: 1px solid #fef3c7;
+  border-radius: 10px;
+  padding: 8px 14px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+`;
+
+export const NestedLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const NestedIndexBadge = styled.span`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ea580c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+`;
+
+export const NestedName = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg, #1e293b);
+`;
+
+export const NestedRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;

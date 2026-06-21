@@ -8,6 +8,7 @@ import { kcToast } from '@kindercare/ui';
 interface UseLeaveRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
 }
 
 const getLocalDateString = (offsetDays = 0): string => {
@@ -19,7 +20,7 @@ const getLocalDateString = (offsetDays = 0): string => {
   return `${year}-${month}-${date}`;
 };
 
-export const useLeaveRequestPopup = ({ isOpen, onClose }: UseLeaveRequestPopupProps) => {
+export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLeaveRequestPopupProps) => {
   const { activeStudent } = useStudent();
   const [isLongLeave, setIsLongLeave] = useState<boolean>(false);
   const [singleDate, setSingleDate] = useState<string>(getLocalDateString(0));
@@ -158,6 +159,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose }: UseLeaveRequestPopupPr
       setSelectedReason('Bé bị ốm');
       setNote('');
       setAttachedFile(null);
+      onSubmitSuccess?.();
       onClose();
     } catch (err: any) {
       console.error('Failed to create leave request:', err);

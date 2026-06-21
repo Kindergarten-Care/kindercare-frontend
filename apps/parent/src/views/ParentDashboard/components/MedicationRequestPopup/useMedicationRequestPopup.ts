@@ -18,6 +18,7 @@ interface MedicineItem {
 interface UseMedicationRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
 }
 
 const createEmptyMedicine = (index: number): MedicineItem => ({
@@ -30,7 +31,7 @@ const createEmptyMedicine = (index: number): MedicineItem => ({
   photoUrl: null
 });
 
-export const useMedicationRequestPopup = ({ isOpen, onClose }: UseMedicationRequestPopupProps) => {
+export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseMedicationRequestPopupProps) => {
   const { activeStudent } = useStudent();
   const [medicines, setMedicines] = useState<MedicineItem[]>([createEmptyMedicine(1)]);
   const [generalNote, setGeneralNote] = useState<string>('');
@@ -179,6 +180,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose }: UseMedicationRequ
       cleanupUrls();
       setMedicines([createEmptyMedicine(1)]);
       setGeneralNote('');
+      onSubmitSuccess?.();
       onClose();
     } catch (err: any) {
       console.error('Failed to create medication requests:', err);
