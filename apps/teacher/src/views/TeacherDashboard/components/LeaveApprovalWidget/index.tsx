@@ -21,9 +21,10 @@ const getStartOfTodayInSeconds = (): number => {
 
 interface LeaveApprovalWidgetProps {
   onAction: (message: string) => void;
+  onRefresh?: () => void;
 }
 
-export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction }) => {
+export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction, onRefresh }) => {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,6 +60,28 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
       const status = approve ? 'APPROVED' : 'REJECTED';
       await AttendanceService.processLeaveRequest(id, status);
       
+      // Update attendance status in database to sync
+      const targetRequest = requests.find(r => r.id === id);
+      if (targetRequest) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        const newDomainStatus = approve ? 'PERMISSION_ABSENCE' : 'UNEXCUSED_ABSENCE';
+        
+        await AttendanceService.updateAttendance(
+          targetRequest.classId || 'MN1',
+          dateStr,
+          [{
+            studentId: targetRequest.studentId,
+            status: newDomainStatus,
+            arrivalTime: undefined,
+            healthNote: targetRequest.reason || ''
+          }]
+        );
+      }
+
       setTimeout(() => {
         setRequests(prev => prev.filter(r => r.id !== id));
         onAction(
@@ -66,6 +89,9 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
             ? `Đã duyệt đơn nghỉ học của ${name} thành công!` 
             : `Đã từ chối đơn nghỉ học của ${name}.`
         );
+        if (onRefresh) {
+          onRefresh();
+        }
       }, 320);
     } catch (e) {
       console.warn('Failed to process leave request:', e);

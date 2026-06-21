@@ -50,4 +50,10 @@ next-env.d.ts
 mcp_config.json
 fetch-swagger.js
 
+# Agent config & logs
+.agent/
+.agent
+.agents/
+.agents
+
 KinderCare*.html

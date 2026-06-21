@@ -8,6 +8,7 @@ import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { ParentChatDrawer } from './components/ParentChatDrawer';
+import { QuickActionsWidget } from './components/QuickActionsWidget';
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
@@ -231,6 +232,11 @@ export const TeacherDashboardView: React.FC = () => {
       return;
     }
 
+    if (targetStudent.hasActiveLeaveRequest || targetStudent.leaveRequestStatus === 'PENDING') {
+      addToast(`Không thể điểm danh bé ${targetStudent.name} qua QR vì có đơn xin nghỉ đang chờ duyệt!`);
+      return;
+    }
+
     const checkInTime = getNowTime();
 
     try {
@@ -272,7 +278,7 @@ export const TeacherDashboardView: React.FC = () => {
       setLiveFeed(prev => [newFeed, ...prev]);
       addToast(`✓ Đã điểm danh thành công bé ${targetStudent.name}`);
 
-      // 7. Update local students array state copy
+      // 7. Update local students array state copy so they won't be checked-in again
       setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime, attendanceStatus: 'PRESENT' } : s));
     } catch (e) {
       console.warn('Failed to commit attendance check-in to SQL Database:', e);
@@ -532,7 +538,7 @@ export const TeacherDashboardView: React.FC = () => {
 
         {/* CARD B: Approvals list (col span 1, row span 2) */}
         <S.GridRow2Span>
-          <LeaveApprovalWidget onAction={addToast} />
+          <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
         </S.GridRow2Span>
 
         {/* QUICK ACTIONS column (col span 1, row span 2) */}

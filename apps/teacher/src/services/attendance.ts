@@ -45,8 +45,7 @@ function mapApiStudentToDomain(raw: any): Student {
     domainStatus = 'UNEXCUSED_ABSENCE';
   } else if (!raw.status) {
     // No attendance record exists for this student on this date
-    // Default to PRESENT (teacher hasn't taken attendance yet)
-    domainStatus = 'PRESENT';
+    domainStatus = 'NOT_YET';
   }
 
   let leaveReqStatus: LeaveRequestStatus | undefined = undefined;
@@ -62,8 +61,6 @@ function mapApiStudentToDomain(raw: any): Student {
       domainStatus = 'PERMISSION_ABSENCE';
     } else if (leaveReqStatus === 'REJECTED') {
       domainStatus = 'UNEXCUSED_ABSENCE';
-    } else if (leaveReqStatus === 'PENDING') {
-      domainStatus = 'PRESENT';
     }
   }
 
@@ -180,6 +177,7 @@ export class AttendanceService {
         checkInTime,
         checkOutTime: null,
         pickedUpBy: null,
+        notes: r.healthNote,
       };
     });
 
