@@ -1,5 +1,14 @@
-import styled, { css } from 'styled-components';
-import { kcFloat, kcPop } from '../../styles';
+import styled, { css, keyframes } from 'styled-components';
+
+export const kcFloat = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+`;
+
+export const kcPop = keyframes`
+  from { opacity: 0; transform: scale(0.85) translateY(10px); }
+  to { opacity: 1; transform: none; }
+`;
 
 export const FloatingButton = styled.button<{ $hasUnread?: boolean }>`
   position: fixed;

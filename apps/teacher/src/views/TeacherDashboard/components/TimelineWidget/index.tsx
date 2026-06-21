@@ -2,51 +2,81 @@
 
 import React from 'react';
 import * as S from './styles';
-import { useRouter } from '@/i18n/routing';
+
+interface TimelineRawItem {
+  time: string;
+  title: string;
+  sub: string;
+  status: 'done' | 'current' | 'next';
+}
+
+const TIMELINE_DATA: TimelineRawItem[] = [
+  { time: '07:30', title: 'Đón bé', sub: 'Cô đón & điểm danh tại cửa lớp', status: 'done' },
+  { time: '08:00', title: 'Ăn sáng', sub: 'Cháo dinh dưỡng + sữa', status: 'done' },
+  { time: '08:45', title: 'Học chữ cái', sub: 'Làm quen nhóm chữ O · Ô · Ơ', status: 'done' },
+  { time: '09:30', title: 'Hoạt động ngoài trời', sub: 'Vận động & trò chơi sân trường', status: 'current' },
+  { time: '11:00', title: 'Ăn trưa', sub: 'Cơm, canh rau, thịt viên', status: 'next' },
+  { time: '12:00', title: 'Ngủ trưa', sub: 'Giờ nghỉ trưa của các bé', status: 'next' },
+  { time: '14:30', title: 'Ăn xế & trả bé', sub: 'Bánh, sữa chua + chuẩn bị về', status: 'next' },
+];
 
 export const TimelineWidget: React.FC = () => {
-  const router = useRouter();
+  const getPillLabel = (status: 'done' | 'current' | 'next'): string => {
+    switch (status) {
+      case 'done': return 'Đã xong';
+      case 'current': return 'Đang diễn ra';
+      case 'next': return 'Tiếp theo';
+    }
+  };
+
+  const getDotColor = (status: 'done' | 'current' | 'next'): string => {
+    switch (status) {
+      case 'done': return '#A7C9B6';
+      case 'current': return '#005A36';
+      case 'next': return '#D1D5DB';
+    }
+  };
 
   return (
     <S.WidgetContainer>
-      <S.WidgetTitle>Lịch trình trong ngày</S.WidgetTitle>
-      
+      <S.HeaderRow>
+        <S.WidgetTitle>Lịch sinh hoạt hôm nay</S.WidgetTitle>
+        <S.StatusPill>
+          <S.StatusDot />
+          Đang diễn ra
+        </S.StatusPill>
+      </S.HeaderRow>
+
       <S.TimelineList>
-        {/* Completed Activity */}
-        <S.TimelineItem>
-          <S.TimeLabel>08:00</S.TimeLabel>
-          <S.ActivityText $completed>Thể dục sáng</S.ActivityText>
-          <S.CircleIcon variant="completed">
-            <S.CheckIcon />
-          </S.CircleIcon>
-        </S.TimelineItem>
+        {TIMELINE_DATA.map((t, idx) => {
+          const isNext = t.status === 'next';
+          const isCurrent = t.status === 'current';
+          const dotColor = getDotColor(t.status);
+          const showLine = idx < TIMELINE_DATA.length - 1;
 
-        {/* Active Activity */}
-        <S.TimelineItem>
-          <S.ActiveActivityCard>
-            <S.ActiveHeader>
-              <S.ActiveStatus>ĐANG DIỄN RA | 10:30</S.ActiveStatus>
-              <S.ActiveBadge>GIỜ ĂN</S.ActiveBadge>
-            </S.ActiveHeader>
-            <S.ActiveTitle>Hoạt động: Ăn trưa</S.ActiveTitle>
-            <S.ActiveDesc>
-              Thực đơn: Cơm trắng, Thịt viên sốt cà chua, Canh bí đỏ, Chuối tráng miệng.
-            </S.ActiveDesc>
-            <S.UpdateButton onClick={() => router.push('/activities')}>
-              <S.UpdateIcon>🍽</S.UpdateIcon>
-              Cập nhật khẩu phần ăn
-            </S.UpdateButton>
-          </S.ActiveActivityCard>
-          <S.CircleIcon variant="active" />
-        </S.TimelineItem>
-
-        {/* Upcoming Activity */}
-        <S.TimelineItem>
-          <S.TimeLabel>11:30</S.TimeLabel>
-          <S.ActivityText>Ngủ trưa</S.ActivityText>
-          <S.CircleIcon variant="upcoming" />
-        </S.TimelineItem>
+          return (
+            <S.TimelineItem key={idx}>
+              <S.TimeLabel $isNext={isNext}>{t.time}</S.TimeLabel>
+              <S.DotCol>
+                <S.CircleDot $dotColor={dotColor}>
+                  {isCurrent && <S.PulseCircle />}
+                </S.CircleDot>
+                {showLine && <S.VerticalLine />}
+              </S.DotCol>
+              <S.ActivityContent>
+                <S.InfoBlock>
+                  <S.ActivityTitle $isNext={isNext}>{t.title}</S.ActivityTitle>
+                  <S.ActivitySub>{t.sub}</S.ActivitySub>
+                </S.InfoBlock>
+                <S.PillBadge $pillStyle={t.status}>
+                  {getPillLabel(t.status)}
+                </S.PillBadge>
+              </S.ActivityContent>
+            </S.TimelineItem>
+          );
+        })}
       </S.TimelineList>
     </S.WidgetContainer>
   );
 };
+export default TimelineWidget;
