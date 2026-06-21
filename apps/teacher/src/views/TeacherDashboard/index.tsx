@@ -4,8 +4,8 @@ import { QRSmartHubWidget } from './components/QRSmartHubWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { QuickLogWidget } from './components/QuickLogWidget';
-import { QuickActionsWidget } from './components/QuickActionsWidget';
 import { ParentChatDrawer } from './components/ParentChatDrawer';
+import { QuickActionsWidget } from './components/QuickActionsWidget';
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
@@ -41,6 +41,7 @@ export const TeacherDashboardView: React.FC = () => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confetti, setConfetti] = useState<ConfettiItem[]>([]);
   const [dateStr, setDateStr] = useState('Hôm nay');
+  const [menuToday, setMenuToday] = useState<any[]>([]);
 
   const getTodayDateString = () => {
     const d = new Date();
@@ -60,6 +61,9 @@ export const TeacherDashboardView: React.FC = () => {
         const todayDate = getTodayDateString();
         const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
         setStudentsList(students);
+
+        const menu = await AttendanceService.getClassMenu(firstClass.classId, todayDate);
+        setMenuToday(menu);
 
         // Filter already checked-in students
         const checkedIn = students.filter(s => s.attendanceStatus === 'PRESENT');
@@ -238,6 +242,34 @@ export const TeacherDashboardView: React.FC = () => {
     }
   };
 
+  const handleUpdateMealStatus = async (studentId: string, status: string) => {
+    if (!activeClassId) return;
+    try {
+      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), [
+        { studentId, eatingStatus: status }
+      ]);
+      setStudentsList(prev => prev.map(s => s.id === studentId ? { ...s, eatingStatus: status } : s));
+      addToast(`Cập nhật trạng thái bữa ăn thành công`);
+    } catch (e) {
+      addToast('Cập nhật trạng thái bữa ăn thất bại');
+    }
+  };
+
+  const handleUpdateAllMealStatus = async (status: string) => {
+    if (!activeClassId || studentsList.length === 0) return;
+    try {
+      const payload = studentsList.map(s => ({
+        studentId: s.id,
+        eatingStatus: status
+      }));
+      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), payload);
+      setStudentsList(prev => prev.map(s => ({ ...s, eatingStatus: status })));
+      addToast(`Đã ghi nhận cả lớp ăn hết suất`);
+    } catch (e) {
+      addToast('Cập nhật trạng thái bữa ăn thất bại');
+    }
+  };
+
   return (
     <S.DashboardContainer>
       {/* CONFETTI LAYER */}
@@ -272,14 +304,19 @@ export const TeacherDashboardView: React.FC = () => {
       {/* 2. THREE-COLUMN ACTION WIDGETS GRID */}
       <S.DashboardGrid3Col>
         <S.Column>
-          <HealthAlertsWidget />
+          <HealthAlertsWidget students={studentsList} />
         </S.Column>
         <S.Column>
           <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
           <QuickActionsWidget />
         </S.Column>
         <S.Column>
-          <QuickLogWidget />
+          <QuickLogWidget 
+            students={studentsList} 
+            menuInfo={menuToday}
+            onUpdateMeal={handleUpdateMealStatus} 
+            onUpdateAll={handleUpdateAllMealStatus} 
+          />
         </S.Column>
       </S.DashboardGrid3Col>
 

@@ -27,7 +27,7 @@ export const Title = styled.h3`
   font-weight: 800;
   color: #1F2937;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const CounterBadge = styled.span`
@@ -37,7 +37,7 @@ export const CounterBadge = styled.span`
   background: #FFFBEB;
   padding: 4px 10px;
   border-radius: 999px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const RequestList = styled.div`
@@ -80,7 +80,7 @@ export const AvatarCircle = styled.span<{ $color: string }>`
   font-size: 15px;
   color: #374151;
   background: ${props => props.$color};
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const InfoCol = styled.div`
@@ -92,7 +92,7 @@ export const ChildName = styled.div`
   font-weight: 700;
   font-size: 13.5px;
   color: #1F2937;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const RequestDetails = styled.div`
@@ -100,7 +100,7 @@ export const RequestDetails = styled.div`
   color: #92400E;
   font-weight: 500;
   margin-top: 2px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const ActionButtons = styled.div`

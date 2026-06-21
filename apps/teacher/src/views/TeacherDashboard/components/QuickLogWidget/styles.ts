@@ -29,7 +29,7 @@ export const Title = styled.h3`
   font-weight: 800;
   color: #1F2937;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;
 
 export const BatchButton = styled.button`
@@ -42,7 +42,7 @@ export const BatchButton = styled.button`
   border: 1px solid #A7F3D0;
   background: #ECFDF5;
   color: #059669;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -61,7 +61,7 @@ export const SubtitleRow = styled.div`
   font-weight: 600;
   color: #9CA3AF;
   flex-wrap: wrap;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 
   span {
     display: flex;
@@ -100,7 +100,7 @@ export const AvatarRing = styled.span<{ $status: 'none' | 'eat-all' | 'slow-eate
   font-size: 14.5px;
   color: #374151;
   background: ${props => props.$color};
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   transition: all 0.2s ease;
   box-sizing: border-box;
 
@@ -171,5 +171,5 @@ export const StudentName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
 `;

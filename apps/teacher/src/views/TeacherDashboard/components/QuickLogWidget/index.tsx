@@ -11,43 +11,62 @@ interface StudentLog {
   status: StatusType;
 }
 
-const INITIAL_LOGS: StudentLog[] = [
-  { id: 'g0', name: 'Minh Khôi', initial: 'K', color: '#FCA5A5', status: 'none' },
-  { id: 'g1', name: 'Khánh Linh', initial: 'L', color: '#FCD34D', status: 'none' },
-  { id: 'g2', name: 'An Nhiên', initial: 'N', color: '#6EE7B7', status: 'none' },
-  { id: 'g3', name: 'Gia Huy', initial: 'H', color: '#93C5FD', status: 'none' },
-  { id: 'g4', name: 'Bảo Trâm', initial: 'T', color: '#C4B5FD', status: 'none' },
-  { id: 'g5', name: 'Hoàng Long', initial: 'L', color: '#F9A8D4', status: 'none' },
-  { id: 'g6', name: 'Ngọc Diệp', initial: 'D', color: '#FDBA74', status: 'none' },
-  { id: 'g7', name: 'Tường Vy', initial: 'V', color: '#67E8F9', status: 'none' },
-  { id: 'g8', name: 'Đăng Khoa', initial: 'K', color: '#A5B4FC', status: 'none' },
-  { id: 'g9', name: 'Mỹ Anh', initial: 'A', color: '#5EEAD4', status: 'none' },
-  { id: 'g10', name: 'Quốc Bảo', initial: 'B', color: '#FCA5A5', status: 'none' },
-  { id: 'g11', name: 'Hà My', initial: 'M', color: '#FCD34D', status: 'none' },
-  { id: 'g12', name: 'Nhật Nam', initial: 'N', color: '#6EE7B7', status: 'none' },
-  { id: 'g13', name: 'Yến Nhi', initial: 'N', color: '#93C5FD', status: 'none' },
-  { id: 'g14', name: 'Trí Dũng', initial: 'D', color: '#C4B5FD', status: 'none' },
-  { id: 'g15', name: 'Khánh Vân', initial: 'V', color: '#F9A8D4', status: 'none' },
-];
+interface QuickLogWidgetProps {
+  students: { id: string; name: string; eatingStatus?: string }[];
+  menuInfo?: any[];
+  onUpdateMeal?: (studentId: string, status: string) => void;
+  onUpdateAll?: (status: string) => void;
+}
+export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, menuInfo, onUpdateMeal, onUpdateAll }) => {
+  const [logs, setLogs] = useState<StudentLog[]>([]);
 
-export const QuickLogWidget: React.FC = () => {
-  const [logs, setLogs] = useState<StudentLog[]>(INITIAL_LOGS);
+  React.useEffect(() => {
+    const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9', '#A5B4FC', '#5EEAD4'];
+    const mappedLogs = students.map((s, index) => {
+      const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+      const color = colors[index % colors.length];
+
+      let widgetStatus: StatusType = 'none';
+      if (s.eatingStatus === 'Ăn hết') widgetStatus = 'eat-all';
+      else if (s.eatingStatus === 'Ăn chậm') widgetStatus = 'slow-eater';
+      else if (s.eatingStatus === 'Không ăn') widgetStatus = 'skip-meal';
+
+      return {
+        id: s.id,
+        name: s.name,
+        initial,
+        color,
+        status: widgetStatus
+      };
+    });
+    setLogs(mappedLogs);
+  }, [students]);
 
   const cycleStatus = (id: string) => {
-    setLogs(prev => prev.map(student => {
-      if (student.id !== id) return student;
-      let nextStatus: StatusType = 'none';
-      if (student.status === 'none') nextStatus = 'eat-all';
-      else if (student.status === 'eat-all') nextStatus = 'slow-eater';
-      else if (student.status === 'slow-eater') nextStatus = 'skip-meal';
-      else if (student.status === 'skip-meal') nextStatus = 'none';
-      
-      return { ...student, status: nextStatus };
-    }));
+    const student = logs.find(s => s.id === id);
+    if (!student) return;
+
+    let nextStatus: StatusType = 'none';
+    let dbStatus = '';
+
+    if (student.status === 'none') { nextStatus = 'eat-all'; dbStatus = 'Ăn hết'; }
+    else if (student.status === 'eat-all') { nextStatus = 'slow-eater'; dbStatus = 'Ăn chậm'; }
+    else if (student.status === 'slow-eater') { nextStatus = 'skip-meal'; dbStatus = 'Không ăn'; }
+    else if (student.status === 'skip-meal') { nextStatus = 'none'; dbStatus = ''; }
+    
+    // Optistic local update
+    setLogs(prev => prev.map(s => s.id === id ? { ...s, status: nextStatus } : s));
+
+    if (onUpdateMeal && dbStatus) {
+      onUpdateMeal(id, dbStatus);
+    }
   };
 
   const markAllEatAll = () => {
     setLogs(prev => prev.map(student => ({ ...student, status: 'eat-all' })));
+    if (onUpdateAll) {
+      onUpdateAll('Ăn hết');
+    }
   };
 
   const getStatusBadge = (status: StatusType) => {
@@ -57,14 +76,23 @@ export const QuickLogWidget: React.FC = () => {
     return null;
   };
 
+  const getMenuDisplay = () => {
+    if (!menuInfo || menuInfo.length === 0) return 'Chưa có thực đơn hôm nay';
+    const m = menuInfo[0];
+    return `${m.mealType || 'Bữa ăn'}: ${m.dishName || 'Chưa cập nhật'}`;
+  };
+
   return (
     <S.WidgetContainer>
       <S.HeaderRow>
-        <S.Title>📋 Sinh hoạt nhanh · Bữa trưa</S.Title>
+        <S.Title>📋 Sinh hoạt nhanh</S.Title>
         <S.BatchButton onClick={markAllEatAll}>
           🍚 Cả lớp ăn hết suất
         </S.BatchButton>
       </S.HeaderRow>
+      <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '8px', marginTop: '-8px' }}>
+        {getMenuDisplay()}
+      </div>
 
       <S.SubtitleRow>
         <span>✓ Ăn hết</span>

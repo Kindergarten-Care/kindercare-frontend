@@ -294,134 +294,132 @@ export const AttendanceWidget: React.FC = () => {
       <S.QrScanButton onClick={handleStartCameraScan}>Quét mã QR điểm danh</S.QrScanButton>
 
       {/* Camera Scanner Modal */}
-      {isCameraScanning && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(15, 23, 42, 0.8)',
+        backdropFilter: 'blur(8px)',
+        display: isCameraScanning ? 'flex' : 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9998,
+        animation: 'fadeIn 0.2s ease-out'
+      }}>
         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'white',
+          borderRadius: '24px',
+          padding: '24px',
+          width: '90%',
+          maxWidth: '500px',
+          position: 'relative',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          border: '1px solid #e2e8f0',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9998,
-          animation: 'fadeIn 0.2s ease-out'
+          flexDirection: 'column',
+          gap: '16px'
         }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '24px',
-            width: '90%',
-            maxWidth: '500px',
-            position: 'relative',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, fontFamily: 'Montserrat, sans-serif' }}>
-                Quét Mã QR Phụ Huynh
-              </h3>
-              <button 
-                onClick={handleStopCameraScan}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: '#64748b',
-                  cursor: 'pointer',
-                  padding: '4px'
-                }}
-              >
-                ✕
-              </button>
-            </div>
-            
-            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0, fontFamily: 'Montserrat, sans-serif' }}>
-              Căn chỉnh mã QR của Phụ huynh nằm trong khung camera bên dưới.
-            </p>
-
-            {/* Video Reader Element */}
-            <div style={{
-              width: '100%',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              backgroundColor: '#0f172a',
-              position: 'relative',
-              aspectRatio: '4/3',
-              border: 'none'
-            }}>
-              <div id="reader-dashboard" style={{ width: '100%', height: '100%' }}></div>
-              
-              {/* Overlay Laser Scan Frame */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '200px',
-                height: '200px',
-                border: '2px dashed #22c55e',
-                borderRadius: '8px',
-                boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.5)',
-                pointerEvents: 'none',
-                zIndex: 10
-              }}>
-                {/* Scanner laser line */}
-                <div style={{
-                  width: '100%',
-                  height: '2px',
-                  backgroundColor: '#22c55e',
-                  boxShadow: '0 0 8px #22c55e',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  animation: 'laserSweep 2s linear infinite'
-                }}></div>
-              </div>
-            </div>
-
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, fontFamily: 'Montserrat, sans-serif' }}>
+              Quét Mã QR Phụ Huynh
+            </h3>
             <button 
               onClick={handleStopCameraScan}
               style={{
-                padding: '10px',
-                backgroundColor: '#ef4444',
-                color: 'white',
                 border: 'none',
-                borderRadius: '8px',
-                fontWeight: 600,
+                background: 'transparent',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#64748b',
                 cursor: 'pointer',
-                fontSize: '0.875rem',
-                fontFamily: 'Montserrat, sans-serif'
+                padding: '4px'
               }}
             >
-              Hủy bỏ quét
+              ✕
             </button>
-
-            <style dangerouslySetInnerHTML={{ __html: `
-              @keyframes laserSweep {
-                0% { top: 0%; }
-                50% { top: 100%; }
-                100% { top: 0%; }
-              }
-              #reader, #reader-dashboard {
-                border: none !important;
-              }
-              #reader__scan_region, #reader-dashboard__scan_region {
-                border: none !important;
-              }
-              #reader canvas, #reader-dashboard canvas {
-                display: none !important;
-              }
-            `}} />
           </div>
+          
+          <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0, fontFamily: 'Montserrat, sans-serif' }}>
+            Căn chỉnh mã QR của Phụ huynh nằm trong khung camera bên dưới.
+          </p>
+
+          {/* Video Reader Element */}
+          <div style={{
+            width: '100%',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#0f172a',
+            position: 'relative',
+            aspectRatio: '4/3',
+            border: 'none'
+          }}>
+            <div id="reader-dashboard" style={{ width: '100%', height: '100%' }}></div>
+            
+            {/* Overlay Laser Scan Frame */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '200px',
+              height: '200px',
+              border: '2px dashed #22c55e',
+              borderRadius: '8px',
+              boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.5)',
+              pointerEvents: 'none',
+              zIndex: 10
+            }}>
+              {/* Scanner laser line */}
+              <div style={{
+                width: '100%',
+                height: '2px',
+                backgroundColor: '#22c55e',
+                boxShadow: '0 0 8px #22c55e',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                animation: 'laserSweep 2s linear infinite'
+              }}></div>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleStopCameraScan}
+            style={{
+              padding: '10px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontFamily: 'Montserrat, sans-serif'
+            }}
+          >
+            Hủy bỏ quét
+          </button>
+
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes laserSweep {
+              0% { top: 0%; }
+              50% { top: 100%; }
+              100% { top: 0%; }
+            }
+            #reader, #reader-dashboard {
+              border: none !important;
+            }
+            #reader__scan_region, #reader-dashboard__scan_region {
+              border: none !important;
+            }
+            #reader canvas, #reader-dashboard canvas {
+              display: none !important;
+            }
+          `}} />
         </div>
-      )}
+      </div>
 
       {/* QR Check-in Success Popup */}
       {qrSuccessModal && qrSuccessModal.isOpen && (
