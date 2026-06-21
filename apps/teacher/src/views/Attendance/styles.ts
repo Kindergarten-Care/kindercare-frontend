@@ -454,6 +454,20 @@ export const ToggleBtn = styled.button<ToggleBtnProps>`
   box-shadow: ${props => props.$active ? '0 2px 8px rgba(16, 24, 40, 0.06)' : 'none'};
 `;
 
+export const ListContainer = styled.div`
+  max-height: 540px;
+  overflow: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d6e2da;
+    border-radius: 8px;
+  }
+`;
+
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 2.4fr 1fr 1.3fr 2fr;
