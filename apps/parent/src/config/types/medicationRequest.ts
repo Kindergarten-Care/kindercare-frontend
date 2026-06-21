@@ -6,6 +6,7 @@ export interface MedicationRequestApiDto {
   medicineDetails: string;
   dosage: string;
   medicineImageUrl: string | null;
+  medicineImageURL?: string | null;
   status: string;
   teacherNote: string | null;
   frequency: string | null;
@@ -21,6 +22,7 @@ export interface MedicationRequestDomainModel {
   medicineDetails: string;
   dosage: string;
   medicineImageUrl: string | null;
+  medicineImageURL?: string | null;
   status: string;
   teacherNote: string | null;
   frequency: string | null;

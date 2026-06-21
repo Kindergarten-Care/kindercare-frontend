@@ -151,13 +151,8 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
     setIsSubmitting(true);
 
     try {
-      // Calculate requestDate as today's timestamp at midnight
-      const d = new Date();
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const date = String(d.getDate()).padStart(2, '0');
-      const todayStr = `${year}-${month}-${date}`;
-      const requestDate = Math.floor(new Date(`${todayStr}T00:00:00Z`).getTime() / 1000);
+      // Save the exact current timestamp (including hour, minute, second) when sending the request
+      const requestDate = Math.floor(Date.now() / 1000);
 
       // Create promises for each medicine card
       const promises = medicines.map(m => {

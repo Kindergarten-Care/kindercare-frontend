@@ -129,9 +129,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
       return;
     }
 
-    // Convert to Unix timestamps in seconds (UTC midnight / end of day)
-    const fromTimestamp = Math.floor(new Date(`${fromDateStr}T00:00:00Z`).getTime() / 1000);
-    const toTimestamp = Math.floor(new Date(`${toDateStr}T23:59:59Z`).getTime() / 1000);
+    // Convert to Unix timestamps in seconds (midnight / end of day in UTC+7)
+    const fromTimestamp = Math.floor(new Date(`${fromDateStr}T00:00:00+07:00`).getTime() / 1000);
+    const toTimestamp = Math.floor(new Date(`${toDateStr}T23:59:59+07:00`).getTime() / 1000);
 
     if (isLongLeave && fromTimestamp > toTimestamp) {
       kcToast.error('Ngày bắt đầu không được lớn hơn ngày kết thúc.', 'Lỗi');

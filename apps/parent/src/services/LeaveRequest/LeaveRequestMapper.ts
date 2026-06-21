@@ -14,6 +14,7 @@ export class LeaveRequestMapper {
       approverId: dto.approverId,
       isMealFeeDeducted: dto.isMealFeeDeducted,
       parentNotes: dto.parentNotes,
+      createdAt: dto.createdAt !== undefined && dto.createdAt !== null ? BigInt(dto.createdAt) : null,
     };
   }
 
