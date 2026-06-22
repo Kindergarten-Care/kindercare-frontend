@@ -532,7 +532,7 @@ export const TeacherDashboardView: React.FC = () => {
 
         {/* CARD B: Approvals list (col span 1, row span 2) */}
         <S.GridRow2Span>
-          <LeaveApprovalWidget onAction={addToast} />
+          <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
         </S.GridRow2Span>
 
         {/* QUICK ACTIONS column (col span 1, row span 2) */}

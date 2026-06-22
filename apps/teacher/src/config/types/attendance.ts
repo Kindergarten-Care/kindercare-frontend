@@ -28,4 +28,11 @@ export interface LeaveRequest {
   classId?: number;
   fromDate?: number;
   toDate?: number;
+  parentPhone?: string;
+  isMealFeeDeducted?: number;
+  parentNotes?: string;
+  createdAt?: number;
+  studentDob?: string;
+  studentGender?: string;
+  className?: string;
 }
