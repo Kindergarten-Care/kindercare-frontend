@@ -19,6 +19,11 @@ export const theme: AppTheme = {
     amberLight: '#fef3c7',
     amberMid: '#f59e0b',
 
+    red: '#dc2626',
+    redLight: '#fee2e2',
+    redMid: '#ef4444',
+    redDark: '#991b1b',
+
     footerBg: '#0f172a',
     techBg: '#1e293b',
     white: '#ffffff',

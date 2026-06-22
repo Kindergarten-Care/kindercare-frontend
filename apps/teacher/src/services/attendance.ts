@@ -71,6 +71,7 @@ function mapApiStudentToDomain(raw: any): Student {
     attendanceStatus: domainStatus,
     arrivalTime: formatTimestampToTimeStr(raw.checkInTime),
     healthNote: raw.healthNote || '',
+    eatingStatus: raw.eatingStatus,
     hasActiveLeaveRequest: leaveStatusLower === 'pending',
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
     leaveRequestStatus: leaveReqStatus,
@@ -83,6 +84,13 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
   if (raw.status === 'Approved') domainStatus = 'APPROVED';
   if (raw.status === 'Rejected') domainStatus = 'REJECTED';
 
+  let attachmentUrl = raw.evidenceUrl || undefined;
+  if (attachmentUrl && !attachmentUrl.startsWith('http') && !attachmentUrl.startsWith('data:')) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+    const host = apiBase.split('/api')[0];
+    attachmentUrl = `${host}/${attachmentUrl.replace(/^\//, '')}`;
+  }
+
   return {
     id: String(raw.requestId),
     studentId: String(raw.studentId),
@@ -90,7 +98,7 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     parentName: raw.parentName || 'Phụ huynh',
     relationship: 'Phụ huynh', // Default relationship since backend route does not expose it
     reason: raw.reason,
-    attachmentUrl: raw.evidenceUrl || undefined,
+    attachmentUrl,
     status: domainStatus,
     classId: raw.classId ? Number(raw.classId) : undefined,
     fromDate: raw.fromDate,
@@ -132,11 +140,10 @@ export class AttendanceService {
    * Fetch details for a specific leave request.
    */
   public static async getLeaveRequestDetail(requestId: string): Promise<LeaveRequest | null> {
-    const res = await apiClient.get('/teacher/leave-requests');
-    const list = res.data?.data || [];
-    const match = list.find((r: any) => String(r.requestId) === requestId);
-    if (!match) return null;
-    return mapApiLeaveRequestToDomain(match);
+    const res = await apiClient.get(`/teacher/leave-requests/${requestId}`);
+    const data = res.data?.data;
+    if (!data) return null;
+    return mapApiLeaveRequestToDomain(data);
   }
 
   /**
@@ -187,5 +194,39 @@ export class AttendanceService {
     });
 
     return true;
+  }
+
+  /**
+   * Submit quick meal logs.
+   */
+  public static async submitQuickMealLogs(
+    classId: number | string,
+    date: string,
+    mealData: { studentId: string; eatingStatus: string }[]
+  ): Promise<boolean> {
+    const dateTimestamp = getUtcTimestampInSeconds(date);
+    const data = mealData.map(m => ({
+      studentId: Number(m.studentId),
+      eatingStatus: m.eatingStatus,
+    }));
+
+    await apiClient.post('/teacher/attendance/meals', {
+      classId: Number(classId),
+      date: dateTimestamp,
+      mealData: data,
+    });
+
+    return true;
+  }
+
+  /**
+   * Get class meal menu
+   */
+  public static async getClassMenu(classId: number | string, date: string): Promise<any[]> {
+    const dateTimestamp = getUtcTimestampInSeconds(date);
+    const res = await apiClient.get(`/teacher/classes/${classId}/menu`, {
+      params: { date: dateTimestamp }
+    });
+    return res.data?.data || [];
   }
 }
