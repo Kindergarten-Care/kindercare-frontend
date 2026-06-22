@@ -32,7 +32,5 @@ export interface LeaveRequest {
   isMealFeeDeducted?: number;
   parentNotes?: string;
   createdAt?: number;
-  studentDob?: string;
-  studentGender?: string;
   className?: string;
 }
