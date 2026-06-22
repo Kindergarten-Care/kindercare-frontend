@@ -877,14 +877,23 @@ export const AttendanceView: React.FC = () => {
               <>
                 <S.ModalMetaRow>
                   <S.ModalMetaField>
+                    <S.ModalLabel>Lớp học: </S.ModalLabel>
+                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.className || '...'}</span>
+                  </S.ModalMetaField>
+
+                  <S.ModalMetaField>
                     <S.ModalLabel>Phụ huynh: </S.ModalLabel>
                     <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.parentName} ({leaveReqDetail.relationship})</span>
                   </S.ModalMetaField>
+                  {leaveReqDetail.parentPhone && (
+                    <S.ModalMetaField>
+                      <S.ModalLabel>Số điện thoại: </S.ModalLabel>
+                      <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.parentPhone}</span>
+                    </S.ModalMetaField>
+                  )}
                   <S.ModalMetaField>
-                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
-                    <S.ModalValue $status={leaveReqDetail.status}>
-                      {leaveReqDetail.status === 'APPROVED' ? 'Đã duyệt' : (leaveReqDetail.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
-                    </S.ModalValue>
+                    <S.ModalLabel>Ngày gửi đơn: </S.ModalLabel>
+                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.createdAt ? new Date(leaveReqDetail.createdAt).toLocaleString('vi-VN') : '...'}</span>
                   </S.ModalMetaField>
                   <S.ModalMetaField>
                     <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
@@ -892,12 +901,33 @@ export const AttendanceView: React.FC = () => {
                       Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
                     </span>
                   </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Giảm trừ tiền ăn: </S.ModalLabel>
+                    <span style={{ color: leaveReqDetail.isMealFeeDeducted ? '#10B981' : '#EF4444', fontWeight: 700 }}>
+                      {leaveReqDetail.isMealFeeDeducted ? 'Có' : 'Không'}
+                    </span>
+                  </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
+                    <S.ModalValue $status={leaveReqDetail.status}>
+                      {leaveReqDetail.status === 'APPROVED' ? 'Đã duyệt' : (leaveReqDetail.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
+                    </S.ModalValue>
+                  </S.ModalMetaField>
                 </S.ModalMetaRow>
 
-                <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>LÝ DO:</div>
+                <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>LÝ DO XIN NGHỈ:</div>
                 <S.ModalReasonBox>
                   {leaveReqDetail.reason || 'Không ghi rõ lý do'}
                 </S.ModalReasonBox>
+
+                {leaveReqDetail.parentNotes && (
+                  <>
+                    <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>Ý KIẾN / GHI CHÚ PHỤ HUYNH:</div>
+                    <S.ModalReasonBox style={{ minHeight: '60px', background: '#F9FAFB' }}>
+                      {leaveReqDetail.parentNotes}
+                    </S.ModalReasonBox>
+                  </>
+                )}
                 
                 {leaveReqDetail.attachmentUrl && (
                   <div style={{ marginBottom: '20px' }}>
