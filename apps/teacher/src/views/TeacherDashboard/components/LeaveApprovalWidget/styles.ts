@@ -19,11 +19,21 @@ export const WidgetContainer = styled.section`
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 10px;
+    }
   }
 `;
 

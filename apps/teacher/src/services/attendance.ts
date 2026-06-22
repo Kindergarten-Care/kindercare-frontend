@@ -84,6 +84,13 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
   if (raw.status === 'Approved') domainStatus = 'APPROVED';
   if (raw.status === 'Rejected') domainStatus = 'REJECTED';
 
+  let attachmentUrl = raw.evidenceUrl || undefined;
+  if (attachmentUrl && !attachmentUrl.startsWith('http') && !attachmentUrl.startsWith('data:')) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+    const host = apiBase.split('/api')[0];
+    attachmentUrl = `${host}/${attachmentUrl.replace(/^\//, '')}`;
+  }
+
   return {
     id: String(raw.requestId),
     studentId: String(raw.studentId),
@@ -91,7 +98,7 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     parentName: raw.parentName || 'Phụ huynh',
     relationship: 'Phụ huynh', // Default relationship since backend route does not expose it
     reason: raw.reason,
-    attachmentUrl: raw.evidenceUrl || undefined,
+    attachmentUrl,
     status: domainStatus,
     classId: raw.classId ? Number(raw.classId) : undefined,
     fromDate: raw.fromDate,
