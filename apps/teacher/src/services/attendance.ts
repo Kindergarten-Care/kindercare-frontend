@@ -107,8 +107,6 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     isMealFeeDeducted: raw.isMealFeeDeducted,
     parentNotes: raw.parentNotes,
     createdAt: raw.createdAt,
-    studentDob: raw.studentDob,
-    studentGender: raw.studentGender,
     className: raw.className,
   };
 }
