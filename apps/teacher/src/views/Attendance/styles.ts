@@ -975,3 +975,107 @@ export const GridAvatar = styled.span<GridAvatarProps>`
   opacity: ${props => props.$dim ? 0.6 : 1};
   filter: ${props => props.$dim ? 'grayscale(0.8)' : 'none'};
 `;
+
+export const SummaryButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: ${props => props.theme.colors.surface};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.md};
+  font-size: 13.5px;
+  font-weight: 700;
+  color: ${props => props.theme.colors.fg};
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+  &:hover {
+    background: #FEF3C7;
+    border-color: ${props => props.theme.colors.amber};
+    color: #B45309;
+  }
+`;
+
+export const SummaryModalContent = styled.div`
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.radius.lg};
+  padding: 24px;
+  width: 90%;
+  max-width: 720px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: ${kcPop} 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+`;
+
+export const TabRow = styled.div`
+  display: flex;
+  gap: 8px;
+  border-bottom: 1.5px solid ${props => props.theme.colors.border};
+  margin-bottom: 16px;
+  padding-bottom: 2px;
+`;
+
+export const TabBtn = styled.button<{ $active: boolean }>`
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid ${props => props.$active ? props.theme.colors.green : 'transparent'};
+  color: ${props => props.$active ? props.theme.colors.green : props.theme.colors.muted};
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -3.5px;
+
+  &:hover {
+    color: ${props => props.theme.colors.green};
+  }
+`;
+
+export const SummaryTableWrapper = styled.div`
+  flex: 1;
+  overflow: auto;
+  min-height: 250px;
+  max-height: 480px;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.md};
+  background: ${props => props.theme.colors.bg};
+`;
+
+export const SummaryTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+`;
+
+export const SummaryTh = styled.th`
+  background: ${props => props.theme.colors.surface};
+  padding: 12px 14px;
+  font-weight: 700;
+  color: ${props => props.theme.colors.fg};
+  border-bottom: 1.5px solid ${props => props.theme.colors.border};
+  position: sticky;
+  top: 0;
+  z-index: 2;
+`;
+
+export const SummaryTr = styled.tr`
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.surface};
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #F8FBF9;
+  }
+`;
+
+export const SummaryTd = styled.td`
+  padding: 12px 14px;
+  color: ${props => props.theme.colors.fg};
+`;

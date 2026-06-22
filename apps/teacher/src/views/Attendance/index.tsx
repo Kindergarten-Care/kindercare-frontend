@@ -24,6 +24,12 @@ export const AttendanceView: React.FC = () => {
   const [className, setClassName] = useState<string>('');
   const [toasts, setToasts] = useState<{id: string, text: string}[]>([]);
   
+  // States for summary leave requests modal
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [allLeaves, setAllLeaves] = useState<LeaveRequest[]>([]);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [summaryFilter, setSummaryFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [reasonDraft, setReasonDraft] = useState('');
@@ -88,6 +94,20 @@ export const AttendanceView: React.FC = () => {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3000);
+  };
+
+  const handleOpenSummaryModal = async () => {
+    setIsSummaryModalOpen(true);
+    setIsLoadingSummary(true);
+    try {
+      const data = await AttendanceService.getAllLeaveRequests();
+      setAllLeaves(data);
+    } catch (e) {
+      console.error('Failed to load summary leave requests:', e);
+      addToast('Lỗi khi tải danh sách đơn phép');
+    } finally {
+      setIsLoadingSummary(false);
+    }
   };
 
   const ST = {
@@ -404,10 +424,16 @@ export const AttendanceView: React.FC = () => {
           <S.SubTitle>Lớp {className || '...'} · Check-in đầu ngày</S.SubTitle>
           <S.Title>Điểm danh hàng ngày</S.Title>
         </S.HeaderLeft>
-        <S.ExportButton onClick={exportCSV}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: theme.colors.green }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Xuất báo cáo
-        </S.ExportButton>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <S.SummaryButton onClick={handleOpenSummaryModal}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: '#b45309' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Tổng hợp đơn
+          </S.SummaryButton>
+          <S.ExportButton onClick={exportCSV}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: theme.colors.green }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Xuất báo cáo
+          </S.ExportButton>
+        </div>
       </S.HeaderRow>
 
       {/* TOP 2 BENTO CARDS */}
@@ -725,9 +751,121 @@ export const AttendanceView: React.FC = () => {
         {toasts.map(t => <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>)}
       </S.ToastContainer>
 
+      {/* SUMMARY LEAVE REQUESTS MODAL */}
+      {isSummaryModalOpen && (
+        <S.ModalOverlay onClick={() => setIsSummaryModalOpen(false)}>
+          <S.SummaryModalContent onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <S.ModalTitle style={{ margin: 0, fontSize: '18px' }}>Tổng hợp đơn xin nghỉ học</S.ModalTitle>
+              <button 
+                onClick={() => setIsSummaryModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: theme.colors.muted }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <S.TabRow>
+              <S.TabBtn $active={summaryFilter === 'ALL'} onClick={() => setSummaryFilter('ALL')}>
+                Tất cả ({allLeaves.length})
+              </S.TabBtn>
+              <S.TabBtn $active={summaryFilter === 'PENDING'} onClick={() => setSummaryFilter('PENDING')}>
+                Chờ duyệt ({allLeaves.filter(l => l.status === 'PENDING').length})
+              </S.TabBtn>
+              <S.TabBtn $active={summaryFilter === 'APPROVED'} onClick={() => setSummaryFilter('APPROVED')}>
+                Đã duyệt ({allLeaves.filter(l => l.status === 'APPROVED').length})
+              </S.TabBtn>
+              <S.TabBtn $active={summaryFilter === 'REJECTED'} onClick={() => setSummaryFilter('REJECTED')}>
+                Từ chối ({allLeaves.filter(l => l.status === 'REJECTED').length})
+              </S.TabBtn>
+            </S.TabRow>
+
+            {isLoadingSummary ? (
+              <div style={{ padding: '50px 0', textAlign: 'center', color: theme.colors.muted, fontWeight: 600 }}>
+                Đang tải danh sách đơn phép...
+              </div>
+            ) : (
+              <S.SummaryTableWrapper>
+                <S.SummaryTable>
+                  <thead>
+                    <tr>
+                      <S.SummaryTh>Học sinh</S.SummaryTh>
+                      <S.SummaryTh>Thời gian nghỉ</S.SummaryTh>
+                      <S.SummaryTh>Lý do</S.SummaryTh>
+                      <S.SummaryTh>Trạng thái</S.SummaryTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allLeaves
+                      .filter(l => {
+                        if (summaryFilter === 'PENDING') return l.status === 'PENDING';
+                        if (summaryFilter === 'APPROVED') return l.status === 'APPROVED';
+                        if (summaryFilter === 'REJECTED') return l.status === 'REJECTED';
+                        return true;
+                      })
+                      .map((l, index) => {
+                        const fromStr = l.fromDate ? new Date(l.fromDate * 1000).toLocaleDateString('vi-VN') : '...';
+                        const toStr = l.toDate ? new Date(l.toDate * 1000).toLocaleDateString('vi-VN') : '...';
+                        return (
+                          <S.SummaryTr 
+                            key={`${l.id}-${index}`}
+                            onClick={() => {
+                              const dummyStudent: Student = {
+                                id: l.studentId,
+                                name: l.studentName,
+                                avatar: '',
+                                attendanceStatus: l.status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (l.status === 'REJECTED' ? 'UNEXCUSED_ABSENCE' : 'NOT_YET'),
+                                arrivalTime: '--:--',
+                                healthNote: '',
+                                hasActiveLeaveRequest: l.status === 'PENDING',
+                                leaveRequestId: l.id,
+                                leaveRequestStatus: l.status,
+                                leaveRequestReason: l.reason
+                              };
+                              setSelectedLeaveRequest(dummyStudent);
+                              setLeaveReqDetail(l);
+                            }}
+                          >
+                            <S.SummaryTd style={{ fontWeight: 700 }}>{l.studentName}</S.SummaryTd>
+                            <S.SummaryTd>{fromStr} - {toStr}</S.SummaryTd>
+                            <S.SummaryTd style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {l.reason || 'Không rõ lý do'}
+                            </S.SummaryTd>
+                            <S.SummaryTd>
+                              <S.ModalValue $status={l.status}>
+                                {l.status === 'APPROVED' ? 'Đã duyệt' : (l.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
+                              </S.ModalValue>
+                            </S.SummaryTd>
+                          </S.SummaryTr>
+                        );
+                      })}
+                    {allLeaves.filter(l => {
+                      if (summaryFilter === 'PENDING') return l.status === 'PENDING';
+                      if (summaryFilter === 'APPROVED') return l.status === 'APPROVED';
+                      if (summaryFilter === 'REJECTED') return l.status === 'REJECTED';
+                      return true;
+                    }).length === 0 && (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center', padding: '30px', color: theme.colors.muted, fontWeight: 500 }}>
+                          Không có đơn xin nghỉ học nào.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </S.SummaryTable>
+              </S.SummaryTableWrapper>
+            )}
+
+            <S.ModalActionRow style={{ marginTop: '20px' }}>
+              <S.ModalCloseBtn onClick={() => setIsSummaryModalOpen(false)}>Đóng</S.ModalCloseBtn>
+            </S.ModalActionRow>
+          </S.SummaryModalContent>
+        </S.ModalOverlay>
+      )}
+
       {/* VIEW LEAVE REQUEST MODAL */}
       {selectedLeaveRequest && (
-        <S.ModalOverlay onClick={() => setSelectedLeaveRequest(null)}>
+        <S.ModalOverlay onClick={() => setSelectedLeaveRequest(null)} style={{ zIndex: 10000 }}>
           <S.ModalContent onClick={e => e.stopPropagation()}>
             <S.ModalTitle>Đơn xin phép - {selectedLeaveRequest.name}</S.ModalTitle>
             

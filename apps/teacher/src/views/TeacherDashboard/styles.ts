@@ -327,12 +327,22 @@ export const ActionTile = styled.button`
   gap: 10px;
   cursor: pointer;
   text-align: left;
+  position: relative;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
   width: 100%;
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 10px;
+    }
   }
 `;
 
