@@ -188,3 +188,127 @@ export const RejectButton = styled.button`
     background: #FEE2E2;
   }
 `;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+`;
+
+export const ModalContent = styled.div`
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.radius.lg};
+  padding: 24px;
+  width: 90%;
+  max-width: 440px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+`;
+
+export const ModalTitle = styled.div`
+  font-size: 16px;
+  font-weight: 800;
+  color: ${props => props.theme.colors.fg};
+  margin-bottom: 16px;
+  font-family: inherit;
+`;
+
+export const ModalMetaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+`;
+
+export const ModalMetaField = styled.div`
+  font-size: 14px;
+  color: ${props => props.theme.colors.muted};
+`;
+
+export const ModalLabel = styled.strong`
+  color: ${props => props.theme.colors.fg};
+`;
+
+export const ModalValue = styled.span<{ $status?: 'APPROVED' | 'REJECTED' | 'PENDING' }>`
+  font-weight: 600;
+  color: ${props => {
+    if (props.$status === 'APPROVED') return props.theme.colors.green;
+    if (props.$status === 'REJECTED') return props.theme.colors.red || '#dc2626';
+    if (props.$status === 'PENDING') return props.theme.colors.amber || '#d97706';
+    return props.theme.colors.fg;
+  }};
+`;
+
+export const ModalReasonBox = styled.div`
+  font-size: 14px;
+  color: ${props => props.theme.colors.fg};
+  background: ${props => props.theme.colors.bg};
+  border: 1px solid ${props => props.theme.colors.border};
+  padding: 12px;
+  border-radius: ${props => props.theme.radius.md};
+  min-height: 80px;
+  margin-bottom: 20px;
+`;
+
+export const ModalActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+`;
+
+export const ModalApproveBtn = styled.button`
+  padding: 8px 20px;
+  background: ${props => props.theme.colors.green};
+  color: ${props => props.theme.colors.white};
+  font-weight: 600;
+  border: none;
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+export const ModalRejectBtn = styled.button`
+  padding: 8px 20px;
+  background: ${props => props.theme.colors.redLight || '#fee2e2'};
+  color: ${props => props.theme.colors.red || '#dc2626'};
+  font-weight: 600;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+export const ModalCloseBtn = styled.button`
+  padding: 8px 20px;
+  background: ${props => props.theme.colors.bg};
+  color: ${props => props.theme.colors.muted};
+  font-weight: 600;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.md};
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: ${props => props.theme.colors.border};
+  }
+`;
+

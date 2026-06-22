@@ -27,6 +27,25 @@ interface LeaveApprovalWidgetProps {
 export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction, onRefresh }) => {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
+  const [leaveReqDetail, setLeaveReqDetail] = useState<LeaveRequest | null>(null);
+  const [isLoadingReqDetail, setIsLoadingReqDetail] = useState<boolean>(false);
+
+  const handleOpenLeaveRequest = async (r: LeaveRequest) => {
+    setSelectedLeaveRequest(r);
+    setLeaveReqDetail(null);
+    setIsLoadingReqDetail(true);
+    try {
+      const detail = await AttendanceService.getLeaveRequestDetail(r.id);
+      if (detail) {
+        setLeaveReqDetail(detail);
+      }
+    } catch (e) {
+      console.warn('Failed to load leave request detail:', e);
+    } finally {
+      setIsLoadingReqDetail(false);
+    }
+  };
 
   const fetchRequests = async () => {
     try {
@@ -160,7 +179,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
         ) : (
           requests.map(r => (
             <S.RequestRow key={r.id} $removing={(r as any).removing}>
-              <S.StudentRow>
+              <S.StudentRow style={{ cursor: 'pointer' }} onClick={() => handleOpenLeaveRequest(r)}>
                 <S.AvatarCircle $background={getGradColor(r.studentName)}>
                   {getInitial(r.studentName)}
                 </S.AvatarCircle>
@@ -187,6 +206,80 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
           ))
         )}
       </S.RequestList>
+
+      {selectedLeaveRequest && (
+        <S.ModalOverlay onClick={() => setSelectedLeaveRequest(null)}>
+          <S.ModalContent onClick={e => e.stopPropagation()}>
+            <S.ModalTitle>Đơn xin phép - {selectedLeaveRequest.studentName}</S.ModalTitle>
+            
+            {isLoadingReqDetail ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#9CA3AF', fontSize: '14px', fontWeight: 500 }}>
+                Đang tải dữ liệu chi tiết...
+              </div>
+            ) : leaveReqDetail ? (
+              <>
+                <S.ModalMetaRow>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Phụ huynh: </S.ModalLabel>
+                    <span style={{ color: '#1F2937', fontWeight: 500 }}>{leaveReqDetail.parentName} ({leaveReqDetail.relationship})</span>
+                  </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
+                    <S.ModalValue $status={leaveReqDetail.status}>
+                      {leaveReqDetail.status === 'APPROVED' ? 'Đã duyệt' : (leaveReqDetail.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
+                    </S.ModalValue>
+                  </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
+                    <span style={{ color: '#1F2937', fontWeight: 500 }}>
+                      Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
+                    </span>
+                  </S.ModalMetaField>
+                </S.ModalMetaRow>
+
+                <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>LÝ DO:</div>
+                <S.ModalReasonBox>
+                  {leaveReqDetail.reason || 'Không ghi rõ lý do'}
+                </S.ModalReasonBox>
+                
+                {leaveReqDetail.attachmentUrl && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>MINH CHỨNG ĐÍNH KÈM:</div>
+                    <img src={leaveReqDetail.attachmentUrl} alt="Minh chứng" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', border: '1px solid #E5E7EB', objectFit: 'cover' }} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <S.ModalMetaRow>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
+                    <S.ModalValue $status={selectedLeaveRequest.status}>
+                      {selectedLeaveRequest.status === 'APPROVED' ? 'Đã duyệt' : (selectedLeaveRequest.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
+                    </S.ModalValue>
+                  </S.ModalMetaField>
+                </S.ModalMetaRow>
+                <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>GHI CHÚ / LÝ DO:</div>
+                <S.ModalReasonBox>
+                  {selectedLeaveRequest.reason || 'Không ghi rõ lý do'}
+                </S.ModalReasonBox>
+              </>
+            )}
+            
+            <S.ModalActionRow>
+              {((leaveReqDetail && leaveReqDetail.status === 'PENDING') ||
+                 (!leaveReqDetail && selectedLeaveRequest.status === 'PENDING')) ? (
+                <>
+                  <S.ModalRejectBtn onClick={() => { setSelectedLeaveRequest(null); handleAction(selectedLeaveRequest.id, selectedLeaveRequest.studentName, false); }}>Từ chối</S.ModalRejectBtn>
+                  <S.ModalApproveBtn onClick={() => { setSelectedLeaveRequest(null); handleAction(selectedLeaveRequest.id, selectedLeaveRequest.studentName, true); }}>Xác nhận & Duyệt</S.ModalApproveBtn>
+                </>
+              ) : (
+                <S.ModalCloseBtn onClick={() => setSelectedLeaveRequest(null)}>Đóng</S.ModalCloseBtn>
+              )}
+            </S.ModalActionRow>
+          </S.ModalContent>
+        </S.ModalOverlay>
+      )}
     </S.WidgetContainer>
   );
 };
