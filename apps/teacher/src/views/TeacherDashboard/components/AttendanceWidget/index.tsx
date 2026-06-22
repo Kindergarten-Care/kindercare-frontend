@@ -14,13 +14,29 @@ const getTodayDateString = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const AttendanceWidget: React.FC = () => {
+interface AttendanceWidgetProps {
+  students?: Student[];
+  className?: string;
+  loading?: boolean;
+}
+
+export const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({
+  students: propStudents,
+  className: propClassName,
+  loading: propLoading,
+}) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(true);
   const [className, setClassName] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
 
   const fetchAttendance = async () => {
+    if (propStudents !== undefined) {
+      setStudents(propStudents);
+      setClassName(propClassName || '');
+      setLoading(propLoading || false);
+      return;
+    }
     try {
       setLoading(true);
       const classes = await AttendanceService.getTeacherClasses();
@@ -41,7 +57,7 @@ export const AttendanceWidget: React.FC = () => {
 
   useEffect(() => {
     fetchAttendance();
-  }, []);
+  }, [propStudents, propClassName, propLoading]);
 
   const tot = students.length || 42;
   const presentStudents = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);

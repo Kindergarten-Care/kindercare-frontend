@@ -60,6 +60,8 @@ export const TeacherDashboardView: React.FC = () => {
 
   const [selectedChatPartner, setSelectedChatPartner] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [activeClassName, setActiveClassName] = useState<string>('');
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
 
   const qrScannerRef = useRef<any>(null);
 
@@ -73,10 +75,12 @@ export const TeacherDashboardView: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
+      setIsLoadingDashboard(true);
       const classes = await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
         setActiveClassId(firstClass.classId);
+        setActiveClassName(firstClass.className);
         
         const todayDate = getTodayDateString();
         const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
@@ -108,6 +112,8 @@ export const TeacherDashboardView: React.FC = () => {
       }
     } catch (e) {
       console.warn('Failed to load real DB dashboard data:', e);
+    } finally {
+      setIsLoadingDashboard(false);
     }
   };
 
@@ -518,7 +524,7 @@ export const TeacherDashboardView: React.FC = () => {
       <S.BentoGrid>
         {/* CARD A: Attendance (col span 2) */}
         <S.GridCol2Span>
-          <AttendanceWidget />
+          <AttendanceWidget students={studentsList} className={activeClassName} loading={isLoadingDashboard} />
         </S.GridCol2Span>
 
         {/* CARD D: Chat list (col span 1) */}

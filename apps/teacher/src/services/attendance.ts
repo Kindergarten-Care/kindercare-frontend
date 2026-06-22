@@ -133,11 +133,10 @@ export class AttendanceService {
    * Fetch details for a specific leave request.
    */
   public static async getLeaveRequestDetail(requestId: string): Promise<LeaveRequest | null> {
-    const res = await apiClient.get('/teacher/leave-requests');
-    const list = res.data?.data || [];
-    const match = list.find((r: any) => String(r.requestId) === requestId);
-    if (!match) return null;
-    return mapApiLeaveRequestToDomain(match);
+    const res = await apiClient.get(`/teacher/leave-requests/${requestId}`);
+    const data = res.data?.data;
+    if (!data) return null;
+    return mapApiLeaveRequestToDomain(data);
   }
 
   /**
