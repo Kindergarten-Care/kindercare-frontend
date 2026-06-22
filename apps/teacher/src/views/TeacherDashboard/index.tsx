@@ -3,12 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
 import { AttendanceWidget } from './components/AttendanceWidget';
-import { ChatsWidget } from './components/ChatsWidget';
+import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
-import { ParentChatDrawer } from './components/ParentChatDrawer';
-import { QuickActionsWidget } from './components/QuickActionsWidget';
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
@@ -58,8 +56,6 @@ export const TeacherDashboardView: React.FC = () => {
     checkInTime: string;
   } | null>(null);
 
-  const [selectedChatPartner, setSelectedChatPartner] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
   const [activeClassName, setActiveClassName] = useState<string>('');
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
 
@@ -417,15 +413,10 @@ export const TeacherDashboardView: React.FC = () => {
     await handleScanSuccess(student.name, student.healthNote || null, student.id);
   };
 
-  const handleOpenParentChat = (name: string) => {
-    setSelectedChatPartner(name);
-    setChatOpen(true);
-  };
-
   const quickActionsList = [
     { id: 'q1', label: 'Điểm danh QR', desc: 'Quét mã check-in', color: '#005A36', tint: '#E6F3ED', icon: '📲', run: handleStartScanner },
     { id: 'q2', label: 'Tạo nhật ký', desc: 'Ghi lại hoạt động lớp', color: '#2563EB', tint: '#E3EDFD', icon: '📝', run: () => addToast('📝 Tạo nhật ký lớp mới…') },
-    { id: 'q3', label: 'Nhắn phụ huynh', desc: 'Gửi tin tới phụ huynh', color: '#F97316', tint: '#FFEEDF', icon: '💬', run: () => { setChatOpen(true); setQuickOpen(false); } },
+    { id: 'q3', label: 'Phiếu bé ngoan', desc: 'Đánh giá hàng ngày', color: '#EC4899', tint: '#FCE7F3', icon: '🌺', run: () => { addToast('Vui lòng dùng nút Đánh giá ngay trên Widget'); setQuickOpen(false); } },
   ];
 
   return (
@@ -507,10 +498,10 @@ export const TeacherDashboardView: React.FC = () => {
                     <S.NotifTime>5 phút trước</S.NotifTime>
                   </S.NotifContent>
                 </S.NotifItem>
-                <S.NotifItem onClick={() => { setChatOpen(true); setNotifOpen(false); }}>
-                  <S.NotifItemIcon $bg="#E3EDFD" $color="#2563EB">💬</S.NotifItemIcon>
+                <S.NotifItem onClick={() => addToast('🌺 Mở chi tiết Phiếu bé ngoan...')}>
+                  <S.NotifItemIcon $bg="#FCE7F3" $color="#EC4899">🌺</S.NotifItemIcon>
                   <S.NotifContent>
-                    <S.NotifText>3 tin nhắn mới từ phụ huynh</S.NotifText>
+                    <S.NotifText>Nhắc nhở: Cần đánh giá phiếu bé ngoan hôm nay</S.NotifText>
                     <S.NotifTime>12 phút trước</S.NotifTime>
                   </S.NotifContent>
                 </S.NotifItem>
@@ -527,9 +518,9 @@ export const TeacherDashboardView: React.FC = () => {
           <AttendanceWidget students={studentsList} className={activeClassName} loading={isLoadingDashboard} />
         </S.GridCol2Span>
 
-        {/* CARD D: Chat list (col span 1) */}
+        {/* CARD D: Good Behavior (col span 1) */}
         <S.GridCol1Span>
-          <ChatsWidget onOpenChat={handleOpenParentChat} />
+          <GoodBehaviorWidget students={studentsList} />
         </S.GridCol1Span>
 
         {/* CARD E: Health alert notes (col span 1) */}
@@ -568,13 +559,6 @@ export const TeacherDashboardView: React.FC = () => {
         ))}
       </S.ToastsContainer>
 
-      {/* FLOATING CHAT DRAWER */}
-      <ParentChatDrawer
-        isOpen={chatOpen}
-        onClose={() => setChatOpen(false)}
-        onOpen={() => setChatOpen(true)}
-        chatPartnerName={selectedChatPartner || 'Mẹ bé Khang'}
-      />
 
       {/* QR CAMERA SCANNER MODAL */}
       <S.ScannerOverlay $active={scannerOpen}>
