@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 export const WidgetContainer = styled.div`
   background: ${props => props.theme.colors.surface};
@@ -16,7 +16,7 @@ export const WidgetContainer = styled.div`
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, #F43F5E, #EC4899);
+    background: linear-gradient(90deg, ${props => props.theme.colors.amberMid}, ${props => props.theme.colors.greenMid});
   }
 `;
 
@@ -37,8 +37,8 @@ export const IconContainer = styled.div`
   width: 40px;
   height: 40px;
   border-radius: ${props => props.theme.radius.lg};
-  background: #FCE7F3;
-  color: #DB2777;
+  background: ${props => props.theme.colors.amberLight};
+  color: ${props => props.theme.colors.amberMid};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,8 +77,8 @@ export const ProgressCircle = styled.div<{ $percent: number }>`
   height: 120px;
   border-radius: 50%;
   background: conic-gradient(
-    #EC4899 ${props => props.$percent}%,
-    #FCE7F3 ${props => props.$percent}% 100%
+    ${props => props.theme.colors.greenMid} ${props => props.$percent}%,
+    ${props => props.theme.colors.greenXLight} ${props => props.$percent}% 100%
   );
   display: flex;
   align-items: center;
@@ -106,7 +106,7 @@ export const ProgressContent = styled.div`
 export const ProgressValue = styled.span`
   font-size: 24px;
   font-weight: 800;
-  color: #BE185D;
+  color: ${props => props.theme.colors.greenDark};
   line-height: 1;
 `;
 
@@ -121,7 +121,7 @@ export const ActionButton = styled.button`
   margin-top: auto;
   width: 100%;
   padding: 12px;
-  background: #EC4899;
+  background: ${props => props.theme.colors.greenMid};
   color: white;
   border: none;
   border-radius: ${props => props.theme.radius.md};
@@ -132,7 +132,7 @@ export const ActionButton = styled.button`
   font-family: inherit;
 
   &:hover {
-    background: #BE185D;
+    background: ${props => props.theme.colors.greenDark};
     transform: translateY(-2px);
   }
 `;
@@ -142,8 +142,8 @@ export const ActionButton = styled.button`
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -152,23 +152,24 @@ export const ModalOverlay = styled.div`
 
 export const ModalContent = styled.div`
   background: ${props => props.theme.colors.surface};
-  width: 90%;
-  max-width: 650px;
-  max-height: 85vh;
+  width: 95%;
+  max-width: 1000px;
+  height: 85vh;
   border-radius: ${props => props.theme.radius.xl};
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  position: relative;
 `;
 
 export const ModalHeader = styled.div`
-  padding: 20px 24px;
+  padding: 24px;
   border-bottom: 1px solid ${props => props.theme.colors.border};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #FDF2F8;
+  background: ${props => props.theme.colors.amberLight};
 `;
 
 export const ModalTitleInfo = styled.div`
@@ -178,165 +179,286 @@ export const ModalTitleInfo = styled.div`
 
 export const ModalTitle = styled.h2`
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
-  color: #9D174D;
+  color: ${props => props.theme.colors.amberMid};
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export const ModalSubtitle = styled.span`
-  font-size: 13px;
-  color: #BE185D;
+  font-size: 14px;
+  color: ${props => props.theme.colors.amber};
   font-weight: 500;
   margin-top: 4px;
 `;
 
-export const CloseButton = styled.button`
-  background: transparent;
+export const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const BatchAwardButton = styled.button`
+  padding: 10px 20px;
+  background: linear-gradient(135deg, ${props => props.theme.colors.amberMid}, ${props => props.theme.colors.amber});
+  color: white;
   border: none;
-  font-size: 20px;
-  color: ${props => props.theme.colors.muted};
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+`;
+
+export const CloseButton = styled.button`
+  background: white;
+  border: 1px solid ${props => props.theme.colors.border};
+  font-size: 16px;
+  color: ${props => props.theme.colors.fg};
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  transition: all 0.2s;
   
   &:hover {
-    background: ${props => props.theme.colors.border};
-    color: ${props => props.theme.colors.fg};
+    background: ${props => props.theme.colors.bg};
+    color: #E11D48;
   }
 `;
 
 export const ModalBody = styled.div`
-  padding: 0;
+  padding: 24px;
   overflow-y: auto;
   flex: 1;
+  background: ${props => props.theme.colors.bg};
 `;
 
-export const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-export const Th = styled.th`
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 12px;
+export const SectionTitle = styled.h3`
+  margin: 0 0 16px 0;
+  font-size: 15px;
   font-weight: 700;
-  color: ${props => props.theme.colors.muted};
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  position: sticky;
-  top: 0;
-  background: ${props => props.theme.colors.surface};
-  z-index: 2;
-
-  &:not(:first-child) {
-    text-align: center;
-    width: 80px;
-  }
-`;
-
-export const Td = styled.td`
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
   color: ${props => props.theme.colors.fg};
-  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  &:not(:first-child) {
-    text-align: center;
+  span {
+    background: ${props => props.theme.colors.amberLight};
+    color: ${props => props.theme.colors.amberMid};
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
   }
 `;
 
-export const StudentInfo = styled.div`
+export const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+`;
+
+// 3D TILT CARD
+
+export const CardWrapper = styled.div`
+  perspective: 1000px;
+  width: 100%;
+`;
+
+export const TiltCardInner = styled.div<{ $isAwarded: boolean }>`
+  background: ${props => props.$isAwarded ? props.theme.colors.amberLight : props.theme.colors.surface};
+  border: 2px solid ${props => props.$isAwarded ? props.theme.colors.amberMid : props.theme.colors.border};
+  border-radius: ${props => props.theme.radius.lg};
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transform-style: preserve-3d;
+  box-shadow: ${props => props.$isAwarded ? '0 10px 25px -5px rgba(245, 158, 11, 0.15)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)'};
+  position: relative;
+  overflow: visible;
+
+  &:hover {
+    z-index: 10;
+  }
+`;
+
+export const CardHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  transform: translateZ(20px);
 `;
 
 export const Avatar = styled.div<{ $bg: string }>`
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: ${props => props.$bg};
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 `;
 
-export const CheckboxLabel = styled.label`
+export const StudentName = styled.h4`
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: ${props => props.theme.colors.fg};
+`;
+
+export const EligibilityTag = styled.div<{ $eligible: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${props => props.$eligible ? props.theme.colors.greenDark : props.theme.colors.redDark};
+  background: ${props => props.$eligible ? props.theme.colors.greenLight : props.theme.colors.redLight};
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: inline-block;
+`;
+
+export const AwardBadge = styled.div`
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 32px;
+  height: 32px;
+  background: ${props => props.theme.colors.amberMid};
+  color: white;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
+  font-size: 16px;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+  transform: translateZ(30px);
+  border: 2px solid white;
+  z-index: 5;
 `;
 
-export const CheckboxInput = styled.input`
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid ${props => props.theme.colors.border};
-  border-radius: 4px;
+export const CardBody = styled.div`
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateZ(15px);
+`;
+
+export const CriteriaRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: ${props => props.theme.colors.muted};
+`;
+
+export const CriteriaLabel = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const ProgressBarBg = styled.div`
+  width: 100px;
+  height: 6px;
+  background: ${props => props.theme.colors.border};
+  border-radius: 3px;
+  overflow: hidden;
+`;
+
+export const ProgressBarFill = styled.div<{ $percent: number, $color: string }>`
+  height: 100%;
+  width: ${props => props.$percent}%;
+  background: ${props => props.$color};
+  border-radius: 3px;
+`;
+
+export const QuickPraiseBox = styled.div`
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed ${props => props.theme.colors.border};
+  transform: translateZ(25px);
+`;
+
+export const QuickPraiseTitle = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: ${props => props.theme.colors.muted};
+  margin-bottom: 8px;
+`;
+
+export const ChipGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+export const PraiseChip = styled.button<{ $active: boolean }>`
+  background: ${props => props.$active ? props.theme.colors.greenLight : props.theme.colors.bg};
+  color: ${props => props.$active ? props.theme.colors.greenDark : props.theme.colors.muted};
+  border: 1px solid ${props => props.$active ? props.theme.colors.greenMid : props.theme.colors.border};
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  position: relative;
   transition: all 0.2s;
 
-  &:checked {
-    background: #EC4899;
-    border-color: #EC4899;
-  }
-
-  &:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-  }
-`;
-
-export const ModalFooter = styled.div`
-  padding: 16px 24px;
-  border-top: 1px solid ${props => props.theme.colors.border};
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  background: ${props => props.theme.colors.surface};
-`;
-
-export const CancelButton = styled.button`
-  padding: 10px 16px;
-  border: 1px solid ${props => props.theme.colors.border};
-  background: transparent;
-  color: ${props => props.theme.colors.fg};
-  border-radius: ${props => props.theme.radius.md};
-  font-weight: 600;
-  cursor: pointer;
-
   &:hover {
-    background: ${props => props.theme.colors.bg};
+    background: ${props => props.$active ? props.theme.colors.greenXLight : '#F1F5F9'};
   }
 `;
 
-export const SaveButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  background: #EC4899;
-  color: white;
-  border-radius: ${props => props.theme.radius.md};
-  font-weight: 600;
-  cursor: pointer;
+// CONFETTI LAYER OVERLAY
+export const ConfettiContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10000;
+  overflow: hidden;
+`;
 
-  &:hover {
-    background: #BE185D;
-  }
+const fall = keyframes`
+  0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+`;
+
+export const ConfettiPiece = styled.div<{ $x: number, $color: string, $delay: number, $duration: number }>`
+  position: absolute;
+  top: -20px;
+  left: ${props => props.$x}%;
+  width: 10px;
+  height: 20px;
+  background: ${props => props.$color};
+  opacity: 0;
+  animation: ${fall} ${props => props.$duration}s ease-in forwards;
+  animation-delay: ${props => props.$delay}s;
+  border-radius: 2px;
 `;
