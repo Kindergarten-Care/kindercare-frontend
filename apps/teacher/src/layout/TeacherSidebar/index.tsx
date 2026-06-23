@@ -57,12 +57,6 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
         </S.NavItem>
         <S.NavItem onClick={() => router.push('/')}>
           <S.IconWrapper>
-            <MessageSquare size={23} />
-          </S.IconWrapper>
-          <S.Label>Liên lạc phụ huynh</S.Label>
-        </S.NavItem>
-        <S.NavItem onClick={() => router.push('/')}>
-          <S.IconWrapper>
             <Heart size={23} />
           </S.IconWrapper>
           <S.Label>Y tế & Dinh dưỡng</S.Label>
