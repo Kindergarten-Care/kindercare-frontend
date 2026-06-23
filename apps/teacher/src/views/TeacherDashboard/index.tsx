@@ -34,7 +34,12 @@ interface ToastItem {
   text: string;
 }
 
+import { useDashboardStats, useNotifications } from '@/hooks/useTeacherQueries';
+
 export const TeacherDashboardView: React.FC = () => {
+  const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
+  const { data: notifications } = useNotifications();
+
   const [activeClassId, setActiveClassId] = useState<number | null>(null);
   const [studentsList, setStudentsList] = useState<Student[]>([]);
   const [presentCount, setPresentCount] = useState(0);
@@ -72,7 +77,9 @@ export const TeacherDashboardView: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoadingDashboard(true);
-      const classes = await AttendanceService.getTeacherClasses();
+      
+      // Still need class data explicitly for QR scanner initialization
+      const classes = dashboardData?.classes || await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
         setActiveClassId(firstClass.classId);
@@ -119,10 +126,13 @@ export const TeacherDashboardView: React.FC = () => {
     let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     ds = ds.charAt(0).toUpperCase() + ds.slice(1);
     setDateStr(ds);
-
-    // Initial load from real DB
-    loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (!isLoadingDashboardQuery && dashboardData) {
+      loadDashboardData();
+    }
+  }, [isLoadingDashboardQuery, dashboardData]);
 
   // HTML5 QR code scanner dependency loading
   useEffect(() => {
@@ -485,26 +495,27 @@ export const TeacherDashboardView: React.FC = () => {
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
               </S.NotifIconWrapper>
-              <S.RedIndicator />
+              {notifications && notifications.length > 0 && <S.RedIndicator />}
             </S.NotifIconButton>
 
             {notifOpen && (
               <S.NotifMenu>
-                <S.NotifMenuTitle>Thông báo</S.NotifMenuTitle>
-                <S.NotifItem onClick={() => addToast('🚑 Mở chi tiết lưu ý sức khỏe…')}>
-                  <S.NotifItemIcon $bg="#FEE2E2" $color="#DC2626">🚑</S.NotifItemIcon>
-                  <S.NotifContent>
-                    <S.NotifText>Bé Bảo Long cần theo dõi dị ứng</S.NotifText>
-                    <S.NotifTime>5 phút trước</S.NotifTime>
-                  </S.NotifContent>
-                </S.NotifItem>
-                <S.NotifItem onClick={() => addToast('🌺 Mở chi tiết Phiếu bé ngoan...')}>
-                  <S.NotifItemIcon $bg="#FCE7F3" $color="#EC4899">🌺</S.NotifItemIcon>
-                  <S.NotifContent>
-                    <S.NotifText>Nhắc nhở: Cần đánh giá phiếu bé ngoan hôm nay</S.NotifText>
-                    <S.NotifTime>12 phút trước</S.NotifTime>
-                  </S.NotifContent>
-                </S.NotifItem>
+                <S.NotifMenuTitle>Thông báo ({notifications?.length || 0})</S.NotifMenuTitle>
+                {notifications && notifications.length > 0 ? notifications.map((notif: any) => (
+                  <S.NotifItem key={notif.notificationId} onClick={() => addToast(`Mở: ${notif.title}`)}>
+                    <S.NotifItemIcon $bg="#FCE7F3" $color="#EC4899">🔔</S.NotifItemIcon>
+                    <S.NotifContent>
+                      <S.NotifText>{notif.body}</S.NotifText>
+                      <S.NotifTime>{new Date(notif.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</S.NotifTime>
+                    </S.NotifContent>
+                  </S.NotifItem>
+                )) : (
+                  <S.NotifItem>
+                    <S.NotifContent>
+                      <S.NotifText>Không có thông báo mới</S.NotifText>
+                    </S.NotifContent>
+                  </S.NotifItem>
+                )}
               </S.NotifMenu>
             )}
           </S.DropdownWrapper>
@@ -525,12 +536,12 @@ export const TeacherDashboardView: React.FC = () => {
 
         {/* CARD E: Health alert notes (col span 1) */}
         <S.GridCol1Span>
-          <HealthAlertsWidget students={studentsList} />
+          <HealthAlertsWidget students={studentsList} classId={activeClassId} />
         </S.GridCol1Span>
 
         {/* CARD C: Timeline checklist (col span 2, row span 2) */}
         <S.GridCol2Span style={{ gridRow: 'span 2' }}>
-          <TimelineWidget />
+          <TimelineWidget classId={activeClassId} />
         </S.GridCol2Span>
 
         {/* CARD B: Approvals list (col span 1, row span 2) */}
