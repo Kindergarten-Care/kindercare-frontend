@@ -5,6 +5,8 @@ import * as S from './styles';
 import { AttendanceService } from '@/services/attendance';
 import { LeaveRequest } from '@/config/types/attendance';
 
+import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
+
 const formatDate = (timestamp: number | undefined): string => {
   if (!timestamp) return '...';
   const d = new Date(timestamp * 1000);
@@ -20,23 +22,25 @@ const formatCreatedAt = (val: any): string => {
   return d.toLocaleString('vi-VN');
 };
 
-const getStartOfTodayInSeconds = (): number => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return Math.floor(d.getTime() / 1000);
-};
-
 interface LeaveApprovalWidgetProps {
   onAction: (message: string) => void;
   onRefresh?: () => void;
 }
 
 export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction, onRefresh }) => {
+  const { data, isLoading } = useLeaveRequests('Pending');
+  const updateLeaveRequest = useUpdateLeaveRequest();
+
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
   const [leaveReqDetail, setLeaveReqDetail] = useState<LeaveRequest | null>(null);
   const [isLoadingReqDetail, setIsLoadingReqDetail] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (data) {
+      setRequests(data);
+    }
+  }, [data]);
 
   const handleOpenLeaveRequest = async (r: LeaveRequest) => {
     setSelectedLeaveRequest(r);
@@ -54,37 +58,13 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     }
   };
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const allReqs = await AttendanceService.getAllLeaveRequests();
-      
-      const todayStart = getStartOfTodayInSeconds();
-      // Filter only PENDING requests that have NOT passed yet (toDate >= todayStart)
-      const pending = allReqs.filter(r => {
-        const isPending = r.status === 'PENDING';
-        const hasNotPassed = !r.toDate || r.toDate >= todayStart;
-        return isPending && hasNotPassed;
-      });
-      setRequests(pending);
-    } catch (e) {
-      console.warn('Failed to fetch leave requests:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
   const handleAction = async (id: string, name: string, approve: boolean) => {
     // Set removing flag locally to trigger transition
     setRequests(prev => prev.map(r => r.id === id ? { ...r, removing: true } as any : r));
 
     try {
-      const status = approve ? 'APPROVED' : 'REJECTED';
-      await AttendanceService.processLeaveRequest(id, status);
+      const status = approve ? 'Approved' : 'Rejected';
+      await updateLeaveRequest.mutateAsync({ requestId: id, status });
       
       // Update attendance status in database to sync
       const targetRequest = requests.find(r => r.id === id);
@@ -122,8 +102,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     } catch (e) {
       console.warn('Failed to process leave request:', e);
       onAction('Gặp lỗi khi xử lý đơn nghỉ học.');
-      // Reload actual database list to reset
-      fetchRequests();
+      if (data) setRequests(data); // Revert on failure
     }
   };
 
@@ -144,7 +123,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     return name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <S.WidgetContainer>
         <S.HeaderRow>

@@ -164,3 +164,106 @@ export const CheckIcon = styled.span`
   line-height: 1;
   font-weight: bold;
 `;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+export const ModalContent = styled.div`
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 24px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+`;
+
+export const ModalTitle = styled.h3`
+  margin: 0 0 20px 0;
+  font-family: ${props => props.theme.fonts.display};
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const ModalMetaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #E5E7EB;
+`;
+
+export const ModalMetaField = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+`;
+
+export const ModalLabel = styled.span`
+  color: #6B7280;
+  font-weight: 500;
+`;
+
+export const ModalValue = styled.span<{ $status?: string }>`
+  font-weight: 600;
+  color: #1F2937;
+`;
+
+export const ModalReasonBox = styled.div`
+  background: #FEF2F2;
+  border: 1px solid #FECDD3;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+  color: #991B1B;
+  line-height: 1.5;
+  margin-bottom: 20px;
+`;
+
+export const ModalActionRow = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+`;
+
+export const ModalCloseBtn = styled.button`
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #F3F4F6;
+  color: #374151;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #E5E7EB;
+  }
+`;

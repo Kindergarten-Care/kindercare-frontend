@@ -79,7 +79,7 @@ function mapApiStudentToDomain(raw: any): Student {
   };
 }
 
-function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
+export function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
   let domainStatus: LeaveRequestStatus = 'PENDING';
   if (raw.status === 'Approved') domainStatus = 'APPROVED';
   if (raw.status === 'Rejected') domainStatus = 'REJECTED';
