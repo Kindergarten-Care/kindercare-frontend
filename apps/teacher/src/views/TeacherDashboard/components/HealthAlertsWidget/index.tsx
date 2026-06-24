@@ -183,6 +183,13 @@ export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students
                     </S.ModalReasonBox>
                   </>
                 )}
+
+                {selectedAlert.raw.medicineImageUrl && (
+                  <>
+                    <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>HÌNH ẢNH ĐƠN THUỐC:</div>
+                    <S.ImagePreview src={selectedAlert.raw.medicineImageUrl} alt="Đơn thuốc" />
+                  </>
+                )}
               </>
             ) : (
               <>

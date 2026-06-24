@@ -246,6 +246,16 @@ export const ModalReasonBox = styled.div`
   margin-bottom: 20px;
 `;
 
+export const ImagePreview = styled.img`
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #E5E7EB;
+`;
+
 export const ModalActionRow = styled.div`
   display: flex;
   gap: 12px;
