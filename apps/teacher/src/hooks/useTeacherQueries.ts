@@ -87,3 +87,44 @@ export const useNotifications = () => {
     },
   });
 };
+
+// --- WEEKLY REWARDS ---
+export const useRewardBadges = () => {
+  return useQuery({
+    queryKey: ['rewardBadges'],
+    queryFn: async () => {
+      const response = await apiClient.get('/teacher/reward-badges');
+      return response.data.data;
+    },
+  });
+};
+
+export const useWeeklyRewards = (classId: string | number | undefined, weekNumber: number, year: number) => {
+  return useQuery({
+    queryKey: ['weeklyRewards', classId, weekNumber, year],
+    queryFn: async () => {
+      if (!classId) return [];
+      const response = await apiClient.get(`/teacher/classes/${classId}/weekly-rewards`, {
+        params: { weekNumber, year }
+      });
+      return response.data.data;
+    },
+    enabled: !!classId,
+  });
+};
+
+export const useAwardWeeklyRewards = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ classId, weekNumber, year, awards }: { classId: number, weekNumber: number, year: number, awards: any[] }) => {
+      const response = await apiClient.post(`/teacher/classes/${classId}/weekly-rewards`, {
+        weekNumber, year, awards
+      });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['weeklyRewards', variables.classId, variables.weekNumber, variables.year] });
+    },
+  });
+};
+

@@ -4,11 +4,14 @@ import React, { useState, MouseEvent, useEffect } from 'react';
 import * as S from './styles';
 import { Student } from '@/config/types/attendance';
 
+import { useWeeklyRewards, useAwardWeeklyRewards } from '@/hooks/useTeacherQueries';
+
 interface GoodBehaviorWidgetProps {
   students: Student[];
+  classId?: number | null;
 }
 
-export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students }) => {
+export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students, classId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [evaluatedCount, setEvaluatedCount] = useState(0);
   const [confettiPieces, setConfettiPieces] = useState<any[]>([]);
@@ -19,6 +22,29 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
   // Mock tracking of awarded certificates and selected praises
   const [awards, setAwards] = useState<Record<string, boolean>>({});
   const [praises, setPraises] = useState<Record<string, string[]>>({});
+
+  const currentYear = new Date().getFullYear();
+  const d = new Date();
+  const currentWeek = Math.ceil(Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / (24 * 60 * 60 * 1000)) / 7);
+
+  const { data: weeklyRewards, isLoading } = useWeeklyRewards(classId || undefined, currentWeek, currentYear);
+  const { mutate: awardRewards, isPending: isAwarding } = useAwardWeeklyRewards();
+
+  useEffect(() => {
+    if (weeklyRewards && weeklyRewards.length > 0) {
+      const newAwards: Record<string, boolean> = {};
+      const newPraises: Record<string, string[]> = {};
+      weeklyRewards.forEach((r: any) => {
+        newAwards[String(r.studentId)] = true;
+        if (r.teacherNote) {
+          newPraises[String(r.studentId)] = r.teacherNote.split(',').map((t: string) => t.trim());
+        }
+      });
+      setAwards(newAwards);
+      setPraises(newPraises);
+      setEvaluatedCount(weeklyRewards.length);
+    }
+  }, [weeklyRewards]);
 
   // 1. AUTO-SCORING LOGIC
   // Base eligibility on actual attendance. For missing activities (eating/sleeping), 
@@ -63,13 +89,28 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
 
   // 3. BATCH ACTIONS
   const handleBatchAward = () => {
-    const newAwards = { ...awards };
-    eligibleStudents.forEach(s => {
-      newAwards[s.id] = true;
+    if (!classId) return;
+    if (weeklyRewards && weeklyRewards.length > 0) return; // already awarded
+    
+    const awardsPayload = eligibleStudents.map(s => {
+      const p = praises[s.id] || [];
+      return {
+        studentId: Number(s.id),
+        teacherNote: p.join(', ')
+      };
     });
-    setAwards(newAwards);
-    setEvaluatedCount(Object.keys(newAwards).length);
-    triggerConfetti();
+
+    awardRewards({ classId, weekNumber: currentWeek, year: currentYear, awards: awardsPayload }, {
+      onSuccess: () => {
+        const newAwards = { ...awards };
+        eligibleStudents.forEach(s => {
+          newAwards[s.id] = true;
+        });
+        setAwards(newAwards);
+        setEvaluatedCount(Object.keys(newAwards).length);
+        triggerConfetti();
+      }
+    });
   };
 
   const toggleAward = (studentId: string) => {
@@ -184,8 +225,8 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
                 <S.ModalSubtitle>Hệ thống đề xuất: {eligibleStudents.length}/{students.length} bé đủ điều kiện.</S.ModalSubtitle>
               </S.ModalTitleInfo>
               <S.HeaderActions>
-                <S.BatchAwardButton onClick={handleBatchAward}>
-                  <span>🌟</span> Phát tất cả ({eligibleStudents.length})
+                <S.BatchAwardButton onClick={handleBatchAward} disabled={isAwarding || (weeklyRewards && weeklyRewards.length > 0)}>
+                  <span>🌟</span> {(weeklyRewards && weeklyRewards.length > 0) ? 'Đã phát phiếu' : isAwarding ? 'Đang phát...' : `Phát tất cả (${eligibleStudents.length})`}
                 </S.BatchAwardButton>
                 <S.CloseButton onClick={() => setIsModalOpen(false)}>✕</S.CloseButton>
               </S.HeaderActions>

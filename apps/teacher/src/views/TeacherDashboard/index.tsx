@@ -531,7 +531,7 @@ export const TeacherDashboardView: React.FC = () => {
 
         {/* CARD D: Good Behavior (col span 1) */}
         <S.GridCol1Span>
-          <GoodBehaviorWidget students={studentsList} />
+          <GoodBehaviorWidget students={studentsList} classId={activeClassId} />
         </S.GridCol1Span>
 
         {/* CARD E: Health alert notes (col span 1) */}
