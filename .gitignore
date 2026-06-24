@@ -57,3 +57,4 @@ fetch-swagger.js
 .agents
 
 KinderCare*.html
+*.sql
