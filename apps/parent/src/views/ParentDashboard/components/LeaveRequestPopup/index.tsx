@@ -10,6 +10,7 @@ interface LeaveRequestPopupProps {
   onClose: () => void;
   studentName: string;
   className: string;
+  onSubmitSuccess?: () => void;
 }
 
 const REASONS = [
@@ -30,7 +31,8 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
   isOpen,
   onClose,
   studentName,
-  className
+  className,
+  onSubmitSuccess
 }) => {
   const {
     isLongLeave,
@@ -60,7 +62,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
     prefixBlanks,
     daysInMonth,
     todayStr,
-  } = useLeaveRequestPopup({ isOpen, onClose });
+  } = useLeaveRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
   if (!isOpen) return null;
 

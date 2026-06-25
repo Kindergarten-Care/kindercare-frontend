@@ -18,6 +18,7 @@ interface MedicineItem {
 interface UseMedicationRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
 }
 
 const createEmptyMedicine = (index: number): MedicineItem => ({
@@ -30,7 +31,7 @@ const createEmptyMedicine = (index: number): MedicineItem => ({
   photoUrl: null
 });
 
-export const useMedicationRequestPopup = ({ isOpen, onClose }: UseMedicationRequestPopupProps) => {
+export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseMedicationRequestPopupProps) => {
   const { activeStudent } = useStudent();
   const [medicines, setMedicines] = useState<MedicineItem[]>([createEmptyMedicine(1)]);
   const [generalNote, setGeneralNote] = useState<string>('');
@@ -150,13 +151,8 @@ export const useMedicationRequestPopup = ({ isOpen, onClose }: UseMedicationRequ
     setIsSubmitting(true);
 
     try {
-      // Calculate requestDate as today's timestamp at midnight
-      const d = new Date();
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const date = String(d.getDate()).padStart(2, '0');
-      const todayStr = `${year}-${month}-${date}`;
-      const requestDate = Math.floor(new Date(`${todayStr}T00:00:00Z`).getTime() / 1000);
+      // Save the exact current timestamp (including hour, minute, second) when sending the request
+      const requestDate = Math.floor(Date.now() / 1000);
 
       // Create promises for each medicine card
       const promises = medicines.map(m => {
@@ -179,6 +175,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose }: UseMedicationRequ
       cleanupUrls();
       setMedicines([createEmptyMedicine(1)]);
       setGeneralNote('');
+      onSubmitSuccess?.();
       onClose();
     } catch (err: any) {
       console.error('Failed to create medication requests:', err);
