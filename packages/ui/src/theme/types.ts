@@ -14,6 +14,10 @@ export interface AppThemeColors {
   amber: string;
   amberLight: string;
   amberMid: string;
+  red?: string;
+  redLight?: string;
+  redMid?: string;
+  redDark?: string;
   footerBg: string;
   techBg: string;
   white: string;
