@@ -1,6 +1,6 @@
 import React from 'react';
 import * as S from './styles';
-import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Heart, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Calendar, Heart, User, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -68,14 +68,14 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
           <S.IconWrapper>
             <Heart size={23} />
           </S.IconWrapper>
-          <S.Label>Y tế & Dinh dưỡng</S.Label>
+          <S.Label>Y tế &amp; Dinh dưỡng</S.Label>
         </S.NavItem>
       </S.NavList>
       
       <S.BottomNav>
         <S.NavItem $active={isProfileActive} onClick={() => router.push('/profile')}>
           <S.IconWrapper>
-            <HelpCircle size={23} />
+            <User size={23} />
           </S.IconWrapper>
           <S.Label>Hồ sơ</S.Label>
         </S.NavItem>
