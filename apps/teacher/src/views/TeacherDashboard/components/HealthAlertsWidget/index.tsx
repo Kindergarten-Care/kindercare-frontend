@@ -24,6 +24,7 @@ export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students
   const { data: medicalData, isLoading } = useMedicalRequests(classId || undefined);
   const [meds, setMeds] = useState<MedItem[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<MedItem | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     // Priority: Real medical data from API
@@ -187,7 +188,11 @@ export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students
                 {selectedAlert.raw.medicineImageUrl && (
                   <>
                     <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>HÌNH ẢNH ĐƠN THUỐC:</div>
-                    <S.ImagePreview src={selectedAlert.raw.medicineImageUrl} alt="Đơn thuốc" />
+                    <S.ImagePreview 
+                      src={selectedAlert.raw.medicineImageUrl} 
+                      alt="Đơn thuốc" 
+                      onClick={() => setLightboxImage(selectedAlert.raw.medicineImageUrl)}
+                    />
                   </>
                 )}
               </>
@@ -204,6 +209,23 @@ export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students
               <S.ModalCloseBtn onClick={() => setSelectedAlert(null)}>Đóng</S.ModalCloseBtn>
             </S.ModalActionRow>
           </S.ModalContent>
+        </S.ModalOverlay>
+      )}
+
+      {lightboxImage && (
+        <S.ModalOverlay onClick={() => setLightboxImage(null)} style={{ zIndex: 9999 }}>
+          <img 
+            src={lightboxImage} 
+            alt="Phóng to" 
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px' }} 
+            onClick={e => e.stopPropagation()} 
+          />
+          <button 
+            onClick={() => setLightboxImage(null)}
+            style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '20px', cursor: 'pointer' }}
+          >
+            ✕
+          </button>
         </S.ModalOverlay>
       )}
     </>

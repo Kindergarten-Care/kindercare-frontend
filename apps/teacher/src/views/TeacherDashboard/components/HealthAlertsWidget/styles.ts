@@ -254,6 +254,12 @@ export const ImagePreview = styled.img`
   border-radius: 12px;
   margin-bottom: 20px;
   border: 1px solid #E5E7EB;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
 `;
 
 export const ModalActionRow = styled.div`
