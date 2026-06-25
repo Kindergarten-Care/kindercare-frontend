@@ -158,3 +158,13 @@ export const useCreateNewsfeed = () => {
   });
 };
 
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacherProfile'],
+    queryFn: async () => {
+      const { profileService } = await import('@/services/profile/ProfileService');
+      return profileService.getProfile();
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes cache
+  });
+};
