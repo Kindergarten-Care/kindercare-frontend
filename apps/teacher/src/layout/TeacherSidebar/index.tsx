@@ -17,7 +17,6 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
   const isDashboardActive = pathname === '/';
   const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
-  const isScheduleActive = pathname === '/schedule';
   const isActivitiesActive = pathname === '/activities';
   const isProfileActive = pathname === '/profile';
 
@@ -51,12 +50,6 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
             <CheckSquare size={23} />
           </S.IconWrapper>
           <S.Label>Điểm danh</S.Label>
-        </S.NavItem>
-        <S.NavItem $active={isScheduleActive} onClick={() => router.push('/schedule')}>
-          <S.IconWrapper>
-            <Calendar size={23} />
-          </S.IconWrapper>
-          <S.Label>Lịch trình</S.Label>
         </S.NavItem>
         <S.NavItem $active={isActivitiesActive} onClick={() => router.push('/activities')}>
           <S.IconWrapper>
