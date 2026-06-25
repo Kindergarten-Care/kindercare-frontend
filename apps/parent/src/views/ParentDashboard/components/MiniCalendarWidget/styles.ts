@@ -125,7 +125,7 @@ export const Weekday = styled.div`
 export const Day = styled.div<{
   $today?: boolean;
   $other?: boolean;
-  $status?: 'present' | 'absent' | 'holiday' | 'weekend' | 'none';
+  $status?: 'present' | 'absent' | 'excused' | 'holiday' | 'weekend' | 'none';
 }>`
   aspect-ratio: 1;
   border-radius: 9px;
@@ -154,6 +154,11 @@ export const Day = styled.div<{
     color: #dc2626;
     font-weight: 600;
   `}
+  ${p => p.$status === 'excused' && `
+    background: #ffedd5;
+    color: #ea580c;
+    font-weight: 600;
+  `}
   ${p => p.$status === 'holiday' && `
     background: #dbeafe;
     color: #1d4ed8;
@@ -173,6 +178,14 @@ export const DayNum = styled.span`
 `;
 
 export const CheckinTime = styled.span`
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.72;
+  font-variant-numeric: tabular-nums;
+`;
+
+export const CheckoutTime = styled.span`
   font-size: 8px;
   font-weight: 600;
   line-height: 1;

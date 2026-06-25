@@ -71,8 +71,9 @@ export interface AttendanceStats {
 
 export interface CalendarDay {
   day: number;
-  status: 'present' | 'absent' | 'holiday' | 'weekend' | 'none';
+  status: 'present' | 'absent' | 'excused' | 'holiday' | 'weekend' | 'none';
   checkinTime?: string;
+  checkoutTime?: string;
 }
 
 export interface UrgentNotice {

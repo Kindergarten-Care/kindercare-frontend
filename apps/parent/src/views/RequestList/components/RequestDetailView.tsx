@@ -43,7 +43,6 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
 
   const handleCancel = () => {
     onCancel(request.id);
-    onStatusUpdate({ ...request, status: 'cancelled' });
   };
 
   return (

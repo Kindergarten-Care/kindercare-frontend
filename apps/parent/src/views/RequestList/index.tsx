@@ -7,8 +7,9 @@ import * as S from './styles';
 import LeaveRequestPopup from '@/views/ParentDashboard/components/LeaveRequestPopup';
 import MedicationRequestPopup from '@/views/ParentDashboard/components/MedicationRequestPopup';
 import { RequestListView } from './components/RequestListView';
+import { ConfirmCancelModal } from './components/ConfirmCancelModal';
+import { SelectRequestTypeModal } from './components/SelectRequestTypeModal';
 import { useRequestList } from './hooks/useRequestList';
-import { IconMedicine, IconRequest } from '@/assets/icons/dashboard';
 
 export { type RequestItem } from './types';
 
@@ -31,7 +32,10 @@ export const RequestList: React.FC = () => {
     fetchRequests,
     stats,
     filteredRequests,
-    handleCancelRequest,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    triggerCancelRequest,
+    confirmCancelRequest,
     studentName,
   } = useRequestList();
 
@@ -56,8 +60,14 @@ export const RequestList: React.FC = () => {
           loader.start();
           router.push(`/request/${r.id}`);
         }}
-        onCancelRequest={handleCancelRequest}
+        onCancelRequest={triggerCancelRequest}
         onCreateRequestClick={() => setIsSelectPopupOpen(true)}
+      />
+
+      <ConfirmCancelModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmCancelRequest}
       />
 
       {/* Creation Popups */}
@@ -79,39 +89,18 @@ export const RequestList: React.FC = () => {
             className={activeStudent.className}
           />
 
-          {isSelectPopupOpen && (
-            <S.ModalOverlay onClick={() => setIsSelectPopupOpen(false)}>
-              <S.ModalContent onClick={e => e.stopPropagation()}>
-                <S.ModalHeader>
-                  <S.ModalTitle>Tạo yêu cầu mới</S.ModalTitle>
-                  <S.CloseBtn onClick={() => setIsSelectPopupOpen(false)}>✕</S.CloseBtn>
-                </S.ModalHeader>
-                <S.SelectionGrid>
-                  <S.SelectionCard onClick={() => {
-                    setIsSelectPopupOpen(false);
-                    setIsLeavePopupOpen(true);
-                  }}>
-                    <S.CardIconCircle $bg="#eff6ff" $color="#2563eb">
-                      <IconRequest size={24} />
-                    </S.CardIconCircle>
-                    <S.SelectionCardTitle>Báo nghỉ học</S.SelectionCardTitle>
-                    <S.SelectionCardSub>Xin nghỉ phép cho bé gửi đến giáo viên lớp</S.SelectionCardSub>
-                  </S.SelectionCard>
-
-                  <S.SelectionCard onClick={() => {
-                    setIsSelectPopupOpen(false);
-                    setIsMedicationPopupOpen(true);
-                  }}>
-                    <S.CardIconCircle $bg="#fff7ed" $color="#ea580c">
-                      <IconMedicine size={24} />
-                    </S.CardIconCircle>
-                    <S.SelectionCardTitle>Dặn dò thuốc</S.SelectionCardTitle>
-                    <S.SelectionCardSub>Gửi lịch và hướng dẫn uống thuốc cho bé</S.SelectionCardSub>
-                  </S.SelectionCard>
-                </S.SelectionGrid>
-              </S.ModalContent>
-            </S.ModalOverlay>
-          )}
+          <SelectRequestTypeModal
+            isOpen={isSelectPopupOpen}
+            onClose={() => setIsSelectPopupOpen(false)}
+            onSelectLeave={() => {
+              setIsSelectPopupOpen(false);
+              setIsLeavePopupOpen(true);
+            }}
+            onSelectMedication={() => {
+              setIsSelectPopupOpen(false);
+              setIsMedicationPopupOpen(true);
+            }}
+          />
         </>
       )}
     </S.PageContainer>

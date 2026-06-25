@@ -1,5 +1,37 @@
 import { MedicationRequestApiDto, MedicationRequestDomainModel } from '@/config/types/medicationRequest';
 
+const parseToTimestamp = (val: any): bigint | null => {
+  if (val === undefined || val === null) return null;
+  
+  if (typeof val === 'number' || (typeof val === 'string' && /^\d+$/.test(val))) {
+    const num = Number(val);
+    if (num < 10000000000) {
+      return BigInt(num);
+    } else {
+      return BigInt(Math.floor(num / 1000));
+    }
+  }
+
+  if (typeof val === 'string') {
+    const match = val.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (match) {
+      const [_, year, month, day, hours, minutes, seconds] = match;
+      const secs = seconds || '00';
+      const isoStr = `${year}-${month}-${day}T${hours}:${minutes}:${secs}+07:00`;
+      const parsed = new Date(isoStr);
+      if (!isNaN(parsed.getTime())) {
+        return BigInt(Math.floor(parsed.getTime() / 1000));
+      }
+    }
+  }
+
+  const parsed = new Date(val);
+  if (!isNaN(parsed.getTime())) {
+    return BigInt(Math.floor(parsed.getTime() / 1000));
+  }
+  return null;
+};
+
 export class MedicationRequestMapper {
   static toDomain(dto: MedicationRequestApiDto): MedicationRequestDomainModel {
     return {
@@ -16,7 +48,7 @@ export class MedicationRequestMapper {
       frequency: dto.frequency,
       timeToTake: dto.timeToTake,
       parentNote: dto.parentNote,
-      updatedTime: dto.updatedTime !== undefined && dto.updatedTime !== null ? BigInt(dto.updatedTime) : null,
+      updatedTime: parseToTimestamp(dto.updatedTime),
     };
   }
 

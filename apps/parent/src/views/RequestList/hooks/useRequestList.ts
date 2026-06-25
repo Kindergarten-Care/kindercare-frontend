@@ -69,22 +69,35 @@ export const useRequestList = () => {
     return filterRequests(requests, activeTab, activeStatusFilter);
   }, [requests, activeTab, activeStatusFilter]);
 
-  const handleCancelRequest = async (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn hủy đơn này?')) {
-      try {
-        if (id.startsWith('leave-')) {
-          const requestId = id.replace('leave-', '');
-          await leaveRequestService.cancelLeaveRequest(requestId);
-        } else if (id.startsWith('medicine-')) {
-          const medRequestId = id.replace('medicine-', '');
-          await medicationRequestService.cancelMedicationRequest(medRequestId);
-        }
-        await fetchRequests();
-        toast.success('Hủy đơn thành công!');
-      } catch (err: any) {
-        console.error(err);
-        toast.error(err.message || 'Không thể hủy đơn');
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [requestToCancel, setRequestToCancel] = useState<string | null>(null);
+
+  const triggerCancelRequest = (id: string) => {
+    setRequestToCancel(id);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmCancelRequest = async (onSuccess?: () => void) => {
+    if (!requestToCancel) return;
+    setLoading(true);
+    try {
+      if (requestToCancel.startsWith('leave-')) {
+        const requestId = requestToCancel.replace('leave-', '');
+        await leaveRequestService.cancelLeaveRequest(requestId);
+      } else if (requestToCancel.startsWith('medicine-')) {
+        const medRequestId = requestToCancel.replace('medicine-', '');
+        await medicationRequestService.cancelMedicationRequest(medRequestId);
       }
+      await fetchRequests();
+      toast.success('Hủy đơn thành công!');
+      setIsConfirmOpen(false);
+      setRequestToCancel(null);
+      if (onSuccess) onSuccess();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Không thể hủy đơn');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,7 +123,10 @@ export const useRequestList = () => {
     fetchRequests,
     stats,
     filteredRequests,
-    handleCancelRequest,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    triggerCancelRequest,
+    confirmCancelRequest,
     studentName,
   };
 };

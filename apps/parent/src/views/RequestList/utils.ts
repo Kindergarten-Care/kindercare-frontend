@@ -4,22 +4,28 @@ import { MedicationRequestDomainModel } from '@/config/types/medicationRequest';
 import { StudentDomainModel } from '@/config/types/student';
 
 export const formatDate = (timestampSec: bigint | number): string => {
-  // Adjust by +7 hours to format according to UTC+7 timezone
-  const d = new Date((Number(timestampSec) + 7 * 3600) * 1000);
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const year = d.getUTCFullYear();
+  let val = Number(timestampSec);
+  if (val < 10000000000) {
+    val = val * 1000;
+  }
+  const d = new Date(val);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
   return `${day}/${month}/${year}`;
 };
 
-export const formatDateTime = (timestampSec: bigint | number): string => {
-  // Adjust by +7 hours to format according to UTC+7 timezone
-  const d = new Date((Number(timestampSec) + 7 * 3600) * 1000);
-  const hours = String(d.getUTCHours()).padStart(2, '0');
-  const minutes = String(d.getUTCMinutes()).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const year = d.getUTCFullYear();
+export const formatLocaltime = (timestampSec: bigint | number): string => {
+  let val = Number(timestampSec);
+  if (val < 10000000000) {
+    val = val * 1000;
+  }
+  const d = new Date(val);
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
   return `${hours}:${minutes} ${day}/${month}/${year}`;
 };
 
@@ -31,8 +37,9 @@ export const mapLeavesToRequestItems = (
     const toStr = formatDate(l.toDate);
     const detail = fromStr === toStr ? `Xin nghỉ ngày ${fromStr}` : `Xin nghỉ từ ngày ${fromStr} đến ${toStr}`;
     const normalizedStatus = (l.status || 'Pending').toLowerCase() as any;
-    const sentTime = l.createdAt ? formatDateTime(l.createdAt) : fromStr;
+    const sentTime = l.createdAt ? formatLocaltime(l.createdAt) : fromStr;
     const rawDate = l.createdAt ? Number(l.createdAt) : Number(l.fromDate);
+    const updatedTime = l.updatedTime ? formatLocaltime(l.updatedTime) : undefined;
 
     return {
       id: `leave-${l.requestId}`,
@@ -42,6 +49,7 @@ export const mapLeavesToRequestItems = (
       detail,
       reason: l.reason,
       sentTime,
+      updatedTime,
       note: l.parentNotes,
       status: normalizedStatus,
       color: '#2563eb', // Blue
@@ -67,7 +75,8 @@ export const mapMedicationsToRequestItems = (
 
   return Object.entries(medGroups).map(([_, group]) => {
     const rep = group[0];
-    const reqStr = formatDateTime(rep.requestDate);
+    const reqStr = formatLocaltime(rep.requestDate);
+    const updatedTime = rep.updatedTime ? formatLocaltime(rep.updatedTime) : undefined;
 
     // Resolve status of grouped requests
     let normalizedStatus: any = 'pending';
@@ -113,6 +122,7 @@ export const mapMedicationsToRequestItems = (
       dosage: groupMedicines.length === 1 ? rep.dosage : undefined,
       timeToTake: groupMedicines.length === 1 ? rep.timeToTake || undefined : undefined,
       sentTime: reqStr,
+      updatedTime,
       note: combinedNote,
       status: normalizedStatus,
       color: '#ea580c', // Orange
