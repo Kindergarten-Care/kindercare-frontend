@@ -15,4 +15,12 @@ export class NewsfeedService {
     });
     return res.data?.data?.postId || '';
   }
+
+  /**
+   * Lấy danh sách nhật ký của lớp
+   */
+  public static async getNewsfeeds(classId: number | string): Promise<any[]> {
+    const res = await apiClient.get(`/teacher/classes/${classId}/newsfeed`);
+    return res.data?.data || [];
+  }
 }

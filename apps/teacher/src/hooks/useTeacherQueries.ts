@@ -134,13 +134,26 @@ export const useAwardWeeklyRewards = () => {
 };
 
 // --- NEWSFEED ---
+export const useNewsfeeds = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['newsfeeds', classId],
+    queryFn: async () => {
+      if (!classId) return [];
+      return NewsfeedService.getNewsfeeds(classId);
+    },
+    enabled: !!classId,
+    staleTime: 60 * 1000, // 1 minute
+  });
+};
+
 export const useCreateNewsfeed = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ classId, content, mediaUrl }: { classId: number | string; content: string; mediaUrl?: string }) => 
       NewsfeedService.createNewsfeedPost(classId, content, mediaUrl),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
     }
   });
 };

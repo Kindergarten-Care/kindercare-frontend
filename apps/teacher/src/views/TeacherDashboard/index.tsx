@@ -10,6 +10,7 @@ import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import dynamic from 'next/dynamic';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
+const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
 
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
@@ -566,6 +567,11 @@ export const TeacherDashboardView: React.FC = () => {
             </S.ActionTile>
           ))}
         </S.QuickActionsColumn>
+
+        {/* CARD F: Newsfeed (col span 4 or 2) */}
+        <div style={{ gridColumn: 'span 4', height: '400px', marginTop: '8px' }}>
+          <ClassNewsfeedWidget classId={activeClassId} />
+        </div>
       </S.BentoGrid>
 
       {/* FLOATING TOAST NOTIFICATIONS */}
