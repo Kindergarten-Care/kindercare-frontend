@@ -24,4 +24,8 @@ export const SERVER = {
     createMedicationRequest: '/parent/medication-requests',
     getAttendance: '/parent/children/:studentId/attendance',
   },
+  teacher: {
+    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
+    getSchedule: '/teacher/classes/:classId/schedule',
+  },
 } as const;

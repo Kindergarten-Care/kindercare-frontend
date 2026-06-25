@@ -49,6 +49,12 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
           </S.IconWrapper>
           <S.Label>Điểm danh</S.Label>
         </S.NavItem>
+        <S.NavItem $active={pathname === '/schedule'} onClick={() => router.push('/schedule')}>
+          <S.IconWrapper>
+            <Calendar size={23} />
+          </S.IconWrapper>
+          <S.Label>Lịch trình</S.Label>
+        </S.NavItem>
         <S.NavItem $active={isActivitiesActive} onClick={() => router.push('/activities')}>
           <S.IconWrapper>
             <Calendar size={23} />
