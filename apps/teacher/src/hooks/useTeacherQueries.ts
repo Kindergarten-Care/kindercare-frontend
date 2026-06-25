@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@kindercare/core';
+import { NewsfeedService } from '@/services/newsfeed';
 
 // --- DASHBOARD STATS ---
 export const useDashboardStats = () => {
@@ -9,6 +10,7 @@ export const useDashboardStats = () => {
       const response = await apiClient.get('/teacher/dashboard');
       return response.data.data;
     },
+    staleTime: 60 * 1000, // 1 minute
   });
 };
 
@@ -22,6 +24,7 @@ export const useLeaveRequests = (status = 'Pending') => {
       const response = await apiClient.get(`/teacher/leave-requests?status=${status}`);
       return (response.data.data || []).map(mapApiLeaveRequestToDomain);
     },
+    staleTime: 60 * 1000,
   });
 };
 
@@ -49,6 +52,7 @@ export const useClassSchedule = (classId: string | number | undefined) => {
       return response.data.data;
     },
     enabled: !!classId, // Only fetch if classId is available
+    staleTime: 5 * 60 * 1000, // 5 minutes since schedule doesn't change often
   });
 };
 
@@ -61,6 +65,7 @@ export const useClassMenu = (classId: string | number | undefined) => {
       return response.data.data;
     },
     enabled: !!classId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -125,6 +130,31 @@ export const useAwardWeeklyRewards = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['weeklyRewards', variables.classId, variables.weekNumber, variables.year] });
     },
+  });
+};
+
+// --- NEWSFEED ---
+export const useNewsfeeds = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['newsfeeds', classId],
+    queryFn: async () => {
+      if (!classId) return [];
+      return NewsfeedService.getNewsfeeds(classId);
+    },
+    enabled: !!classId,
+    staleTime: 60 * 1000, // 1 minute
+  });
+};
+
+export const useCreateNewsfeed = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ classId, content, mediaUrl }: { classId: number | string; content: string; mediaUrl?: string }) => 
+      NewsfeedService.createNewsfeedPost(classId, content, mediaUrl),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
+    }
   });
 };
 
