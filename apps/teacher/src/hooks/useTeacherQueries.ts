@@ -134,6 +134,19 @@ export const useAwardWeeklyRewards = () => {
 };
 
 // --- NEWSFEED ---
+export const useDetailedStudents = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['detailedStudents', classId],
+    queryFn: async () => {
+      if (!classId) return [];
+      const { studentService } = await import('@/services/student/StudentService');
+      return studentService.getDetailedStudents(classId);
+    },
+    enabled: !!classId,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+};
+
 export const useNewsfeeds = (classId: number | string | undefined) => {
   return useQuery({
     queryKey: ['newsfeeds', classId],

@@ -37,7 +37,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
           </S.IconWrapper>
           <S.Label>Bảng điều khiển</S.Label>
         </S.NavItem>
-        <S.NavItem onClick={() => router.push('/')}>
+        <S.NavItem $active={pathname === '/students'} onClick={() => router.push('/students')}>
           <S.IconWrapper>
             <Users size={23} />
           </S.IconWrapper>
