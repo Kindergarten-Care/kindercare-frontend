@@ -16,6 +16,7 @@ export class MedicationRequestMapper {
       frequency: dto.frequency,
       timeToTake: dto.timeToTake,
       parentNote: dto.parentNote,
+      updatedTime: dto.updatedTime !== undefined && dto.updatedTime !== null ? BigInt(dto.updatedTime) : null,
     };
   }
 

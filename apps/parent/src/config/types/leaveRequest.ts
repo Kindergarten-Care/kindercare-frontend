@@ -11,6 +11,7 @@ export interface LeaveRequestApiDto {
   isMealFeeDeducted: number;
   parentNotes: string;
   createdAt?: number | null;
+  updatedTime?: number | null;
 }
 
 export interface LeaveRequestDomainModel {
@@ -26,6 +27,7 @@ export interface LeaveRequestDomainModel {
   isMealFeeDeducted: number;
   parentNotes: string;
   createdAt?: bigint | null;
+  updatedTime?: bigint | null;
 }
 
 export interface CreateLeaveRequestDto {

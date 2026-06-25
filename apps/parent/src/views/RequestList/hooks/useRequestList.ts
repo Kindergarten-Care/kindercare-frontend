@@ -7,6 +7,17 @@ import { medicationRequestService } from '@/services/MedicationRequest/Medicatio
 import { RequestItem } from '../types';
 import { mapLeavesToRequestItems, mapMedicationsToRequestItems, filterRequests, calculateRequestStats } from '../utils';
 
+/**
+ * Custom React hook that encapsulates all state, side effects, filtering,
+ * and statistical calculations for parent leave and medication requests.
+ * 
+ * It coordinates:
+ * - API request fetching for leaves and medication requests.
+ * - Combining and sorting requests by sending time.
+ * - Computing statistics (pending count, approved counts, totals).
+ * - Modal popup show/hide toggle states.
+ * - Actions like request cancellation.
+ */
 export const useRequestList = () => {
   const { isAuthenticated } = useAuth();
   const { activeStudent } = useStudent();
@@ -58,12 +69,22 @@ export const useRequestList = () => {
     return filterRequests(requests, activeTab, activeStatusFilter);
   }, [requests, activeTab, activeStatusFilter]);
 
-  const handleCancelRequest = (id: string) => {
+  const handleCancelRequest = async (id: string) => {
     if (confirm('Bạn có chắc chắn muốn hủy đơn này?')) {
-      setRequests(prev =>
-        prev.map(r => (r.id === id ? { ...r, status: 'cancelled' as const } : r))
-      );
-      toast.success('Hủy đơn thành công!');
+      try {
+        if (id.startsWith('leave-')) {
+          const requestId = id.replace('leave-', '');
+          await leaveRequestService.cancelLeaveRequest(requestId);
+        } else if (id.startsWith('medicine-')) {
+          const medRequestId = id.replace('medicine-', '');
+          await medicationRequestService.cancelMedicationRequest(medRequestId);
+        }
+        await fetchRequests();
+        toast.success('Hủy đơn thành công!');
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.message || 'Không thể hủy đơn');
+      }
     }
   };
 

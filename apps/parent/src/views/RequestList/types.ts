@@ -8,11 +8,14 @@ export interface RequestItem {
   dosage?: string;
   timeToTake?: string;
   sentTime: string;
+  updatedTime?: string;
   note?: string;
   status: 'pending' | 'approved' | 'completed' | 'cancelled' | 'rejected';
   color: string;
   bg: string;
   rawDate: number;
+  evidenceUrl?: string | null;
+  teacherNote?: string | null;
   medicines?: {
     name: string;
     dosage: string;

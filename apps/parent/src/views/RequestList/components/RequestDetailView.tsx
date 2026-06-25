@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import * as S from '../styles';
-import { IconSchedule, IconRequest, IconMedicine, IconChevronLeft, IconCheck } from '@/assets/icons/dashboard';
+import { IconSchedule, IconRequest, IconMedicine, IconChevronLeft, IconCheck, IconClose } from '@/assets/icons/dashboard';
 import { RequestItem } from '../types';
+import { StudentDomainModel } from '@/config/types/student';
+import { resolveTeacherInfo } from '../utils';
 
+/**
+ * Props for RequestDetailView component.
+ */
 interface RequestDetailViewProps {
+  /** The leave or medication request item details */
   request: RequestItem;
-  activeStudent: any;
+  /** The active student context information */
+  activeStudent: StudentDomainModel | null;
+  /** Callback to navigate back to the request list view */
   onBack: () => void;
+  /** Callback to cancel a pending request */
   onCancel: (id: string) => void;
+  /** Callback to update local status state after actions */
   onStatusUpdate: (updated: RequestItem) => void;
 }
 
+/**
+ * RequestDetailView renders the visual timeline progress, teacher feedback, and detailed parameters
+ * (such as medicines list, dosage, or leave reasons with evidence photos) for a selected request.
+ */
 export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
   request,
   activeStudent,
@@ -19,6 +33,13 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
   onStatusUpdate,
 }) => {
   const [zoomedImageUrl, setZoomedImageUrl] = useState<string | null>(null);
+
+  // Extract all teacher-related display logic to a centralized helper
+  const {
+    isMaleTeacher,
+    homeroomTitleWithName,
+    teacherDisplayName,
+  } = resolveTeacherInfo(activeStudent);
 
   const handleCancel = () => {
     onCancel(request.id);
@@ -33,7 +54,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
           <IconChevronLeft size={16} /> Quay lại
         </S.DetailBackBtn>
         <S.Breadcrumbs>
-          Đơn từ của tôi <span>·</span> <strong>{request.type === 'leave' ? 'Đơn xin nghỉ học' : 'Dặn dò thuốc'}</strong>
+          Yêu cầu của phụ huynh <span>·</span> <strong>{request.type === 'leave' ? 'Đơn xin nghỉ học' : 'Dặn dò thuốc'}</strong>
         </S.Breadcrumbs>
       </S.DetailHeader>
 
@@ -46,7 +67,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
             </S.SummaryIconWrapper>
             <div>
               <S.SummaryTitle>{request.type === 'leave' ? 'Đơn xin nghỉ học' : 'Dặn dò thuốc'}</S.SummaryTitle>
-              <S.SummaryMeta>Mã đơn #{request.requestId} · Gửi tới Cô giáo chủ nhiệm</S.SummaryMeta>
+              <S.SummaryMeta>Mã đơn #{request.requestId} · Gửi tới {homeroomTitleWithName}</S.SummaryMeta>
             </div>
           </S.SummaryLeft>
           <S.StatusBadge $status={request.status}>
@@ -61,9 +82,16 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
         <S.SummaryDivider />
 
         <S.SummaryChildRow>
-          <S.SummaryChildAvatar $gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)">
-            {activeStudent?.fullName ? activeStudent.fullName.split(' ').pop()?.substring(0, 2).toUpperCase() : 'BC'}
-          </S.SummaryChildAvatar>
+          {activeStudent?.avatarUrl ? (
+            <S.SummaryChildAvatarImg
+              src={activeStudent.avatarUrl}
+              alt={activeStudent.fullName}
+            />
+          ) : (
+            <S.SummaryChildAvatar $gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)">
+              {activeStudent?.fullName ? activeStudent.fullName.split(' ').pop()?.substring(0, 2).toUpperCase() : 'BC'}
+            </S.SummaryChildAvatar>
+          )}
           <div>
             <S.SummaryChildName>{activeStudent?.fullName || 'Nguyễn Bảo Châu'}</S.SummaryChildName>
             <S.SummaryChildClass>{activeStudent?.className || 'Lớp Hoa Hướng Dương'}</S.SummaryChildClass>
@@ -75,14 +103,26 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
       <S.DetailCard>
         <S.DetailCardTitle>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Phản hồi từ cô giáo
+          Phản hồi từ {teacherDisplayName}
         </S.DetailCardTitle>
         <S.TeacherResponseText>
-          {request.status === 'pending' && 'Chưa có phản hồi từ cô giáo.'}
-          {request.status === 'approved' && 'Đơn đã được duyệt.'}
-          {request.status === 'completed' && (request.type === 'leave' ? 'Đơn đã được duyệt.' : 'Cô giáo đã xác nhận và cho bé uống thuốc đầy đủ.')}
-          {request.status === 'rejected' && 'Cô giáo từ chối yêu cầu của bạn.'}
-          {request.status === 'cancelled' && 'Đơn đã được hủy.'}
+          {request.type === 'medication' ? (
+            request.teacherNote || (request.status === 'pending'
+              ? `Chưa có phản hồi từ ${isMaleTeacher ? 'thầy' : 'cô'}.`
+              : request.status === 'cancelled'
+              ? 'Đơn đã được hủy.'
+              : request.status === 'rejected'
+              ? `${teacherDisplayName} từ chối yêu cầu của bạn.`
+              : `${teacherDisplayName} đã xác nhận và cho bé uống thuốc đầy đủ.`)
+          ) : (
+            <>
+              {request.status === 'pending' && `Chưa có phản hồi từ ${isMaleTeacher ? 'thầy' : 'cô'}.`}
+              {request.status === 'approved' && 'Đơn đã được duyệt.'}
+              {request.status === 'completed' && 'Đơn đã được duyệt.'}
+              {request.status === 'rejected' && `${teacherDisplayName} từ chối yêu cầu của bạn.`}
+              {request.status === 'cancelled' && 'Đơn đã được hủy.'}
+            </>
+          )}
         </S.TeacherResponseText>
       </S.DetailCard>
 
@@ -101,7 +141,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 <S.DetailInfoRow>
                   <S.DetailInfoLabel>Ngày xin nghỉ</S.DetailInfoLabel>
                   <S.DetailInfoValue>
-                    <span style={{ marginRight: '6px', display: 'inline-flex', alignItems: 'center' }}><IconSchedule size={14} color="var(--muted)" /></span>
+                    <S.InfoIconWrapper><IconSchedule size={14} color="var(--muted)" /></S.InfoIconWrapper>
                     {request.type === 'leave' ? request.detail.replace('Xin nghỉ ', '') : request.sentTime}
                   </S.DetailInfoValue>
                 </S.DetailInfoRow>
@@ -123,6 +163,15 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                   {request.note || 'Bé đi khám tổng quát buổi sáng, chiều có thể đến lớp ạ.'}
                 </S.DetailNoteContent>
               </S.DetailNoteBlock>
+
+              {request.evidenceUrl && (
+                <S.EvidenceBlock>
+                  <S.EvidenceHeader>ẢNH MINH CHỨNG</S.EvidenceHeader>
+                  <S.MedImageWrapper onClick={() => setZoomedImageUrl(request.evidenceUrl || null)}>
+                    <img src={request.evidenceUrl} alt="Ảnh minh chứng xin nghỉ" />
+                  </S.MedImageWrapper>
+                </S.EvidenceBlock>
+              )}
             </S.DetailCard>
           ) : (
             <S.DetailCard>
@@ -131,7 +180,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 Thông tin thuốc · {request.medicines?.length || 1} loại
               </S.DetailCardTitle>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <S.MedCardsContainer>
                 {request.medicines?.map((med, index) => (
                   <S.MedCard key={index}>
                     <S.MedCardHeader>
@@ -146,7 +195,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                       </S.MedInfoItem>
                       <S.MedInfoItem>
                         SỐ LẦN
-                        <span style={{ color: 'var(--fg)', fontWeight: 600 }}>2 lần/ngày</span>
+                        <S.MedTimesText>2 lần/ngày</S.MedTimesText>
                       </S.MedInfoItem>
                     </S.MedInfoRow>
 
@@ -162,7 +211,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                     )}
 
                     {med.imageUrl ? (
-                      <S.MedImageWrapper onClick={() => setZoomedImageUrl(med.imageUrl || null)} style={{ cursor: 'pointer' }}>
+                      <S.MedImageWrapper onClick={() => setZoomedImageUrl(med.imageUrl || null)}>
                         <img src={med.imageUrl} alt={med.name} />
                       </S.MedImageWrapper>
                     ) : (
@@ -173,7 +222,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                     )}
                   </S.MedCard>
                 ))}
-              </div>
+              </S.MedCardsContainer>
 
               <S.DetailNoteBlock>
                 <S.DetailNoteHeader>GHI CHÚ CỦA BẠN</S.DetailNoteHeader>
@@ -182,10 +231,10 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 </S.DetailNoteContent>
               </S.DetailNoteBlock>
 
-              <S.DetailInfoRow style={{ borderBottom: 'none', paddingTop: '12px', paddingBottom: 0 }}>
+              <S.SentTimeRow>
                 <S.DetailInfoLabel>Thời điểm gửi</S.DetailInfoLabel>
                 <S.DetailInfoValue>{request.sentTime}</S.DetailInfoValue>
-              </S.DetailInfoRow>
+              </S.SentTimeRow>
             </S.DetailCard>
           )}
         </S.DetailLeftCol>
@@ -209,39 +258,46 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 </S.TimelineContent>
               </S.TimelineItem>
 
-              <S.TimelineItem $status={request.status === 'pending' ? 'pending' : 'completed'}>
-                <S.TimelineIcon $status={request.status === 'pending' ? 'pending' : 'completed'}>
-                  {request.status === 'pending' ? <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} /> : <IconCheck size={12} />}
-                </S.TimelineIcon>
-                <S.TimelineContent>
-                  <S.TimelineTitle>Cô giáo đã tiếp nhận</S.TimelineTitle>
-                  <S.TimelineSub>{request.status === 'pending' ? 'Đang chờ' : request.sentTime}</S.TimelineSub>
-                </S.TimelineContent>
-              </S.TimelineItem>
+              {(request.status === 'approved' || request.status === 'completed' || request.status === 'rejected') && (
+                <S.TimelineItem $status="completed">
+                  <S.TimelineIcon $status="completed">
+                    <IconCheck size={12} />
+                  </S.TimelineIcon>
+                  <S.TimelineContent>
+                    <S.TimelineTitle>{teacherDisplayName} đã tiếp nhận</S.TimelineTitle>
+                    <S.TimelineSub>{request.sentTime}</S.TimelineSub>
+                  </S.TimelineContent>
+                </S.TimelineItem>
+              )}
 
-              <S.TimelineItem $status={request.status === 'pending' ? 'waiting' : request.status === 'cancelled' ? 'cancelled' : 'completed'}>
-                <S.TimelineIcon $status={request.status === 'pending' ? 'waiting' : request.status === 'cancelled' ? 'cancelled' : 'completed'}>
-                  {request.status === 'pending' ? <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#94a3b8' }} /> : <IconCheck size={12} />}
+              <S.TimelineItem $status={request.status === 'pending' ? 'waiting' : request.status === 'cancelled' ? 'cancelled' : request.status === 'rejected' ? 'rejected' : 'completed'}>
+                <S.TimelineIcon $status={request.status === 'pending' ? 'waiting' : request.status === 'cancelled' ? 'cancelled' : request.status === 'rejected' ? 'rejected' : 'completed'}>
+                  {request.status === 'pending' ? (
+                    <S.WaitingDot />
+                  ) : request.status === 'cancelled' || request.status === 'rejected' ? (
+                    <IconClose size={10} />
+                  ) : (
+                    <IconCheck size={12} />
+                  )}
                 </S.TimelineIcon>
                 <S.TimelineContent>
                   <S.TimelineTitle>
-                    {request.status === 'pending' && 'Chờ cô duyệt đơn'}
+                    {request.status === 'pending' && `Chờ ${isMaleTeacher ? 'thầy' : 'cô'} duyệt đơn`}
                     {request.status === 'approved' && 'Đã duyệt đơn'}
-                    {request.status === 'completed' && (request.type === 'leave' ? 'Đã duyệt đơn' : 'Cô giáo đã cho bé uống thuốc')}
+                    {request.status === 'completed' && (request.type === 'leave' ? 'Đã duyệt đơn' : `${teacherDisplayName} đã cho bé uống thuốc`)}
                     {request.status === 'rejected' && 'Từ chối'}
                     {request.status === 'cancelled' && 'Đã hủy'}
                   </S.TimelineTitle>
                   <S.TimelineSub>
                     {request.status === 'pending' && 'Đang chờ'}
-                    {request.status === 'approved' && request.sentTime}
-                    {request.status === 'completed' && request.sentTime}
-                    {request.status === 'rejected' && 'Đã từ chối'}
-                    {request.status === 'cancelled' && 'Đã hủy'}
+                    {request.status === 'approved' && (request.updatedTime || request.sentTime)}
+                    {request.status === 'completed' && (request.updatedTime || request.sentTime)}
+                    {request.status === 'rejected' && (request.updatedTime || 'Đã từ chối')}
+                    {request.status === 'cancelled' && (request.updatedTime || 'Đã hủy')}
                   </S.TimelineSub>
                 </S.TimelineContent>
               </S.TimelineItem>
             </S.Timeline>
-
 
             <S.TimelineActions>
               {request.status === 'pending' && (
@@ -261,7 +317,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
         <S.ZoomOverlay onClick={() => setZoomedImageUrl(null)}>
           <S.ZoomContainer onClick={e => e.stopPropagation()}>
             <S.ZoomCloseBtn onClick={() => setZoomedImageUrl(null)}>✕</S.ZoomCloseBtn>
-            <img src={zoomedImageUrl} alt="Zoomed medicine" style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '12px', display: 'block', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} />
+            <S.ZoomedImg src={zoomedImageUrl} alt="Zoomed medicine" />
           </S.ZoomContainer>
         </S.ZoomOverlay>
       )}

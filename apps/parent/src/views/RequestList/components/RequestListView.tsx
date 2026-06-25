@@ -4,10 +4,17 @@ import { Dropdown } from '@kindercare/ui';
 import { IconPlus, IconMedicine, IconRequest, IconSchedule } from '@/assets/icons/dashboard';
 import { RequestItem } from '../types';
 
+/**
+ * Props for RequestListView component.
+ */
 interface RequestListViewProps {
+  /** List of requests filtered by active tab and status */
   filteredRequests: RequestItem[];
+  /** Loading state flag representing API request status */
   loading: boolean;
+  /** Name of the active student context */
   studentName: string;
+  /** Aggregated statistics for request statuses and types */
   stats: {
     pending: number;
     approvedOrCompleted: number;
@@ -15,15 +22,26 @@ interface RequestListViewProps {
     leaveCount: number;
     medicationCount: number;
   };
+  /** Currently selected type tab filter */
   activeTab: 'all' | 'leave' | 'medication';
+  /** Callback to switch active type tab filter */
   setActiveTab: (tab: 'all' | 'leave' | 'medication') => void;
+  /** Currently selected status filter */
   activeStatusFilter: 'all' | 'pending' | 'approved_completed' | 'rejected' | 'cancelled';
+  /** Callback to switch active status filter */
   setActiveStatusFilter: (filter: 'all' | 'pending' | 'approved_completed' | 'rejected' | 'cancelled') => void;
+  /** Callback triggered when user clicks to view a request detail page */
   onShowDetail: (r: RequestItem) => void;
+  /** Callback triggered to cancel a pending request */
   onCancelRequest: (id: string) => void;
+  /** Callback triggered when user clicks to create a new request */
   onCreateRequestClick: () => void;
 }
 
+/**
+ * RequestListView renders the request manager panel including aggregated statistics pills,
+ * filter tabs/dropdowns, and the request cards list.
+ */
 export const RequestListView: React.FC<RequestListViewProps> = ({
   filteredRequests,
   loading,
@@ -42,7 +60,7 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
       {/* Header section */}
       <S.HeaderRow>
         <S.HeaderLeft>
-          <S.PageTitle>Đơn từ của tôi</S.PageTitle>
+          <S.PageTitle>Yêu cầu của phụ huynh</S.PageTitle>
           <S.PageSub>Theo dõi đơn xin nghỉ & dặn dò thuốc của {studentName}</S.PageSub>
         </S.HeaderLeft>
 
@@ -103,10 +121,10 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
 
       {/* Cards List */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 40px', color: 'var(--muted, #6b7280)', fontSize: '14px', fontWeight: 500 }}>
-          <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: '8px' }}>🌀</span>
+        <S.LoadingContainer>
+          <S.LoadingIcon>🌀</S.LoadingIcon>
           Đang tải danh sách đơn...
-        </div>
+        </S.LoadingContainer>
       ) : filteredRequests.length > 0 ? (
         <S.CardList>
           {filteredRequests.map(r => (

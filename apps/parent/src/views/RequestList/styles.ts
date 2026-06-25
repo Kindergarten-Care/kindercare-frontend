@@ -960,7 +960,7 @@ export const Timeline = styled.div`
   }
 `;
 
-export const TimelineItem = styled.div<{ $status: 'completed' | 'pending' | 'waiting' | 'cancelled' }>`
+export const TimelineItem = styled.div<{ $status: 'completed' | 'pending' | 'waiting' | 'cancelled' | 'rejected' }>`
   position: relative;
   padding-bottom: 24px;
 
@@ -969,7 +969,7 @@ export const TimelineItem = styled.div<{ $status: 'completed' | 'pending' | 'wai
   }
 `;
 
-export const TimelineIcon = styled.div<{ $status: 'completed' | 'pending' | 'waiting' | 'cancelled' }>`
+export const TimelineIcon = styled.div<{ $status: 'completed' | 'pending' | 'waiting' | 'cancelled' | 'rejected' }>`
   position: absolute;
   left: -30px;
   top: 2px;
@@ -983,7 +983,7 @@ export const TimelineIcon = styled.div<{ $status: 'completed' | 'pending' | 'wai
   background: ${p => {
     if (p.$status === 'completed') return '#16a34a';
     if (p.$status === 'pending') return '#ea580c';
-    if (p.$status === 'cancelled') return '#ef4444';
+    if (p.$status === 'cancelled' || p.$status === 'rejected') return '#ef4444';
     return '#e2e8f0';
   }};
   
@@ -992,7 +992,7 @@ export const TimelineIcon = styled.div<{ $status: 'completed' | 'pending' | 'wai
   box-shadow: 0 0 0 2px ${p => {
     if (p.$status === 'completed') return 'rgba(22, 163, 74, 0.15)';
     if (p.$status === 'pending') return 'rgba(234, 88, 12, 0.15)';
-    if (p.$status === 'cancelled') return 'rgba(239, 68, 68, 0.15)';
+    if (p.$status === 'cancelled' || p.$status === 'rejected') return 'rgba(239, 68, 68, 0.15)';
     return 'transparent';
   }};
 `;
@@ -1216,12 +1216,19 @@ export const MedImageWrapper = styled.div`
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border, #e2e8f0);
-  box-shadow: var(--shadow-sm);
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f8fafc;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--brand, #005a36);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
   
   img {
     width: 100%;
@@ -1229,6 +1236,7 @@ export const MedImageWrapper = styled.div`
     max-height: 280px;
     object-fit: contain;
     display: block;
+    border-radius: 6px;
   }
 `;
 
@@ -1292,5 +1300,85 @@ export const ZoomCloseBtn = styled.button`
 
   &:active {
     transform: scale(0.95);
+  }
+`;
+
+export const SummaryChildAvatarImg = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+export const InfoIconWrapper = styled.span`
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+`;
+
+export const EvidenceBlock = styled.div`
+  margin-top: 16px;
+`;
+
+export const EvidenceHeader = styled(DetailNoteHeader)`
+  margin-bottom: 8px;
+`;
+
+export const MedCardsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const MedTimesText = styled.span`
+  color: var(--fg);
+  font-weight: 600;
+`;
+
+export const SentTimeRow = styled(DetailInfoRow)`
+  border-bottom: none;
+  padding-top: 12px;
+  padding-bottom: 0;
+`;
+
+export const PendingDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+`;
+
+export const WaitingDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+`;
+
+export const ZoomedImg = styled.img`
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+`;
+
+export const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 60px 40px;
+  color: var(--muted, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+export const LoadingIcon = styled.span`
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;

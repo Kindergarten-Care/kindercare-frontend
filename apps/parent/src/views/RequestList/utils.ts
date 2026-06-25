@@ -1,4 +1,7 @@
 import { RequestItem } from './types';
+import { LeaveRequestDomainModel } from '@/config/types/leaveRequest';
+import { MedicationRequestDomainModel } from '@/config/types/medicationRequest';
+import { StudentDomainModel } from '@/config/types/student';
 
 export const formatDate = (timestampSec: bigint | number): string => {
   // Adjust by +7 hours to format according to UTC+7 timezone
@@ -20,7 +23,9 @@ export const formatDateTime = (timestampSec: bigint | number): string => {
   return `${hours}:${minutes} ${day}/${month}/${year}`;
 };
 
-export const mapLeavesToRequestItems = (leaves: any[]): RequestItem[] => {
+export const mapLeavesToRequestItems = (
+  leaves: (LeaveRequestDomainModel & { createdAt?: bigint | number | null })[]
+): RequestItem[] => {
   return leaves.map(l => {
     const fromStr = formatDate(l.fromDate);
     const toStr = formatDate(l.toDate);
@@ -42,13 +47,16 @@ export const mapLeavesToRequestItems = (leaves: any[]): RequestItem[] => {
       color: '#2563eb', // Blue
       bg: '#eff6ff',
       rawDate,
+      evidenceUrl: l.evidenceUrl || (l as any).evidenceURL || (l as any).EvidenceURL || null,
     };
   });
 };
 
-export const mapMedicationsToRequestItems = (medications: any[]): RequestItem[] => {
+export const mapMedicationsToRequestItems = (
+  medications: MedicationRequestDomainModel[]
+): RequestItem[] => {
   // Group medication requests by requestDate
-  const medGroups: { [key: string]: any[] } = {};
+  const medGroups: { [key: string]: MedicationRequestDomainModel[] } = {};
   medications.forEach(m => {
     const key = String(m.requestDate);
     if (!medGroups[key]) {
@@ -60,7 +68,7 @@ export const mapMedicationsToRequestItems = (medications: any[]): RequestItem[] 
   return Object.entries(medGroups).map(([_, group]) => {
     const rep = group[0];
     const reqStr = formatDateTime(rep.requestDate);
-    
+
     // Resolve status of grouped requests
     let normalizedStatus: any = 'pending';
     const statuses = group.map(g => (g.status || 'Pending').toLowerCase());
@@ -93,6 +101,9 @@ export const mapMedicationsToRequestItems = (medications: any[]): RequestItem[] 
     const uniqueNotes = Array.from(new Set(group.map(g => g.parentNote?.trim()).filter(Boolean)));
     const combinedNote = uniqueNotes.join('; ') || undefined;
 
+    const uniqueTeacherNotes = Array.from(new Set(group.map(g => g.teacherNote?.trim()).filter(Boolean)));
+    const combinedTeacherNote = uniqueTeacherNotes.join('; ') || undefined;
+
     return {
       id: `medicine-${rep.medRequestId}`,
       requestId: Number(rep.medRequestId),
@@ -108,6 +119,7 @@ export const mapMedicationsToRequestItems = (medications: any[]): RequestItem[] 
       bg: '#fff7ed',
       rawDate: Number(rep.requestDate),
       medicines: groupMedicines,
+      teacherNote: combinedTeacherNote,
     };
   });
 };
@@ -119,7 +131,7 @@ export const filterRequests = (
 ): RequestItem[] => {
   return requests.filter(r => {
     const matchesTab = activeTab === 'all' || r.type === activeTab;
-    
+
     let matchesStatus = true;
     if (activeStatusFilter === 'pending') {
       matchesStatus = r.status === 'pending';
@@ -154,6 +166,56 @@ export const calculateRequestStats = (requests: RequestItem[]) => {
     total: requests.length,
     leaveCount: requests.filter(r => r.type === 'leave').length,
     medicationCount: requests.filter(r => r.type === 'medication').length,
+  };
+};
+
+export interface TeacherInfo {
+  leadTeacher: any;
+  isMaleTeacher: boolean;
+  teacherTitle: string;
+  homeroomTitle: string;
+  homeroomTitleWithName: string;
+  teacherDisplayName: string;
+}
+
+export const getTeacherDisplayName = (teacher: any): string => {
+  if (!teacher) return '';
+  const fullName = teacher.fullName || '';
+  if (/^(cô|thầy)\b/i.test(fullName)) {
+    return fullName;
+  }
+  const isMale = (teacher.gender || '').toLowerCase() === 'nam' || (teacher.gender || '').toLowerCase() === 'male';
+  const prefix = isMale ? 'Thầy' : 'Cô';
+  return `${prefix} ${fullName}`;
+};
+
+export const resolveTeacherInfo = (activeStudent: StudentDomainModel | null): TeacherInfo => {
+  const leadTeacher = activeStudent?.teachers?.find(
+    t => t.roleInClass?.toLowerCase() === 'homeroom' || t.roleInClass?.toLowerCase() === 'primary'
+  ) || activeStudent?.teachers?.[0];
+
+  const isMaleTeacher = leadTeacher
+    ? (leadTeacher.gender || '').toLowerCase() === 'nam' || (leadTeacher.gender || '').toLowerCase() === 'male'
+    : false;
+
+  const teacherTitle = isMaleTeacher ? 'Thầy giáo' : 'Cô giáo';
+  const homeroomTitle = isMaleTeacher ? 'Thầy giáo chủ nhiệm' : 'Cô giáo chủ nhiệm';
+
+  const homeroomTitleWithName = leadTeacher
+    ? `${homeroomTitle} ${leadTeacher.fullName}`
+    : homeroomTitle;
+
+  const teacherDisplayName = leadTeacher
+    ? getTeacherDisplayName(leadTeacher)
+    : teacherTitle;
+
+  return {
+    leadTeacher,
+    isMaleTeacher,
+    teacherTitle,
+    homeroomTitle,
+    homeroomTitleWithName,
+    teacherDisplayName,
   };
 };
 

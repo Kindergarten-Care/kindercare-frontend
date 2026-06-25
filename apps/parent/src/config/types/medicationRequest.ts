@@ -12,6 +12,7 @@ export interface MedicationRequestApiDto {
   frequency: string | null;
   timeToTake: string | null;
   parentNote: string | null;
+  updatedTime?: number | null;
 }
 
 export interface MedicationRequestDomainModel {
@@ -28,6 +29,7 @@ export interface MedicationRequestDomainModel {
   frequency: string | null;
   timeToTake: string | null;
   parentNote: string | null;
+  updatedTime?: bigint | null;
 }
 
 export interface CreateMedicationRequestDto {

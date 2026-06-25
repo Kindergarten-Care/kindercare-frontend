@@ -45,6 +45,15 @@ class MedicationRequestService {
     }
     return MedicationRequestMapper.toDomainList(res.data);
   }
+
+  async cancelMedicationRequest(medRequestId: number | string): Promise<MedicationRequestDomainModel[]> {
+    const url = SERVER.parent.cancelMedicationRequest.replace(':medRequestId', medRequestId.toString());
+    const { data: res } = await apiClient.patch<ApiResponse<MedicationRequestApiDto[]>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return MedicationRequestMapper.toDomainList(res.data);
+  }
 }
 
 export const medicationRequestService = new MedicationRequestService();

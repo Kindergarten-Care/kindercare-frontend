@@ -22,6 +22,10 @@ export default function RequestDetailPage() {
   } = useRequestList();
 
   useEffect(() => {
+    document.title = 'Chi tiết yêu cầu | KinderCare';
+  }, []);
+
+  useEffect(() => {
     if (!loading) {
       loader.done();
     }
