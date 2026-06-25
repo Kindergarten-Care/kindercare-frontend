@@ -7,6 +7,10 @@ import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
+import dynamic from 'next/dynamic';
+
+const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
+
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
@@ -52,6 +56,7 @@ export const TeacherDashboardView: React.FC = () => {
   const [quickOpen, setQuickOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [qrSuccessModal, setQrSuccessModal] = useState<{
     isOpen: boolean;
@@ -425,7 +430,7 @@ export const TeacherDashboardView: React.FC = () => {
 
   const quickActionsList = [
     { id: 'q1', label: 'Điểm danh QR', desc: 'Quét mã check-in', color: '#005A36', tint: '#E6F3ED', icon: '📲', run: handleStartScanner },
-    { id: 'q2', label: 'Tạo nhật ký', desc: 'Ghi lại hoạt động lớp', color: '#2563EB', tint: '#E3EDFD', icon: '📝', run: () => addToast('📝 Tạo nhật ký lớp mới…') },
+    { id: 'q2', label: 'Tạo nhật ký', desc: 'Ghi lại hoạt động lớp', color: '#2563EB', tint: '#E3EDFD', icon: '📝', run: () => { setNewsfeedModalOpen(true); setQuickOpen(false); } },
     { id: 'q3', label: 'Phiếu bé ngoan', desc: 'Đánh giá hàng ngày', color: '#EC4899', tint: '#FCE7F3', icon: '🌺', run: () => { addToast('Vui lòng dùng nút Đánh giá ngay trên Widget'); setQuickOpen(false); } },
   ];
 
@@ -620,6 +625,17 @@ export const TeacherDashboardView: React.FC = () => {
           </S.SuccessContent>
         </S.SuccessOverlay>
       )}
+
+      {/* CREATE NEWSFEED MODAL */}
+      <CreateNewsfeedModal 
+        isOpen={newsfeedModalOpen}
+        onClose={() => setNewsfeedModalOpen(false)}
+        classId={activeClassId}
+        onSuccess={() => {
+          setNewsfeedModalOpen(false);
+          addToast('🎉 Tạo nhật ký lớp thành công!');
+        }}
+      />
     </S.DashboardContainer>
   );
 };
