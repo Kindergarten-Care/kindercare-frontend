@@ -60,17 +60,16 @@ export const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({
   }, [propStudents, propClassName, propLoading]);
 
   const tot = students.length || 42;
-  const presentStudents = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
-  const late = presentStudents.filter(s => s.arrivalTime && s.arrivalTime !== '--:--' && s.arrivalTime > '08:00').length;
-  const present = presentStudents.length - late;
-  const absent = tot - present - late;
+  const present = students.filter(s => s.attendanceStatus === 'PRESENT').length;
+  const excused = students.filter(s => s.attendanceStatus === 'PERMISSION_ABSENCE').length;
+  const absent = tot - present - excused;
 
   const a1 = tot > 0 ? Math.round((present / tot) * 360) : 0;
-  const a2 = tot > 0 ? a1 + Math.round((late / tot) * 360) : 0;
+  const a2 = tot > 0 ? a1 + Math.round((excused / tot) * 360) : 0;
   const donutGradient = tot > 0 
     ? `conic-gradient(#005A36 0deg ${a1}deg, #D97706 ${a1}deg ${a2}deg, #DC2626 ${a2}deg 360deg)`
     : '#E2E8F0';
-  const rate = tot > 0 ? Math.round(((present + late) / tot) * 100) : 0;
+  const rate = tot > 0 ? Math.round((present / tot) * 100) : 0;
 
   if (loading) {
     return (
@@ -115,8 +114,8 @@ export const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({
 
           <S.StatRow>
             <S.ColorDot $color="#D97706" />
-            <S.StatName>Đi muộn</S.StatName>
-            <S.StatCount $color="#92400E">{late}</S.StatCount>
+            <S.StatName>Vắng phép</S.StatName>
+            <S.StatCount $color="#92400E">{excused}</S.StatCount>
           </S.StatRow>
 
           <S.StatRow>
