@@ -15,8 +15,11 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
   const { logout } = useAuth();
   
   const isDashboardActive = pathname === '/';
+  const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
+  const isScheduleActive = pathname === '/schedule';
   const isActivitiesActive = pathname === '/activities';
+  const isProfileActive = pathname === '/profile';
 
   return (
     <S.SidebarContainer $isOpen={isOpen}>
@@ -37,7 +40,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
           </S.IconWrapper>
           <S.Label>Bảng điều khiển</S.Label>
         </S.NavItem>
-        <S.NavItem onClick={() => router.push('/')}>
+        <S.NavItem $active={isStudentsActive} onClick={() => router.push('/students')}>
           <S.IconWrapper>
             <Users size={23} />
           </S.IconWrapper>
@@ -48,6 +51,12 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
             <CheckSquare size={23} />
           </S.IconWrapper>
           <S.Label>Điểm danh</S.Label>
+        </S.NavItem>
+        <S.NavItem $active={isScheduleActive} onClick={() => router.push('/schedule')}>
+          <S.IconWrapper>
+            <Calendar size={23} />
+          </S.IconWrapper>
+          <S.Label>Lịch trình</S.Label>
         </S.NavItem>
         <S.NavItem $active={isActivitiesActive} onClick={() => router.push('/activities')}>
           <S.IconWrapper>
@@ -64,11 +73,11 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
       </S.NavList>
       
       <S.BottomNav>
-        <S.NavItem onClick={() => router.push('/')}>
+        <S.NavItem $active={isProfileActive} onClick={() => router.push('/profile')}>
           <S.IconWrapper>
             <HelpCircle size={23} />
           </S.IconWrapper>
-          <S.Label>Trợ giúp</S.Label>
+          <S.Label>Hồ sơ</S.Label>
         </S.NavItem>
         <S.NavItem onClick={logout}>
           <S.IconWrapper>
