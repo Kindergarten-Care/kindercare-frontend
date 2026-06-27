@@ -33,4 +33,5 @@ export interface LeaveRequest {
   parentNotes?: string;
   createdAt?: number;
   className?: string;
+  studentAvatar?: string;
 }

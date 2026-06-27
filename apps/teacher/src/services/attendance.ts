@@ -103,6 +103,10 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     classId: raw.classId ? Number(raw.classId) : undefined,
     fromDate: raw.fromDate,
     toDate: raw.toDate,
+    parentPhone: raw.parentPhone || undefined,
+    createdAt: raw.createdAt || undefined,
+    className: raw.className || undefined,
+    studentAvatar: raw.studentAvatar || undefined,
   };
 }
 

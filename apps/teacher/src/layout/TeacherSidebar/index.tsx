@@ -1,6 +1,6 @@
 import React from 'react';
 import * as S from './styles';
-import { LayoutDashboard, Users, CheckSquare, Calendar, MessageSquare, Heart, HelpCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Calendar, Heart, HelpCircle, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -55,12 +55,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose 
           </S.IconWrapper>
           <S.Label>Hoạt động</S.Label>
         </S.NavItem>
-        <S.NavItem onClick={() => router.push('/')}>
-          <S.IconWrapper>
-            <MessageSquare size={23} />
-          </S.IconWrapper>
-          <S.Label>Liên lạc phụ huynh</S.Label>
-        </S.NavItem>
+
         <S.NavItem onClick={() => router.push('/')}>
           <S.IconWrapper>
             <Heart size={23} />

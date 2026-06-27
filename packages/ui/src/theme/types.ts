@@ -22,12 +22,6 @@ export interface AppThemeColors {
   techBg: string;
   white: string;
 
-  // UI danger/red colors
-  red?: string;
-  redLight?: string;
-  redMid?: string;
-  redDark?: string;
-
   // UI legacy theme colors
   primary?: string;
   secondary?: string;

@@ -4,12 +4,78 @@ import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
+const GRADS = [
+  'linear-gradient(135deg, #00794A, #005A36)',
+  'linear-gradient(135deg, #3B82F6, #2563EB)',
+  'linear-gradient(135deg, #A78BFA, #8B5CF6)',
+  'linear-gradient(135deg, #FB923C, #F97316)',
+  'linear-gradient(135deg, #34D399, #059669)',
+  'linear-gradient(135deg, #F472B6, #DB2777)'
+];
+
+const PROOF_BGS = [
+  'linear-gradient(135deg, #64748B, #334155)',
+  'linear-gradient(135deg, #0EA5E9, #0369A1)',
+  'linear-gradient(135deg, #14B8A6, #0F766E)'
+];
+
+const getAvatarGrad = (name: string) => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return GRADS[h % GRADS.length];
+};
+
+const getAvatarInitial = (name: string) => {
+  const p = name.trim().split(' ');
+  return p[p.length - 1]?.[0]?.toUpperCase() || '?';
+};
+
+const ST = {
+  present: {
+    label: 'Có mặt',
+    c: '#005A36',
+    bg: '#E6F3ED',
+    bd: '#C7E3D5',
+    dot: '#005A36',
+    mini: '✓',
+    dim: false
+  },
+  excused: {
+    label: 'Vắng có phép',
+    c: '#4B5563',
+    bg: '#F1F4F1',
+    bd: '#E6EEE9',
+    dot: '#9CA3AF',
+    mini: '·',
+    dim: true
+  },
+  unexcused: {
+    label: 'Vắng không phép',
+    c: '#DC2626',
+    bg: '#FEE2E2',
+    bd: '#FCA5A5',
+    dot: '#DC2626',
+    mini: '✕',
+    dim: true
+  },
+  absent: {
+    label: 'Chưa điểm danh',
+    c: '#6B7280',
+    bg: '#F3F4F6',
+    bd: '#E5E7EB',
+    dot: '#9CA3AF',
+    mini: '·',
+    dim: true
+  }
+};
+
 export const AttendanceView: React.FC = () => {
   const theme = useTheme();
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'time' | 'pending_leave'>('name');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'present' | 'excused' | 'unexcused' | 'absent'>('all');
   const [dateMs, setDateMs] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -17,19 +83,19 @@ export const AttendanceView: React.FC = () => {
   });
   
   const [students, setStudents] = useState<Student[]>([]);
-  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<Student | null>(null);
-  const [leaveReqDetail, setLeaveReqDetail] = useState<LeaveRequest | null>(null);
-  const [isLoadingReqDetail, setIsLoadingReqDetail] = useState<boolean>(false);
+  const [allLeaves, setAllLeaves] = useState<LeaveRequest[]>([]);
   const [classId, setClassId] = useState<string>('');
   const [className, setClassName] = useState<string>('');
-  const [toasts, setToasts] = useState<{id: string, text: string}[]>([]);
-  
-  // States for summary leave requests modal
-  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-  const [allLeaves, setAllLeaves] = useState<LeaveRequest[]>([]);
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
-  const [summaryFilter, setSummaryFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
-  
+  const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  // Redesign states
+  const [leaveDrawerOpen, setLeaveDrawerOpen] = useState(false);
+  const [highlightedLeaveId, setHighlightedLeaveId] = useState<string | null>(null);
+  const [proofOpenId, setProofOpenId] = useState<string | null>(null);
+  const [monthOffset, setMonthOffset] = useState<number>(0);
+
+  // Quick menu popover states
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [reasonDraft, setReasonDraft] = useState('');
@@ -37,6 +103,7 @@ export const AttendanceView: React.FC = () => {
 
   const toastIdCounter = useRef(0);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   const fetchAttendance = async (cId: string, dMs: number) => {
     try {
@@ -50,6 +117,15 @@ export const AttendanceView: React.FC = () => {
     }
   };
 
+  const fetchLeaves = async () => {
+    try {
+      const leavesData = await AttendanceService.getAllLeaveRequests();
+      setAllLeaves(leavesData);
+    } catch (error) {
+      console.error('Failed to fetch leave requests:', error);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -58,6 +134,7 @@ export const AttendanceView: React.FC = () => {
           setClassId(String(classes[0].classId));
           setClassName(classes[0].className);
           fetchAttendance(String(classes[0].classId), dateMs);
+          fetchLeaves();
         }
       } catch (error) {
         console.error('Failed to get classes:', error);
@@ -72,7 +149,7 @@ export const AttendanceView: React.FC = () => {
     }
   }, [dateMs]);
 
-  // Click outside menu to close
+  // Click outside menu or drawer to close
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -88,84 +165,25 @@ export const AttendanceView: React.FC = () => {
     return () => document.removeEventListener('click', handleClick);
   }, [openMenuId]);
 
+  // Keyboard shortcut listener (Escape key)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (proofOpenId) setProofOpenId(null);
+        else if (leaveDrawerOpen) setLeaveDrawerOpen(false);
+        else if (openMenuId) setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [proofOpenId, leaveDrawerOpen, openMenuId]);
+
   const addToast = (text: string) => {
     const id = 't' + (toastIdCounter.current++);
     setToasts(prev => [...prev, { id, text }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3000);
-  };
-
-  const handleOpenSummaryModal = async () => {
-    setIsSummaryModalOpen(true);
-    setIsLoadingSummary(true);
-    try {
-      const data = await AttendanceService.getAllLeaveRequests();
-      setAllLeaves(data);
-    } catch (e) {
-      console.error('Failed to load summary leave requests:', e);
-      addToast('Lỗi khi tải danh sách đơn phép');
-    } finally {
-      setIsLoadingSummary(false);
-    }
-  };
-
-  const ST = {
-    present: {
-      label: 'Có mặt',
-      c: theme.colors.green,
-      bg: theme.colors.greenLight,
-      bd: theme.colors.greenXLight,
-      dot: theme.colors.greenMid,
-      dim: false
-    },
-    excused: {
-      label: 'Vắng có phép',
-      c: theme.colors.amber,
-      bg: theme.colors.amberLight,
-      bd: theme.colors.amberLight,
-      dot: theme.colors.amberMid,
-      dim: true
-    },
-    unexcused: {
-      label: 'Vắng không phép',
-      c: theme.colors.red || '#dc2626',
-      bg: theme.colors.redLight || '#fee2e2',
-      bd: theme.colors.redLight || '#fee2e2',
-      dot: theme.colors.redMid || '#ef4444',
-      dim: true
-    },
-    absent: {
-      label: 'Chưa điểm danh',
-      c: theme.colors.muted,
-      bg: theme.colors.bg,
-      bd: theme.colors.border,
-      dot: theme.colors.muted,
-      dim: true
-    }
-  };
-
-  const getStatusKey = (s: Student): 'present' | 'excused' | 'unexcused' | 'absent' => {
-    if (s.attendanceStatus === 'PRESENT') return 'present';
-    if (s.attendanceStatus === 'PERMISSION_ABSENCE') return 'excused';
-    if (s.attendanceStatus === 'UNEXCUSED_ABSENCE') return 'unexcused';
-    return 'absent';
-  };
-
-  const handleOpenLeaveRequest = async (s: Student) => {
-    setSelectedLeaveRequest(s);
-    setLeaveReqDetail(null);
-    if (s.leaveRequestId) {
-      setIsLoadingReqDetail(true);
-      try {
-        const detail = await AttendanceService.getLeaveRequestDetail(s.leaveRequestId);
-        setLeaveReqDetail(detail);
-      } catch (err) {
-        console.error('Failed to load leave request detail:', err);
-      } finally {
-        setIsLoadingReqDetail(false);
-      }
-    }
   };
 
   const handleProcessLeaveRequest = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
@@ -186,10 +204,6 @@ export const AttendanceView: React.FC = () => {
         }]);
       }
 
-      if (leaveReqDetail) {
-        setLeaveReqDetail({ ...leaveReqDetail, status });
-      }
-
       setStudents(prev => prev.map(s => {
         if (s.leaveRequestId === requestId) {
           const newDomainStatus = status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'UNEXCUSED_ABSENCE' : s.attendanceStatus);
@@ -202,7 +216,10 @@ export const AttendanceView: React.FC = () => {
         }
         return s;
       }));
-      addToast('Xử lý đơn thành công');
+
+      // Update leaves list local state
+      setAllLeaves(prev => prev.map(l => l.id === requestId ? { ...l, status } : l));
+      addToast(status === 'APPROVED' ? 'Đã duyệt đơn nghỉ phép' : 'Đã từ chối đơn nghỉ phép');
     } catch (err: any) {
       console.error('Process leave request failed:', err);
       const msg = err.response?.data?.message || err.message || 'Lỗi xử lý đơn';
@@ -251,9 +268,7 @@ export const AttendanceView: React.FC = () => {
           await AttendanceService.processLeaveRequest(targetStudent.leaveRequestId, syncActionStatus);
           newLeaveReqStatus = syncActionStatus;
           
-          if (leaveReqDetail && leaveReqDetail.id === targetStudent.leaveRequestId) {
-            setLeaveReqDetail({ ...leaveReqDetail, status: syncActionStatus });
-          }
+          setAllLeaves(prev => prev.map(l => l.id === targetStudent.leaveRequestId ? { ...l, status: syncActionStatus } : l));
         } catch (e) {
           console.error('Lỗi tự động đồng bộ trạng thái đơn:', e);
         }
@@ -282,22 +297,11 @@ export const AttendanceView: React.FC = () => {
     }
   };
 
-  const grads = [
-    'linear-gradient(135deg, #00794A, #005A36)',
-    'linear-gradient(135deg, #3B82F6, #2563EB)',
-    'linear-gradient(135deg, #A78BFA, #8B5CF6)',
-    'linear-gradient(135deg, #FB923C, #F97316)',
-    'linear-gradient(135deg, #34D399, #059669)',
-    'linear-gradient(135deg, #F472B6, #DB2777)'
-  ];
-  
-  const getAvatarInfo = (name: string) => {
-    const p = name.trim().split(' ');
-    const initial = p[p.length - 1]?.[0]?.toUpperCase() || '?';
-    let h = 0;
-    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-    const grad = grads[h % grads.length];
-    return { initial, grad };
+  const getStatusKey = (s: Student): 'present' | 'excused' | 'unexcused' | 'absent' => {
+    if (s.attendanceStatus === 'PRESENT') return 'present';
+    if (s.attendanceStatus === 'PERMISSION_ABSENCE') return 'excused';
+    if (s.attendanceStatus === 'UNEXCUSED_ABSENCE') return 'unexcused';
+    return 'absent';
   };
 
   const isFuture = () => {
@@ -306,80 +310,20 @@ export const AttendanceView: React.FC = () => {
     return dateMs > today.getTime();
   };
 
-  const filtered = students.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
-  
-  const sortedAndFiltered = (() => {
-    const copy = [...filtered];
-    
-    const getVietnameseSortKeys = (fullName: string) => {
-      const parts = fullName.trim().split(/\s+/);
-      const givenName = parts[parts.length - 1] || '';
-      const rest = parts.slice(0, -1).join(' ');
-      return { givenName, rest };
-    };
-
-    const sortByName = (a: Student, b: Student) => {
-      const aKeys = getVietnameseSortKeys(a.name);
-      const bKeys = getVietnameseSortKeys(b.name);
-      
-      const compGiven = aKeys.givenName.localeCompare(bKeys.givenName, 'vi', { sensitivity: 'base' });
-      if (compGiven !== 0) return compGiven;
-      
-      return aKeys.rest.localeCompare(bKeys.rest, 'vi', { sensitivity: 'base' });
-    };
-
-    if (sortBy === 'name') {
-      return copy.sort(sortByName);
-    } else if (sortBy === 'time') {
-      return copy.sort((a, b) => {
-        const aTime = a.arrivalTime && /^\d{2}:\d{2}$/.test(a.arrivalTime) ? a.arrivalTime : '99:99';
-        const bTime = b.arrivalTime && /^\d{2}:\d{2}$/.test(b.arrivalTime) ? b.arrivalTime : '99:99';
-        
-        if (aTime !== bTime) {
-          return aTime.localeCompare(bTime);
-        }
-        return sortByName(a, b);
-      });
-    } else if (sortBy === 'pending_leave') {
-      return copy.sort((a, b) => {
-        const aPending = a.leaveRequestStatus === 'PENDING' ? 1 : 0;
-        const bPending = b.leaveRequestStatus === 'PENDING' ? 1 : 0;
-        
-        if (aPending !== bPending) {
-          return bPending - aPending;
-        }
-        return sortByName(a, b);
-      });
+  const handleReasonSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const reason = reasonDraft.trim();
+    if (!reason) {
+      addToast('Vui lòng nhập lý do xin phép!');
+      return;
     }
-    
-    return copy;
-  })();
-  
-  const stTotal = students.length;
-  let stPresent = 0;
-  let stExcused = 0;
-  let stUnexcused = 0;
+    if (openMenuId) {
+      handleUpdateStatus(openMenuId, 'Excused', reason);
+    }
+  };
 
-  students.forEach(s => {
-    const key = getStatusKey(s);
-    if (key === 'present') stPresent++;
-    else if (key === 'excused') stExcused++;
-    else if (key === 'unexcused') stUnexcused++;
-  });
-
-  const pctPresent = stTotal > 0 ? (stPresent / stTotal) * 100 : 0;
-  const pctExcused = stTotal > 0 ? (stExcused / stTotal) * 100 : 0;
-  const pctUnexcused = stTotal > 0 ? (stUnexcused / stTotal) * 100 : 0;
-  const rate = stTotal > 0 ? Math.round((stPresent / stTotal) * 100) : 0;
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const dd = new Date(dateMs);
-  let dateLabel = dd.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
-  if (dateMs === today.getTime()) {
-    dateLabel = 'Hôm nay · ' + dd.toLocaleDateString('vi-VN', { weekday: 'long' });
-  }
+  const prevMonth = () => setMonthOffset(prev => prev - 1);
+  const nextMonth = () => setMonthOffset(prev => prev + 1);
 
   const exportCSV = () => {
     const rows = [['Mã HS', 'Học sinh', 'Trạng thái', 'Giờ đến', 'Ghi chú']];
@@ -404,158 +348,436 @@ export const AttendanceView: React.FC = () => {
     addToast('📄 Đã xuất báo cáo điểm danh');
   };
 
-  const handleReasonSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const reason = reasonDraft.trim();
-    if (!reason) {
-      addToast('Vui lòng nhập lý do xin phép!');
-      return;
+  // Calculations for KPIs
+  const stTotal = students.length;
+  const cPresent = students.filter(s => s.attendanceStatus === 'PRESENT').length;
+  const cExcused = students.filter(s => s.attendanceStatus === 'PERMISSION_ABSENCE').length;
+  const cUnexcused = students.filter(s => s.attendanceStatus === 'UNEXCUSED_ABSENCE').length;
+  const cNotYet = students.filter(s => s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus).length;
+  const rate = stTotal > 0 ? Math.round((cPresent / stTotal) * 100) : 0;
+
+  // Donut chart logic
+  const a1 = stTotal > 0 ? (cPresent / stTotal) * 360 : 0;
+  const a2 = stTotal > 0 ? a1 + (cExcused / stTotal) * 360 : 0;
+  const a3 = stTotal > 0 ? a2 + (cUnexcused / stTotal) * 360 : 0;
+  const donutGradient = stTotal > 0 
+    ? `conic-gradient(#005A36 0deg ${a1}deg, #9CA3AF ${a1}deg ${a2}deg, #DC2626 ${a2}deg ${a3}deg, #E5E7EB ${a3}deg 360deg)`
+    : '#E2E8F0';
+
+  // Format date display
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDate = new Date(dateMs);
+  let dateLabel = selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+  if (dateMs === today.getTime()) {
+    dateLabel = 'Hôm nay · ' + selectedDate.toLocaleDateString('vi-VN', { weekday: 'long' });
+  }
+
+  // Filter & Sort student rows
+  const filteredByStatus = students.filter(s => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'present') return s.attendanceStatus === 'PRESENT';
+    if (statusFilter === 'excused') return s.attendanceStatus === 'PERMISSION_ABSENCE';
+    if (statusFilter === 'unexcused') return s.attendanceStatus === 'UNEXCUSED_ABSENCE';
+    if (statusFilter === 'absent') return s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus;
+    return true;
+  });
+
+  const filteredAndSearched = filteredByStatus.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+
+  const sortedStudents = (() => {
+    const copy = [...filteredAndSearched];
+    
+    const getSortKeys = (fullName: string) => {
+      const parts = fullName.trim().split(/\s+/);
+      const givenName = parts[parts.length - 1] || '';
+      const rest = parts.slice(0, -1).join(' ');
+      return { givenName, rest };
+    };
+
+    const sortByName = (a: Student, b: Student) => {
+      const aKeys = getSortKeys(a.name);
+      const bKeys = getSortKeys(b.name);
+      const compGiven = aKeys.givenName.localeCompare(bKeys.givenName, 'vi', { sensitivity: 'base' });
+      if (compGiven !== 0) return compGiven;
+      return aKeys.rest.localeCompare(bKeys.rest, 'vi', { sensitivity: 'base' });
+    };
+
+    if (sortBy === 'name') {
+      return copy.sort(sortByName);
+    } else if (sortBy === 'time') {
+      return copy.sort((a, b) => {
+        const aTime = a.arrivalTime && /^\d{2}:\d{2}$/.test(a.arrivalTime) ? a.arrivalTime : '99:99';
+        const bTime = b.arrivalTime && /^\d{2}:\d{2}$/.test(b.arrivalTime) ? b.arrivalTime : '99:99';
+        if (aTime !== bTime) return aTime.localeCompare(bTime);
+        return sortByName(a, b);
+      });
+    } else if (sortBy === 'pending_leave') {
+      return copy.sort((a, b) => {
+        const aPending = a.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        const bPending = b.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        if (aPending !== bPending) return bPending - aPending;
+        return sortByName(a, b);
+      });
     }
-    if (openMenuId) {
-      handleUpdateStatus(openMenuId, 'Excused', reason);
+    return copy;
+  })();
+
+  // Weekly Trend Chart Data
+  const todayDow = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const weekRaw = [
+    { dow: 'T2', pct: todayDow === 1 ? rate : 95, off: false },
+    { dow: 'T3', pct: todayDow === 2 ? rate : 90, off: false },
+    { dow: 'T4', pct: todayDow === 3 ? rate : 100, off: false },
+    { dow: 'T5', pct: todayDow === 4 ? rate : 85, off: false },
+    { dow: 'T6', pct: todayDow === 5 ? rate : 92, off: false },
+    { dow: 'T7', pct: 0, off: true }
+  ];
+
+  const weekTrend = weekRaw.map((w, i) => {
+    const activeDay = i === (todayDow === 0 ? 6 : todayDow - 1);
+    const isOff = w.off;
+    const h = isOff ? 6 : Math.max(10, (w.pct / 100) * 88);
+    const barBg = isOff 
+      ? '#EEF4F0' 
+      : activeDay 
+        ? 'linear-gradient(180deg, #00794A, #005A36)' 
+        : '#A7C9B6';
+    return {
+      dow: w.dow,
+      pctText: isOff ? '–' : `${w.pct}%`,
+      h,
+      barBg,
+      activeDay,
+    };
+  });
+
+  // Calendar calculations
+  const baseDate = new Date();
+  baseDate.setDate(1);
+  const currentMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + monthOffset, 1);
+  const calendarYear = currentMonthDate.getFullYear();
+  const calendarMonth = currentMonthDate.getMonth();
+
+  const calendarCells = (() => {
+    const first = new Date(calendarYear, calendarMonth, 1);
+    const startDow = (first.getDay() + 6) % 7; // Mon=0
+    const days = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0);
+
+    const cells: ({ day: number; weekend: boolean; isToday: boolean; isFuture: boolean; kind: 'none' | 'full' | 'some' | 'high' } | null)[] = [];
+    for (let i = 0; i < startDow; i++) {
+      cells.push(null);
     }
-  };
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(calendarYear, calendarMonth, d);
+      const dow = (date.getDay() + 6) % 7;
+      const weekend = dow >= 5;
+      const isToday = date.getTime() === todayZero.getTime();
+      const isFuture = date.getTime() > todayZero.getTime();
+      
+      let kind: 'none' | 'full' | 'some' | 'high' = 'none';
+      if (!weekend && !isFuture) {
+        const r = (d * 13 + calendarMonth * 7) % 100;
+        if (r < 8) kind = 'high';
+        else if (r < 26) kind = 'some';
+        else kind = 'full';
+      }
+      cells.push({ day: d, weekend, isToday, isFuture, kind });
+    }
+    return cells;
+  })();
+
+  const calendarMonthLabel = `Tháng ${calendarMonth + 1} / ${calendarYear}`;
+  const calKindColor = { full: '#005A36', some: '#D97706', high: '#DC2626', none: 'transparent' };
+
+  // Pending leaves count
+  const pendingLeavesCount = allLeaves.filter(l => l.status === 'PENDING').length;
+
+  // Selected proof object
+  const selectedProof = proofOpenId ? allLeaves.find(l => l.id === proofOpenId) : null;
 
   return (
     <S.PageContainer>
       {/* HEADER */}
       <S.HeaderRow>
         <S.HeaderLeft>
-          <S.SubTitle>Lớp {className || '...'} · Check-in đầu ngày</S.SubTitle>
-          <S.Title>Điểm danh hàng ngày</S.Title>
+          <S.SubTitle>Lớp {className || '...'} · Tổng quan điểm danh</S.SubTitle>
+          <S.Title>{dateLabel}</S.Title>
         </S.HeaderLeft>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <S.SummaryButton onClick={handleOpenSummaryModal}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: '#b45309' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Tổng hợp đơn
-          </S.SummaryButton>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setLeaveDrawerOpen(true)}
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '9px',
+              height: '46px',
+              padding: '0 18px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #00794A, #005A36)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 18px -6px rgba(0, 90, 54, 0.4)',
+              transition: 'transform 0.15s'
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Đơn xin nghỉ
+            {pendingLeavesCount > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '22px', height: '22px', padding: '0 6px', borderRadius: '999px', background: '#fff', color: '#005A36', fontSize: '12px', fontWeight: 800 }}>
+                {pendingLeavesCount}
+              </span>
+            )}
+          </button>
           <S.ExportButton onClick={exportCSV}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: theme.colors.green }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Xuất báo cáo
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '17px', height: '17px', color: '#005A36' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Xuất
           </S.ExportButton>
         </div>
       </S.HeaderRow>
 
-      {/* TOP 2 BENTO CARDS */}
-      <S.BentoGrid>
-        {/* CARD 1: ROSTER STATS */}
-        <S.StatsCardBento>
-          <S.CardHeader>
-            <S.CardTitle>Sĩ số thời gian thực</S.CardTitle>
-            <S.AttendanceRate>{rate}% chuyên cần</S.AttendanceRate>
-          </S.CardHeader>
-          <S.MiniStatsGrid>
-            <S.MiniStatCard $statusType="total">
-              <S.MiniStatVal $colorType="fg">{stTotal}</S.MiniStatVal>
-              <S.MiniStatLabel>Sĩ số</S.MiniStatLabel>
-            </S.MiniStatCard>
-            <S.MiniStatCard $statusType="present">
-              <S.MiniStatVal $colorType="green">{stPresent}</S.MiniStatVal>
-              <S.MiniStatLabel>Có mặt</S.MiniStatLabel>
-            </S.MiniStatCard>
-            <S.MiniStatCard $statusType="excused">
-              <S.MiniStatVal $colorType="muted">{stExcused}</S.MiniStatVal>
-              <S.MiniStatLabel>Có phép</S.MiniStatLabel>
-            </S.MiniStatCard>
-            <S.MiniStatCard $statusType="unexcused">
-              <S.MiniStatVal $colorType="red">{stUnexcused}</S.MiniStatVal>
-              <S.MiniStatLabel>Ko phép</S.MiniStatLabel>
-            </S.MiniStatCard>
-          </S.MiniStatsGrid>
-          <S.ProgressBar>
-            <S.ProgressSegment $pct={pctPresent} $color={theme.colors.green} />
-            <S.ProgressSegment $pct={pctExcused} $color={theme.colors.muted} />
-            <S.ProgressSegment $pct={pctUnexcused} $color={theme.colors.red || '#dc2626'} />
-          </S.ProgressBar>
-        </S.StatsCardBento>
+      {/* KPI ROW */}
+      <S.KpiGrid>
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#EEF2FF" $color="#4F46E5">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Sĩ số lớp</S.KpiLabel>
+            <S.KpiValue>{stTotal}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
 
-        {/* CARD 2: DATE & FILTERS */}
-        <S.FilterCardBento>
-          <S.FilterTitleRow>
-            <S.FilterIcon>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            </S.FilterIcon>
-            <S.DateLabelText>{dateLabel}</S.DateLabelText>
-          </S.FilterTitleRow>
-          <S.DateNavRow>
-            <S.NavButton onClick={() => setDateMs(d => d - 86400000)}>
-              ← Hôm qua
-            </S.NavButton>
-            <S.NavButton $today={dateMs === today.getTime()} onClick={() => {
-              const d = new Date(); 
-              d.setHours(0,0,0,0); 
-              setDateMs(d.getTime());
-            }}>
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#E6F3ED" $color="#005A36">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Có mặt</S.KpiLabel>
+            <S.KpiValue $color="#005A36">{cPresent}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#F1F4F1" $color="#4B5563">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Vắng có phép</S.KpiLabel>
+            <S.KpiValue $color="#4B5563">{cExcused}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+
+        <S.KpiCard $borderColor="#FCA5A5" style={{ background: '#FEF2F2' }}>
+          <S.KpiIconBlock $bg="#FEE2E2" $color="#DC2626">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Vắng không phép</S.KpiLabel>
+            <S.KpiValue $color="#DC2626">{cUnexcused}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+
+        <S.KpiCard $borderColor="#E5E7EB" style={{ background: '#F9FAFB' }}>
+          <S.KpiIconBlock $bg="#F3F4F6" $color="#6B7280">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Chưa điểm danh</S.KpiLabel>
+            <S.KpiValue $color="#6B7280">{cNotYet}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+      </S.KpiGrid>
+
+      {/* CHART + CALENDAR */}
+      <S.ChartCalendarGrid>
+        {/* CHART SECTION */}
+        <section className="kc-bento" style={{ background: '#fff', border: '1px solid #E6EEE9', borderRadius: '16px', boxShadow: '0 4px 18px -4px rgba(0,90,54,.06)', padding: '22px' }}>
+          <div style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontWeight: 700, fontSize: '16px', marginBottom: '18px', color: '#1F2937' }}>
+            Tỷ lệ chuyên cần
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: 'none', width: '150px', height: '150px', borderRadius: '50%', background: donutGradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'absolute', width: '104px', height: '104px', borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 6px rgba(0,90,54,.05)' }}>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '32px', fontWeight: 800, color: '#005A36', letterSpacing: '-.02em', lineHeight: 1 }}>{rate}%</span>
+                <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.06em', marginTop: '3px' }}>Hôm nay</span>
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#005A36' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Có mặt</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#005A36', fontVariantNumeric: 'tabular-nums' }}>{cPresent}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cPresent / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#9CA3AF' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Vắng có phép</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#4B5563', fontVariantNumeric: 'tabular-nums' }}>{cExcused}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cExcused / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#DC2626' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Vắng không phép</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#DC2626', fontVariantNumeric: 'tabular-nums' }}>{cUnexcused}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cUnexcused / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#E5E7EB' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Chưa điểm danh</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#6B7280', fontVariantNumeric: 'tabular-nums' }}>{cNotYet}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cNotYet / stTotal * 100) : 0}%</span>
+              </div>
+            </div>
+          </div>
+
+          <S.WeeklyTrendContainer>
+            <S.WeeklyTrendHeader>
+              <S.WeeklyTrendTitle>Xu hướng tuần này</S.WeeklyTrendTitle>
+              <S.WeeklyTrendSubtitle>% có mặt theo ngày</S.WeeklyTrendSubtitle>
+            </S.WeeklyTrendHeader>
+            <S.WeeklyTrendBars>
+              {weekTrend.map((w, index) => (
+                <S.WeeklyBarCol key={index}>
+                  <S.WeeklyBarVal $active={w.activeDay}>{w.pctText}</S.WeeklyBarVal>
+                  <S.WeeklyBarGraphic $h={w.h} $bg={w.barBg} />
+                  <S.WeeklyBarLabel $active={w.activeDay}>{w.dow}</S.WeeklyBarLabel>
+                </S.WeeklyBarCol>
+              ))}
+            </S.WeeklyTrendBars>
+          </S.WeeklyTrendContainer>
+        </section>
+
+        {/* CALENDAR SECTION */}
+        <S.CalendarCard>
+          <S.CalendarHeaderRow>
+            <S.CalendarMonthLabel>{calendarMonthLabel}</S.CalendarMonthLabel>
+            <S.CalendarNavButtons>
+              <S.CalendarNavBtn onClick={prevMonth}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </S.CalendarNavBtn>
+              <S.CalendarNavBtn onClick={nextMonth}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </S.CalendarNavBtn>
+            </S.CalendarNavButtons>
+          </S.CalendarHeaderRow>
+
+          <S.CalendarDowsHeader>
+            {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, index) => (
+              <S.CalendarDowLabel key={index}>{d}</S.CalendarDowLabel>
+            ))}
+          </S.CalendarDowsHeader>
+
+          <S.CalendarDaysGrid>
+            {calendarCells.map((c, index) => {
+              if (!c) return <div key={index} style={{ aspectRatio: '1' }} />;
+              return (
+                <S.CalendarDayCell 
+                  key={index} 
+                  $isToday={c.isToday} 
+                  $isFuture={c.isFuture} 
+                  $weekend={c.weekend}
+                >
+                  {c.day}
+                  {c.kind !== 'none' && !c.isToday && (
+                    <S.CalendarDayDot $color={calKindColor[c.kind]} />
+                  )}
+                </S.CalendarDayCell>
+              );
+            })}
+          </S.CalendarDaysGrid>
+
+          <S.CalendarLegend>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#005A36" />
+              Đầy đủ
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#D97706" />
+              Có vắng
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#DC2626" />
+              Vắng nhiều
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '3px', background: '#005A36' }}></span>
               Hôm nay
-            </S.NavButton>
-            <S.NavButton onClick={() => setDateMs(d => d + 86400000)}>
-              Ngày mai →
-            </S.NavButton>
-          </S.DateNavRow>
-          <S.SearchContainer>
-            <S.SearchIcon>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </S.SearchIcon>
-            <S.SearchInput 
+            </S.CalendarLegendItem>
+          </S.CalendarLegend>
+        </S.CalendarCard>
+      </S.ChartCalendarGrid>
+
+      {/* STUDENT ROSTER LIST */}
+      <section style={{ background: '#fff', border: '1px solid #E6EEE9', borderRadius: '16px', boxShadow: '0 4px 18px -4px rgba(0, 90, 54, 0.06)', padding: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', padding: '14px 16px 12px' }}>
+          <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>
+            Danh sách bé
+          </span>
+          <div style={{ display: 'flex', background: '#F1F4F1', border: '1px solid #E6EEE9', borderRadius: '11px', padding: '3px', gap: '3px' }}>
+            {[
+              { key: 'all', label: 'Tất cả', count: stTotal },
+              { key: 'present', label: 'Có mặt', count: cPresent },
+              { key: 'excused', label: 'Có phép', count: cExcused },
+              { key: 'unexcused', label: 'Không phép', count: cUnexcused },
+              { key: 'absent', label: 'Chưa điểm danh', count: cNotYet }
+            ].map(f => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  height: '34px',
+                  padding: '0 13px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontWeight: statusFilter === f.key ? 700 : 600,
+                  fontSize: '12.5px',
+                  whiteSpace: 'nowrap',
+                  background: statusFilter === f.key ? '#fff' : 'transparent',
+                  color: statusFilter === f.key ? '#005A36' : '#6B7280',
+                  boxShadow: statusFilter === f.key ? '0 2px 8px rgba(0, 90, 54, 0.1)' : 'none'
+                }}
+              >
+                {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '42px', padding: '0 14px', borderRadius: '11px', background: '#F8FBF9', border: '1px solid #E6EEE9', minWidth: '200px' }}>
+            <span style={{ flex: 'none', display: 'flex', width: '17px', height: '17px', color: '#9CA3AF' }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+            <input 
               value={query} 
               onChange={e => setQuery(e.target.value)} 
-              placeholder="Tìm bé theo tên…" 
+              placeholder="Tìm bé…" 
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '13.5px', color: '#1F2937' }} 
             />
-            {query && (
-              <S.ClearSearchButton onClick={() => setQuery('')}>✕</S.ClearSearchButton>
-            )}
-          </S.SearchContainer>
-        </S.FilterCardBento>
-      </S.BentoGrid>
+          </div>
+        </div>
 
-      {/* ROSTER LIST BENTO */}
-      <S.RosterSection>
-        <S.RosterHeader>
-          <S.RosterTitle>
-            Danh sách điểm danh <S.ShownCount>· {filtered.length} bé</S.ShownCount>
-          </S.RosterTitle>
-          <S.LegendContainer>
-            <S.LegendItem>
-              <S.LegendDot $color={theme.colors.green} />
-              Có mặt
-            </S.LegendItem>
-            <S.LegendItem>
-              <S.LegendDot $color={theme.colors.muted} />
-              Có phép
-            </S.LegendItem>
-            <S.LegendItem>
-              <S.LegendDot $color={theme.colors.red || '#dc2626'} />
-              Không phép
-            </S.LegendItem>
-          </S.LegendContainer>
-        </S.RosterHeader>
-
-        {/* Toolbar & Sort select */}
-        <S.ToolbarRow>
+        <S.ToolbarRow style={{ borderBottom: '1px solid #EEF4F0', paddingTop: 0 }}>
           <div style={{ fontSize: '13.5px', color: theme.colors.muted, fontWeight: 600 }}>
-            Hiển thị <span style={{ color: theme.colors.fg, fontWeight: 800 }}>{filtered.length}</span> / {stTotal} bé
+            Hiển thị <span style={{ color: theme.colors.fg, fontWeight: 800 }}>{sortedStudents.length}</span> / {stTotal} bé
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <S.SortControl>
-              <S.SortLabel>Sắp xếp:</S.SortLabel>
-              <S.SortSelect value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'time' | 'pending_leave')}>
-                <option value="name">Tên từ A → Z</option>
-                <option value="time">Giờ điểm danh</option>
-                <option value="pending_leave">Đơn chưa duyệt</option>
-              </S.SortSelect>
-            </S.SortControl>
-
-            <S.ViewToggle>
-              <S.ToggleBtn $active={viewMode === 'list'} onClick={() => setViewMode('list')}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                Danh sách
-              </S.ToggleBtn>
-              <S.ToggleBtn $active={viewMode === 'grid'} onClick={() => setViewMode('grid')}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
-                Lưới
-              </S.ToggleBtn>
-            </S.ViewToggle>
-          </div>
+          <S.SortControl>
+            <S.SortLabel>Sắp xếp:</S.SortLabel>
+            <S.SortSelect value={sortBy} onChange={e => setSortBy(e.target.value as any)}>
+              <option value="name">Tên từ A → Z</option>
+              <option value="time">Giờ điểm danh</option>
+              <option value="pending_leave">Đơn chưa duyệt</option>
+            </S.SortSelect>
+          </S.SortControl>
         </S.ToolbarRow>
 
         {isFuture() ? (
@@ -565,51 +787,70 @@ export const AttendanceView: React.FC = () => {
               <div style={{ fontSize: '17px', fontWeight: 700, color: theme.colors.fg }}>Chưa có dữ liệu điểm danh</div>
               <div style={{ fontSize: '13.5px', color: theme.colors.muted, marginTop: '5px' }}>Ngày trong tương lai — dữ liệu sẽ xuất hiện khi các bé check-in.</div>
             </div>
-            <S.NavButton $today style={{ flex: 'none', width: 'auto', padding: '0 24px', height: '42px' }} onClick={() => {
-              const d = new Date(); 
-              d.setHours(0,0,0,0); 
-              setDateMs(d.getTime());
-            }}>
+            <S.NavButton 
+              $today 
+              style={{ flex: 'none', width: 'auto', padding: '0 24px', height: '42px' }} 
+              onClick={() => {
+                const d = new Date(); 
+                d.setHours(0,0,0,0); 
+                setDateMs(d.getTime());
+              }}
+            >
               ← Về hôm nay
             </S.NavButton>
           </S.FutureState>
-        ) : filtered.length === 0 ? (
+        ) : sortedStudents.length === 0 ? (
           <S.NoResultsState>
             <span style={{ fontSize: '46px' }}>🔍</span>
             <span style={{ fontSize: '14px', fontWeight: 600 }}>Không tìm thấy bé nào khớp “{query}”</span>
           </S.NoResultsState>
-        ) : viewMode === 'list' ? (
+        ) : (
           <>
-            {/* column header */}
-            <S.TableHeader>
+            <S.TableHeader style={{ borderBottom: '1px solid #EEF4F0' }}>
               <span>Học sinh</span>
               <span>Giờ đến</span>
               <span>Trạng thái</span>
-              <span>Ghi chú / lý do</span>
+              <span className="kc-hidecol">Ghi chú</span>
             </S.TableHeader>
 
             <S.TableContainer>
-              {sortedAndFiltered.map((s, index) => {
+              {sortedStudents.map((s, index) => {
                 const sk = getStatusKey(s);
                 const st = ST[sk];
-                const a = getAvatarInfo(s.name);
+                const grad = getAvatarGrad(s.name);
+                const initial = getAvatarInitial(s.name);
                 const present = sk === 'present';
+                const hasError = imageErrors[s.id];
+                const showImg = s.avatar && !hasError;
+                
                 return (
-                  <S.Tr key={`${s.id}-${index}`}>
+                  <S.Tr key={`${s.id}-${index}`} style={{ borderBottom: '1px solid #F3F6F4', position: 'relative', zIndex: openMenuId === s.id ? 100 : 1 }} className="kc-row">
                     <S.StudentInfo>
-                      <S.StudentAvatar $grad={a.grad} $dim={st.dim}>
-                        {a.initial}
-                        {present && <S.OnlineDot />}
+                      <S.StudentAvatar $grad={grad} $dim={st.dim} className="display">
+                        {showImg ? (
+                          <S.StudentAvatarImg 
+                            src={s.avatar} 
+                            alt={s.name} 
+                            onError={() => setImageErrors(prev => ({ ...prev, [s.id]: true }))}
+                          />
+                        ) : (
+                          initial
+                        )}
+                        <span style={{ position: 'absolute', right: '-2px', bottom: '-2px', width: '15px', height: '15px', borderRadius: '50%', background: st.dot, boxShadow: '0 0 0 2.5px #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '9px', fontWeight: 800 }}>
+                          {st.mini}
+                        </span>
                       </S.StudentAvatar>
                       <S.StudentMeta>
                         <S.StudentName>{s.name}</S.StudentName>
                         <S.StudentCode>{s.id.substring(0, 8)}</S.StudentCode>
                       </S.StudentMeta>
                     </S.StudentInfo>
-                    <S.TimeText $present={present}>
+                    
+                    <S.TimeText $present={present} style={{ color: present ? '#374151' : '#C7CFCA' }}>
                       {present && s.arrivalTime && s.arrivalTime !== '--:--' ? s.arrivalTime : '—'}
                     </S.TimeText>
-                    <div>
+                    
+                    <div style={{ position: 'relative' }}>
                       <S.BadgeBtn 
                         className="badge-btn"
                         $bg={st.bg} $color={st.c} $borderColor={st.bd}
@@ -619,22 +860,94 @@ export const AttendanceView: React.FC = () => {
                             addToast('Không thể điểm danh trước cho ngày tương lai!');
                             return;
                           }
-                          setMenuPos({ x: e.clientX, y: e.clientY });
                           setOpenMenuId(s.id);
                           setMenuStage('options');
                         }}
                       >
                         <S.BadgeDot $color={st.dot} />
                         {st.label}
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}><polyline points="6 9 12 15 18 9"></polyline></svg>
                       </S.BadgeBtn>
+
+                      {openMenuId === s.id && (
+                        <S.PopoverOverlay 
+                          ref={popoverRef}
+                          className="attendance-popover"
+                          onClick={e => e.stopPropagation()} 
+                        >
+                          {menuStage === 'options' ? (
+                            <div style={{ padding: '5px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: 800, color: theme.colors.muted, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '6px 8px' }}>
+                                Đổi trạng thái
+                              </div>
+                              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Present')}>
+                                <S.PopoverItemDot $color="#005A36" />
+                                Có mặt
+                              </S.PopoverItem>
+                              <S.PopoverItem onClick={() => {
+                                const targetStu = students.find(stVal => stVal.id === openMenuId);
+                                setReasonDraft(targetStu?.healthNote || targetStu?.leaveRequestReason || '');
+                                setMenuStage('reason');
+                              }}>
+                                <S.PopoverItemDot $color="#D97706" />
+                                Vắng có phép
+                              </S.PopoverItem>
+                              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Absent')}>
+                                <S.PopoverItemDot $color="#DC2626" />
+                                Vắng không phép
+                              </S.PopoverItem>
+                            </div>
+                          ) : (
+                            <S.PopoverReasonContainer>
+                              <div style={{ fontSize: '12px', fontWeight: 800, color: theme.colors.muted, paddingLeft: '2px' }}>Lý do xin phép</div>
+                              <form onSubmit={handleReasonSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <S.PopoverInput 
+                                  autoFocus
+                                  value={reasonDraft} 
+                                  onChange={e => setReasonDraft(e.target.value)} 
+                                  placeholder="VD: Bé bị ốm..." 
+                                />
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <S.PopoverSaveButton type="submit" disabled={!reasonDraft.trim()}>Lưu</S.PopoverSaveButton>
+                                  <S.PopoverSaveButton 
+                                    type="button" 
+                                    style={{ background: theme.colors.bg, color: theme.colors.muted, border: `1px solid ${theme.colors.border}` }} 
+                                    onClick={() => setOpenMenuId(null)}
+                                  >
+                                    Hủy
+                                  </S.PopoverSaveButton>
+                                </div>
+                              </form>
+                            </S.PopoverReasonContainer>
+                          )}
+                        </S.PopoverOverlay>
+                      )}
                     </div>
-                    <S.NotesText>
+                    
+                    <S.NotesText className="kc-hidecol">
                       <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {s.healthNote || s.leaveRequestReason || '—'}
                       </span>
                       {(s.attendanceStatus === 'PERMISSION_ABSENCE' || s.leaveRequestReason || s.leaveRequestId) && (
-                        <S.ViewFormBtn onClick={(e) => { e.stopPropagation(); handleOpenLeaveRequest(s); }}>Xem đơn</S.ViewFormBtn>
+                        <S.ViewFormBtn 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (s.leaveRequestId) {
+                              setLeaveDrawerOpen(true);
+                              setHighlightedLeaveId(s.leaveRequestId);
+                              setTimeout(() => {
+                                const element = document.getElementById(`leave-card-${s.leaveRequestId}`);
+                                if (element) {
+                                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                              }, 350);
+                            } else {
+                              addToast('Đơn xin nghỉ chưa được khởi tạo');
+                            }
+                          }}
+                        >
+                          Xem đơn
+                        </S.ViewFormBtn>
                       )}
                     </S.NotesText>
                   </S.Tr>
@@ -642,331 +955,186 @@ export const AttendanceView: React.FC = () => {
               })}
             </S.TableContainer>
           </>
-        ) : (
-          <S.GridContainer>
-            {sortedAndFiltered.map((s, index) => {
-              const sk = getStatusKey(s);
-              const st = ST[sk];
-              const a = getAvatarInfo(s.name);
-              const shortName = s.name.split(' ').slice(-2).join(' ');
-              
-              return (
-                <S.GridCard className="badge-btn" key={`${s.id}-${index}`} onClick={(e) => {
-                  e.stopPropagation();
-                  if (isFuture()) {
-                    addToast('Không thể điểm danh trước cho ngày tương lai!');
-                    return;
-                  }
-                  setMenuPos({ x: e.clientX, y: e.clientY });
-                  setOpenMenuId(s.id);
-                  setMenuStage('options');
-                }}>
-                  <S.GridAvatar $color={a.grad} $ring={st.dot} $dim={st.dim}>
-                    {a.initial}
-                    {sk === 'present' && (
-                      <span style={{ position: 'absolute', right: '-2px', bottom: '-2px', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', background: st.dot, color: theme.colors.white, boxShadow: `0 0 0 2.5px ${theme.colors.surface}` }}>
-                        ✓
-                      </span>
-                    )}
-                    {(s.attendanceStatus === 'PERMISSION_ABSENCE' || s.leaveRequestReason || s.leaveRequestId) && (
-                      <span 
-                        style={{ position: 'absolute', right: '-2px', top: '-2px', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', background: theme.colors.surface, border: `1px solid ${st.bd}`, boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer' }}
-                        onClick={(e) => { e.stopPropagation(); handleOpenLeaveRequest(s); }}
-                      >
-                        📎
-                      </span>
-                    )}
-                  </S.GridAvatar>
-                  <span style={{ fontWeight: 700, fontSize: '13px', color: theme.colors.fg, textAlign: 'center', lineHeight: 1.2 }}>{shortName}</span>
-                  <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '11.5px', fontWeight: 700, background: st.bg, color: st.c, border: `1px solid ${st.bd}` }}>
-                    {st.label}
-                  </span>
-                </S.GridCard>
-              );
-            })}
-          </S.GridContainer>
         )}
+      </section>
 
-        {rate === 100 && stTotal > 0 && !isFuture() && (
-          <S.SuccessBanner>
-            <span style={{ fontSize: '26px' }}>🎉</span>
-            <span style={{ fontSize: '15px', fontWeight: 700, color: theme.colors.green }}>Lớp đã đi học đông đủ!</span>
-          </S.SuccessBanner>
-        )}
-      </S.RosterSection>
 
-      {/* QUICK ATTENDANCE CHANGE POPOVER */}
-      {openMenuId && (
-        <S.PopoverOverlay 
-          ref={popoverRef}
-          className="attendance-popover"
-          onClick={e => e.stopPropagation()} 
-          $x={Math.min(menuPos.x, typeof window !== 'undefined' ? window.innerWidth - 220 : 200)} 
-          $y={menuPos.y + 10}
-        >
-          {menuStage === 'options' ? (
-            <div style={{ padding: '5px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: theme.colors.muted, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '6px 8px' }}>
-                Đổi trạng thái
-              </div>
-              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Present')}>
-                <S.PopoverItemDot $color={theme.colors.greenMid} />
-                Có mặt
-              </S.PopoverItem>
-              <S.PopoverItem onClick={() => {
-                const targetStu = students.find(s => s.id === openMenuId);
-                setReasonDraft(targetStu?.healthNote || targetStu?.leaveRequestReason || '');
-                setMenuStage('reason');
-              }}>
-                <S.PopoverItemDot $color={theme.colors.amberMid} />
-                Vắng có phép
-              </S.PopoverItem>
-              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Absent')}>
-                <S.PopoverItemDot $color={theme.colors.redMid || '#ef4444'} />
-                Vắng không phép
-              </S.PopoverItem>
-            </div>
-          ) : (
-            <S.PopoverReasonContainer>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: theme.colors.muted, paddingLeft: '2px' }}>Lý do xin phép</div>
-              <form onSubmit={handleReasonSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <S.PopoverInput 
-                  autoFocus
-                  value={reasonDraft} 
-                  onChange={e => setReasonDraft(e.target.value)} 
-                  placeholder="VD: Bé bị ốm..." 
-                />
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <S.PopoverSaveButton type="submit" disabled={!reasonDraft.trim()}>Lưu</S.PopoverSaveButton>
-                  <S.PopoverSaveButton type="button" style={{ background: theme.colors.bg, color: theme.colors.muted, border: `1px solid ${theme.colors.border}` }} onClick={() => setOpenMenuId(null)}>Hủy</S.PopoverSaveButton>
+
+      {/* LEAVE REQUEST DRAWER */}
+      {leaveDrawerOpen && (
+        <>
+          <S.DrawerOverlay onClick={() => setLeaveDrawerOpen(false)} />
+          <S.DrawerContainer ref={drawerRef} onClick={e => e.stopPropagation()}>
+            <S.DrawerHeader>
+              <S.DrawerHeaderIconBlock>
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </S.DrawerHeaderIconBlock>
+              <S.DrawerHeaderMeta>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1F2937' }} className="display">Đơn xin nghỉ phép</div>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '1px' }}>
+                  {pendingLeavesCount} đơn chờ duyệt · {allLeaves.length} tổng
                 </div>
-              </form>
-            </S.PopoverReasonContainer>
-          )}
-        </S.PopoverOverlay>
+              </S.DrawerHeaderMeta>
+              <S.DrawerCloseBtn onClick={() => setLeaveDrawerOpen(false)}>✕</S.DrawerCloseBtn>
+            </S.DrawerHeader>
+            
+            <S.DrawerContentList>
+              {allLeaves.map((l, index) => {
+                const isPending = l.status === 'PENDING';
+                const grad = getAvatarGrad(l.studentName);
+                const initial = getAvatarInitial(l.studentName);
+                
+                const fromStr = l.fromDate ? new Date(l.fromDate * 1000).toLocaleDateString('vi-VN') : '';
+                const toStr = l.toDate ? new Date(l.toDate * 1000).toLocaleDateString('vi-VN') : '';
+                const dateRangeText = fromStr === toStr ? fromStr : `${fromStr} → ${toStr}`;
+                const hasError = imageErrors[`leave-${l.id}`];
+                const showImg = l.studentAvatar && !hasError;
+                
+                return (
+                  <S.LeaveCard 
+                    key={`${l.id}-${index}`} 
+                    $isPending={isPending}
+                    id={`leave-card-${l.id}`}
+                    style={{
+                      border: highlightedLeaveId === l.id ? '2.5px solid #005A36' : undefined,
+                      boxShadow: highlightedLeaveId === l.id ? '0 8px 24px rgba(0, 90, 54, 0.15)' : undefined,
+                    }}
+                  >
+                    <S.LeaveCardHeader>
+                      <S.LeaveStudentAvatar $grad={grad} className="display">
+                        {showImg ? (
+                          <S.LeaveStudentAvatarImg 
+                            src={l.studentAvatar} 
+                            alt={l.studentName} 
+                            onError={() => setImageErrors(prev => ({ ...prev, [`leave-${l.id}`]: true }))}
+                          />
+                        ) : (
+                          initial
+                        )}
+                      </S.LeaveStudentAvatar>
+                      <S.LeaveStudentMeta>
+                        <S.LeaveStudentNameRow>
+                          <S.LeaveStudentName className="display">{l.studentName}</S.LeaveStudentName>
+                          <S.LeaveStatusPill $status={l.status}>
+                            {l.status === 'APPROVED' ? '✓ Đã duyệt' : (l.status === 'REJECTED' ? '✕ Từ chối' : 'Chờ duyệt')}
+                          </S.LeaveStatusPill>
+                        </S.LeaveStudentNameRow>
+                        <S.LeaveSubDetail>
+                          Mã HS: {l.studentId.substring(0, 8)}
+                        </S.LeaveSubDetail>
+                      </S.LeaveStudentMeta>
+                    </S.LeaveCardHeader>
+
+                    <S.LeaveDetailsBlock>
+                      <S.LeaveDetailRow>
+                        <S.LeaveDetailIconBlock $bg="#E3EDFD" $color="#2563EB">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel>Thời gian nghỉ</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue>{dateRangeText || 'Không rõ'}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      <S.LeaveDetailRow style={{ alignItems: 'flex-start' }}>
+                        <S.LeaveDetailIconBlock $bg="#FEF3C7" $color="#D97706" style={{ marginTop: '2px' }}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel style={{ paddingTop: '5px' }}>Lý do</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue style={{ flex: 1.5, textAlign: 'right', lineHeight: 1.4 }}>{l.reason || 'Không rõ lý do'}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      <S.LeaveDetailRow>
+                        <S.LeaveDetailIconBlock $bg="#E6F3ED" $color="#005A36">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel>Người gửi</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue>{l.parentName} · {l.relationship}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      {l.parentPhone && (
+                        <S.LeaveDetailRow>
+                          <S.LeaveDetailIconBlock $bg="#E6F3ED" $color="#005A36">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                          </S.LeaveDetailIconBlock>
+                          <S.LeaveDetailLabel>SĐT liên hệ</S.LeaveDetailLabel>
+                          <S.LeaveDetailValue style={{ fontVariantNumeric: 'tabular-nums' }}>{l.parentPhone}</S.LeaveDetailValue>
+                        </S.LeaveDetailRow>
+                      )}
+                    </S.LeaveDetailsBlock>
+
+                    {/* EVIDENCE VIEW BUTTON */}
+                    {l.attachmentUrl && (
+                      <S.LeaveEvidenceBlock>
+                        <S.LeaveEvidenceTitle>Ảnh minh chứng</S.LeaveEvidenceTitle>
+                        <S.LeaveEvidenceBtn 
+                          $bg={PROOF_BGS[index % PROOF_BGS.length]}
+                          onClick={() => setProofOpenId(l.id)}
+                          style={{ padding: 0 }}
+                        >
+                          <img src={l.attachmentUrl} alt="Minh chứng" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </S.LeaveEvidenceBtn>
+                      </S.LeaveEvidenceBlock>
+                    )}
+
+                    {isPending && (
+                      <S.LeaveActionButtons>
+                        <S.LeaveActionApproveBtn className="display" onClick={() => handleProcessLeaveRequest(l.id, 'APPROVED')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          Duyệt
+                        </S.LeaveActionApproveBtn>
+                        <S.LeaveActionRejectBtn className="display" onClick={() => handleProcessLeaveRequest(l.id, 'REJECTED')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          Từ chối
+                        </S.LeaveActionRejectBtn>
+                      </S.LeaveActionButtons>
+                    )}
+                  </S.LeaveCard>
+                );
+              })}
+              {allLeaves.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '50px 20px', color: '#9CA3AF', fontWeight: 600 }}>
+                  Không tìm thấy đơn xin nghỉ học nào.
+                </div>
+              )}
+            </S.DrawerContentList>
+          </S.DrawerContainer>
+        </>
+      )}
+
+      {/* EVIDENCE LIGHTBOX LIGHTBOX */}
+      {selectedProof && (
+        <S.LightboxOverlay onClick={() => setProofOpenId(null)}>
+          <S.LightboxContainer onClick={e => e.stopPropagation()}>
+            <S.LightboxMediaBox $bg={PROOF_BGS[allLeaves.indexOf(selectedProof) % PROOF_BGS.length]}>
+              <S.LightboxStripeOverlay />
+              {selectedProof.attachmentUrl ? (
+                <S.LightboxImage src={selectedProof.attachmentUrl} alt="Ảnh minh chứng đính kèm" />
+              ) : (
+                <>
+                  <span style={{ fontSize: '60px', position: 'relative' }}>📄</span>
+                  <span style={{ fontSize: '15px', fontWeight: 700, position: 'relative' }}>Ảnh minh chứng</span>
+                  <span style={{ fontSize: '13px', opacity: 0.85, position: 'relative' }}>Không tải được ảnh</span>
+                </>
+              )}
+            </S.LightboxMediaBox>
+            <S.LightboxFooter>
+              <S.LightboxCaption>
+                {selectedProof.studentName} · {selectedProof.fromDate ? (
+                  new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN') === new Date(selectedProof.toDate! * 1000).toLocaleDateString('vi-VN')
+                    ? new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN')
+                    : `${new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN')} → ${new Date(selectedProof.toDate! * 1000).toLocaleDateString('vi-VN')}`
+                ) : 'Đơn nghỉ'}
+              </S.LightboxCaption>
+              <S.LightboxCloseBtn onClick={() => setProofOpenId(null)}>Đóng</S.LightboxCloseBtn>
+            </S.LightboxFooter>
+          </S.LightboxContainer>
+        </S.LightboxOverlay>
       )}
 
       {/* TOASTS CONTAINER */}
       <S.ToastContainer>
-        {toasts.map(t => <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>)}
+        {toasts.map(t => (
+          <S.ToastMsg key={t.id} className="display">
+            {t.text}
+          </S.ToastMsg>
+        ))}
       </S.ToastContainer>
-
-      {/* SUMMARY LEAVE REQUESTS MODAL */}
-      {isSummaryModalOpen && (
-        <S.ModalOverlay onClick={() => setIsSummaryModalOpen(false)}>
-          <S.SummaryModalContent onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <S.ModalTitle style={{ margin: 0, fontSize: '18px' }}>Tổng hợp đơn xin nghỉ học</S.ModalTitle>
-              <button 
-                onClick={() => setIsSummaryModalOpen(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', color: theme.colors.muted }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <S.TabRow>
-              <S.TabBtn $active={summaryFilter === 'ALL'} onClick={() => setSummaryFilter('ALL')}>
-                Tất cả ({allLeaves.length})
-              </S.TabBtn>
-              <S.TabBtn $active={summaryFilter === 'PENDING'} onClick={() => setSummaryFilter('PENDING')}>
-                Chờ duyệt ({allLeaves.filter(l => l.status === 'PENDING').length})
-              </S.TabBtn>
-              <S.TabBtn $active={summaryFilter === 'APPROVED'} onClick={() => setSummaryFilter('APPROVED')}>
-                Đã duyệt ({allLeaves.filter(l => l.status === 'APPROVED').length})
-              </S.TabBtn>
-              <S.TabBtn $active={summaryFilter === 'REJECTED'} onClick={() => setSummaryFilter('REJECTED')}>
-                Từ chối ({allLeaves.filter(l => l.status === 'REJECTED').length})
-              </S.TabBtn>
-            </S.TabRow>
-
-            {isLoadingSummary ? (
-              <div style={{ padding: '50px 0', textAlign: 'center', color: theme.colors.muted, fontWeight: 600 }}>
-                Đang tải danh sách đơn phép...
-              </div>
-            ) : (
-              <S.SummaryTableWrapper>
-                <S.SummaryTable>
-                  <thead>
-                    <tr>
-                      <S.SummaryTh>Học sinh</S.SummaryTh>
-                      <S.SummaryTh>Thời gian nghỉ</S.SummaryTh>
-                      <S.SummaryTh>Lý do</S.SummaryTh>
-                      <S.SummaryTh>Trạng thái</S.SummaryTh>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allLeaves
-                      .filter(l => {
-                        if (summaryFilter === 'PENDING') return l.status === 'PENDING';
-                        if (summaryFilter === 'APPROVED') return l.status === 'APPROVED';
-                        if (summaryFilter === 'REJECTED') return l.status === 'REJECTED';
-                        return true;
-                      })
-                      .map((l, index) => {
-                        const fromStr = l.fromDate ? new Date(l.fromDate * 1000).toLocaleDateString('vi-VN') : '...';
-                        const toStr = l.toDate ? new Date(l.toDate * 1000).toLocaleDateString('vi-VN') : '...';
-                        return (
-                          <S.SummaryTr 
-                            key={`${l.id}-${index}`}
-                            onClick={() => {
-                              const dummyStudent: Student = {
-                                id: l.studentId,
-                                name: l.studentName,
-                                avatar: '',
-                                attendanceStatus: l.status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (l.status === 'REJECTED' ? 'UNEXCUSED_ABSENCE' : 'NOT_YET'),
-                                arrivalTime: '--:--',
-                                healthNote: '',
-                                hasActiveLeaveRequest: l.status === 'PENDING',
-                                leaveRequestId: l.id,
-                                leaveRequestStatus: l.status,
-                                leaveRequestReason: l.reason
-                              };
-                              setSelectedLeaveRequest(dummyStudent);
-                              setLeaveReqDetail(l);
-                            }}
-                          >
-                            <S.SummaryTd style={{ fontWeight: 700 }}>{l.studentName}</S.SummaryTd>
-                            <S.SummaryTd>{fromStr} - {toStr}</S.SummaryTd>
-                            <S.SummaryTd style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {l.reason || 'Không rõ lý do'}
-                            </S.SummaryTd>
-                            <S.SummaryTd>
-                              <S.ModalValue $status={l.status}>
-                                {l.status === 'APPROVED' ? 'Đã duyệt' : (l.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
-                              </S.ModalValue>
-                            </S.SummaryTd>
-                          </S.SummaryTr>
-                        );
-                      })}
-                    {allLeaves.filter(l => {
-                      if (summaryFilter === 'PENDING') return l.status === 'PENDING';
-                      if (summaryFilter === 'APPROVED') return l.status === 'APPROVED';
-                      if (summaryFilter === 'REJECTED') return l.status === 'REJECTED';
-                      return true;
-                    }).length === 0 && (
-                      <tr>
-                        <td colSpan={4} style={{ textAlign: 'center', padding: '30px', color: theme.colors.muted, fontWeight: 500 }}>
-                          Không có đơn xin nghỉ học nào.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </S.SummaryTable>
-              </S.SummaryTableWrapper>
-            )}
-
-            <S.ModalActionRow style={{ marginTop: '20px' }}>
-              <S.ModalCloseBtn onClick={() => setIsSummaryModalOpen(false)}>Đóng</S.ModalCloseBtn>
-            </S.ModalActionRow>
-          </S.SummaryModalContent>
-        </S.ModalOverlay>
-      )}
-
-      {/* VIEW LEAVE REQUEST MODAL */}
-      {selectedLeaveRequest && (
-        <S.ModalOverlay onClick={() => setSelectedLeaveRequest(null)} style={{ zIndex: 10000 }}>
-          <S.ModalContent onClick={e => e.stopPropagation()}>
-            <S.ModalTitle>Đơn xin phép - {selectedLeaveRequest.name}</S.ModalTitle>
-            
-            {isLoadingReqDetail ? (
-              <div style={{ padding: '40px 0', textAlign: 'center', color: theme.colors.muted, fontSize: '14px', fontWeight: 500 }}>
-                Đang tải dữ liệu chi tiết...
-              </div>
-            ) : leaveReqDetail ? (
-              <>
-                <S.ModalMetaRow>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Lớp học: </S.ModalLabel>
-                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.className || '...'}</span>
-                  </S.ModalMetaField>
-
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Phụ huynh: </S.ModalLabel>
-                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.parentName} ({leaveReqDetail.relationship})</span>
-                  </S.ModalMetaField>
-                  {leaveReqDetail.parentPhone && (
-                    <S.ModalMetaField>
-                      <S.ModalLabel>Số điện thoại: </S.ModalLabel>
-                      <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.parentPhone}</span>
-                    </S.ModalMetaField>
-                  )}
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Ngày gửi đơn: </S.ModalLabel>
-                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>{leaveReqDetail.createdAt ? new Date(leaveReqDetail.createdAt).toLocaleString('vi-VN') : '...'}</span>
-                  </S.ModalMetaField>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
-                    <span style={{ color: theme.colors.fg, fontWeight: 500 }}>
-                      Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
-                    </span>
-                  </S.ModalMetaField>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Giảm trừ tiền ăn: </S.ModalLabel>
-                    <span style={{ color: leaveReqDetail.isMealFeeDeducted ? '#10B981' : '#EF4444', fontWeight: 700 }}>
-                      {leaveReqDetail.isMealFeeDeducted ? 'Có' : 'Không'}
-                    </span>
-                  </S.ModalMetaField>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
-                    <S.ModalValue $status={leaveReqDetail.status}>
-                      {leaveReqDetail.status === 'APPROVED' ? 'Đã duyệt' : (leaveReqDetail.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
-                    </S.ModalValue>
-                  </S.ModalMetaField>
-                </S.ModalMetaRow>
-
-                <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>LÝ DO XIN NGHỈ:</div>
-                <S.ModalReasonBox>
-                  {leaveReqDetail.reason || 'Không ghi rõ lý do'}
-                </S.ModalReasonBox>
-
-                {leaveReqDetail.parentNotes && (
-                  <>
-                    <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>Ý KIẾN / GHI CHÚ PHỤ HUYNH:</div>
-                    <S.ModalReasonBox style={{ minHeight: '60px', background: '#F9FAFB' }}>
-                      {leaveReqDetail.parentNotes}
-                    </S.ModalReasonBox>
-                  </>
-                )}
-                
-                {leaveReqDetail.attachmentUrl && (
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>MINH CHỨNG ĐÍNH KÈM:</div>
-                    <img src={leaveReqDetail.attachmentUrl} alt="Minh chứng" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', border: `1px solid ${theme.colors.border}`, objectFit: 'cover' }} />
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <S.ModalMetaRow>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Trạng thái: </S.ModalLabel>
-                    <S.ModalValue $status={selectedLeaveRequest.leaveRequestStatus}>
-                      {selectedLeaveRequest.leaveRequestStatus === 'APPROVED' || selectedLeaveRequest.attendanceStatus === 'PERMISSION_ABSENCE' ? 'Đã duyệt / Có phép' : (selectedLeaveRequest.leaveRequestStatus === 'REJECTED' || selectedLeaveRequest.attendanceStatus === 'UNEXCUSED_ABSENCE' ? 'Từ chối / Không phép' : 'Chờ duyệt')}
-                    </S.ModalValue>
-                  </S.ModalMetaField>
-                </S.ModalMetaRow>
-                <div style={{ fontSize: '13px', color: theme.colors.muted, marginBottom: '6px', fontWeight: 700 }}>GHI CHÚ / LÝ DO:</div>
-                <S.ModalReasonBox>
-                  {selectedLeaveRequest.leaveRequestReason || 'Không ghi rõ lý do'}
-                </S.ModalReasonBox>
-              </>
-            )}
-            
-            <S.ModalActionRow>
-              {((leaveReqDetail && leaveReqDetail.status === 'PENDING') ||
-                 (!leaveReqDetail && selectedLeaveRequest.leaveRequestStatus === 'PENDING')) ? (
-                <>
-                  <S.ModalRejectBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail?.id || selectedLeaveRequest.leaveRequestId!, 'REJECTED')}>Từ chối</S.ModalRejectBtn>
-                  <S.ModalApproveBtn onClick={() => handleProcessLeaveRequest(leaveReqDetail?.id || selectedLeaveRequest.leaveRequestId!, 'APPROVED')}>Xác nhận & Duyệt</S.ModalApproveBtn>
-                </>
-              ) : (
-                <S.ModalCloseBtn onClick={() => setSelectedLeaveRequest(null)}>Đóng</S.ModalCloseBtn>
-              )}
-            </S.ModalActionRow>
-          </S.ModalContent>
-        </S.ModalOverlay>
-      )}
     </S.PageContainer>
   );
 };

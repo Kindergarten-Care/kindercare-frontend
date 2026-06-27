@@ -59,18 +59,19 @@ export const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({
     fetchAttendance();
   }, [propStudents, propClassName, propLoading]);
 
-  const tot = students.length || 42;
-  const presentStudents = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
-  const late = presentStudents.filter(s => s.arrivalTime && s.arrivalTime !== '--:--' && s.arrivalTime > '08:00').length;
-  const present = presentStudents.length - late;
-  const absent = tot - present - late;
+  const tot = students.length;
+  const cPresent = students.filter(s => s.attendanceStatus === 'PRESENT').length;
+  const cExcused = students.filter(s => s.attendanceStatus === 'PERMISSION_ABSENCE').length;
+  const cUnexcused = students.filter(s => s.attendanceStatus === 'UNEXCUSED_ABSENCE').length;
+  const cNotYet = students.filter(s => s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus).length;
 
-  const a1 = tot > 0 ? Math.round((present / tot) * 360) : 0;
-  const a2 = tot > 0 ? a1 + Math.round((late / tot) * 360) : 0;
+  const a1 = tot > 0 ? (cPresent / tot) * 360 : 0;
+  const a2 = tot > 0 ? a1 + (cExcused / tot) * 360 : 0;
+  const a3 = tot > 0 ? a2 + (cUnexcused / tot) * 360 : 0;
   const donutGradient = tot > 0 
-    ? `conic-gradient(#005A36 0deg ${a1}deg, #D97706 ${a1}deg ${a2}deg, #DC2626 ${a2}deg 360deg)`
+    ? `conic-gradient(#005A36 0deg ${a1}deg, #9CA3AF ${a1}deg ${a2}deg, #DC2626 ${a2}deg ${a3}deg, #E5E7EB ${a3}deg 360deg)`
     : '#E2E8F0';
-  const rate = tot > 0 ? Math.round(((present + late) / tot) * 100) : 0;
+  const rate = tot > 0 ? Math.round((cPresent / tot) * 100) : 0;
 
   if (loading) {
     return (
@@ -110,19 +111,25 @@ export const AttendanceWidget: React.FC<AttendanceWidgetProps> = ({
           <S.StatRow>
             <S.ColorDot $color="#005A36" />
             <S.StatName>Có mặt</S.StatName>
-            <S.StatCount $color="#005A36">{present}</S.StatCount>
+            <S.StatCount $color="#005A36">{cPresent}</S.StatCount>
           </S.StatRow>
 
           <S.StatRow>
-            <S.ColorDot $color="#D97706" />
-            <S.StatName>Đi muộn</S.StatName>
-            <S.StatCount $color="#92400E">{late}</S.StatCount>
+            <S.ColorDot $color="#9CA3AF" />
+            <S.StatName>Vắng có phép</S.StatName>
+            <S.StatCount $color="#4B5563">{cExcused}</S.StatCount>
           </S.StatRow>
 
           <S.StatRow>
             <S.ColorDot $color="#DC2626" />
-            <S.StatName>Vắng mặt</S.StatName>
-            <S.StatCount $color="#DC2626">{absent}</S.StatCount>
+            <S.StatName>Vắng không phép</S.StatName>
+            <S.StatCount $color="#DC2626">{cUnexcused}</S.StatCount>
+          </S.StatRow>
+
+          <S.StatRow>
+            <S.ColorDot $color="#E5E7EB" />
+            <S.StatName>Chưa điểm danh</S.StatName>
+            <S.StatCount $color="#6B7280">{cNotYet}</S.StatCount>
           </S.StatRow>
         </S.StatsBlock>
       </S.LayoutGrid>
