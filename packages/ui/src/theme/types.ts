@@ -14,15 +14,13 @@ export interface AppThemeColors {
   amber: string;
   amberLight: string;
   amberMid: string;
-  footerBg: string;
-  techBg: string;
-  white: string;
-
-  // UI danger/red colors
   red?: string;
   redLight?: string;
   redMid?: string;
   redDark?: string;
+  footerBg: string;
+  techBg: string;
+  white: string;
 
   // UI legacy theme colors
   primary?: string;
