@@ -22,3 +22,8 @@ export {
 
 // Utils & Helpers
 export * from './src/utils/i18n';
+export * from './src/utils/pushNotification';
+
+// Notification
+export * from './src/services/NotificationService';
+export type { NotificationDto, NotificationType } from './src/types/notification';

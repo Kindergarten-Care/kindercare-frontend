@@ -5,12 +5,18 @@ import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
 import { useAuth } from '@kindercare/core';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
+import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
+import type { AppDispatch } from '@/store';
+import type { NotificationDto } from '@kindercare/core';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
+
+let _localNotifId = 0;
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -63,7 +69,6 @@ function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
-  const [hasUnreadNotif, setHasUnreadNotif] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const locale = useLocale() as 'vi' | 'en';
@@ -72,6 +77,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user } = useAuth();
   const { parentProfile } = useParent();
   const { activeStudent } = useStudent();
+  const dispatch = useDispatch<AppDispatch>();
+  const unreadCount = useSelector(selectUnreadCount);
+
+  // Load inbox on mount
+  useEffect(() => { dispatch(fetchNotifications()); }, [dispatch]);
+
+  // Refresh inbox when a foreground FCM push arrives + prepend the new item
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const notif: NotificationDto = {
+        NotifID:     --_localNotifId,
+        UserID:      0,
+        Title:       payload.notification?.title ?? '',
+        Message:     payload.notification?.body  ?? '',
+        Type:        payload.data?.type           ?? 'OTHER',
+        IsRead:      0,
+        IsCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
+        DataPayload: JSON.stringify(payload.data  ?? {}),
+        CreatedAt:   Math.floor(Date.now() / 1000),
+        UpdatedAt:   Math.floor(Date.now() / 1000),
+      };
+      dispatch(prependItem(notif));
+    };
+    window.addEventListener('kc:push:message', handler);
+    return () => window.removeEventListener('kc:push:message', handler);
+  }, [dispatch]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -124,9 +156,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <input placeholder="Tìm kiếm..." />
               </S.SearchBar>
 
-              <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
+              <S.IconBtn title="Thông báo" onClick={() => setIsNotifOpen(true)}>
                 <IconBell size={18} />
-                {hasUnreadNotif && <S.NotifDot />}
+                {unreadCount > 0 && <S.NotifDot>{unreadCount > 99 ? '99+' : unreadCount}</S.NotifDot>}
               </S.IconBtn>
 
               <S.SettingsWrapper ref={settingsRef}>

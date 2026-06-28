@@ -4,126 +4,26 @@ import React, { useState, useEffect, useMemo } from 'react';
 import * as S from './styles';
 import { ScheduleItem } from '@/config/types/dashboard';
 import { ActivityType } from '@/config/types/dailySchedule';
+import { ACTIVITY_STYLE, fmtClock, getActiveInfo } from '@/utils/Schedule/scheduleUtils';
 
 // ─── SVG icon paths per activity type ────────────────────────────────────────
 
-const BusIcon = () => (
-  <path d="M4 16V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10M4 16h16M4 16v2.5M20 16v2.5M7 9h10M7 13h0M17 13h0" />
-);
-const MealIcon = () => (
-  <>
-    <path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11" />
-    <path d="M16 3c-1.4 0-2.5 2-2.5 4.5S14.6 12 16 12v9" />
-  </>
-);
-const BrushIcon = () => (
-  <>
-    <path d="M9.3 14.7 4 20s1.9 1 3.4-.5M9.3 14.7l7.8-7.8a2 2 0 0 1 2.9 2.9l-7.8 7.8-2.9-2.9z" />
-    <circle cx="6.3" cy="5.6" r="1.2" />
-  </>
-);
-const TreeIcon = () => (
-  <path d="M12 3 7 10h3l-4 6h5v5h2v-5h5l-4-6h3z" />
-);
-const SleepIcon = () => (
-  <path d="M3 18v-5a3 3 0 0 1 3-3h7a4 4 0 0 1 4 4v4M3 18h18M3 18v2M21 18v2M3 13h3" />
-);
-const HomeIcon = () => (
-  <>
-    <path d="M3 10.5 12 3l9 7.5" />
-    <path d="M5 9.5V21h14V9.5" />
-  </>
-);
-const GroupIcon = () => (
-  <>
-    <circle cx="7" cy="9" r="2.6" />
-    <circle cx="16.5" cy="9" r="2.6" />
-    <path d="M2.5 19c0-2.4 2-3.8 4.5-3.8s4.5 1.4 4.5 3.8M12.5 19c.2-2.2 2.2-3.6 4.4-3.6 2.3 0 4 1.4 4.1 3.6" />
-  </>
-);
-const ClockIcon = () => (
-  <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7v5l3.5 2" />
-  </>
-);
-const MoonIcon = () => (
-  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-);
+const BusIcon   = () => <path d="M4 16V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10M4 16h16M4 16v2.5M20 16v2.5M7 9h10M7 13h0M17 13h0" />;
+const MealIcon  = () => <><path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11" /><path d="M16 3c-1.4 0-2.5 2-2.5 4.5S14.6 12 16 12v9" /></>;
+const BrushIcon = () => <><path d="M9.3 14.7 4 20s1.9 1 3.4-.5M9.3 14.7l7.8-7.8a2 2 0 0 1 2.9 2.9l-7.8 7.8-2.9-2.9z" /><circle cx="6.3" cy="5.6" r="1.2" /></>;
+const TreeIcon  = () => <path d="M12 3 7 10h3l-4 6h5v5h2v-5h5l-4-6h3z" />;
+const SleepIcon = () => <path d="M3 18v-5a3 3 0 0 1 3-3h7a4 4 0 0 1 4 4v4M3 18h18M3 18v2M21 18v2M3 13h3" />;
+const HomeIcon  = () => <><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /></>;
+const GroupIcon = () => <><circle cx="7" cy="9" r="2.6" /><circle cx="16.5" cy="9" r="2.6" /><path d="M2.5 19c0-2.4 2-3.8 4.5-3.8s4.5 1.4 4.5 3.8M12.5 19c.2-2.2 2.2-3.6 4.4-3.6 2.3 0 4 1.4 4.1 3.6" /></>;
+const ClockIcon = () => <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></>;
+const MoonIcon  = () => <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />;
 
 const ICON_MAP: Record<ActivityType, React.FC> = {
-  pickup:  BusIcon,
-  meal:    MealIcon,
-  study:   BrushIcon,
-  play:    TreeIcon,
-  nap:     SleepIcon,
-  dropoff: HomeIcon,
-  other:   GroupIcon,
+  pickup: BusIcon, meal: MealIcon, study: BrushIcon,
+  play: TreeIcon,  nap: SleepIcon, dropoff: HomeIcon, other: GroupIcon,
 };
-
-const ACTIVITY_STYLE: Record<ActivityType, { color: string; tint: string }> = {
-  pickup:  { color: '#0E8A7D', tint: '#D7F0EC' },
-  meal:    { color: '#F97316', tint: '#FFEEDF' },
-  study:   { color: '#8B5CF6', tint: '#F1ECFE' },
-  nap:     { color: '#2563EB', tint: '#E3EDFD' },
-  play:    { color: '#005A36', tint: '#E6F3ED' },
-  dropoff: { color: '#0E8A7D', tint: '#D7F0EC' },
-  other:   { color: '#8B5CF6', tint: '#F1ECFE' },
-};
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
-const SPACING = 66;
-
-function toMinutes(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return h * 60 + (m || 0);
-}
-
-interface ActiveInfo {
-  idx: number;
-  isLive: boolean;
-  isBeforeFirst: boolean;
-  isAfterLast: boolean;
-}
-
-function getActiveInfo(schedule: ScheduleItem[], nowMin: number): ActiveInfo {
-  if (!schedule.length) return { idx: 0, isLive: false, isBeforeFirst: false, isAfterLast: false };
-
-  // Within an activity's time window
-  for (let i = 0; i < schedule.length; i++) {
-    const start = toMinutes(schedule[i].time);
-    const end = toMinutes(schedule[i].endTime);
-    if (nowMin >= start && nowMin <= end) {
-      return { idx: i, isLive: true, isBeforeFirst: false, isAfterLast: false };
-    }
-  }
-
-  // Before first activity starts
-  if (nowMin < toMinutes(schedule[0].time)) {
-    return { idx: 0, isLive: false, isBeforeFirst: true, isAfterLast: false };
-  }
-
-  // After last activity ends
-  if (nowMin > toMinutes(schedule[schedule.length - 1].endTime)) {
-    return { idx: schedule.length - 1, isLive: false, isBeforeFirst: false, isAfterLast: true };
-  }
-
-  // Between activities — wheel centers on last-ended activity
-  let idx = 0;
-  for (let i = 0; i < schedule.length; i++) {
-    if (nowMin >= toMinutes(schedule[i].time)) idx = i;
-  }
-  return { idx, isLive: false, isBeforeFirst: false, isAfterLast: false };
-}
-
-function fmtClock(d: Date): string {
-  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-}
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-
-interface IconProps { size?: number }
 
 const SvgIcon: React.FC<{ type: ActivityType; size?: number }> = ({ type, size = 20 }) => {
   const Inner = ICON_MAP[type] ?? GroupIcon;
@@ -134,11 +34,15 @@ const SvgIcon: React.FC<{ type: ActivityType; size?: number }> = ({ type, size =
   );
 };
 
-const ArrowIcon: React.FC<IconProps> = ({ size = 16 }) => (
+const ArrowIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12h13M13 6l6 6-6 6" />
   </svg>
 );
+
+// ─── constants ────────────────────────────────────────────────────────────────
+
+const SPACING = 66;
 
 // ─── component ────────────────────────────────────────────────────────────────
 
@@ -171,9 +75,9 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
     [schedule, nowMin],
   );
 
-  const isAbsent = todayAttendanceStatus === 'absent' || todayAttendanceStatus === 'excused';
+  const isAbsent   = todayAttendanceStatus === 'absent' || todayAttendanceStatus === 'excused';
   const emptyState = !schedule.length;
-  const dimFocus = !isLive;
+  const dimFocus   = !isLive;
 
   return (
     <S.Card>
@@ -226,25 +130,21 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
             <S.FocusFrame $dim={dimFocus} />
             <S.Wheel>
               {schedule.map((item, i) => {
-                const off = i - activeIdx;
-                const a = Math.abs(off);
-                const y = off * SPACING;
-                const rot = Math.max(-60, Math.min(60, off * -28));
-                const z = -a * 52;
-                const opacity = a === 0 ? 1 : Math.max(0, 1 - a * 0.4);
+                const off     = i - activeIdx;
+                const a       = Math.abs(off);
+                const style   = ACTIVITY_STYLE[item.activityType] ?? ACTIVITY_STYLE.other;
                 const isActive = off === 0;
-                const isDone = off < 0;
-                const isNext = off === 1;
-                const style = ACTIVITY_STYLE[item.activityType] ?? ACTIVITY_STYLE.other;
+                const isDone   = off < 0;
+                const isNext   = off === 1;
 
                 return (
                   <S.Slot
                     key={item.id}
                     $active={isActive}
                     style={{
-                      transform: `translateY(${y}px) translateZ(${z}px) rotateX(${rot}deg)`,
-                      opacity,
-                      zIndex: 100 - a,
+                      transform: `translateY(${off * SPACING}px) translateZ(${-a * 52}px) rotateX(${Math.max(-60, Math.min(60, off * -28))}deg)`,
+                      opacity:   a === 0 ? 1 : Math.max(0, 1 - a * 0.4),
+                      zIndex:    100 - a,
                     }}
                   >
                     <S.SlotTime $active={isActive}>{item.time}</S.SlotTime>
@@ -255,14 +155,9 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
                       <S.SlotName $active={isActive}>{item.title}</S.SlotName>
                       {item.note && <S.SlotDesc>{item.note}</S.SlotDesc>}
                     </S.SlotBody>
-                    {isActive && isLive && (
-                      <S.LiveBadge>
-                        <S.LiveDot />
-                        Đang diễn ra
-                      </S.LiveBadge>
-                    )}
+                    {isActive && isLive       && <S.LiveBadge><S.LiveDot />Đang diễn ra</S.LiveBadge>}
                     {isActive && isBeforeFirst && <S.Tag $type="soon">Sắp tới</S.Tag>}
-                    {isDone && <S.Tag $type="done">Xong</S.Tag>}
+                    {isDone                    && <S.Tag $type="done">Xong</S.Tag>}
                     {isNext && (isLive || (!isBeforeFirst && !isAfterLast)) && (
                       <S.Tag $type="next">Tiếp theo</S.Tag>
                     )}

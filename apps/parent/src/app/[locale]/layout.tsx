@@ -28,6 +28,7 @@ import { AuthProvider } from '@kindercare/core';
 import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
+import { ReduxProvider } from '@/store/ReduxProvider';
 import { ToastContainer } from '@kindercare/ui';
 import NextTopLoader from 'nextjs-toploader';
 import type { Metadata } from 'next';
@@ -93,18 +94,20 @@ export default async function RootLayout({
         />
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <AuthProvider>
-              <ParentProvider>
-                <StudentProvider>
-                  <SocketProvider>
-                    <ClientAppWrapper>
-                      {children}
-                    </ClientAppWrapper>
-                    <ToastContainer />
-                  </SocketProvider>
-                </StudentProvider>
-              </ParentProvider>
-            </AuthProvider>
+            <ReduxProvider>
+              <AuthProvider>
+                <ParentProvider>
+                  <StudentProvider>
+                    <SocketProvider>
+                      <ClientAppWrapper>
+                        {children}
+                      </ClientAppWrapper>
+                      <ToastContainer />
+                    </SocketProvider>
+                  </StudentProvider>
+                </ParentProvider>
+              </AuthProvider>
+            </ReduxProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>

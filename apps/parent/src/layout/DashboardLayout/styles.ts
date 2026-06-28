@@ -164,13 +164,21 @@ export const IconBtn = styled.button`
 
 export const NotifDot = styled.span`
   position: absolute;
-  top: 9px;
-  right: 9px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
   background: var(--red);
   border: 2px solid var(--surface);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const AvatarWrap = styled.div`

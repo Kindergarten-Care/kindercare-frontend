@@ -36,4 +36,11 @@ export const SERVER = {
   teacher: {
     scanAttendance: '/teacher/attendance/scan',
   },
+  notifications: {
+    getFirebaseConfig: '/notifications/firebase-config',
+    registerToken:     '/notifications/register-token',
+    getInbox:          '/notifications',
+    markAsRead:        '/notifications/:id/read',
+    markAllAsRead:     '/notifications/read-all',
+  },
 } as const;
