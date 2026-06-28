@@ -120,26 +120,40 @@ export function QrScannerModal({ onClose, onScanSuccess }: QrScannerModalProps) 
 
   // Initialize Scanner
   useEffect(() => {
-    const html5QrCode = new Html5Qrcode(containerId, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
-    scannerRef.current = html5QrCode;
+    let html5QrCode: Html5Qrcode | null = null;
+    let isMounted = true;
 
-    html5QrCode.start(
-      { facingMode: 'environment' }, // Prefer back camera
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => {
-        handleQrDetect(decodedText);
-      },
-      (errorMessage) => {
-        // Ignore constant detection errors
-      }
-    ).catch(err => {
-      console.error('Camera startup error:', err);
-      setScanResult({ success: false, errorMsg: 'Không thể khởi động camera. Vui lòng cấp quyền truy cập.' });
-    });
+    // Delay initialization slightly to bypass React StrictMode double-mount issues
+    const initTimer = setTimeout(() => {
+      if (!isMounted) return;
+
+      html5QrCode = new Html5Qrcode(containerId, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
+      scannerRef.current = html5QrCode;
+
+      html5QrCode.start(
+        { facingMode: 'environment' }, // Prefer back camera
+        { fps: 15 }, // Removed qrbox constraint to allow full-frame scanning for dense JWT QR codes
+        (decodedText) => {
+          handleQrDetect(decodedText);
+        },
+        (errorMessage) => {
+          // Ignore constant detection errors
+        }
+      ).catch(err => {
+        if (isMounted) {
+          console.error('Camera startup error:', err);
+          setScanResult({ success: false, errorMsg: 'Không thể khởi động camera hoặc chưa được cấp quyền.' });
+        }
+      });
+    }, 150);
 
     return () => {
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().catch(console.error);
+      isMounted = false;
+      clearTimeout(initTimer);
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+          html5QrCode?.clear();
+        }).catch(console.error);
       }
     };
   }, []);
