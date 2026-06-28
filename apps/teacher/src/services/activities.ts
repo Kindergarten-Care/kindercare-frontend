@@ -104,13 +104,13 @@ export class ActivitiesService {
         if (r.lunch === 'NONE' || r.breakfast === 'NONE') eatingStatus = 'Bỏ bữa';
 
         return {
-          studentId: r.studentId,
+          studentId: Number(r.studentId),
           eatingStatus
         };
       });
 
       await apiClient.post('/teacher/attendance/meals', {
-        classId,
+        classId: Number(classId),
         date: dateSeconds,
         mealData
       });
@@ -195,7 +195,7 @@ export class ActivitiesService {
         if (r.note) teacherNote += r.note;
 
         return {
-          studentId: r.studentId,
+          studentId: Number(r.studentId),
           sleepingStatus,
           hygieneStatus,
           teacherNote: teacherNote.trim()
@@ -203,7 +203,7 @@ export class ActivitiesService {
       });
 
       await apiClient.post('/teacher/attendance/activities', {
-        classId,
+        classId: Number(classId),
         date: dateSeconds,
         activityData
       });

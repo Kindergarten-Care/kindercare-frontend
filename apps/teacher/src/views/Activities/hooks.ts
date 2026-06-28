@@ -133,15 +133,29 @@ export function useActivities() {
   const handleSave = async () => {
     try {
       setSaving(true);
+
+      // Nhóm chính (bắt buộc thành công): Lưu trạng thái Ăn + Ngủ
       await Promise.all([
-        ActivitiesService.updateMenuOfTheDay('today', editedMenu),
         ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords),
-        ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords),
-        ActivitiesService.updateDailySchedule('1', 'today', scheduleItems)
+        ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords)
       ]);
-      setMenu(editedMenu);
-      setIsMenuEditing(false);
-      alert('Đã lưu thành công dữ liệu ngày hôm nay!');
+
+      // Nhóm phụ (chấp nhận lỗi): Menu + Lịch trình
+      try {
+        await ActivitiesService.updateMenuOfTheDay('today', editedMenu);
+        setMenu(editedMenu);
+        setIsMenuEditing(false);
+      } catch (e) {
+        console.warn('Lỗi lưu menu (không ảnh hưởng):', e);
+      }
+
+      try {
+        await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
+      } catch (e) {
+        console.warn('Lỗi lưu lịch trình (không ảnh hưởng):', e);
+      }
+
+      alert('Đã lưu thành công trạng thái Ăn/Ngủ của các bé!');
     } catch (error) {
       console.error('Error saving daily activities:', error);
       alert('Có lỗi xảy ra trong quá trình lưu dữ liệu!');
