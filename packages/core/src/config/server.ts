@@ -27,5 +27,20 @@ export const SERVER = {
     getMedicationRequests: '/parent/children/:studentId/medication-requests',
     cancelLeaveRequest: '/parent/leave-requests/:requestId/cancel',
     cancelMedicationRequest: '/parent/medication-requests/:medRequestId/cancel',
+    getDailySchedule: '/parent/children/:studentId/daily-schedule',
+    getDailyLessons: '/parent/children/:studentId/daily-lessons',
+    getDailyAlbums: '/parent/children/:studentId/daily-albums',
+    getAssessments: '/parent/children/:studentId/assessments',
+    getQrToken: '/parent/children/:studentId/qr-token',
+  },
+  teacher: {
+    scanAttendance: '/teacher/attendance/scan',
+  },
+  notifications: {
+    getFirebaseConfig: '/notifications/firebase-config',
+    registerToken:     '/notifications/register-token',
+    getInbox:          '/notifications',
+    markAsRead:        '/notifications/:id/read',
+    markAllAsRead:     '/notifications/read-all',
   },
 } as const;

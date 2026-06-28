@@ -10,3 +10,19 @@ export const formatDateFromBigInt = (timestamp: bigint | null | undefined): stri
     year: 'numeric',
   });
 };
+
+/**
+ * Converts a Unix epoch timestamp (in seconds, as bigint) to "HH:mm" string.
+ */
+export const tsToHHMM = (ts: bigint): string => {
+  const d = new Date(Number(ts) * 1000);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
+
+/**
+ * Returns the current month in "MM-YYYY" format for assessment API queries.
+ */
+export const currentMonthParam = (): string => {
+  const d = new Date();
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+};
