@@ -10,6 +10,7 @@ interface MedicationRequestPopupProps {
   onClose: () => void;
   studentName: string;
   className: string;
+  onSubmitSuccess?: () => void;
 }
 
 const TIMING_OPTIONS = [
@@ -23,7 +24,8 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
   isOpen,
   onClose,
   studentName,
-  className
+  className,
+  onSubmitSuccess
 }) => {
   const {
     medicines,
@@ -38,7 +40,7 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
     handleRemovePhoto,
     handleSubmit,
     handleClose,
-  } = useMedicationRequestPopup({ isOpen, onClose });
+  } = useMedicationRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
   if (!isOpen) return null;
 

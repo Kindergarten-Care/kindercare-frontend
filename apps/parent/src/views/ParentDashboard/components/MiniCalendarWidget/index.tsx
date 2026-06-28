@@ -8,16 +8,25 @@ import { IconChevronLeft, IconChevronRight } from '@/assets/icons/dashboard';
 interface MiniCalendarWidgetProps {
   days: CalendarDay[];
   stats: AttendanceStats;
+  viewYear: number;
+  viewMonth: number;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
 }
 
 const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 const MONTHS = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
   'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
 
-const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({ days, stats }) => {
+const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({
+  days,
+  stats,
+  viewYear,
+  viewMonth,
+  onPrevMonth,
+  onNextMonth,
+}) => {
   const now = new Date();
-  const [viewYear, setViewYear] = useState<number>(now.getFullYear());
-  const [viewMonth, setViewMonth] = useState<number>(now.getMonth());
 
   const today = now.getDate();
   const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
@@ -28,26 +37,17 @@ const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({ days, stats }) 
 
   const dayMap = new Map<number, CalendarDay>(days.map(d => [d.day, d]));
 
-  const prevMonth = (): void => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
-  };
-  const nextMonth = (): void => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
-  };
-
   return (
     <S.Card>
       <S.CalHeader>
         <S.MonthTitle>{MONTHS[viewMonth]}, {viewYear}</S.MonthTitle>
         <S.NavBtns>
-          <S.NavBtn onClick={prevMonth}><IconChevronLeft size={15} /></S.NavBtn>
-          <S.NavBtn onClick={nextMonth}><IconChevronRight size={15} /></S.NavBtn>
+          <S.NavBtn onClick={onPrevMonth}><IconChevronLeft size={15} /></S.NavBtn>
+          <S.NavBtn onClick={onNextMonth}><IconChevronRight size={15} /></S.NavBtn>
         </S.NavBtns>
       </S.CalHeader>
 
-      {isCurrentMonth && (
+      {(isCurrentMonth || stats.totalDays > 0) && (
         <S.Summary>
           <S.RateWrap>
             <S.Rate>{stats.percentage}<span style={{ fontSize: 15 }}>%</span></S.Rate>
@@ -63,8 +63,8 @@ const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({ days, stats }) 
               <S.StatVal>{stats.absent}</S.StatVal> Nghỉ không phép
             </S.StatRow>
             <S.StatRow>
-              <S.StatDot $color="#2563eb" />
-              <S.StatVal>{stats.excused}</S.StatVal> Nghỉ lễ
+              <S.StatDot $color="#ea580c" />
+              <S.StatVal>{stats.excused}</S.StatVal> Nghỉ có phép
             </S.StatRow>
           </S.Counts>
         </S.Summary>
@@ -79,20 +79,28 @@ const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({ days, stats }) 
 
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const d = i + 1;
-          const info = isCurrentMonth ? dayMap.get(d) : undefined;
+          const info = dayMap.get(d);
           const status = info?.status ?? 'none';
           const isToday = isCurrentMonth && d === today;
+
+          const hasTimes = info?.checkinTime || info?.checkoutTime;
+          const tooltip = hasTimes
+            ? `Vào: ${info.checkinTime || '--:--'} · Ra: ${info.checkoutTime || '--:--'}`
+            : undefined;
 
           return (
             <S.Day
               key={d}
-              $status={status as 'present' | 'absent' | 'holiday' | 'weekend' | 'none'}
+              $status={status as 'present' | 'absent' | 'excused' | 'holiday' | 'weekend' | 'none'}
               $today={isToday}
-              title={info?.checkinTime ? `Check-in ${info.checkinTime}` : undefined}
+              title={tooltip}
             >
               <S.DayNum>{d}</S.DayNum>
               {info?.checkinTime && (
-                <S.CheckinTime>{info.checkinTime}</S.CheckinTime>
+                <S.CheckinTime>↓ {info.checkinTime}</S.CheckinTime>
+              )}
+              {info?.checkoutTime && (
+                <S.CheckoutTime>↑ {info.checkoutTime}</S.CheckoutTime>
               )}
             </S.Day>
           );
@@ -101,7 +109,8 @@ const MiniCalendarWidget: React.FC<MiniCalendarWidgetProps> = ({ days, stats }) 
 
       <S.Legend>
         <S.LegItem><S.LegDot $color="var(--accent-light, #e6f3ed)" style={{ border: '1px solid #9acaae' }} />Có mặt</S.LegItem>
-        <S.LegItem><S.LegDot $color="#fee2e2" style={{ border: '1px solid #fca5a5' }} />Nghỉ</S.LegItem>
+        <S.LegItem><S.LegDot $color="#fee2e2" style={{ border: '1px solid #fca5a5' }} />Nghỉ không phép</S.LegItem>
+        <S.LegItem><S.LegDot $color="#ffedd5" style={{ border: '1px solid #fed7aa' }} />Nghỉ có phép</S.LegItem>
         <S.LegItem><S.LegDot $color="#dbeafe" style={{ border: '1px solid #93c5fd' }} />Nghỉ lễ</S.LegItem>
       </S.Legend>
     </S.Card>

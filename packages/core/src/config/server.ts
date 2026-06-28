@@ -23,5 +23,9 @@ export const SERVER = {
     createLeaveRequest: '/parent/leave-requests',
     createMedicationRequest: '/parent/medication-requests',
     getAttendance: '/parent/children/:studentId/attendance',
+    getLeaveRequests: '/parent/children/:studentId/leave-requests',
+    getMedicationRequests: '/parent/children/:studentId/medication-requests',
+    cancelLeaveRequest: '/parent/leave-requests/:requestId/cancel',
+    cancelMedicationRequest: '/parent/medication-requests/:medRequestId/cancel',
   },
 } as const;

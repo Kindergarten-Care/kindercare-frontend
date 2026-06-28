@@ -6,11 +6,13 @@ export interface MedicationRequestApiDto {
   medicineDetails: string;
   dosage: string;
   medicineImageUrl: string | null;
+  medicineImageURL?: string | null;
   status: string;
   teacherNote: string | null;
   frequency: string | null;
   timeToTake: string | null;
   parentNote: string | null;
+  updatedTime?: number | null;
 }
 
 export interface MedicationRequestDomainModel {
@@ -21,11 +23,13 @@ export interface MedicationRequestDomainModel {
   medicineDetails: string;
   dosage: string;
   medicineImageUrl: string | null;
+  medicineImageURL?: string | null;
   status: string;
   teacherNote: string | null;
   frequency: string | null;
   timeToTake: string | null;
   parentNote: string | null;
+  updatedTime?: bigint | null;
 }
 
 export interface CreateMedicationRequestDto {

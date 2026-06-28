@@ -34,6 +34,10 @@ export function ParentDashboard(): React.ReactElement {
     avatarGradient,
     avatarInitial,
     leadTeacher,
+    viewYear,
+    viewMonth,
+    prevMonth,
+    nextMonth,
   } = useParentDashboard();
 
   if (loading || !data || !activeStudent || !childHero) {
@@ -103,7 +107,14 @@ export function ParentDashboard(): React.ReactElement {
           />
 
           {/* Attendance calendar */}
-          <MiniCalendarWidget days={data.calendarDays} stats={data.attendanceStats} />
+          <MiniCalendarWidget
+            days={data.calendarDays}
+            stats={data.attendanceStats}
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
         </S.RightColumn>
       </S.MainGrid>
 
