@@ -133,18 +133,14 @@ export function useActivities() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      if (activeTab === 'meals') {
-        await Promise.all([
-          ActivitiesService.updateMenuOfTheDay('today', editedMenu),
-          ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords)
-        ]);
-        setMenu(editedMenu);
-        setIsMenuEditing(false);
-      } else if (activeTab === 'activities') {
-        await ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords);
-      } else {
-        await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
-      }
+      await Promise.all([
+        ActivitiesService.updateMenuOfTheDay('today', editedMenu),
+        ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords),
+        ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords),
+        ActivitiesService.updateDailySchedule('1', 'today', scheduleItems)
+      ]);
+      setMenu(editedMenu);
+      setIsMenuEditing(false);
       alert('Đã lưu thành công dữ liệu ngày hôm nay!');
     } catch (error) {
       console.error('Error saving daily activities:', error);
