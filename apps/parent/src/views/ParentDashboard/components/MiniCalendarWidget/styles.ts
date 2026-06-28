@@ -1,31 +1,26 @@
+'use client';
+
 import styled from 'styled-components';
 
 export const Card = styled.div`
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #dde8d9);
-  border-radius: var(--r-lg, 16px);
-  padding: 16px 18px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
 `;
 
 export const CalHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 `;
 
-export const MonthSelect = styled.div`
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--fg, #181d18);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  
-  &:hover {
-    color: var(--accent, #005e2c);
-  }
+export const MonthTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
 `;
 
 export const NavBtns = styled.div`
@@ -34,92 +29,191 @@ export const NavBtns = styled.div`
 `;
 
 export const NavBtn = styled.button`
-  width: 24px;
-  height: 24px;
-  background: var(--bg, #f4f9f1);
-  border: 1px solid var(--border, #dde8d9);
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: #f4f8f5; color: var(--fg); }
+`;
+
+export const Summary = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  cursor: pointer;
-  color: var(--muted, #627062);
-  
-  &:hover {
-    background: var(--accent-light, #dcfce7);
-    color: var(--accent, #005e2c);
-  }
+  gap: 16px;
+  background: #f4f8f5;
+  border: 1px solid var(--border-soft);
+  border-radius: 13px;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+`;
+
+export const RateWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-right: 16px;
+  border-right: 1px solid var(--border);
+`;
+
+export const Rate = styled.div`
+  font-size: 27px;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: -0.02em;
+  line-height: 1;
+`;
+
+export const RateLbl = styled.div`
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 500;
+  line-height: 1.3;
+`;
+
+export const Counts = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+`;
+
+export const StatRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+`;
+
+export const StatDot = styled.span<{ $color: string }>`
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: ${p => p.$color};
+  flex-shrink: 0;
+`;
+
+export const StatVal = styled.b`
+  font-weight: 700;
+  color: var(--fg);
+  font-size: 13.5px;
+  min-width: 14px;
 `;
 
 export const CalGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  text-align: center;
 `;
 
 export const Weekday = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted, #627062);
-  margin-bottom: 4px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-2);
+  padding: 4px 0 8px;
 `;
 
-export const Day = styled.div<{ $isToday?: boolean; $isOtherMonth?: boolean; $status?: 'present' | 'absent' | 'excused' | 'weekend' | 'holiday' | 'none' }>`
+export const Day = styled.div<{
+  $today?: boolean;
+  $other?: boolean;
+  $status?: 'present' | 'absent' | 'excused' | 'holiday' | 'weekend' | 'none';
+}>`
   aspect-ratio: 1;
+  border-radius: 9px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
+  gap: 1px;
+  font-size: 13px;
+  font-weight: 500;
   position: relative;
-  transition: transform 0.1s, box-shadow 0.1s;
+  cursor: default;
+  transition: transform 0.12s;
 
-  ${props => props.$isOtherMonth && `
-    color: #cbd5e1;
+  ${p => p.$other && `color: var(--muted-2); font-weight: 400;`}
+
+  ${p => p.$status === 'present' && `
+    background: var(--brand-tint);
+    color: var(--brand);
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { transform: scale(1.08); }
+  `}
+  ${p => p.$status === 'absent' && `
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 600;
+  `}
+  ${p => p.$status === 'excused' && `
+    background: #ffedd5;
+    color: #ea580c;
+    font-weight: 600;
+  `}
+  ${p => p.$status === 'holiday' && `
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 600;
+  `}
+  ${p => p.$status === 'weekend' && `
+    color: var(--muted-2);
   `}
 
-  ${props => !props.$isOtherMonth && props.$status === 'none' && `
-    color: #334155;
-    &:hover { background: #f8fafc; }
+  ${p => p.$today && `
+    box-shadow: 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-tint);
   `}
+`;
 
-  ${props => props.$status === 'weekend' && `
-    color: #94a3b8;
-    background: #f8fafc;
-  `}
+export const DayNum = styled.span`
+  line-height: 1;
+`;
 
-  ${props => props.$status === 'present' && `
-    color: var(--accent, #005e2c);
-    background: var(--accent-light, #dcfce7);
-    font-weight: 700;
-  `}
+export const CheckinTime = styled.span`
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.72;
+  font-variant-numeric: tabular-nums;
+`;
 
-  ${props => props.$status === 'absent' && `
-    color: var(--danger, #b91c1c);
-    background: var(--danger-light, #fee2e2);
-  `}
+export const CheckoutTime = styled.span`
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.72;
+  font-variant-numeric: tabular-nums;
+`;
 
-  ${props => props.$status === 'excused' && `
-    color: var(--warn, #c77b0a);
-    background: var(--warn-light, #fef3c7);
-  `}
-  
-  ${props => props.$status === 'holiday' && `
-    color: #0369a1;
-    background: #e0f2fe;
-  `}
+export const Legend = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 16px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-soft);
+`;
 
-  ${props => props.$isToday && `
-    border: 1.5px solid var(--accent, #005e2c);
-  `}
+export const LegItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+`;
 
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
+export const LegDot = styled.span<{ $color: string }>`
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+  background: ${p => p.$color};
 `;

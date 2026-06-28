@@ -48,7 +48,7 @@ const defaultBottomNavItems: NavItem[] = [
 export function Sidebar({ 
   mainNavItems = defaultMainNavItems, 
   bottomNavItems = defaultBottomNavItems,
-  brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KinderCare_LogoTextHorizontal.png",
+  brandLogoUrl = "https://media.kindercare.app/KinderCare%20Logo/KC_ParentDashboardLogo.png",
   brandName = "KinderCare Guardian System"
 }: SidebarProps): React.ReactElement {
   return (

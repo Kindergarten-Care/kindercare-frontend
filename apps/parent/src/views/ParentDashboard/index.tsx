@@ -1,69 +1,140 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { parentDashboardService } from '@/services/ParentDashboardService';
-import { ParentDashboardModel } from '@/config/types/dashboard';
+import React, { useEffect } from 'react';
 import * as S from './styles';
+import { initPushNotification } from '@kindercare/core';
 
+import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
-import TimelineWidget from './components/TimelineWidget';
-import MessagesWidget from './components/MessagesWidget';
+import LiveScheduleWidget from './components/LiveScheduleWidget';
+import DevelopmentalDomainsWidget from './components/DevelopmentalDomainsWidget';
 import CameraWidget from './components/CameraWidget';
-import FeeAlertWidget from './components/FeeAlertWidget';
-import AttendanceStatsWidget from './components/AttendanceStatsWidget';
+import DailyLessonWidget from './components/DailyLessonWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
-import UpcomingEventsWidget from './components/UpcomingEventsWidget';
+import GrowthWidget from './components/GrowthWidget';
+import LeaveRequestPopup from './components/LeaveRequestPopup';
+import MedicationRequestPopup from './components/MedicationRequestPopup';
+import AttendanceQrPopup from './components/AttendanceQrPopup';
+import { useParentDashboard } from './hooks/useParentDashboard';
 
 export function ParentDashboard(): React.ReactElement {
-  const [data, setData] = useState<ParentDashboardModel | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dashboardData = await parentDashboardService.getDashboardData();
-        setData(dashboardData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    initPushNotification();
   }, []);
 
-  if (loading || !data) {
+  const {
+    loading,
+    activeStudent,
+    schedule,
+    lessons,
+    photos,
+    calendarDays,
+    attendanceStats,
+    latestAssessment,
+    childHero,
+    avatarGradient,
+    avatarInitial,
+    viewYear,
+    viewMonth,
+    prevMonth,
+    nextMonth,
+    isLeavePopupOpen, setIsLeavePopupOpen,
+    isMedicationPopupOpen, setIsMedicationPopupOpen,
+    isQrPopupOpen, setIsQrPopupOpen,
+  } = useParentDashboard();
+
+  if (loading || !activeStudent || !childHero) {
     return (
       <S.DashboardContainer>
-        <div>Đang tải dữ liệu...</div>
+        <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
       </S.DashboardContainer>
     );
   }
 
   return (
     <S.DashboardContainer>
-      {/* Hero Section - Full width */}
-      <ChildHeroWidget data={data.childHero} />
-      
-      {/* Quick Access Strip - Full width */}
-      <QuickActionsStrip />
+      <ChildHeroWidget
+        data={childHero}
+        avatarGradient={avatarGradient}
+        avatarInitial={avatarInitial}
+        avatarUrl={activeStudent.avatarUrl}
+        onAbsence={() => setIsLeavePopupOpen(true)}
+        onMessage={() => alert('Nhắn tin với giáo viên')}
+        onCheckinQr={() => setIsQrPopupOpen(true)}
+      />
 
       <S.MainGrid>
         <S.LeftColumn>
-          <TimelineWidget events={data.timeline} />
-          <MessagesWidget messages={data.messages} />
+          <S.LeftTopGrid>
+            <S.ColumnStack>
+              <QuickActionsStrip
+                onAbsence={() => setIsLeavePopupOpen(true)}
+                onMedication={() => setIsMedicationPopupOpen(true)}
+                onFee={() => alert('Đóng học phí')}
+                onDiary={() => alert('Nhật ký')}
+                onPickup={() => alert('Đăng ký người đón hộ')}
+              />
+              <DevelopmentalDomainsWidget assessment={latestAssessment} />
+            </S.ColumnStack>
+
+            <GrowthWidget />
+          </S.LeftTopGrid>
+
+          <S.BottomGrid>
+            <LiveScheduleWidget
+              schedule={schedule}
+              className={activeStudent.className}
+              todayAttendanceStatus={calendarDays.find(d => d.day === new Date().getDate())?.status}
+            />
+            <S.ColumnStack>
+              <AlbumStripWidget photos={photos} />
+              <DailyLessonWidget lessons={lessons} />
+            </S.ColumnStack>
+          </S.BottomGrid>
         </S.LeftColumn>
 
         <S.RightColumn>
-          <CameraWidget />
-          <FeeAlertWidget fee={data.fee} />
-          <AttendanceStatsWidget stats={data.attendanceStats} />
-          <MiniCalendarWidget />
-          <UpcomingEventsWidget events={data.upcomingEvents} />
+          <CameraWidget
+            className={activeStudent.className}
+            teacher={activeStudent.academicYearName}
+          />
+          <MiniCalendarWidget
+            days={calendarDays}
+            stats={attendanceStats}
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
         </S.RightColumn>
       </S.MainGrid>
+
+      <LeaveRequestPopup
+        isOpen={isLeavePopupOpen}
+        onClose={() => setIsLeavePopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <MedicationRequestPopup
+        isOpen={isMedicationPopupOpen}
+        onClose={() => setIsMedicationPopupOpen(false)}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <AttendanceQrPopup
+        isOpen={isQrPopupOpen}
+        onClose={() => setIsQrPopupOpen(false)}
+        student={{
+          studentId: activeStudent.studentId,
+          fullName: activeStudent.fullName,
+          className: activeStudent.className,
+          academicYearName: activeStudent.academicYearName,
+          campusName: activeStudent.campusName,
+        }}
+      />
     </S.DashboardContainer>
   );
 }
