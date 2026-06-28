@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
+import { theme } from '@kindercare/ui';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
+import { QrScannerModal } from '../../components/QrScannerModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
 export const AttendanceView: React.FC = () => {
@@ -26,6 +28,7 @@ export const AttendanceView: React.FC = () => {
   
   // States for summary leave requests modal
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
   const [allLeaves, setAllLeaves] = useState<LeaveRequest[]>([]);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [summaryFilter, setSummaryFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
@@ -425,6 +428,10 @@ export const AttendanceView: React.FC = () => {
           <S.Title>Điểm danh hàng ngày</S.Title>
         </S.HeaderLeft>
         <div style={{ display: 'flex', gap: '12px' }}>
+          <S.SummaryButton onClick={() => setIsQrScannerOpen(true)} style={{ background: '#111827', color: 'white', border: 'none' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: 'white' }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
+            Quét mã QR
+          </S.SummaryButton>
           <S.SummaryButton onClick={handleOpenSummaryModal}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', color: '#b45309' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Tổng hợp đơn
@@ -750,6 +757,16 @@ export const AttendanceView: React.FC = () => {
       <S.ToastContainer>
         {toasts.map(t => <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>)}
       </S.ToastContainer>
+
+      {/* QR SCANNER MODAL */}
+      {isQrScannerOpen && (
+        <QrScannerModal 
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={() => {
+            if (classId) fetchAttendance(classId, dateMs); // Refresh data when scan successful
+          }}
+        />
+      )}
 
       {/* SUMMARY LEAVE REQUESTS MODAL */}
       {isSummaryModalOpen && (
