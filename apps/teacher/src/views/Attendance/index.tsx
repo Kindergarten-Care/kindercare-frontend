@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
-import { theme } from '@kindercare/ui';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
 import { QrScannerModal } from '../../components/QrScannerModal';
