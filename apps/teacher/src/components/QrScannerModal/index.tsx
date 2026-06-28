@@ -120,7 +120,7 @@ export function QrScannerModal({ onClose, onScanSuccess }: QrScannerModalProps) 
 
   // Initialize Scanner
   useEffect(() => {
-    const html5QrCode = new Html5Qrcode(containerId, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] });
+    const html5QrCode = new Html5Qrcode(containerId, { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], verbose: false });
     scannerRef.current = html5QrCode;
 
     html5QrCode.start(
