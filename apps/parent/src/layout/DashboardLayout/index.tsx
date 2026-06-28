@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
@@ -64,12 +64,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
   const [hasUnreadNotif, setHasUnreadNotif] = useState<boolean>(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
   const locale = useLocale() as 'vi' | 'en';
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
   const { parentProfile } = useParent();
   const { activeStudent } = useStudent();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
     if (nextLocale === locale) return;
@@ -97,6 +111,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
       <S.MainContent>
         <S.HeaderBand>
+          <S.HeaderBgDecorations />
           <S.HeaderInner>
             <S.Greet>
               <S.GreetName $collapsed={collapsed}>{getGreetingText()}</S.GreetName>
@@ -109,17 +124,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <input placeholder="Tìm kiếm..." />
               </S.SearchBar>
 
-              {/* Temporarily hidden notification button until API is configured */}
-              {/* <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
+              <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
                 <IconBell size={18} />
                 {hasUnreadNotif && <S.NotifDot />}
-              </S.IconBtn> */}
-
-              <S.IconBtn title="Cài đặt">
-                <IconSettings size={18} />
               </S.IconBtn>
 
-              <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
+              <S.SettingsWrapper ref={settingsRef}>
+                <S.IconBtn title="Cài đặt" onClick={() => setIsSettingsOpen(prev => !prev)}>
+                  <IconSettings size={18} />
+                </S.IconBtn>
+                {isSettingsOpen && (
+                  <S.SettingsDropdown>
+                    <S.DropdownTitle>
+                      <IconSettings size={14} />
+                      {locale === 'vi' ? 'Cài đặt hệ thống' : 'System Settings'}
+                    </S.DropdownTitle>
+                    <S.DropdownItem>
+                      <S.DropdownLabel>{locale === 'vi' ? 'Ngôn ngữ' : 'Language'}</S.DropdownLabel>
+                      <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
+                    </S.DropdownItem>
+                    <S.DropdownItem>
+                      <S.DropdownLabel>{locale === 'vi' ? 'Giao diện tối' : 'Dark Mode'}</S.DropdownLabel>
+                      <S.ToggleSwitch title={locale === 'vi' ? 'Chưa hỗ trợ' : 'Not supported yet'}>
+                        <S.ToggleSlider />
+                      </S.ToggleSwitch>
+                    </S.DropdownItem>
+                  </S.SettingsDropdown>
+                )}
+              </S.SettingsWrapper>
 
               <S.AvatarWrap>
                 <S.Avatar>

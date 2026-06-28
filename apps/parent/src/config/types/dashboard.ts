@@ -8,6 +8,7 @@ export interface ChildHeroInfo {
   statusTags: { label: string; type: 'green' | 'blue' | 'neutral' | 'yellow' }[];
   checkinTime: string;
   checkinSub: string;
+  attendanceStatus: 'not_started' | 'studying' | 'checked_out' | 'excused' | 'absent' | 'holiday';
   academicYear?: string;
 }
 
@@ -69,4 +70,15 @@ export interface DailyLesson {
   description: string;
   icon: string;
   color: string;
+}
+
+export interface MessageInfo {
+  id: string;
+  sender: string;
+  avatar: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+  avatarColor?: string;
+  isMe?: boolean;
 }

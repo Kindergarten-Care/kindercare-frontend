@@ -23,35 +23,38 @@ export const HeaderBand = styled.header`
   position: sticky;
   top: 0;
   z-index: 30;
-  overflow: hidden;
   isolation: isolate;
   background: linear-gradient(168deg, #E9F4EE 0%, #F1F8F4 52%, var(--canvas) 100%);
   border-bottom: 1px solid var(--border);
+`;
+
+export const HeaderBgDecorations = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
 
   &::before {
     content: '';
     position: absolute;
-    z-index: -1;
     top: -160px;
     right: -30px;
     width: 360px;
     height: 360px;
     border-radius: 50%;
     background: radial-gradient(circle, rgba(0, 90, 54, 0.08), transparent 64%);
-    pointer-events: none;
   }
 
   &::after {
     content: '';
     position: absolute;
-    z-index: -1;
     bottom: -120px;
     left: 14%;
     width: 240px;
     height: 240px;
     border-radius: 50%;
     background: radial-gradient(circle, rgba(0, 90, 54, 0.05), transparent 66%);
-    pointer-events: none;
   }
 `;
 
@@ -203,4 +206,90 @@ export const AvatarOnline = styled.span`
 export const PageArea = styled.div`
   flex: 1;
   margin: 0 86.5px;
+`;
+
+export const SettingsWrapper = styled.div`
+  position: relative;
+`;
+
+export const SettingsDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 90, 54, 0.12),
+    0 4px 12px -3px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+`;
+
+export const DropdownTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const DropdownItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+  }
+`;
+
+export const DropdownLabel = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+`;
+
+export const ToggleSwitch = styled.div`
+  width: 38px;
+  height: 20px;
+  background: #cbd5e1;
+  border-radius: 100px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transition: background 0.2s;
+`;
+
+export const ToggleSlider = styled.div`
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 `;

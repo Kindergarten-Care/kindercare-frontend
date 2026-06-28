@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson } from '@/config/types/dashboard';
+import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
@@ -220,6 +220,67 @@ export function useParentDashboard() {
 
   const leadTeacher = activeStudent?.teachers?.[0] ?? null;
 
+  const getTodayAttendanceStatus = (): {
+    attendanceStatus: ChildHeroInfo['attendanceStatus'];
+    checkinTime: string;
+    checkinSub: string;
+  } => {
+    const today = new Date();
+    const todayRecord = allRecords.find(r => {
+      const d = new Date(Number(r.attendanceDate) * 1000);
+      return (
+        d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear()
+      );
+    });
+
+    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+
+    let attendanceStatus: ChildHeroInfo['attendanceStatus'] = 'not_started';
+    let checkinTime = 'Chưa điểm danh';
+    let checkinSub = 'Chờ điểm danh sáng';
+
+    if (isWeekend) {
+      attendanceStatus = 'holiday';
+      checkinTime = 'Ngày nghỉ';
+      checkinSub = 'Cuối tuần';
+    } else if (todayRecord) {
+      const statusLower = todayRecord.status?.toLowerCase();
+      if (statusLower === 'excused') {
+        attendanceStatus = 'excused';
+        checkinTime = 'Nghỉ học';
+        checkinSub = 'Có phép';
+      } else if (statusLower === 'absent') {
+        attendanceStatus = 'absent';
+        checkinTime = 'Vắng mặt';
+        checkinSub = 'Không phép';
+      } else if (statusLower === 'holiday') {
+        attendanceStatus = 'holiday';
+        checkinTime = 'Ngày nghỉ';
+        checkinSub = 'Lễ / Tết';
+      } else if (statusLower === 'present') {
+        if (todayRecord.checkInTime) {
+          const inTime = tsToHHMM(todayRecord.checkInTime);
+          if (todayRecord.checkOutTime) {
+            const outTime = tsToHHMM(todayRecord.checkOutTime);
+            attendanceStatus = 'checked_out';
+            checkinTime = `Đã ra về · ${outTime}`;
+            checkinSub = todayRecord.pickedUpBy ? `Đón bởi: ${todayRecord.pickedUpBy}` : 'Đã đón bé';
+          } else {
+            attendanceStatus = 'studying';
+            checkinTime = `Đã đến trường · ${inTime}`;
+            checkinSub = 'Đang học';
+          }
+        }
+      }
+    }
+
+    return { attendanceStatus, checkinTime, checkinSub };
+  };
+
+  const todayStatus = getTodayAttendanceStatus();
+
   const childHero = activeStudent
     ? {
         name: activeStudent.fullName,
@@ -232,8 +293,9 @@ export function useParentDashboard() {
           { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
           { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
         ],
-        checkinTime: 'Đang học',
-        checkinSub: 'Đúng giờ · Cổng A',
+        checkinTime: todayStatus.checkinTime,
+        checkinSub: todayStatus.checkinSub,
+        attendanceStatus: todayStatus.attendanceStatus,
       }
     : null;
 
