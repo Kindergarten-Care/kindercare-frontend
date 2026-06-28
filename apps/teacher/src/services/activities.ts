@@ -1,6 +1,7 @@
 import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, ScheduleItem } from '@/config/types/activities';
 import { scheduleService } from './schedule/ScheduleService';
 import { AttendanceService } from './attendance';
+import { apiClient } from '@kindercare/core';
 
 // Default mock data kept as fallback
 const MOCK_MEALS_DB: StudentMealRecord[] = [
@@ -58,14 +59,20 @@ export class ActivitiesService {
       if (students && students.length > 0) {
         return students
           .filter(s => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
-          .map(s => ({
-            studentId: String(s.id),
-            studentName: s.name,
-            avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
-            breakfast: 'ALL',
-            lunch: 'ALL',
-            afternoonSnack: 'ALL'
-          }));
+          .map(s => {
+            let breakfast = 'ALL';
+            let lunch = 'ALL';
+            if (s.eatingStatus === 'Ăn chậm') { breakfast = 'HALF'; lunch = 'HALF'; }
+            if (s.eatingStatus === 'Bỏ bữa') { breakfast = 'NONE'; lunch = 'NONE'; }
+            return {
+              studentId: String(s.id),
+              studentName: s.name,
+              avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
+              breakfast: breakfast as MealStatus,
+              lunch: lunch as MealStatus,
+              afternoonSnack: 'ALL'
+            };
+          });
       }
       return [...mockMealsState];
     } catch (e) {
@@ -82,9 +89,36 @@ export class ActivitiesService {
     date: string,
     records: StudentMealRecord[]
   ): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    mockMealsState = [...records];
-    return true;
+    try {
+      let realDate = date;
+      if (date === 'today') {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      const mealData = records.map(r => {
+        let eatingStatus = 'Ăn hết suất';
+        if (r.lunch === 'HALF' || r.breakfast === 'HALF') eatingStatus = 'Ăn chậm';
+        if (r.lunch === 'NONE' || r.breakfast === 'NONE') eatingStatus = 'Bỏ bữa';
+
+        return {
+          studentId: r.studentId,
+          eatingStatus
+        };
+      });
+
+      await apiClient.post('/teacher/attendance/meals', {
+        classId,
+        date: dateSeconds,
+        mealData
+      });
+      return true;
+    } catch (e) {
+      console.error('Error updating meals:', e);
+      return false;
+    }
   }
 
   /**
@@ -102,13 +136,26 @@ export class ActivitiesService {
       if (students && students.length > 0) {
         return students
           .filter(s => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
-          .map(s => ({
-            studentId: String(s.id),
-            studentName: s.name,
-            avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
-            nap: 'GOOD',
-            participation: 'ACTIVE'
-          }));
+          .map(s => {
+            let nap = 'GOOD';
+            if (s.sleepingStatus === 'Khó ngủ') nap = 'RESTLESS';
+            if (s.sleepingStatus === 'Không ngủ') nap = 'POOR';
+
+            let participation = 'ACTIVE';
+            if (s.teacherNote?.includes('quan sát')) participation = 'OBSERVING';
+            if (s.teacherNote?.includes('Mệt mỏi')) participation = 'TIRED';
+
+            let note = s.teacherNote?.replace('Vui chơi tích cực. ', '').replace('Chỉ quan sát bạn chơi. ', '').replace('Mệt mỏi, ít tham gia. ', '') || '';
+
+            return {
+              studentId: String(s.id),
+              studentName: s.name,
+              avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
+              nap: nap as NapStatus,
+              participation: participation as ParticipationStatus,
+              note: note.trim()
+            };
+          });
       }
       return [...mockActivitiesState];
     } catch (e) {
@@ -125,9 +172,46 @@ export class ActivitiesService {
     date: string,
     records: StudentActivityRecord[]
   ): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    mockActivitiesState = [...records];
-    return true;
+    try {
+      let realDate = date;
+      if (date === 'today') {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      const activityData = records.map(r => {
+        let sleepingStatus = 'Ngủ ngoan';
+        if (r.nap === 'RESTLESS') sleepingStatus = 'Khó ngủ';
+        if (r.nap === 'POOR') sleepingStatus = 'Không ngủ';
+
+        let hygieneStatus = 'Bình thường';
+
+        let teacherNote = '';
+        if (r.participation === 'ACTIVE') teacherNote += 'Vui chơi tích cực. ';
+        if (r.participation === 'OBSERVING') teacherNote += 'Chỉ quan sát bạn chơi. ';
+        if (r.participation === 'TIRED') teacherNote += 'Mệt mỏi, ít tham gia. ';
+        if (r.note) teacherNote += r.note;
+
+        return {
+          studentId: r.studentId,
+          sleepingStatus,
+          hygieneStatus,
+          teacherNote: teacherNote.trim()
+        };
+      });
+
+      await apiClient.post('/teacher/attendance/activities', {
+        classId,
+        date: dateSeconds,
+        activityData
+      });
+      return true;
+    } catch (e) {
+      console.error('Error updating activities:', e);
+      return false;
+    }
   }
 
   /**
