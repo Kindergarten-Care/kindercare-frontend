@@ -1,519 +1,438 @@
-'use client';
-
-import React from 'react';
-import { useActivities } from './hooks';
+import React, { useState, useEffect } from 'react';
 import * as S from './styles';
+import { useAuth } from '@/contexts/AuthContext';
+import { useActivities } from './hooks';
+import { MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
 import { 
   Utensils, 
-  Calendar as CalendarIcon, 
-  Search, 
-  Edit2, 
-  Check, 
-  ChevronDown, 
-  ChevronUp, 
-  Save, 
-  Image as ImageIcon,
-  Plus
+  Moon, 
+  Sun, 
+  BookOpen, 
+  Users,
+  Check,
+  MapPin
 } from 'lucide-react';
-import { MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
 
-export function ActivitiesView(): React.ReactElement {
+interface ToastItem {
+  id: string;
+  text: string;
+}
+
+// Activity Type mapping for Timeline & Matrix
+type ActivityUIGroup = 'arrival' | 'meal' | 'study' | 'play' | 'nap';
+
+const getUIGroup = (title: string, type?: string): ActivityUIGroup => {
+  const lower = title.toLowerCase();
+  const lowerType = (type || '').toLowerCase();
+  if (lower.includes('đón') || lower.includes('trả') || lowerType.includes('arrival')) return 'arrival';
+  if (lower.includes('ăn') || lowerType.includes('meal')) return 'meal';
+  if (lower.includes('ngủ') || lowerType.includes('sleep') || lowerType.includes('nap')) return 'nap';
+  if (lower.includes('học') || lower.includes('bài') || lowerType.includes('learn')) return 'study';
+  return 'play';
+};
+
+const PALETTES: Record<ActivityUIGroup, { solid: string; tint: string; c: string }> = {
+  meal:    { c: '#92400E', tint: '#FEF3C7', solid: '#D97706' },
+  nap:     { c: '#2563EB', tint: '#E3EDFD', solid: '#2563EB' },
+  study:   { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
+  play:    { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
+  arrival: { c: '#8B5CF6', tint: '#F1ECFE', solid: '#8B5CF6' },
+};
+
+const OPTSETS = {
+  meal:  [
+    { k: 'ALL', label: '🟢 Ăn hết', dot: '#005A36' }, 
+    { k: 'HALF', label: '🟠 Ăn chậm', dot: '#D97706' }, 
+    { k: 'NONE', label: '🔴 Bỏ bữa', dot: '#DC2626' }
+  ],
+  nap:   [
+    { k: 'GOOD', label: '🟢 Ngủ ngoan', dot: '#005A36' }, 
+    { k: 'POOR', label: '🟠 Khó ngủ', dot: '#D97706' },
+  ],
+  study: [
+    { k: 'ACTIVE', label: '🟢 Hăng hái', dot: '#005A36' }, 
+    { k: 'NORMAL', label: '🔵 Bình thường', dot: '#2563EB' }, 
+    { k: 'TIRED', label: '🟠 Cần hỗ trợ', dot: '#D97706' }
+  ],
+};
+
+const ICON_MAP = {
+  meal: <Utensils size={19} />,
+  nap: <Moon size={19} />,
+  study: <BookOpen size={19} />,
+  play: <Users size={19} />,
+  arrival: <Sun size={19} />
+};
+
+export const ActivitiesView: React.FC = () => {
+  const { user } = useAuth();
+  
   const {
     loading,
-    saving,
-    activeTab,
-    setActiveTab,
-    searchQuery,
-    setSearchQuery,
-    
-    // Menu States
-    isMenuOpen,
-    setIsMenuOpen,
-    isMenuEditing,
-    setIsMenuEditing,
-    menu,
-    setMenu,
-    editedMenu,
-    setEditedMenu,
-
-    // Filtered lists
-    filteredMeals,
-    filteredActivities,
+    mealRecords,
+    activityRecords,
     scheduleItems,
-
-    // Actions
     handleMealStatusChange,
-    handleMealNoteChange,
     handleActivityNapChange,
     handleActivityParticipationChange,
-    handleActivityNoteChange,
     handleScheduleStatusChange,
-    handleSchedulePhotoChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
+    saving
   } = useActivities();
 
+  // Selected item tracking
+  const [selectedActId, setSelectedActId] = useState<string | null>(null);
+
+  // --- TOAST STATE ---
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const addToast = (text: string) => {
+    const id = 'toast-' + Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, text }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 5000);
+  };
+
+  // --- REALTIME TIMELINE TRACKING ---
+  const [currentTotalMins, setCurrentTotalMins] = useState<number>(() => {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  });
+  const [notifiedActs, setNotifiedActs] = useState<Set<string>>(new Set());
+
+  // Clock tick every 30 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTotalMins(now.getHours() * 60 + now.getMinutes());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // --- MAPPING SCHEDULE ---
+  const sortedSchedule = [...scheduleItems].sort((a, b) => {
+    return (a.timeSlot || '').localeCompare(b.timeSlot || '');
+  });
+
+  const dynamicSchedule = sortedSchedule.map(item => {
+    const [startStr, endStr] = (item.timeSlot || '00:00 - 23:59').split(' - ');
+    const [h1, m1] = startStr.split(':').map(Number);
+    const startMin = (h1 || 0) * 60 + (m1 || 0);
+    
+    const [h2, m2] = (endStr || '23:59').split(':').map(Number);
+    const endMin = (h2 || 0) * 60 + (m2 || 0);
+
+    const isDone = currentTotalMins >= endMin || item.completed;
+    const isCur = !item.completed && currentTotalMins >= startMin && currentTotalMins < endMin;
+    
+    return { ...item, isDone, isCur, startMin, endMin };
+  });
+
+  // Auto select active item or closest
+  useEffect(() => {
+    if (dynamicSchedule.length > 0 && !selectedActId) {
+      const activeOrClosest = dynamicSchedule.find(i => i.isCur) || dynamicSchedule[dynamicSchedule.length - 1];
+      if (activeOrClosest) setSelectedActId(activeOrClosest.id);
+    }
+  }, [dynamicSchedule.length, selectedActId]);
+
+  // Push notifications logic
+  useEffect(() => {
+    const currentAct = dynamicSchedule.find(i => i.isCur);
+    if (currentAct) {
+      const timeLeft = currentAct.endMin - currentTotalMins;
+      // Notify when 10 mins or less left
+      if (timeLeft <= 10 && timeLeft >= 0 && !notifiedActs.has(currentAct.id)) {
+        const group = getUIGroup(currentAct.activityName);
+        if (['meal', 'nap', 'study', 'play'].includes(group)) {
+          addToast(`🔔 Sắp hết giờ: Vui lòng ghi nhận đánh giá cho hoạt động "${currentAct.activityName}"!`);
+          setNotifiedActs(prev => new Set(prev).add(currentAct.id));
+        }
+      }
+    }
+  }, [currentTotalMins, dynamicSchedule, notifiedActs]);
+
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid #0e793c', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>Đang tải dữ liệu hoạt động & ăn uống...</span>
-        <style dangerouslySetInnerHTML={{ __html: '@keyframes spin { to { transform: rotate(360deg); } }' }} />
-      </div>
-    );
+    return <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Đang tải lịch trình...</div>;
   }
 
+  const selectedItem = dynamicSchedule.find(i => i.id === selectedActId) || dynamicSchedule[0];
+  const curGroup = selectedItem ? getUIGroup(selectedItem.activityName) : 'study';
+
+  // --- MATRIX RESOLUTION ---
+  const getMatrixData = () => {
+    if (!selectedItem) return { hasMatrix: false, batchLabel: '', matrix: [] };
+    const group = getUIGroup(selectedItem.activityName);
+    
+    // Determine which field to log based on group
+    let optType: keyof typeof OPTSETS | null = null;
+    let records: any[] = [];
+    let field = '';
+    
+    if (group === 'meal') {
+      optType = 'meal';
+      records = mealRecords;
+      const h = parseInt((selectedItem.timeSlot || '00:00').split(':')[0] || '0', 10);
+      if (h < 10) field = 'breakfast';
+      else if (h < 13) field = 'lunch';
+      else field = 'afternoonSnack';
+    } else if (group === 'nap') {
+      optType = 'nap';
+      records = activityRecords;
+      field = 'nap';
+    } else if (group === 'study' || group === 'play') {
+      optType = 'study';
+      records = activityRecords;
+      field = 'participation';
+    }
+
+    if (!optType || records.length === 0) {
+      return { hasMatrix: false, batchLabel: '', matrix: [] };
+    }
+
+    const opts = OPTSETS[optType];
+    const batchLabel = 'Tất cả: ' + opts[0].label.replace(/^.*? /, '');
+    const GROUP_WIDTHS = { meal: 318, nap: 220, study: 330 };
+    const groupWidth = GROUP_WIDTHS[optType];
+
+    const matrix = records.map((rec, i) => {
+      const val = rec[field];
+      const activeIndex = opts.findIndex(o => o.k === val);
+      const activeColor = activeIndex >= 0 ? opts[activeIndex].dot : '#005A36';
+      
+      return {
+        id: rec.studentId,
+        name: rec.studentName,
+        avatar: rec.avatarUrl,
+        initial: rec.studentName.charAt(0).toUpperCase(),
+        grad: ['#00794A', '#2563EB', '#8B5CF6', '#D97706', '#059669', '#DB2777'][i % 6],
+        groupWidth,
+        activeIndex,
+        activeColor,
+        totalOptions: opts.length,
+        options: opts.map((o, idx) => ({
+          k: o.k,
+          label: o.label, // Keep emoji!
+          active: val === o.k,
+          pick: () => {
+            if (group === 'meal') handleMealStatusChange(rec.studentId, field as any, o.k as any);
+            if (group === 'nap') handleActivityNapChange(rec.studentId, o.k as any);
+            if (group === 'study' || group === 'play') handleActivityParticipationChange(rec.studentId, o.k as any);
+          }
+        }))
+      };
+    });
+
+    return { hasMatrix: true, batchLabel, matrix, group };
+  };
+
+  const { hasMatrix, batchLabel, matrix, group } = getMatrixData();
+
   return (
-    <S.ActivitiesPageContainer>
-      {/* Top Header & Save Control */}
-      <S.HeaderActionsSection>
-        <S.DateHeader>
-          <CalendarIcon size={20} style={{ color: '#0e793c' }} />
-          Hôm nay, 17/06/2026 - Lớp Mầm 1
-        </S.DateHeader>
+    <S.Container>
+      <S.TopHeader>
+        <div>
+          <S.HeaderSubtitle>Lớp Mầm 1 · Hôm nay</S.HeaderSubtitle>
+          <S.Title>Hoạt động & Lịch trình</S.Title>
+        </div>
+        <S.CurrentStatusBadge>
+          <S.DotPulse />
+          <S.StatusText>
+            Đang diễn ra: <strong>{selectedItem?.activityName || 'N/A'}</strong>
+          </S.StatusText>
+          {saving && <span style={{fontSize: 12, color: '#6b7280'}}>Đang lưu...</span>}
+        </S.CurrentStatusBadge>
+      </S.TopHeader>
 
-        <S.ActionsGroup>
-          <S.SaveBtn onClick={handleSave} disabled={saving}>
-            <Save size={18} />
-            Lưu báo cáo hôm nay
-          </S.SaveBtn>
-        </S.ActionsGroup>
-      </S.HeaderActionsSection>
-
-      {/* Tab Switcher */}
-      <S.TabBar>
-        <S.TabButton $active={activeTab === 'meals'} onClick={() => setActiveTab('meals')}>
-          Phần ăn trong ngày
-        </S.TabButton>
-        <S.TabButton $active={activeTab === 'activities'} onClick={() => setActiveTab('activities')}>
-          Hoạt động & Ngủ nghỉ
-        </S.TabButton>
-        <S.TabButton $active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')}>
-          Lịch trình trong ngày
-        </S.TabButton>
-      </S.TabBar>
-
-      {/* TAB 1: MEALS */}
-      {activeTab === 'meals' && (
-        <>
-          {/* Collapse Menu Editor Section */}
-          <S.MenuSection>
-            <S.MenuHeader onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <S.MenuTitle>
-                <Utensils size={18} style={{ color: '#0e793c' }} />
-                Thực đơn hôm nay
-              </S.MenuTitle>
-              <S.MenuToggleButton as="div">
-                {isMenuEditing ? (
-                  <span style={{ color: '#64748b' }}>Đang chỉnh sửa</span>
-                ) : (
-                  <>
-                    <span>{isMenuOpen ? 'Thu gọn' : 'Xem chi tiết'}</span>
-                    {isMenuOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </>
-                )}
-              </S.MenuToggleButton>
-            </S.MenuHeader>
-
-            <S.MenuContent $isOpen={isMenuOpen}>
-              {isMenuEditing ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <S.MenuGrid>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa sáng</S.MenuLabel>
-                      <S.MenuTextarea 
-                        value={editedMenu.breakfastMenu} 
-                        onChange={(e) => setEditedMenu({ ...editedMenu, breakfastMenu: e.target.value })}
-                        placeholder="Nhập món ăn sáng..."
-                      />
-                    </S.MenuCard>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa trưa</S.MenuLabel>
-                      <S.MenuTextarea 
-                        value={editedMenu.lunchMenu} 
-                        onChange={(e) => setEditedMenu({ ...editedMenu, lunchMenu: e.target.value })}
-                        placeholder="Nhập món ăn trưa..."
-                      />
-                    </S.MenuCard>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa xế</S.MenuLabel>
-                      <S.MenuTextarea 
-                        value={editedMenu.afternoonSnackMenu} 
-                        onChange={(e) => setEditedMenu({ ...editedMenu, afternoonSnackMenu: e.target.value })}
-                        placeholder="Nhập món ăn xế..."
-                      />
-                    </S.MenuCard>
-                  </S.MenuGrid>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                    <S.QuickFillBtn onClick={() => {
-                      setEditedMenu(menu);
-                      setIsMenuEditing(false);
-                    }}>
-                      Hủy
-                    </S.QuickFillBtn>
-                    <S.SaveBtn onClick={() => {
-                      setMenu(editedMenu);
-                      setIsMenuEditing(false);
-                    }} style={{ padding: '8px 16px', fontSize: '0.8125rem' }}>
-                      <Check size={16} /> Xong
-                    </S.SaveBtn>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <S.MenuGrid>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa sáng</S.MenuLabel>
-                      <S.MenuText>{menu.breakfastMenu || 'Chưa cập nhật thực đơn'}</S.MenuText>
-                    </S.MenuCard>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa trưa</S.MenuLabel>
-                      <S.MenuText>{menu.lunchMenu || 'Chưa cập nhật thực đơn'}</S.MenuText>
-                    </S.MenuCard>
-                    <S.MenuCard>
-                      <S.MenuLabel>Bữa xế</S.MenuLabel>
-                      <S.MenuText>{menu.afternoonSnackMenu || 'Chưa cập nhật thực đơn'}</S.MenuText>
-                    </S.MenuCard>
-                  </S.MenuGrid>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <S.QuickFillBtn onClick={() => setIsMenuEditing(true)}>
-                      <Edit2 size={14} /> Chỉnh sửa thực đơn
-                    </S.QuickFillBtn>
-                  </div>
-                </div>
-              )}
-            </S.MenuContent>
-          </S.MenuSection>
-
-          {/* Controls Bar */}
-          <S.WorkspaceControlsRow>
-            <S.SearchInputWrapper>
-              <Search size={18} />
-              <S.SearchField 
-                type="text" 
-                placeholder="Tìm học sinh theo tên..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </S.SearchInputWrapper>
-
-            <S.QuickActionsRow>
-              <S.QuickFillBtn onClick={handleBulkMarkMealsAll}>
-                <Check size={16} style={{ color: '#0e793c' }} />
-                Tất cả ăn hết sạch
-              </S.QuickFillBtn>
-            </S.QuickActionsRow>
-          </S.WorkspaceControlsRow>
-
-          {/* Student Grid Container */}
-          <S.GridContainer>
-            <S.Table>
-              <S.TableHead>
-                <tr>
-                  <S.Th>Học sinh</S.Th>
-                  <S.Th>Bữa sáng</S.Th>
-                  <S.Th>Bữa trưa</S.Th>
-                  <S.Th>Bữa xế</S.Th>
-                  <S.Th>Nhận xét / Ghi chú của giáo viên</S.Th>
-                </tr>
-              </S.TableHead>
-              <S.TBody>
-                {filteredMeals.map((record) => (
-                  <S.Tr key={record.studentId}>
-                    <S.Td>
-                      <S.StudentProfileCell>
-                        <S.StudentAvatar>
-                          <img src={record.studentAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60'} alt={record.studentName} />
-                        </S.StudentAvatar>
-                        <S.StudentMeta>
-                          <S.StudentName>{record.studentName}</S.StudentName>
-                          <S.StudentIdBadge>{record.studentId}</S.StudentIdBadge>
-                        </S.StudentMeta>
-                      </S.StudentProfileCell>
-                    </S.Td>
-                    
-                    <S.Td>
-                      <S.MealButtonGroup>
-                        <S.MealToggleBtn 
-                          $active={record.breakfast === 'ALL'} 
-                          $status="ALL"
-                          onClick={() => handleMealStatusChange(record.studentId, 'breakfast', 'ALL')}
-                        >
-                          Hết
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.breakfast === 'HALF'} 
-                          $status="HALF"
-                          onClick={() => handleMealStatusChange(record.studentId, 'breakfast', 'HALF')}
-                        >
-                          1/2
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.breakfast === 'NONE'} 
-                          $status="NONE"
-                          onClick={() => handleMealStatusChange(record.studentId, 'breakfast', 'NONE')}
-                        >
-                          Không
-                        </S.MealToggleBtn>
-                      </S.MealButtonGroup>
-                    </S.Td>
-
-                    <S.Td>
-                      <S.MealButtonGroup>
-                        <S.MealToggleBtn 
-                          $active={record.lunch === 'ALL'} 
-                          $status="ALL"
-                          onClick={() => handleMealStatusChange(record.studentId, 'lunch', 'ALL')}
-                        >
-                          Hết
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.lunch === 'HALF'} 
-                          $status="HALF"
-                          onClick={() => handleMealStatusChange(record.studentId, 'lunch', 'HALF')}
-                        >
-                          1/2
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.lunch === 'NONE'} 
-                          $status="NONE"
-                          onClick={() => handleMealStatusChange(record.studentId, 'lunch', 'NONE')}
-                        >
-                          Không
-                        </S.MealToggleBtn>
-                      </S.MealButtonGroup>
-                    </S.Td>
-
-                    <S.Td>
-                      <S.MealButtonGroup>
-                        <S.MealToggleBtn 
-                          $active={record.afternoonSnack === 'ALL'} 
-                          $status="ALL"
-                          onClick={() => handleMealStatusChange(record.studentId, 'afternoonSnack', 'ALL')}
-                        >
-                          Hết
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.afternoonSnack === 'HALF'} 
-                          $status="HALF"
-                          onClick={() => handleMealStatusChange(record.studentId, 'afternoonSnack', 'HALF')}
-                        >
-                          1/2
-                        </S.MealToggleBtn>
-                        <S.MealToggleBtn 
-                          $active={record.afternoonSnack === 'NONE'} 
-                          $status="NONE"
-                          onClick={() => handleMealStatusChange(record.studentId, 'afternoonSnack', 'NONE')}
-                        >
-                          Không
-                        </S.MealToggleBtn>
-                      </S.MealButtonGroup>
-                    </S.Td>
-
-                    <S.Td style={{ width: '30%' }}>
-                      <S.NoteInput 
-                        type="text" 
-                        placeholder="Nhập ghi chú ăn uống..." 
-                        value={record.note || ''}
-                        onChange={(e) => handleMealNoteChange(record.studentId, e.target.value)}
-                      />
-                    </S.Td>
-                  </S.Tr>
-                ))}
-                {filteredMeals.length === 0 && (
-                  <S.Tr>
-                    <S.Td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b', fontWeight: '500' }}>
-                      Không tìm thấy học sinh phù hợp.
-                    </S.Td>
-                  </S.Tr>
-                )}
-              </S.TBody>
-            </S.Table>
-          </S.GridContainer>
-        </>
-      )}
-
-      {/* TAB 2: ACTIVITIES */}
-      {activeTab === 'activities' && (
-        <>
-          {/* Controls Bar */}
-          <S.WorkspaceControlsRow>
-            <S.SearchInputWrapper>
-              <Search size={18} />
-              <S.SearchField 
-                type="text" 
-                placeholder="Tìm học sinh theo tên..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </S.SearchInputWrapper>
-
-            <S.QuickActionsRow>
-              <S.QuickFillBtn onClick={handleBulkMarkActivitiesGood}>
-                <Check size={16} style={{ color: '#0e793c' }} />
-                Tất cả ngủ tốt & năng nổ
-              </S.QuickFillBtn>
-            </S.QuickActionsRow>
-          </S.WorkspaceControlsRow>
-
-          {/* Student Grid Container */}
-          <S.GridContainer>
-            <S.Table>
-              <S.TableHead>
-                <tr>
-                  <S.Th>Học sinh</S.Th>
-                  <S.Th>Giấc ngủ trưa</S.Th>
-                  <S.Th>Tinh thần hoạt động</S.Th>
-                  <S.Th>Hình ảnh</S.Th>
-                  <S.Th>Ghi chú chi tiết hôm nay</S.Th>
-                </tr>
-              </S.TableHead>
-              <S.TBody>
-                {filteredActivities.map((record) => (
-                  <S.Tr key={record.studentId}>
-                    <S.Td>
-                      <S.StudentProfileCell>
-                        <S.StudentAvatar>
-                          <img src={record.studentAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60'} alt={record.studentName} />
-                        </S.StudentAvatar>
-                        <S.StudentMeta>
-                          <S.StudentName>{record.studentName}</S.StudentName>
-                          <S.StudentIdBadge>{record.studentId}</S.StudentIdBadge>
-                        </S.StudentMeta>
-                      </S.StudentProfileCell>
-                    </S.Td>
-
-                    <S.Td>
-                      <S.DropdownSelect 
-                        value={record.nap}
-                        onChange={(e) => handleActivityNapChange(record.studentId, e.target.value as NapStatus)}
-                      >
-                        <option value="GOOD">Ngủ ngon (2h)</option>
-                        <option value="POOR">Ngủ ít (1h)</option>
-                        <option value="NONE">Không ngủ</option>
-                      </S.DropdownSelect>
-                    </S.Td>
-
-                    <S.Td>
-                      <S.DropdownSelect 
-                        value={record.participation}
-                        onChange={(e) => handleActivityParticipationChange(record.studentId, e.target.value as ParticipationStatus)}
-                      >
-                        <option value="ACTIVE">Năng nổ, tích cực</option>
-                        <option value="NORMAL">Bình thường</option>
-                        <option value="TIRED">Mệt mỏi, uể oải</option>
-                      </S.DropdownSelect>
-                    </S.Td>
-
-                    <S.Td>
-                      <S.PhotoUploadWrapper>
-                        {record.participation === 'ACTIVE' ? (
-                          <S.PhotoThumbnail>
-                            <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=80&auto=format&fit=crop&q=60" alt="hoat dong" />
-                          </S.PhotoThumbnail>
-                        ) : (
-                          <S.PhotoThumbnail as="div">
-                            <ImageIcon size={18} style={{ color: '#94a3b8' }} />
-                          </S.PhotoThumbnail>
-                        )}
-                        <S.AddPhotoBtn>
-                          <Plus size={16} />
-                        </S.AddPhotoBtn>
-                      </S.PhotoUploadWrapper>
-                    </S.Td>
-
-                    <S.Td style={{ width: '35%' }}>
-                      <S.NoteInput 
-                        type="text" 
-                        placeholder="Nhận xét tinh thần, sức khỏe..." 
-                        value={record.note || ''}
-                        onChange={(e) => handleActivityNoteChange(record.studentId, e.target.value)}
-                      />
-                    </S.Td>
-                  </S.Tr>
-                ))}
-                {filteredActivities.length === 0 && (
-                  <S.Tr>
-                    <S.Td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b', fontWeight: '500' }}>
-                      Không tìm thấy học sinh phù hợp.
-                    </S.Td>
-                  </S.Tr>
-                )}
-              </S.TBody>
-            </S.Table>
-          </S.GridContainer>
-        </>
-      )}
-
-      {/* TAB 3: DAILY SCHEDULE TIMELINE */}
-      {activeTab === 'schedule' && (
-        <S.TimelineContainer>
-          {scheduleItems.map((item, index) => (
-            <S.TimelineItem key={item.id}>
-              <S.TimelineDot $completed={item.completed}>
-                {index + 1}
-              </S.TimelineDot>
+      <S.SplitContainer>
+        {/* LEFT COLUMN: TIMELINE */}
+        <S.TimelineColumn>
+          <S.TimelineHeader>
+            <S.TimelineTitle>Lịch sinh hoạt</S.TimelineTitle>
+            <S.TimelineProgress>{dynamicSchedule.filter(i => i.isDone).length}/{dynamicSchedule.length} xong</S.TimelineProgress>
+          </S.TimelineHeader>
+          
+          <S.TimelineList>
+            {dynamicSchedule.map((item, i) => {
+              const uigroup = getUIGroup(item.activityName);
+              const pal = PALETTES[uigroup];
+              const isSelected = item.id === selectedActId;
+              const isCur = item.isCur;
+              const isDone = item.isDone;
               
-              <S.TimelineBody>
-                <S.TimelineLeft>
-                  <S.TimelineTime>{item.timeSlot}</S.TimelineTime>
-                  <S.TimelineTitle>{item.activityName}</S.TimelineTitle>
-                </S.TimelineLeft>
-                
-                <S.TimelineRight>
-                  {/* Class Photo Upload/Preview section */}
-                  <S.ClassPhotoUpload>
-                    {item.classPhoto ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <S.ClassPhotoPreview>
-                          <img src={item.classPhoto} alt="Ảnh hoạt động tập thể lớp" />
-                        </S.ClassPhotoPreview>
-                        <S.AddPhotoBtn 
-                          onClick={() => handleSchedulePhotoChange(item.id, undefined)}
-                          title="Xóa ảnh"
-                          style={{ color: '#ef4444', borderColor: '#fca5a5', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          ✕
-                        </S.AddPhotoBtn>
-                      </div>
-                    ) : (
-                      <S.ClassPhotoPlaceholder onClick={() => {
-                        const urls = [
-                          'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&auto=format&fit=crop&q=60',
-                          'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&auto=format&fit=crop&q=60',
-                          'https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=400&auto=format&fit=crop&q=60',
-                          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60'
-                        ];
-                        const chosenUrl = urls[index % urls.length];
-                        handleSchedulePhotoChange(item.id, chosenUrl);
-                      }}>
-                        <ImageIcon size={18} />
-                        Tải ảnh tập thể
-                      </S.ClassPhotoPlaceholder>
-                    )}
-                  </S.ClassPhotoUpload>
-
-                  {/* Completion check btn */}
-                  <S.TimelineCheckBtn 
-                    $completed={item.completed}
-                    onClick={() => handleScheduleStatusChange(item.id, !item.completed)}
+              // Only active timeline item gets full brand color dot, others are gray or light green
+              const dotColor = isCur ? '#005A36' : (isDone ? '#A7C9B6' : '#D1D5DB');
+              
+              return (
+                <S.TimelineItemWrapper key={item.id}>
+                  <S.TimelineDotCol>
+                    <S.DotNode $bg={dotColor} $isCur={isCur} />
+                    {i < dynamicSchedule.length - 1 && <S.VerticalLine />}
+                  </S.TimelineDotCol>
+                  
+                  <S.TimelineCard 
+                    $bg={isSelected ? pal.tint : '#fff'}
+                    $borderColor={isSelected ? pal.solid : '#EEF4F0'}
+                    $isDone={isDone && !isCur}
+                    $isCur={isCur}
+                    onClick={() => setSelectedActId(item.id)}
                   >
-                    {item.completed ? (
-                      <>
-                        <Check size={16} />
-                        Đã hoàn thành
-                      </>
-                    ) : (
-                      'Đánh dấu xong'
+                    <S.TimelineIconBox $bg={pal.tint} $color={pal.solid}>
+                      {ICON_MAP[uigroup]}
+                    </S.TimelineIconBox>
+                    <S.TimelineCardContent>
+                      <S.TimelineTimeText $color={isDone && !isCur ? '#9CA3AF' : pal.solid}>
+                        {item.timeSlot}
+                      </S.TimelineTimeText>
+                      <S.TimelineNameText $color={isDone && !isCur ? '#9CA3AF' : '#1F2937'}>
+                        {item.activityName}
+                      </S.TimelineNameText>
+                    </S.TimelineCardContent>
+                    {isDone && (
+                      <S.TimelineDoneIcon>
+                        <Check size={17} strokeWidth={2.5} />
+                      </S.TimelineDoneIcon>
                     )}
-                  </S.TimelineCheckBtn>
-                </S.TimelineRight>
-              </S.TimelineBody>
-            </S.TimelineItem>
-          ))}
-        </S.TimelineContainer>
-      )}
-    </S.ActivitiesPageContainer>
+                  </S.TimelineCard>
+                </S.TimelineItemWrapper>
+              );
+            })}
+          </S.TimelineList>
+        </S.TimelineColumn>
+
+        {/* RIGHT COLUMN: LOGGING & MATRIX */}
+        <S.RightCol>
+          <S.SectionCard>
+            <S.MatrixHeader>
+              <S.MatrixIconBox $bg={PALETTES[curGroup].tint} $color={PALETTES[curGroup].solid}>
+                {ICON_MAP[curGroup]}
+              </S.MatrixIconBox>
+              <S.MatrixTitleArea>
+                <S.MatrixTitle>{selectedItem?.activityName}</S.MatrixTitle>
+                <S.MatrixDesc>{selectedItem?.timeSlot} · Ghi nhận điểm danh & sinh hoạt</S.MatrixDesc>
+              </S.MatrixTitleArea>
+              
+              {hasMatrix && (
+                <S.BatchBtn 
+                  onClick={() => {
+                    if (selectedItem?.completed) return;
+                    if (group === 'meal') handleBulkMarkMealsAll();
+                    else handleBulkMarkActivitiesGood();
+                  }}
+                  style={{ 
+                    opacity: selectedItem?.completed ? 0.5 : 1, 
+                    cursor: selectedItem?.completed ? 'not-allowed' : 'pointer',
+                    pointerEvents: selectedItem?.completed ? 'none' : 'auto'
+                  }}
+                >
+                  ⚡ {batchLabel}
+                </S.BatchBtn>
+              )}
+            </S.MatrixHeader>
+
+            {hasMatrix ? (
+              <S.MatrixList>
+                {matrix.map((m) => (
+                  <S.MatrixRow key={m.id}>
+                    <S.AvatarNode $bg={m.grad} $imgUrl={m.avatar}>{m.initial}</S.AvatarNode>
+                    <S.StudentNameNode>{m.name}</S.StudentNameNode>
+                    <S.OptionsGroup $width={m.groupWidth}>
+                      <S.ActiveHighlight 
+                        $index={m.activeIndex} 
+                        $total={m.totalOptions} 
+                        $color={m.activeColor} 
+                      />
+                      {m.options.map((opt: any) => (
+                        <S.OptionBtn 
+                          key={opt.k} 
+                          $active={opt.active} 
+                          onClick={() => {
+                            if (!selectedItem?.completed) opt.pick();
+                          }}
+                          style={{
+                            opacity: selectedItem?.completed && !opt.active ? 0.4 : 1,
+                            cursor: selectedItem?.completed ? 'not-allowed' : 'pointer'
+                          }}
+                        >
+                          {opt.label}
+                        </S.OptionBtn>
+                      ))}
+                    </S.OptionsGroup>
+                  </S.MatrixRow>
+                ))}
+              </S.MatrixList>
+            ) : (
+              <S.EmptyMatrixCard>
+                <S.MatrixIconBox $bg="#E6EEE9" $color="#9CA3AF">
+                  <MapPin size={24} />
+                </S.MatrixIconBox>
+                <div>
+                  <S.EmptyMatrixTitle>Hoạt động này không cần ghi nhận chi tiết</S.EmptyMatrixTitle>
+                  <S.EmptyMatrixDesc>Chọn một mốc sinh hoạt khác (ăn, ngủ, học) ở cột trái để ghi nhanh cho từng bé.</S.EmptyMatrixDesc>
+                </div>
+              </S.EmptyMatrixCard>
+            )}
+            
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '16px' }}>
+              {selectedItem?.completed ? (
+                <span style={{ color: '#059669', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Check size={18} strokeWidth={2.5} />
+                  Đã ghi nhận xong (Khóa)
+                </span>
+              ) : (
+                <S.BatchBtn onClick={async () => {
+                  if (selectedItem?.id) {
+                    handleScheduleStatusChange(selectedItem.id, true);
+                  }
+                  await handleSave();
+                }}>
+                  Lưu cập nhật
+                </S.BatchBtn>
+              )}
+            </div>
+          </S.SectionCard>
+
+          {/* SECTION B: LESSON LOG */}
+          <S.SectionCard style={{ padding: '18px 22px' }}>
+            <S.LessonHeaderRow>
+              <span style={{ fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>Bài học hôm nay</span>
+              <span style={{ fontSize: '12px', color: '#9ca3af' }}>· Nhật ký giảng dạy</span>
+            </S.LessonHeaderRow>
+            <S.LessonGrid>
+              <S.LessonCard $bg="#FFFBEB" $borderColor="#FEF3C7">
+                <S.LessonWatermark $color="#FDE68A"><BookOpen size={48} /></S.LessonWatermark>
+                <S.LessonSubject $color="#D97706">TOÁN HỌC</S.LessonSubject>
+                <S.LessonTitle>Đếm số 1 đến 10</S.LessonTitle>
+                <S.LessonNote>Các bé rất hào hứng nhận biết các chữ số qua thẻ màu.</S.LessonNote>
+              </S.LessonCard>
+
+              <S.LessonCard $bg="#EFF6FF" $borderColor="#DBEAFE">
+                <S.LessonWatermark $color="#BFDBFE"><Sun size={48} /></S.LessonWatermark>
+                <S.LessonSubject $color="#2563EB">NGÔN NGỮ</S.LessonSubject>
+                <S.LessonTitle>Kể chuyện Thỏ & Rùa</S.LessonTitle>
+                <S.LessonNote>Lớp chia nhóm đóng kịch truyện cổ tích, bé ngoan.</S.LessonNote>
+              </S.LessonCard>
+
+              <S.LessonCard $bg="#ECFDF5" $borderColor="#D1FAE5">
+                <S.LessonWatermark $color="#A7F3D0"><Users size={48} /></S.LessonWatermark>
+                <S.LessonSubject $color="#059669">THỂ CHẤT</S.LessonSubject>
+                <S.LessonTitle>Tập dân vũ</S.LessonTitle>
+                <S.LessonNote>Khởi động ngoài trời, rèn luyện sự dẻo dai.</S.LessonNote>
+              </S.LessonCard>
+            </S.LessonGrid>
+          </S.SectionCard>
+        </S.RightCol>
+      </S.SplitContainer>
+
+      {/* TOASTS CONTAINER */}
+      <S.ToastContainer>
+        {toasts.map(t => (
+          <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>
+        ))}
+      </S.ToastContainer>
+
+    </S.Container>
   );
-}
+};

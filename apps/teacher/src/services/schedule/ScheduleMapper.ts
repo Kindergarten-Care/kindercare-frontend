@@ -1,14 +1,26 @@
 import { ScheduleApiDto, ScheduleDomainModel } from '@/config/types/schedule';
 
 export class ScheduleMapper {
-  static formatTime(timeStr: string): string {
-    if (!timeStr) return '';
-    // timeStr from DB could be "08:00:00"
-    const parts = timeStr.split(':');
-    if (parts.length >= 2) {
-      return `${parts[0]}:${parts[1]}`;
+  static formatTime(timeValue: string | number): string {
+    if (!timeValue) return '';
+    
+    // If it's a number or a numeric string (timestamp)
+    if (typeof timeValue === 'number' || !isNaN(Number(timeValue))) {
+      const date = new Date(Number(timeValue) * 1000); // Assuming seconds from backend
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
     }
-    return timeStr;
+    
+    // If it's already a time string like "08:00:00"
+    if (typeof timeValue === 'string') {
+      const parts = timeValue.split(':');
+      if (parts.length >= 2) {
+        return `${parts[0]}:${parts[1]}`;
+      }
+    }
+    
+    return String(timeValue);
   }
 
   static toDomain(dto: ScheduleApiDto): ScheduleDomainModel {

@@ -20,6 +20,20 @@ class ScheduleService {
     
     return ScheduleMapper.toDomainList(res.data.data);
   }
+
+  /**
+   * Update the status of a specific daily schedule
+   * @param classId The class ID
+   * @param scheduleId The schedule ID
+   * @param completed Whether the schedule is completed
+   */
+  async updateScheduleStatus(classId: number | string, scheduleId: number | string, completed: boolean): Promise<boolean> {
+    const endpoint = `/teacher/classes/${classId}/schedule/${scheduleId}/status`;
+    const res = await apiClient.put<ApiResponse<any>>(endpoint, { completed });
+    
+    return res.data?.success || false;
+  }
 }
+
 
 export const scheduleService = new ScheduleService();

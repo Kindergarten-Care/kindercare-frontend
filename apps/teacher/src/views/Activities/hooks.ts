@@ -33,9 +33,9 @@ export function useActivities() {
         setLoading(true);
         const [menuData, mealsData, activitiesData, scheduleData] = await Promise.all([
           ActivitiesService.getMenuOfTheDay('today'),
-          ActivitiesService.getStudentMealRecords('M1', 'today'),
-          ActivitiesService.getStudentActivityRecords('M1', 'today'),
-          ActivitiesService.getDailySchedule('M1', 'today')
+          ActivitiesService.getStudentMealRecords('1', 'today'),
+          ActivitiesService.getStudentActivityRecords('1', 'today'),
+          ActivitiesService.getDailySchedule('1', 'today')
         ]);
         setMenu(menuData);
         setEditedMenu(menuData);
