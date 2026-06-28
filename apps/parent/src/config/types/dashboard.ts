@@ -1,15 +1,4 @@
-export interface ChildInfo {
-  id: string;
-  name: string;
-  className: string;
-  teacher: string;
-  branch: string;
-  avatarColor: string;
-  avatarInitial: string;
-  statusTags: { label: string; type: 'green' | 'blue' | 'neutral' | 'yellow' }[];
-  checkinTime: string;
-  checkinSub: string;
-}
+import { ActivityType } from './dailySchedule';
 
 export interface ChildHeroInfo {
   name: string;
@@ -30,28 +19,7 @@ export interface ScheduleItem {
   note: string;
   icon: string;
   color: string;
-}
-
-export interface TimelineEvent {
-  id: string;
-  time: string;
-  title: string;
-  description: string;
-  type: 'done' | 'current' | 'upcoming';
-  icon: string;
-  photos?: string[];
-  isNow?: boolean;
-}
-
-export interface MessageInfo {
-  id: string;
-  sender: string;
-  avatar: string;
-  preview: string;
-  time: string;
-  unread: boolean;
-  avatarColor?: string;
-  isMe?: boolean;
+  activityType: ActivityType;
 }
 
 export interface FeeInfo {
@@ -91,6 +59,7 @@ export interface AlbumPhoto {
   time: string;
   color: string;
   icon: string;
+  photoUrl?: string;
 }
 
 export interface DailyLesson {
@@ -100,30 +69,4 @@ export interface DailyLesson {
   description: string;
   icon: string;
   color: string;
-}
-
-export interface UpcomingEvent {
-  id: string;
-  day: number;
-  month: string;
-  title: string;
-  timeOrAmount: string;
-  tag: string;
-  tagType: 'school' | 'payment' | 'holiday';
-}
-
-export interface ParentDashboardModel {
-  children: ChildInfo[];
-  activeChildIndex: number;
-  childHero: ChildHeroInfo;
-  schedule: ScheduleItem[];
-  timeline: TimelineEvent[];
-  messages: MessageInfo[];
-  fee: FeeInfo;
-  attendanceStats: AttendanceStats;
-  calendarDays: CalendarDay[];
-  urgentNotices: UrgentNotice[];
-  albumPhotos: AlbumPhoto[];
-  dailyLessons: DailyLesson[];
-  upcomingEvents: UpcomingEvent[];
 }

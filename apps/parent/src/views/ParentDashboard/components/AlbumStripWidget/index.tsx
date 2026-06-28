@@ -9,6 +9,50 @@ interface AlbumStripWidgetProps {
   photos: AlbumPhoto[];
 }
 
+const PhotoTile: React.FC<{ photo: AlbumPhoto; onClick: () => void }> = ({ photo, onClick }) => {
+  if (photo.photoUrl) {
+    return (
+      <S.Photo
+        $bg={photo.color}
+        onClick={onClick}
+        title={photo.caption}
+        style={{ padding: 0, overflow: 'hidden' }}
+      >
+        <img
+          src={photo.photoUrl}
+          alt={photo.caption}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <S.TimePill>{photo.time}</S.TimePill>
+        <S.ZoomIcon className="zoom"><IconZoom size={16} color="#fff" /></S.ZoomIcon>
+      </S.Photo>
+    );
+  }
+
+  return (
+    <S.Photo $bg={photo.color} onClick={onClick} title={photo.caption}>
+      <S.PhotoIco>{photo.icon}</S.PhotoIco>
+      <S.TimePill>{photo.time}</S.TimePill>
+      <S.ZoomIcon className="zoom"><IconZoom size={16} color="#fff" /></S.ZoomIcon>
+    </S.Photo>
+  );
+};
+
+const LightboxPhoto: React.FC<{ photo: AlbumPhoto }> = ({ photo }) => {
+  if (photo.photoUrl) {
+    return (
+      <S.LbPhoto $bg={photo.color} style={{ padding: 0 }}>
+        <img
+          src={photo.photoUrl}
+          alt={photo.caption}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', borderRadius: 12 }}
+        />
+      </S.LbPhoto>
+    );
+  }
+  return <S.LbPhoto $bg={photo.color}>{photo.icon}</S.LbPhoto>;
+};
+
 const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
   const [galleryOpen, setGalleryOpen] = useState<boolean>(false);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
@@ -45,33 +89,40 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
           <S.HeadInfo>
             <S.HeadTitle>
               Album hôm nay
-              <S.PhotoCount><IconPhoto size={13} /> {photos.length} ảnh mới</S.PhotoCount>
+              {photos.length > 0 && (
+                <S.PhotoCount><IconPhoto size={13} /> {photos.length} ảnh mới</S.PhotoCount>
+              )}
             </S.HeadTitle>
-            <S.HeadSub>Cô giáo vừa tải lên · Cập nhật lúc 14:32</S.HeadSub>
           </S.HeadInfo>
-          <S.ViewAllBtn onClick={() => setGalleryOpen(true)}>
-            Xem tất cả →
-          </S.ViewAllBtn>
+          {photos.length > 0 && (
+            <S.ViewAllBtn onClick={() => setGalleryOpen(true)}>
+              Xem tất cả →
+            </S.ViewAllBtn>
+          )}
         </S.Head>
 
-        <S.Rail>
-          {photos.slice(0, 3).map((photo, idx) => (
-            <S.Photo
-              key={photo.id}
-              $bg={photo.color}
-              onClick={() => openLightbox(idx)}
-              title={photo.caption}
-            >
-              <S.PhotoIco>{photo.icon}</S.PhotoIco>
-              <S.TimePill>{photo.time}</S.TimePill>
-              <S.ZoomIcon className="zoom"><IconZoom size={16} color="#fff" /></S.ZoomIcon>
-            </S.Photo>
-          ))}
-          <S.MoreTile onClick={() => setGalleryOpen(true)}>
-            <IconPhoto size={22} color="#6b7280" />
-            Xem tất cả
-          </S.MoreTile>
-        </S.Rail>
+        {photos.length === 0 ? (
+          <S.EmptyState>
+            <S.EmptyIcon>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                <circle cx="12" cy="13" r="3" />
+              </svg>
+            </S.EmptyIcon>
+            <S.EmptyTitle>Chưa có ảnh hôm nay</S.EmptyTitle>
+            <S.EmptySub>Các hoạt động của bé sẽ được<br />cập nhật sớm nhất</S.EmptySub>
+          </S.EmptyState>
+        ) : (
+          <S.Rail>
+            {photos.slice(0, 3).map((photo, idx) => (
+              <PhotoTile key={photo.id} photo={photo} onClick={() => openLightbox(idx)} />
+            ))}
+            <S.MoreTile onClick={() => setGalleryOpen(true)}>
+              <IconPhoto size={22} color="#6b7280" />
+              Xem tất cả
+            </S.MoreTile>
+          </S.Rail>
+        )}
       </S.Card>
 
       {galleryOpen && (
@@ -88,14 +139,30 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
             </S.GalleryHead>
             <S.GalleryGrid>
               {photos.map((photo, idx) => (
-                <S.GalleryPhoto
-                  key={photo.id}
-                  $bg={photo.color}
-                  onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
-                >
-                  <div style={{ fontSize: 40 }}>{photo.icon}</div>
-                  <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
-                </S.GalleryPhoto>
+                photo.photoUrl ? (
+                  <S.GalleryPhoto
+                    key={photo.id}
+                    $bg={photo.color}
+                    onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
+                    style={{ padding: 0, overflow: 'hidden' }}
+                  >
+                    <img
+                      src={photo.photoUrl}
+                      alt={photo.caption}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                    <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
+                  </S.GalleryPhoto>
+                ) : (
+                  <S.GalleryPhoto
+                    key={photo.id}
+                    $bg={photo.color}
+                    onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
+                  >
+                    <div style={{ fontSize: 40 }}>{photo.icon}</div>
+                    <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
+                  </S.GalleryPhoto>
+                )
               ))}
             </S.GalleryGrid>
           </S.GalleryModal>
@@ -107,7 +174,7 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
           <S.Lightbox onClick={e => e.stopPropagation()}>
             <S.LbClose onClick={closeLightbox}><IconClose size={16} /></S.LbClose>
             <S.LbArrow $side="left" onClick={prevPhoto}><IconChevronLeft size={22} /></S.LbArrow>
-            <S.LbPhoto $bg={currentPhoto.color}>{currentPhoto.icon}</S.LbPhoto>
+            <LightboxPhoto photo={currentPhoto} />
             <S.LbArrow $side="right" onClick={nextPhoto}><IconChevronRight size={22} /></S.LbArrow>
             <S.LbFoot>
               <div>

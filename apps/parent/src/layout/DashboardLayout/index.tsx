@@ -6,6 +6,7 @@ import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
 import { useAuth } from '@kindercare/core';
 import { useParent } from '@/contexts/ParentContext';
+import { useStudent } from '@/contexts/StudentContext';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
@@ -27,6 +28,29 @@ function getGreeting(locale: 'vi' | 'en' = 'vi'): string {
   return 'Chào buổi tối';
 }
 
+type RelationshipInfo = { label: string; avatar: string };
+
+function resolveRelationship(raw: string | undefined, locale: 'vi' | 'en'): RelationshipInfo {
+  const r = (raw ?? '').trim().toLowerCase();
+
+  const map: Array<{ keys: string[]; vi: string; en: string; avatar: string }> = [
+    { keys: ['bố', 'ba', 'cha', 'father', 'dad', 'papa'],      vi: 'ba',   en: 'Dad',      avatar: '👨' },
+    { keys: ['mẹ', 'má', 'me', 'mother', 'mom', 'mama'],       vi: 'mẹ',   en: 'Mom',      avatar: '👩' },
+    { keys: ['ông', 'grandfather', 'grandpa', 'opa'],           vi: 'ông',  en: 'Grandpa',  avatar: '👴' },
+    { keys: ['bà', 'grandmother', 'grandma', 'oma'],            vi: 'bà',   en: 'Grandma',  avatar: '👵' },
+    { keys: ['anh'],                                            vi: 'anh',  en: 'Brother',  avatar: '👦' },
+    { keys: ['chị'],                                            vi: 'chị',  en: 'Sister',   avatar: '👧' },
+    { keys: ['chú', 'uncle'],                                   vi: 'chú',  en: 'Uncle',    avatar: '👨' },
+    { keys: ['cô', 'dì', 'thím', 'aunt'],                      vi: 'cô',   en: 'Aunt',     avatar: '👩' },
+    { keys: ['cậu'],                                            vi: 'cậu',  en: 'Uncle',    avatar: '👨' },
+    { keys: ['bác'],                                            vi: 'bác',  en: 'Uncle',    avatar: '👴' },
+  ];
+
+  const match = map.find(entry => entry.keys.includes(r));
+  if (match) return { label: locale === 'en' ? match.en : match.vi, avatar: match.avatar };
+  return { label: '', avatar: '👤' };
+}
+
 function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
   return new Date().toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
     weekday: 'long',
@@ -45,11 +69,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const pathname = usePathname();
   const { user } = useAuth();
   const { parentProfile } = useParent();
+  const { activeStudent } = useStudent();
 
   const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
     if (nextLocale === locale) return;
     router.replace(pathname, { locale: nextLocale });
   };
+
+  const rawRelationship = activeStudent?.relationship ?? user?.relationship ?? user?.children?.[0]?.relationship;
+  const rel = resolveRelationship(rawRelationship, locale);
 
   const getGreetingText = (): string => {
     const greeting = getGreeting(locale);
@@ -57,23 +85,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     const fullName = parentProfile?.fullName || user.fullName || user.username || '';
     const nameParts = fullName.trim().split(/\s+/);
-    const displayNameParts = nameParts.slice(-2);
-    const shortName = displayNameParts.join(' ');
+    const shortName = nameParts.slice(-2).join(' ');
+    const displayName = rel.label ? `${rel.label} ${shortName}` : shortName;
 
-    let rel = user.relationship?.trim().toLowerCase() || '';
-    if (locale === 'en') {
-      if (['cha', 'ba', 'bố', 'father', 'dad', 'daddy'].includes(rel)) rel = 'daddy';
-      else if (['mẹ', 'má', 'mother', 'mom', 'mommy'].includes(rel)) rel = 'mommy';
-      
-      const displayName = rel ? `${rel} ${shortName}` : shortName;
-      return `${greeting}, ${displayName} 👋`;
-    } else {
-      if (['cha', 'ba', 'bố', 'father', 'dad'].includes(rel)) rel = 'ba';
-      else if (['mẹ', 'má', 'mother', 'mom'].includes(rel)) rel = 'mẹ';
-      
-      const displayName = rel ? `${rel} ${shortName}` : shortName;
-      return `${greeting}, ${displayName} 👋`;
-    }
+    return `${greeting}, ${displayName} 👋`;
   };
 
   return (
@@ -84,7 +99,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <S.HeaderBand>
           <S.HeaderInner>
             <S.Greet>
-              <S.GreetName>{getGreetingText()}</S.GreetName>
+              <S.GreetName $collapsed={collapsed}>{getGreetingText()}</S.GreetName>
               <S.GreetDate>{getFormattedDate(locale)}</S.GreetDate>
             </S.Greet>
 
@@ -94,10 +109,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <input placeholder="Tìm kiếm..." />
               </S.SearchBar>
 
-              <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
+              {/* Temporarily hidden notification button until API is configured */}
+              {/* <S.IconBtn title="Thông báo" onClick={() => { setIsNotifOpen(true); setHasUnreadNotif(false); }}>
                 <IconBell size={18} />
                 {hasUnreadNotif && <S.NotifDot />}
-              </S.IconBtn>
+              </S.IconBtn> */}
 
               <S.IconBtn title="Cài đặt">
                 <IconSettings size={18} />
@@ -114,7 +130,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
                     />
                   ) : (
-                    user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'
+                    rel.avatar
                   )}
                 </S.Avatar>
                 <S.AvatarOnline />

@@ -1,10 +1,22 @@
 import '../globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
   display: 'swap',
 });
 import { NextIntlClientProvider } from 'next-intl';
@@ -17,7 +29,6 @@ import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
 import { ToastContainer } from '@kindercare/ui';
-import GlobalChatFab from '@/components/GlobalChatFab';
 import NextTopLoader from 'nextjs-toploader';
 import type { Metadata } from 'next';
 
@@ -64,7 +75,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={inter.variable}>
+    <html lang={locale} className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
@@ -90,7 +101,6 @@ export default async function RootLayout({
                       {children}
                     </ClientAppWrapper>
                     <ToastContainer />
-                    <GlobalChatFab />
                   </SocketProvider>
                 </StudentProvider>
               </ParentProvider>

@@ -3,7 +3,6 @@
 import React from 'react';
 import * as S from './styles';
 
-import UrgentNoticeBanner from './components/UrgentNoticeBanner';
 import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
@@ -11,36 +10,36 @@ import LiveScheduleWidget from './components/LiveScheduleWidget';
 import DevelopmentalDomainsWidget from './components/DevelopmentalDomainsWidget';
 import CameraWidget from './components/CameraWidget';
 import DailyLessonWidget from './components/DailyLessonWidget';
-import FeeAlertWidget from './components/FeeAlertWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
 import GrowthWidget from './components/GrowthWidget';
 import LeaveRequestPopup from './components/LeaveRequestPopup';
 import MedicationRequestPopup from './components/MedicationRequestPopup';
 import AttendanceQrPopup from './components/AttendanceQrPopup';
-import { useParentDashboard, getTeacherDisplayName } from './hooks/useParentDashboard';
+import { useParentDashboard } from './hooks/useParentDashboard';
 
 export function ParentDashboard(): React.ReactElement {
   const {
-    data,
     loading,
     activeStudent,
-    isLeavePopupOpen,
-    setIsLeavePopupOpen,
-    isMedicationPopupOpen,
-    setIsMedicationPopupOpen,
-    isQrPopupOpen,
-    setIsQrPopupOpen,
+    schedule,
+    lessons,
+    photos,
+    calendarDays,
+    attendanceStats,
+    latestAssessment,
     childHero,
     avatarGradient,
     avatarInitial,
-    leadTeacher,
     viewYear,
     viewMonth,
     prevMonth,
     nextMonth,
+    isLeavePopupOpen, setIsLeavePopupOpen,
+    isMedicationPopupOpen, setIsMedicationPopupOpen,
+    isQrPopupOpen, setIsQrPopupOpen,
   } = useParentDashboard();
 
-  if (loading || !data || !activeStudent || !childHero) {
+  if (loading || !activeStudent || !childHero) {
     return (
       <S.DashboardContainer>
         <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
@@ -50,10 +49,6 @@ export function ParentDashboard(): React.ReactElement {
 
   return (
     <S.DashboardContainer>
-      {/* Urgent notices — top of everything */}
-      <UrgentNoticeBanner notices={data.urgentNotices} />
-
-      {/* Child profile card */}
       <ChildHeroWidget
         data={childHero}
         avatarGradient={avatarGradient}
@@ -64,15 +59,10 @@ export function ParentDashboard(): React.ReactElement {
         onCheckinQr={() => setIsQrPopupOpen(true)}
       />
 
-      {/* Fee alert banner */}
-      <FeeAlertWidget fee={data.fee} />
-
-      {/* Two-column grid */}
       <S.MainGrid>
         <S.LeftColumn>
           <S.LeftTopGrid>
             <S.ColumnStack>
-              {/* Quick actions — moved here to align width and height */}
               <QuickActionsStrip
                 onAbsence={() => setIsLeavePopupOpen(true)}
                 onMedication={() => setIsMedicationPopupOpen(true)}
@@ -80,36 +70,33 @@ export function ParentDashboard(): React.ReactElement {
                 onDiary={() => alert('Nhật ký')}
                 onPickup={() => alert('Đăng ký người đón hộ')}
               />
-
-              {/* 5 developmental domains metrics */}
-              <DevelopmentalDomainsWidget />
+              <DevelopmentalDomainsWidget assessment={latestAssessment} />
             </S.ColumnStack>
 
-            {/* Growth metrics */}
             <GrowthWidget />
           </S.LeftTopGrid>
 
-          {/* Collapsed schedule and today's album side-by-side */}
           <S.BottomGrid>
-            <LiveScheduleWidget schedule={data.schedule} />
+            <LiveScheduleWidget
+              schedule={schedule}
+              className={activeStudent.className}
+              todayAttendanceStatus={calendarDays.find(d => d.day === new Date().getDate())?.status}
+            />
             <S.ColumnStack>
-              <AlbumStripWidget photos={data.albumPhotos} />
-              <DailyLessonWidget lessons={data.dailyLessons} />
+              <AlbumStripWidget photos={photos} />
+              <DailyLessonWidget lessons={lessons} />
             </S.ColumnStack>
           </S.BottomGrid>
         </S.LeftColumn>
 
         <S.RightColumn>
-          {/* Camera — moved here side-by-side with Album */}
           <CameraWidget
             className={activeStudent.className}
             teacher={activeStudent.academicYearName}
           />
-
-          {/* Attendance calendar */}
           <MiniCalendarWidget
-            days={data.calendarDays}
-            stats={data.attendanceStats}
+            days={calendarDays}
+            stats={attendanceStats}
             viewYear={viewYear}
             viewMonth={viewMonth}
             onPrevMonth={prevMonth}
@@ -117,7 +104,6 @@ export function ParentDashboard(): React.ReactElement {
           />
         </S.RightColumn>
       </S.MainGrid>
-
 
       <LeaveRequestPopup
         isOpen={isLeavePopupOpen}

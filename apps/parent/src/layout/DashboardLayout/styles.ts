@@ -65,7 +65,7 @@ export const HeaderInner = styled.div`
   margin: 0 auto;
 
   @media (max-width: 860px) {
-    padding: 13px 18px;
+    padding: 13px 16px;
     gap: 12px;
   }
 `;
@@ -75,14 +75,15 @@ export const Greet = styled.div`
   min-width: 0;
 `;
 
-export const GreetName = styled.h1`
-  font-size: 24px;
+export const GreetName = styled.h1<{ $collapsed: boolean }>`
+  font-size: ${p => p.$collapsed ? '24px' : '19px'};
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: font-size 0.22s ease;
 `;
 
 export const GreetDate = styled.p`
@@ -201,4 +202,5 @@ export const AvatarOnline = styled.span`
 
 export const PageArea = styled.div`
   flex: 1;
+  margin: 0 86.5px;
 `;

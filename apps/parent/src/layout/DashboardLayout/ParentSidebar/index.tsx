@@ -10,8 +10,9 @@ import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import * as S from './styles';
 import ChildSelectorModal from './ChildSelectorModal';
 import ChildSelectorDropdown from './ChildSelectorDropdown';
+import { useRequestBadge } from './useRequestBadge';
 import {
-  IconHome, IconDiary, IconChat, IconMenu, IconProfile,
+  IconHome, IconDiary, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard, IconReceipt,
   IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
   IconChevronDown, IconRequest,
@@ -28,6 +29,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
   const { user, logout } = useAuth();
   const { children: kids, activeStudent, setActiveStudent } = useStudent();
   const { parentProfile } = useParent();
+  const pendingRequestCount = useRequestBadge();
 
   const [csOpen, setCsOpen] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -117,19 +119,13 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         <S.NavIcon><IconHome size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Tổng quan</S.NavSpan>
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/diary`} $active={pathname.includes('/diary')} $collapsed={collapsed}>
         <S.NavIcon><IconDiary size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Nhật ký bé</S.NavSpan>
         {!collapsed && <S.NavBadge>MỚI</S.NavBadge>}
         {collapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
-        <S.NavIcon><IconChat size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Tin nhắn</S.NavSpan>
-        {!collapsed && <S.NavBadge>3</S.NavBadge>}
-        {collapsed && <S.NavBadge $collapsed>3</S.NavBadge>}
-      </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+<S.NavItem href="#" $collapsed={collapsed}>
         <S.NavIcon><IconMenu size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Thực đơn & Lịch học</S.NavSpan>
       </S.NavItem>
@@ -150,6 +146,12 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={collapsed}>
         <S.NavIcon><IconRequest size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Yêu cầu phụ huynh</S.NavSpan>
+        {pendingRequestCount > 0 && !collapsed && (
+          <S.NavBadge>{pendingRequestCount > 99 ? '99+' : pendingRequestCount}</S.NavBadge>
+        )}
+        {pendingRequestCount > 0 && collapsed && (
+          <S.NavBadge $collapsed>{pendingRequestCount > 9 ? '9+' : pendingRequestCount}</S.NavBadge>
+        )}
       </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
