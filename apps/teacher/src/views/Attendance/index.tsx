@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
+import { theme } from '@kindercare/ui';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
+import { QrScannerModal } from '../../components/QrScannerModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
 const GRADS = [
@@ -94,6 +96,9 @@ export const AttendanceView: React.FC = () => {
   const [highlightedLeaveId, setHighlightedLeaveId] = useState<string | null>(null);
   const [proofOpenId, setProofOpenId] = useState<string | null>(null);
   const [monthOffset, setMonthOffset] = useState<number>(0);
+
+  // QR Scanner State
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
 
   // Quick menu popover states
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -508,6 +513,29 @@ export const AttendanceView: React.FC = () => {
           <S.Title>{dateLabel}</S.Title>
         </S.HeaderLeft>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setIsQrScannerOpen(true)}
+            style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '9px',
+              height: '46px',
+              padding: '0 18px',
+              borderRadius: '12px',
+              border: 'none',
+              background: '#111827',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 18px -6px rgba(17, 24, 39, 0.4)',
+              transition: 'transform 0.15s'
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
+            Quét mã QR
+          </button>
           <button 
             onClick={() => setLeaveDrawerOpen(true)}
             style={{
@@ -1135,6 +1163,16 @@ export const AttendanceView: React.FC = () => {
           </S.ToastMsg>
         ))}
       </S.ToastContainer>
+      {/* QR SCANNER MODAL */}
+      {isQrScannerOpen && (
+        <QrScannerModal 
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={() => {
+            if (classId) fetchAttendance(classId, dateMs); // Refresh data when scan successful
+          }}
+        />
+      )}
+
     </S.PageContainer>
   );
 };
