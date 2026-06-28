@@ -5,17 +5,17 @@ import { apiClient } from '@kindercare/core';
 
 // Default mock data kept as fallback
 const MOCK_MEALS_DB: StudentMealRecord[] = [
-  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', avatarUrl: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'HALF', afternoonSnack: 'ALL', note: 'Ăn ngoan' },
-  { studentId: 'S02', studentName: 'Trần Minh Anh', avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', breakfast: 'NONE', lunch: 'ALL', afternoonSnack: 'HALF' },
-  { studentId: 'S03', studentName: 'Lê Hải Đăng', avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'ALL', afternoonSnack: 'ALL' },
-  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', breakfast: 'HALF', lunch: 'ALL', afternoonSnack: 'NONE', note: 'Kén ăn rau' }
+  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', studentAvatar: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'HALF', afternoonSnack: 'ALL', note: 'Ăn ngoan' },
+  { studentId: 'S02', studentName: 'Trần Minh Anh', studentAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', breakfast: 'NONE', lunch: 'ALL', afternoonSnack: 'HALF' },
+  { studentId: 'S03', studentName: 'Lê Hải Đăng', studentAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'ALL', afternoonSnack: 'ALL' },
+  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', studentAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', breakfast: 'HALF', lunch: 'ALL', afternoonSnack: 'NONE', note: 'Kén ăn rau' }
 ];
 
 const MOCK_ACTIVITIES_DB: StudentActivityRecord[] = [
-  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', avatarUrl: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
-  { studentId: 'S02', studentName: 'Trần Minh Anh', avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', nap: 'RESTLESS', participation: 'OBSERVING', note: 'Bé hơi mệt' },
-  { studentId: 'S03', studentName: 'Lê Hải Đăng', avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
-  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', nap: 'POOR', participation: 'TIRED' }
+  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', studentAvatar: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
+  { studentId: 'S02', studentName: 'Trần Minh Anh', studentAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', nap: 'POOR', participation: 'NORMAL', note: 'Bé hơi mệt' },
+  { studentId: 'S03', studentName: 'Lê Hải Đăng', studentAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
+  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', studentAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', nap: 'POOR', participation: 'TIRED' }
 ];
 
 let mockMealsState = [...MOCK_MEALS_DB];
@@ -183,14 +183,14 @@ export class ActivitiesService {
 
       const activityData = records.map(r => {
         let sleepingStatus = 'Ngủ ngoan';
-        if (r.nap === 'RESTLESS') sleepingStatus = 'Khó ngủ';
+        if (r.nap === 'POOR') sleepingStatus = 'Khó ngủ';
         if (r.nap === 'POOR') sleepingStatus = 'Không ngủ';
 
         let hygieneStatus = 'Bình thường';
 
         let teacherNote = '';
         if (r.participation === 'ACTIVE') teacherNote += 'Vui chơi tích cực. ';
-        if (r.participation === 'OBSERVING') teacherNote += 'Chỉ quan sát bạn chơi. ';
+        if (r.participation === 'NORMAL') teacherNote += 'Chỉ quan sát bạn chơi. ';
         if (r.participation === 'TIRED') teacherNote += 'Mệt mỏi, ít tham gia. ';
         if (r.note) teacherNote += r.note;
 
