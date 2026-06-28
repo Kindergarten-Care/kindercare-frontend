@@ -4,10 +4,9 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin: -24px; /* Phủ kín layout */
-  padding: 24px 40px 44px;
-  min-height: calc(100vh - 80px); /* Chiều cao trừ đi header */
-  background: #eff6f1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   font-family: 'Inter', system-ui, sans-serif;
 `;
 
@@ -68,7 +67,7 @@ export const StatusText = styled.span`
 
 export const SplitContainer = styled.div`
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 340px 1fr;
   gap: 18px;
   align-items: start;
 
@@ -88,17 +87,6 @@ export const TimelineColumn = styled.div`
   border-radius: 16px;
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   padding: 20px;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
-  
-  /* Tùy chỉnh thanh cuộn cho mượt mà */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cfe0d6;
-    border-radius: 6px;
-  }
 `;
 
 export const TimelineHeader = styled.div`
@@ -338,17 +326,17 @@ export const MatrixRow = styled.div`
   transition: background 0.2s;
 
   &:hover {
-    background: #f6faf7 !important;
+    background: #f6faf7;
   }
 `;
 
-export const AvatarNode = styled.span<{ $bg: string; $imgUrl?: string }>`
+export const AvatarNode = styled.span<{ $bg: string }>`
   flex: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: ${props => props.$imgUrl ? `url('${props.$imgUrl}') center/cover no-repeat` : props.$bg};
-  color: ${props => props.$imgUrl ? 'transparent' : '#fff'};
+  background: ${props => props.$bg};
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -367,7 +355,7 @@ export const StudentNameNode = styled.span`
   white-space: nowrap;
 `;
 
-export const OptionsGroup = styled.div<{ $width: number }>`
+export const OptionsGroup = styled.div`
   flex: none;
   position: relative;
   display: flex;
@@ -375,47 +363,22 @@ export const OptionsGroup = styled.div<{ $width: number }>`
   border: 1px solid #e6eee9;
   border-radius: 12px;
   padding: 4px;
-  width: ${props => props.$width}px;
+  gap: 4px;
 `;
 
-export const OptionBtn = styled.button<{ $active: boolean }>`
+export const OptionBtn = styled.button<{ $active: boolean; $activeColor: string }>`
   position: relative;
   z-index: 2;
-  flex: 1;
-  padding: 8px 0;
+  padding: 6px 14px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  background: transparent;
-  color: #6b7280;
+  background: ${props => props.$active ? props.$activeColor : 'transparent'};
+  color: ${props => props.$active ? '#fff' : '#6b7280'};
   transition: all 0.2s;
   font-family: inherit;
-  text-align: center;
-
-  ${props => props.$active && `
-    color: #1f2937;
-  `}
-  
-  &:hover {
-    color: #1f2937;
-  }
-`;
-
-export const ActiveHighlight = styled.span<{ $index: number; $total: number; $color: string }>`
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: calc(4px + ${props => (props.$index / props.$total) * 100}%);
-  width: calc(100% / ${props => props.$total} - 8px);
-  background: #fff;
-  border-radius: 9px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  border: 1px solid #e5e7eb;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
-  opacity: ${props => props.$index >= 0 ? 1 : 0};
 `;
 
 export const EmptyMatrixCard = styled.div`
@@ -504,36 +467,4 @@ export const LessonNote = styled.div`
   font-size: 12.5px;
   color: #6b7280;
   margin-top: 4px;
-`;
-
-// --- TOAST NOTIFICATIONS ---
-
-export const toastin = keyframes`
-  0% { transform: translateY(100%) scale(0.9); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-`;
-
-export const ToastContainer = styled.div`
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 9999;
-  pointer-events: none;
-`;
-
-export const ToastMsg = styled.div`
-  background: rgba(31, 41, 55, 0.95);
-  backdrop-filter: blur(12px);
-  color: #fff;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  animation: ${toastin} 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 `;

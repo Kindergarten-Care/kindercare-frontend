@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { NotificationDropdown } from './components/NotificationDropdown';
 import { useRouter } from '@/i18n/routing';
+import { NotificationService, NotificationItem } from '@/services/notifications';
 
 interface TopAppBarProps {
   fullName: string;
   roleTitle: string;
+  onMenuClick?: () => void;
 }
 
 const SearchIcon = ({ size = 20 }: { size?: number }) => (
@@ -28,12 +30,6 @@ const ChatBubbleIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-interface TopAppBarProps {
-  fullName: string;
-  roleTitle: string;
-  onMenuClick?: () => void;
-}
-
 const MenuIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -45,6 +41,25 @@ const MenuIcon = ({ size = 20 }: { size?: number }) => (
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      setLoading(true);
+      const data = await NotificationService.getNotifications();
+      setNotifications(data);
+      setLoading(false);
+    };
+    fetchNotifs();
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    await NotificationService.markAllAsRead();
+    setNotifications(prev => prev.map(n => ({ ...n, isUnread: false })));
+  };
+
+  const unreadCount = notifications.filter(n => n.isUnread).length;
 
   return (
     <S.HeaderContainer>
@@ -66,9 +81,16 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
         <S.NotificationWrapper>
           <S.ActionButton aria-label="Notifications" onClick={() => setIsNotifOpen(!isNotifOpen)}>
             <NotificationBellIcon size={20} />
-            <S.NotificationBadge />
+            {unreadCount > 0 && <S.NotificationBadge>{unreadCount}</S.NotificationBadge>}
           </S.ActionButton>
-          {isNotifOpen && <NotificationDropdown onClose={() => setIsNotifOpen(false)} />}
+          {isNotifOpen && (
+            <NotificationDropdown 
+              onClose={() => setIsNotifOpen(false)} 
+              notifications={notifications}
+              loading={loading}
+              onMarkAllRead={handleMarkAllRead}
+            />
+          )}
         </S.NotificationWrapper>
 
         <S.ActionButton aria-label="Messages">

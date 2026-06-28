@@ -8,6 +8,9 @@ export interface Student {
   arrivalTime: string; // e.g. "07:45" or "--:--"
   healthNote: string;
   eatingStatus?: string;
+  sleepingStatus?: string;
+  hygieneStatus?: string;
+  teacherNote?: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;

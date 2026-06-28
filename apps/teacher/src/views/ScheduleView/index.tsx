@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { useAuth } from '@/contexts/AuthContext';
-import { useActivities } from './hooks';
+import { useActivities } from '../Activities/hooks';
 import { MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
 import { 
   Utensils, 
@@ -12,11 +12,6 @@ import {
   Check,
   MapPin
 } from 'lucide-react';
-
-interface ToastItem {
-  id: string;
-  text: string;
-}
 
 // Activity Type mapping for Timeline & Matrix
 type ActivityUIGroup = 'arrival' | 'meal' | 'study' | 'play' | 'nap';
@@ -42,17 +37,18 @@ const PALETTES: Record<ActivityUIGroup, { solid: string; tint: string; c: string
 const OPTSETS = {
   meal:  [
     { k: 'ALL', label: '🟢 Ăn hết', dot: '#005A36' }, 
-    { k: 'HALF', label: '🟠 Ăn chậm', dot: '#D97706' }, 
+    { k: 'HALF', label: '🟠 Ăn 1/2', dot: '#D97706' }, 
     { k: 'NONE', label: '🔴 Bỏ bữa', dot: '#DC2626' }
   ],
   nap:   [
     { k: 'GOOD', label: '🟢 Ngủ ngoan', dot: '#005A36' }, 
     { k: 'POOR', label: '🟠 Khó ngủ', dot: '#D97706' },
+    { k: 'NONE', label: '🔴 Không ngủ', dot: '#DC2626' }
   ],
   study: [
     { k: 'ACTIVE', label: '🟢 Hăng hái', dot: '#005A36' }, 
     { k: 'NORMAL', label: '🔵 Bình thường', dot: '#2563EB' }, 
-    { k: 'TIRED', label: '🟠 Cần hỗ trợ', dot: '#D97706' }
+    { k: 'TIRED', label: '🟠 Uể oải', dot: '#D97706' }
   ],
 };
 
@@ -64,9 +60,10 @@ const ICON_MAP = {
   arrival: <Sun size={19} />
 };
 
-export const ActivitiesView: React.FC = () => {
+export const ScheduleView: React.FC = () => {
   const { user } = useAuth();
   
+  // Using hooks from Activities to get data
   const {
     loading,
     mealRecords,
@@ -75,7 +72,6 @@ export const ActivitiesView: React.FC = () => {
     handleMealStatusChange,
     handleActivityNapChange,
     handleActivityParticipationChange,
-    handleScheduleStatusChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
@@ -85,80 +81,36 @@ export const ActivitiesView: React.FC = () => {
   // Selected item tracking
   const [selectedActId, setSelectedActId] = useState<string | null>(null);
 
-  // --- TOAST STATE ---
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const addToast = (text: string) => {
-    const id = 'toast-' + Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, text }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 5000);
-  };
-
-  // --- REALTIME TIMELINE TRACKING ---
-  const [currentTotalMins, setCurrentTotalMins] = useState<number>(() => {
-    const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
-  });
-  const [notifiedActs, setNotifiedActs] = useState<Set<string>>(new Set());
-
-  // Clock tick every 30 seconds
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (scheduleItems.length > 0 && !selectedActId) {
+      // Auto select current time item or first
       const now = new Date();
-      setCurrentTotalMins(now.getHours() * 60 + now.getMinutes());
-    }, 30000);
-    return () => clearInterval(timer);
-  }, []);
+      const currentH = now.getHours();
+      const currentM = now.getMinutes();
+      const currentTotal = currentH * 60 + currentM;
+      
+      let closest = scheduleItems[0];
+      for (const item of scheduleItems) {
+        const [h, m] = (item.timeSlot || '00:00').split(':').map(Number);
+        const itemTotal = h * 60 + m;
+        if (itemTotal <= currentTotal) {
+          closest = item;
+        }
+      }
+      setSelectedActId(closest.id);
+    }
+  }, [scheduleItems, selectedActId]);
+
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Đang tải lịch trình...</div>;
+  }
 
   // --- MAPPING SCHEDULE ---
   const sortedSchedule = [...scheduleItems].sort((a, b) => {
     return (a.timeSlot || '').localeCompare(b.timeSlot || '');
   });
 
-  const dynamicSchedule = sortedSchedule.map(item => {
-    const [startStr, endStr] = (item.timeSlot || '00:00 - 23:59').split(' - ');
-    const [h1, m1] = startStr.split(':').map(Number);
-    const startMin = (h1 || 0) * 60 + (m1 || 0);
-    
-    const [h2, m2] = (endStr || '23:59').split(':').map(Number);
-    const endMin = (h2 || 0) * 60 + (m2 || 0);
-
-    const isDone = currentTotalMins >= endMin || item.completed;
-    const isCur = !item.completed && currentTotalMins >= startMin && currentTotalMins < endMin;
-    
-    return { ...item, isDone, isCur, startMin, endMin };
-  });
-
-  // Auto select active item or closest
-  useEffect(() => {
-    if (dynamicSchedule.length > 0 && !selectedActId) {
-      const activeOrClosest = dynamicSchedule.find(i => i.isCur) || dynamicSchedule[dynamicSchedule.length - 1];
-      if (activeOrClosest) setSelectedActId(activeOrClosest.id);
-    }
-  }, [dynamicSchedule.length, selectedActId]);
-
-  // Push notifications logic
-  useEffect(() => {
-    const currentAct = dynamicSchedule.find(i => i.isCur);
-    if (currentAct) {
-      const timeLeft = currentAct.endMin - currentTotalMins;
-      // Notify when 10 mins or less left
-      if (timeLeft <= 10 && timeLeft >= 0 && !notifiedActs.has(currentAct.id)) {
-        const group = getUIGroup(currentAct.activityName);
-        if (['meal', 'nap', 'study', 'play'].includes(group)) {
-          addToast(`🔔 Sắp hết giờ: Vui lòng ghi nhận đánh giá cho hoạt động "${currentAct.activityName}"!`);
-          setNotifiedActs(prev => new Set(prev).add(currentAct.id));
-        }
-      }
-    }
-  }, [currentTotalMins, dynamicSchedule, notifiedActs]);
-
-  if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Đang tải lịch trình...</div>;
-  }
-
-  const selectedItem = dynamicSchedule.find(i => i.id === selectedActId) || dynamicSchedule[0];
+  const selectedItem = sortedSchedule.find(i => i.id === selectedActId) || sortedSchedule[0];
   const curGroup = selectedItem ? getUIGroup(selectedItem.activityName) : 'study';
 
   // --- MATRIX RESOLUTION ---
@@ -174,6 +126,7 @@ export const ActivitiesView: React.FC = () => {
     if (group === 'meal') {
       optType = 'meal';
       records = mealRecords;
+      // Guess which meal based on time
       const h = parseInt((selectedItem.timeSlot || '00:00').split(':')[0] || '0', 10);
       if (h < 10) field = 'breakfast';
       else if (h < 13) field = 'lunch';
@@ -194,28 +147,21 @@ export const ActivitiesView: React.FC = () => {
 
     const opts = OPTSETS[optType];
     const batchLabel = 'Tất cả: ' + opts[0].label.replace(/^.*? /, '');
-    const GROUP_WIDTHS = { meal: 318, nap: 220, study: 330 };
-    const groupWidth = GROUP_WIDTHS[optType];
 
     const matrix = records.map((rec, i) => {
       const val = rec[field];
-      const activeIndex = opts.findIndex(o => o.k === val);
-      const activeColor = activeIndex >= 0 ? opts[activeIndex].dot : '#005A36';
+      const selectedOpt = opts.find(o => o.k === val);
       
       return {
         id: rec.studentId,
         name: rec.studentName,
-        avatar: rec.avatarUrl,
         initial: rec.studentName.charAt(0).toUpperCase(),
         grad: ['#00794A', '#2563EB', '#8B5CF6', '#D97706', '#059669', '#DB2777'][i % 6],
-        groupWidth,
-        activeIndex,
-        activeColor,
-        totalOptions: opts.length,
-        options: opts.map((o, idx) => ({
+        options: opts.map(o => ({
           k: o.k,
-          label: o.label, // Keep emoji!
+          label: o.label.replace(/^.*? /, ''), // remove emoji
           active: val === o.k,
+          activeColor: o.dot,
           pick: () => {
             if (group === 'meal') handleMealStatusChange(rec.studentId, field as any, o.k as any);
             if (group === 'nap') handleActivityNapChange(rec.studentId, o.k as any);
@@ -251,30 +197,27 @@ export const ActivitiesView: React.FC = () => {
         <S.TimelineColumn>
           <S.TimelineHeader>
             <S.TimelineTitle>Lịch sinh hoạt</S.TimelineTitle>
-            <S.TimelineProgress>{dynamicSchedule.filter(i => i.isDone).length}/{dynamicSchedule.length} xong</S.TimelineProgress>
+            <S.TimelineProgress>{sortedSchedule.filter(i => i.completed).length}/{sortedSchedule.length} xong</S.TimelineProgress>
           </S.TimelineHeader>
           
           <S.TimelineList>
-            {dynamicSchedule.map((item, i) => {
+            {sortedSchedule.map((item, i) => {
               const uigroup = getUIGroup(item.activityName);
               const pal = PALETTES[uigroup];
-              const isSelected = item.id === selectedActId;
-              const isCur = item.isCur;
-              const isDone = item.isDone;
-              
-              // Only active timeline item gets full brand color dot, others are gray or light green
-              const dotColor = isCur ? '#005A36' : (isDone ? '#A7C9B6' : '#D1D5DB');
+              const isCur = item.id === selectedActId;
+              const isDone = item.completed;
+              const dotColor = isDone ? '#A7C9B6' : (isCur ? '#005A36' : '#D1D5DB');
               
               return (
                 <S.TimelineItemWrapper key={item.id}>
                   <S.TimelineDotCol>
                     <S.DotNode $bg={dotColor} $isCur={isCur} />
-                    {i < dynamicSchedule.length - 1 && <S.VerticalLine />}
+                    {i < sortedSchedule.length - 1 && <S.VerticalLine />}
                   </S.TimelineDotCol>
                   
                   <S.TimelineCard 
-                    $bg={isSelected ? pal.tint : '#fff'}
-                    $borderColor={isSelected ? pal.solid : '#EEF4F0'}
+                    $bg={isCur ? pal.tint : '#fff'}
+                    $borderColor={isCur ? pal.solid : '#EEF4F0'}
                     $isDone={isDone && !isCur}
                     $isCur={isCur}
                     onClick={() => setSelectedActId(item.id)}
@@ -315,18 +258,10 @@ export const ActivitiesView: React.FC = () => {
               </S.MatrixTitleArea>
               
               {hasMatrix && (
-                <S.BatchBtn 
-                  onClick={() => {
-                    if (selectedItem?.completed) return;
-                    if (group === 'meal') handleBulkMarkMealsAll();
-                    else handleBulkMarkActivitiesGood();
-                  }}
-                  style={{ 
-                    opacity: selectedItem?.completed ? 0.5 : 1, 
-                    cursor: selectedItem?.completed ? 'not-allowed' : 'pointer',
-                    pointerEvents: selectedItem?.completed ? 'none' : 'auto'
-                  }}
-                >
+                <S.BatchBtn onClick={() => {
+                  if (group === 'meal') handleBulkMarkMealsAll();
+                  else handleBulkMarkActivitiesGood();
+                }}>
                   ⚡ {batchLabel}
                 </S.BatchBtn>
               )}
@@ -336,25 +271,15 @@ export const ActivitiesView: React.FC = () => {
               <S.MatrixList>
                 {matrix.map((m) => (
                   <S.MatrixRow key={m.id}>
-                    <S.AvatarNode $bg={m.grad} $imgUrl={m.avatar}>{m.initial}</S.AvatarNode>
+                    <S.AvatarNode $bg={m.grad}>{m.initial}</S.AvatarNode>
                     <S.StudentNameNode>{m.name}</S.StudentNameNode>
-                    <S.OptionsGroup $width={m.groupWidth}>
-                      <S.ActiveHighlight 
-                        $index={m.activeIndex} 
-                        $total={m.totalOptions} 
-                        $color={m.activeColor} 
-                      />
+                    <S.OptionsGroup>
                       {m.options.map((opt: any) => (
                         <S.OptionBtn 
                           key={opt.k} 
                           $active={opt.active} 
-                          onClick={() => {
-                            if (!selectedItem?.completed) opt.pick();
-                          }}
-                          style={{
-                            opacity: selectedItem?.completed && !opt.active ? 0.4 : 1,
-                            cursor: selectedItem?.completed ? 'not-allowed' : 'pointer'
-                          }}
+                          $activeColor={opt.activeColor}
+                          onClick={opt.pick}
                         >
                           {opt.label}
                         </S.OptionBtn>
@@ -375,22 +300,8 @@ export const ActivitiesView: React.FC = () => {
               </S.EmptyMatrixCard>
             )}
             
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '16px' }}>
-              {selectedItem?.completed ? (
-                <span style={{ color: '#059669', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Check size={18} strokeWidth={2.5} />
-                  Đã ghi nhận xong (Khóa)
-                </span>
-              ) : (
-                <S.BatchBtn onClick={async () => {
-                  if (selectedItem?.id) {
-                    handleScheduleStatusChange(selectedItem.id, true);
-                  }
-                  await handleSave();
-                }}>
-                  Lưu cập nhật
-                </S.BatchBtn>
-              )}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <S.BatchBtn onClick={handleSave}>Lưu cập nhật</S.BatchBtn>
             </div>
           </S.SectionCard>
 
@@ -425,14 +336,6 @@ export const ActivitiesView: React.FC = () => {
           </S.SectionCard>
         </S.RightCol>
       </S.SplitContainer>
-
-      {/* TOASTS CONTAINER */}
-      <S.ToastContainer>
-        {toasts.map(t => (
-          <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>
-        ))}
-      </S.ToastContainer>
-
     </S.Container>
   );
 };

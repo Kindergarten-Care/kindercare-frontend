@@ -43,4 +43,8 @@ export const SERVER = {
     markAsRead:        '/notifications/:id/read',
     markAllAsRead:     '/notifications/read-all',
   },
+  teacher: {
+    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
+    getSchedule: '/teacher/classes/:classId/schedule',
+  },
 } as const;
