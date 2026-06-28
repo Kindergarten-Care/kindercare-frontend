@@ -7,6 +7,7 @@ import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
+import { QrScannerModal } from '@/components/QrScannerModal';
 import dynamic from 'next/dynamic';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
@@ -582,54 +583,15 @@ export const TeacherDashboardView: React.FC = () => {
       </S.ToastsContainer>
 
 
-      {/* QR CAMERA SCANNER MODAL */}
-      <S.ScannerOverlay $active={scannerOpen}>
-        <S.ScannerContent>
-          <S.ScannerHeader>
-            <S.ScannerTitle>Quét Mã QR Điểm Danh</S.ScannerTitle>
-            <S.ScannerCloseButton onClick={handleStopScanner}>✕</S.ScannerCloseButton>
-          </S.ScannerHeader>
-          <S.ScannerDesc>
-            Căn chỉnh mã QR học sinh / phụ huynh nằm chính giữa khung camera quét bên dưới.
-          </S.ScannerDesc>
-
-          <S.VideoWrapper>
-            <div id="reader-dashboard" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} />
-            <S.ScannerOverlayGuide>
-              {isCameraActive && <S.LaserLine />}
-            </S.ScannerOverlayGuide>
-          </S.VideoWrapper>
-
-          <S.ScannerCancelButton onClick={handleStopScanner}>
-            Hủy bỏ quét
-          </S.ScannerCancelButton>
-        </S.ScannerContent>
-      </S.ScannerOverlay>
-
-      {/* QR SCAN SUCCESS OVERLAY */}
-      {qrSuccessModal && qrSuccessModal.isOpen && (
-        <S.SuccessOverlay>
-          <S.SuccessContent>
-            <S.SuccessCheckIcon>✓</S.SuccessCheckIcon>
-            <S.SuccessTitle>ĐIỂM DANH THÀNH CÔNG</S.SuccessTitle>
-            <S.SuccessDesc>Thông tin quét mã check-in đã được xác thực.</S.SuccessDesc>
-            
-            <S.SuccessInfoBlock>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Học sinh:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal>{qrSuccessModal.studentName}</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Người đón:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Thời gian:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal $isGreen>{qrSuccessModal.checkInTime}</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-            </S.SuccessInfoBlock>
-          </S.SuccessContent>
-        </S.SuccessOverlay>
+      {/* QR SCANNER MODAL (Unified) */}
+      {scannerOpen && (
+        <QrScannerModal 
+          onClose={() => setScannerOpen(false)}
+          onScanSuccess={() => {
+            loadDashboardData();
+            triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
+          }}
+        />
       )}
 
       {/* CREATE NEWSFEED MODAL */}
