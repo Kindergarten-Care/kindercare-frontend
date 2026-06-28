@@ -136,14 +136,14 @@ export function useActivities() {
       if (activeTab === 'meals') {
         await Promise.all([
           ActivitiesService.updateMenuOfTheDay('today', editedMenu),
-          ActivitiesService.updateStudentMealRecords('M1', 'today', mealRecords)
+          ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords)
         ]);
         setMenu(editedMenu);
         setIsMenuEditing(false);
       } else if (activeTab === 'activities') {
-        await ActivitiesService.updateStudentActivityRecords('M1', 'today', activityRecords);
+        await ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords);
       } else {
-        await ActivitiesService.updateDailySchedule('M1', 'today', scheduleItems);
+        await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
       }
       alert('Đã lưu thành công dữ liệu ngày hôm nay!');
     } catch (error) {
