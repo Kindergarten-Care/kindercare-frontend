@@ -24,7 +24,7 @@ class NotificationService {
   async registerToken(token: string): Promise<void> {
     const { data: res } = await apiClient.post<ApiResponse<null>>(
       SERVER.notifications.registerToken,
-      { deviceToken: token, deviceType: 'web' },
+      { token, deviceType: 'web' },
     );
     if (!res.success) throw new Error(res.message);
   }

@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import * as S from './styles';
-import { initPushNotification } from '@kindercare/core';
 
 import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
@@ -19,10 +18,6 @@ import AttendanceQrPopup from './components/AttendanceQrPopup';
 import { useParentDashboard } from './hooks/useParentDashboard';
 
 export function ParentDashboard(): React.ReactElement {
-  useEffect(() => {
-    initPushNotification();
-  }, []);
-
   const {
     loading,
     activeStudent,

@@ -20,14 +20,10 @@ import { IconClose } from '@/assets/icons/dashboard';
 
 function relativeTime(ts: number): string {
   const diff = Math.floor(Date.now() / 1000) - ts;
-  if (diff < 60)   return 'Vừa xong';
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+  if (diff < 60)    return 'Vừa xong';
+  if (diff < 3600)  return `${Math.floor(diff / 60)} phút trước`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
   return `${Math.floor(diff / 86400)} ngày trước`;
-}
-
-function parsePayload(raw: string): Record<string, string> {
-  try { return JSON.parse(raw); } catch { return {}; }
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -63,22 +59,20 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
       const t = setTimeout(() => { setShouldRender(false); setIsClosing(false); }, 300);
       return () => clearTimeout(t);
     }
-  // items.length (primitive) ensures we only re-run when the count changes, not on every render
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, shouldRender, dispatch]);
 
   if (!shouldRender) return null;
 
-  const isVi       = locale !== 'en';
-  const unread     = items.filter(n => n.IsRead === 0).length;
+  const isVi   = locale !== 'en';
+  const unread = items.filter(n => n.isRead === 0).length;
 
   const handleMarkOne = (item: NotificationDto) => {
-    if (item.IsRead === 1) return;
-    dispatch(markOneRead(item.NotifID));
-    notificationService.markAsRead(item.NotifID).catch(() => dispatch(fetchNotifications()));
+    if (item.isRead === 1) return;
+    dispatch(markOneRead(item.notifId));
+    notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
 
-    const payload = parsePayload(item.DataPayload);
-    switch (item.Type) {
+    switch (item.type) {
       case 'ATTENDANCE':    router.push('/diary');   break;
       case 'LEAVE_REQUEST': router.push('/request'); break;
       case 'HEALTH_ALERT':  router.push('/diary');   break;
@@ -158,23 +152,23 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
           </S.EmptyWrap>
         ) : (
           <S.NotiList>
-            {items.map(item => (
+            {items.map((item, i) => (
               <S.NotiItem
-                key={item.NotifID}
-                $unread={item.IsRead === 0}
-                $critical={item.IsCritical === 1}
+                key={`${item.notifId}-${i}`}
+                $unread={item.isRead === 0}
+                $critical={item.isCritical === 1}
                 onClick={() => handleMarkOne(item)}
               >
-                {item.IsRead === 0 && <S.UnreadDot />}
+                {item.isRead === 0 && <S.UnreadDot />}
                 <S.NotiMeta>
                   <S.NotiHeader>
-                    <S.NotiTitle $critical={item.IsCritical === 1}>{item.Title}</S.NotiTitle>
-                    {item.Type in TYPE_LABEL && (
-                      <S.TypeTag>{TYPE_LABEL[item.Type]}</S.TypeTag>
+                    <S.NotiTitle $critical={item.isCritical === 1}>{item.title}</S.NotiTitle>
+                    {item.type in TYPE_LABEL && (
+                      <S.TypeTag>{TYPE_LABEL[item.type]}</S.TypeTag>
                     )}
                   </S.NotiHeader>
-                  <S.NotiMsg>{item.Message}</S.NotiMsg>
-                  <S.NotiTime>{relativeTime(item.CreatedAt)}</S.NotiTime>
+                  <S.NotiMsg>{item.message}</S.NotiMsg>
+                  <S.NotiTime>{relativeTime(item.createdAt)}</S.NotiTime>
                 </S.NotiMeta>
               </S.NotiItem>
             ))}
