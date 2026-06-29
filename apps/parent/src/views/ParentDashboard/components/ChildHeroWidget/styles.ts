@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 
 const pulse = keyframes`
   0% {
@@ -89,7 +89,7 @@ export const StatusRing = styled.div<{ $status?: AttendanceStatusType }>`
   display: grid;
   place-items: center;
   transition: background 0.3s ease;
-  animation: ${p => p.$status === 'studying' ? `${pulse} 2s infinite` : 'none'};
+  ${p => p.$status === 'studying' ? css`animation: ${pulse} 2s infinite;` : css`animation: none;`}
 `;
 
 export const PulseDot = styled.div<{ $status?: AttendanceStatusType }>`

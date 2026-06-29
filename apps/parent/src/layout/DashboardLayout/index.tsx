@@ -10,7 +10,7 @@ import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
-import type { NotificationDto } from '@kindercare/core';
+import { initPushNotification, type NotificationDto } from '@kindercare/core';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
@@ -80,6 +80,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const dispatch = useDispatch<AppDispatch>();
   const unreadCount = useSelector(selectUnreadCount);
 
+  // Init FCM only after login — user must be present
+  useEffect(() => { if (user) initPushNotification(); }, [user]);
+
   // Load inbox on mount
   useEffect(() => { dispatch(fetchNotifications()); }, [dispatch]);
 
@@ -88,16 +91,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const handler = (e: Event) => {
       const payload = (e as CustomEvent).detail;
       const notif: NotificationDto = {
-        NotifID:     --_localNotifId,
-        UserID:      0,
-        Title:       payload.notification?.title ?? '',
-        Message:     payload.notification?.body  ?? '',
-        Type:        payload.data?.type           ?? 'OTHER',
-        IsRead:      0,
-        IsCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
-        DataPayload: JSON.stringify(payload.data  ?? {}),
-        CreatedAt:   Math.floor(Date.now() / 1000),
-        UpdatedAt:   Math.floor(Date.now() / 1000),
+        notifId:     --_localNotifId,
+        userId:      0,
+        title:       payload.notification?.title ?? '',
+        message:     payload.notification?.body  ?? '',
+        type:        payload.data?.type           ?? 'OTHER',
+        isRead:      0,
+        isCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
+        dataPayload: payload.data ?? {},
+        createdAt:   Math.floor(Date.now() / 1000),
+        updatedAt:   Math.floor(Date.now() / 1000),
       };
       dispatch(prependItem(notif));
     };

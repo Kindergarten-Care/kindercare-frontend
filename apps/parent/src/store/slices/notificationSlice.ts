@@ -30,12 +30,12 @@ const notificationSlice = createSlice({
   reducers: {
     // Optimistic: mark one as read immediately; caller fires the API in background
     markOneRead(state, action: PayloadAction<number>) {
-      const item = state.items.find(n => n.NotifID === action.payload);
-      if (item) item.IsRead = 1;
+      const item = state.items.find(n => n.notifId === action.payload);
+      if (item) item.isRead = 1;
     },
     // Optimistic: mark all as read immediately
     markAllRead(state) {
-      state.items.forEach(n => { n.IsRead = 1; });
+      state.items.forEach(n => { n.isRead = 1; });
     },
     // Prepend a new item received via FCM foreground
     prependItem(state, action: PayloadAction<NotificationDto>) {
@@ -67,7 +67,7 @@ export const selectNotifications = (state: { notifications: NotificationState })
   state.notifications.items;
 
 export const selectUnreadCount = (state: { notifications: NotificationState }) =>
-  state.notifications.items.filter(n => n.IsRead === 0).length;
+  state.notifications.items.filter(n => n.isRead === 0).length;
 
 export const selectNotifLoading = (state: { notifications: NotificationState }) =>
   state.notifications.loading;
