@@ -47,3 +47,6 @@ next-env.d.ts
 
 # agents
 .agents/
+
+# yarn lock
+yarn.lock
