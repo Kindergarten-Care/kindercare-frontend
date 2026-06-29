@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@kindercare/ui';
@@ -8,6 +8,7 @@ import { useAuth } from '@kindercare/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import { initPushNotification, type NotificationDto } from '@kindercare/core';
@@ -67,7 +68,7 @@ function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const { collapsed, toggleCollapsed: handleToggle } = useSidebar();
   const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -120,37 +121,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     };
   }, []);
 
-  const handleLocaleChange = (nextLocale: 'vi' | 'en') => {
+  const handleLocaleChange = useCallback((nextLocale: 'vi' | 'en') => {
     if (nextLocale === locale) return;
     router.replace(pathname, { locale: nextLocale });
-  };
+  }, [locale, pathname, router]);
 
   const rawRelationship = activeStudent?.relationship ?? user?.relationship ?? user?.children?.[0]?.relationship;
-  const rel = resolveRelationship(rawRelationship, locale);
+  const rel = useMemo(() => resolveRelationship(rawRelationship, locale), [rawRelationship, locale]);
 
-  const getGreetingText = (): string => {
+  const greetingText = useMemo(() => {
     const greeting = getGreeting(locale);
     if (!user) return `${greeting} 👋`;
-
     const fullName = parentProfile?.fullName || user.fullName || user.username || '';
-    const nameParts = fullName.trim().split(/\s+/);
-    const shortName = nameParts.slice(-2).join(' ');
+    const shortName = fullName.trim().split(/\s+/).slice(-2).join(' ');
     const displayName = rel.label ? `${rel.label} ${shortName}` : shortName;
-
     return `${greeting}, ${displayName} 👋`;
-  };
+  }, [locale, user, parentProfile, rel]);
+
+  const formattedDate = useMemo(() => getFormattedDate(locale), [locale]);
 
   return (
     <S.DashboardWrapper $collapsed={collapsed}>
-      <ParentSidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      <ParentSidebar collapsed={collapsed} onToggle={handleToggle} />
 
       <S.MainContent>
         <S.HeaderBand>
           <S.HeaderBgDecorations />
           <S.HeaderInner>
             <S.Greet>
-              <S.GreetName $collapsed={collapsed}>{getGreetingText()}</S.GreetName>
-              <S.GreetDate>{getFormattedDate(locale)}</S.GreetDate>
+              <S.GreetName $collapsed={collapsed}>{greetingText}</S.GreetName>
+              <S.GreetDate>{formattedDate}</S.GreetDate>
             </S.Greet>
 
             <S.Actions>

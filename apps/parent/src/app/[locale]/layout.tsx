@@ -27,6 +27,7 @@ import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@kindercare/core';
 import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
 import { ReduxProvider } from '@/store/ReduxProvider';
 import { ToastContainer } from '@kindercare/ui';
@@ -98,12 +99,14 @@ export default async function RootLayout({
               <AuthProvider>
                 <ParentProvider>
                   <StudentProvider>
-                    <SocketProvider>
-                      <ClientAppWrapper>
-                        {children}
-                      </ClientAppWrapper>
-                      <ToastContainer />
-                    </SocketProvider>
+                    <SidebarProvider>
+                      <SocketProvider>
+                        <ClientAppWrapper>
+                          {children}
+                        </ClientAppWrapper>
+                        <ToastContainer />
+                      </SocketProvider>
+                    </SidebarProvider>
                   </StudentProvider>
                 </ParentProvider>
               </AuthProvider>
