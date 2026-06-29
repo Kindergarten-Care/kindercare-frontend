@@ -11,6 +11,7 @@ import {
   markAllRead,
   selectNotifications,
   selectNotifLoading,
+  selectUnreadCount,
 } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import * as S from './styles';
@@ -45,6 +46,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
   const dispatch = useDispatch<AppDispatch>();
   const items   = useSelector(selectNotifications);
   const loading = useSelector(selectNotifLoading);
+  const unread  = useSelector(selectUnreadCount);
 
   const [shouldRender, setShouldRender] = React.useState(isOpen);
   const [isClosing, setIsClosing]       = React.useState(false);
@@ -64,18 +66,26 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
 
   if (!shouldRender) return null;
 
-  const isVi   = locale !== 'en';
-  const unread = items.filter(n => n.isRead === 0).length;
+  const isVi = locale !== 'en';
 
   const handleMarkOne = (item: NotificationDto) => {
-    if (item.isRead === 1) return;
-    dispatch(markOneRead(item.notifId));
-    notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
+    if (item.isRead === 0) {
+      dispatch(markOneRead(item.notifId));
+      notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
+    }
 
     switch (item.type) {
-      case 'ATTENDANCE':    router.push('/diary');   break;
-      case 'LEAVE_REQUEST': router.push('/request'); break;
-      case 'HEALTH_ALERT':  router.push('/diary');   break;
+      case 'ATTENDANCE':
+        router.push('/diary');
+        break;
+      case 'LEAVE_REQUEST': {
+        const requestId = item.dataPayload?.requestId;
+        router.push(requestId ? `/request/leave-${requestId}` : '/request');
+        break;
+      }
+      case 'HEALTH_ALERT':
+        router.push('/diary');
+        break;
     }
     onClose();
   };

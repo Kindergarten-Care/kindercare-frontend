@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector, type PayloadAction } from '@reduxjs/toolkit';
 import { notificationService, type NotificationDto } from '@kindercare/core';
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -66,8 +66,12 @@ export const { markOneRead, markAllRead, prependItem } = notificationSlice.actio
 export const selectNotifications = (state: { notifications: NotificationState }) =>
   state.notifications.items;
 
-export const selectUnreadCount = (state: { notifications: NotificationState }) =>
-  state.notifications.items.filter(n => n.isRead === 0).length;
+const selectItems = (state: { notifications: NotificationState }) => state.notifications.items;
+
+export const selectUnreadCount = createSelector(
+  selectItems,
+  items => items.filter(n => n.isRead === 0).length,
+);
 
 export const selectNotifLoading = (state: { notifications: NotificationState }) =>
   state.notifications.loading;
