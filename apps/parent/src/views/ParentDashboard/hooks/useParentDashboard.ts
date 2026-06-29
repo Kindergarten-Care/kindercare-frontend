@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
@@ -171,15 +171,22 @@ export function useParentDashboard() {
   const [photos, setPhotos] = useState<AlbumPhoto[]>([]);
   const [latestAssessment, setLatestAssessment] = useState<AssessmentDomainModel | null>(null);
 
-  const prevMonth = (): void => {
+  const prevMonth = useCallback((): void => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
     else setViewMonth(m => m - 1);
-  };
+  }, [viewMonth]);
 
-  const nextMonth = (): void => {
+  const nextMonth = useCallback((): void => {
     if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
     else setViewMonth(m => m + 1);
-  };
+  }, [viewMonth]);
+
+  const openLeavePopup      = useCallback(() => setIsLeavePopupOpen(true),       []);
+  const closeLeavePopup     = useCallback(() => setIsLeavePopupOpen(false),      []);
+  const openMedicPopup      = useCallback(() => setIsMedicationPopupOpen(true),  []);
+  const closeMedicPopup     = useCallback(() => setIsMedicationPopupOpen(false), []);
+  const openQrPopup         = useCallback(() => setIsQrPopupOpen(true),          []);
+  const closeQrPopup        = useCallback(() => setIsQrPopupOpen(false),         []);
 
   useEffect(() => {
     if (!activeStudent?.studentId) return;
@@ -281,6 +288,11 @@ export function useParentDashboard() {
 
   const todayStatus = getTodayAttendanceStatus();
 
+  const todayCalendarStatus = useMemo(() => {
+    const today = new Date().getDate();
+    return calendarDays.find(d => d.day === today)?.status;
+  }, [calendarDays]);
+
   const childHero = activeStudent
     ? {
         name: activeStudent.fullName,
@@ -309,14 +321,15 @@ export function useParentDashboard() {
     attendanceStats,
     latestAssessment,
     childHero,
+    todayCalendarStatus,
     avatarGradient: activeStudent ? getAvatarGradient(activeStudent.studentId) : '',
     avatarInitial: activeStudent ? getInitials(activeStudent.fullName) : '',
     viewYear,
     viewMonth,
     prevMonth,
     nextMonth,
-    isLeavePopupOpen, setIsLeavePopupOpen,
-    isMedicationPopupOpen, setIsMedicationPopupOpen,
-    isQrPopupOpen, setIsQrPopupOpen,
+    isLeavePopupOpen,  openLeavePopup,  closeLeavePopup,
+    isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isQrPopupOpen,     openQrPopup,     closeQrPopup,
   };
 }

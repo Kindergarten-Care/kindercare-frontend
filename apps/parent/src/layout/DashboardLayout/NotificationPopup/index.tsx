@@ -11,6 +11,7 @@ import {
   markAllRead,
   selectNotifications,
   selectNotifLoading,
+  selectUnreadCount,
 } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import * as S from './styles';
@@ -18,18 +19,64 @@ import { IconClose } from '@/assets/icons/dashboard';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function relativeTime(ts: number): string {
+function relativeTime(ts: number, isVi: boolean): string {
   const diff = Math.floor(Date.now() / 1000) - ts;
-  if (diff < 60)    return 'Vừa xong';
-  if (diff < 3600)  return `${Math.floor(diff / 60)} phút trước`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-  return `${Math.floor(diff / 86400)} ngày trước`;
+  if (diff < 60)    return isVi ? 'Vừa xong' : 'Just now';
+  if (diff < 3600)  return isVi ? `${Math.floor(diff / 60)} phút trước` : `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return isVi ? `${Math.floor(diff / 3600)} giờ trước` : `${Math.floor(diff / 3600)}h ago`;
+  return isVi ? `${Math.floor(diff / 86400)} ngày trước` : `${Math.floor(diff / 86400)}d ago`;
 }
 
 const TYPE_LABEL: Record<string, string> = {
   ATTENDANCE:    'Điểm danh',
   LEAVE_REQUEST: 'Đơn nghỉ',
   HEALTH_ALERT:  'Sức khỏe',
+};
+
+const getIcon = (type: string) => {
+  switch (type) {
+    case 'ATTENDANCE':
+      return (
+        <S.IconWrapper $type="ATTENDANCE">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+            <path d="m9 14 2 2 4-4" />
+          </svg>
+        </S.IconWrapper>
+      );
+    case 'LEAVE_REQUEST':
+      return (
+        <S.IconWrapper $type="LEAVE_REQUEST">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+            <path d="M10 9H8" />
+            <path d="M16 13H8" />
+            <path d="M16 17H8" />
+          </svg>
+        </S.IconWrapper>
+      );
+    case 'HEALTH_ALERT':
+      return (
+        <S.IconWrapper $type="HEALTH_ALERT">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v8" />
+            <path d="M8 12h8" />
+          </svg>
+        </S.IconWrapper>
+      );
+    default:
+      return (
+        <S.IconWrapper $type="DEFAULT">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+        </S.IconWrapper>
+      );
+  }
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -45,6 +92,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
   const dispatch = useDispatch<AppDispatch>();
   const items   = useSelector(selectNotifications);
   const loading = useSelector(selectNotifLoading);
+  const unread  = useSelector(selectUnreadCount);
 
   const [shouldRender, setShouldRender] = React.useState(isOpen);
   const [isClosing, setIsClosing]       = React.useState(false);
@@ -64,18 +112,26 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
 
   if (!shouldRender) return null;
 
-  const isVi   = locale !== 'en';
-  const unread = items.filter(n => n.isRead === 0).length;
+  const isVi = locale !== 'en';
 
   const handleMarkOne = (item: NotificationDto) => {
-    if (item.isRead === 1) return;
-    dispatch(markOneRead(item.notifId));
-    notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
+    if (item.isRead === 0) {
+      dispatch(markOneRead(item.notifId));
+      notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
+    }
 
     switch (item.type) {
-      case 'ATTENDANCE':    router.push('/diary');   break;
-      case 'LEAVE_REQUEST': router.push('/request'); break;
-      case 'HEALTH_ALERT':  router.push('/diary');   break;
+      case 'ATTENDANCE':
+        router.push('/diary');
+        break;
+      case 'LEAVE_REQUEST': {
+        const requestId = item.dataPayload?.requestId;
+        router.push(requestId ? `/request/leave-${requestId}` : '/request');
+        break;
+      }
+      case 'HEALTH_ALERT':
+        router.push('/diary');
+        break;
     }
     onClose();
   };
@@ -159,16 +215,19 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
                 $critical={item.isCritical === 1}
                 onClick={() => handleMarkOne(item)}
               >
-                {item.isRead === 0 && <S.UnreadDot />}
+                <S.IconContainer>
+                  {getIcon(item.type)}
+                  {item.isRead === 0 && <S.UnreadDot />}
+                </S.IconContainer>
                 <S.NotiMeta>
                   <S.NotiHeader>
                     <S.NotiTitle $critical={item.isCritical === 1}>{item.title}</S.NotiTitle>
                     {item.type in TYPE_LABEL && (
-                      <S.TypeTag>{TYPE_LABEL[item.type]}</S.TypeTag>
+                      <S.TypeTag $type={item.type}>{TYPE_LABEL[item.type]}</S.TypeTag>
                     )}
                   </S.NotiHeader>
                   <S.NotiMsg>{item.message}</S.NotiMsg>
-                  <S.NotiTime>{relativeTime(item.createdAt)}</S.NotiTime>
+                  <S.NotiTime>{relativeTime(item.createdAt, isVi)}</S.NotiTime>
                 </S.NotiMeta>
               </S.NotiItem>
             ))}
