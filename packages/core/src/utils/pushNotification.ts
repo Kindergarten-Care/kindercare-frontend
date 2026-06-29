@@ -1,3 +1,4 @@
+import type { MessagePayload } from 'firebase/messaging';
 import { notificationService } from '../services/NotificationService';
 
 const SW_PATH = '/firebase-messaging-sw.js';
