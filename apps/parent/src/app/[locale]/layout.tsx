@@ -1,10 +1,22 @@
 import '../globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import StyledComponentsRegistry from '@/lib/registry';
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
   display: 'swap',
 });
 import { NextIntlClientProvider } from 'next-intl';
@@ -13,8 +25,13 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@kindercare/core';
+import { ParentProvider } from '@/contexts/ParentContext';
 import { StudentProvider } from '@/contexts/StudentContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import ClientAppWrapper from '@/components/ClientAppWrapper';
+import { ReduxProvider } from '@/store/ReduxProvider';
+import { ToastContainer } from '@kindercare/ui';
+import NextTopLoader from 'nextjs-toploader';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
@@ -60,22 +77,40 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={inter.variable}>
+    <html lang={locale} className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc' }}>
+        <NextTopLoader
+          color="#10b981"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #10b981, 0 0 5px #10b981"
+        />
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <AuthProvider>
-              <StudentProvider>
-                <SocketProvider>
-                  <ClientAppWrapper>
-                    {children}
-                  </ClientAppWrapper>
-                </SocketProvider>
-              </StudentProvider>
-            </AuthProvider>
+            <ReduxProvider>
+              <AuthProvider>
+                <ParentProvider>
+                  <StudentProvider>
+                    <SidebarProvider>
+                      <SocketProvider>
+                        <ClientAppWrapper>
+                          {children}
+                        </ClientAppWrapper>
+                        <ToastContainer />
+                      </SocketProvider>
+                    </SidebarProvider>
+                  </StudentProvider>
+                </ParentProvider>
+              </AuthProvider>
+            </ReduxProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
       </body>

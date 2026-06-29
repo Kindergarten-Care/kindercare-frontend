@@ -4,6 +4,7 @@ export interface TeacherApiDto {
   phoneNumber: string;
   email: string;
   roleInClass: string;
+  gender: string;
 }
 
 export interface StudentApiDto {
@@ -35,6 +36,7 @@ export interface TeacherDomainModel {
   phoneNumber: string;
   email: string;
   roleInClass: string;
+  gender: string;
 }
 
 export interface StudentDomainModel {

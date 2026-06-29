@@ -1,31 +1,17 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import * as S from './styles';
-import { IconClose, IconCheck, IconAbsence } from '@/assets/icons/dashboard';
+import { IconClose, IconCheck, IconAbsence, IconChevronLeft, IconChevronRight } from '@/assets/icons/dashboard';
+import { useLeaveRequestPopup } from './useLeaveRequestPopup';
 
 interface LeaveRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
   studentName: string;
   className: string;
+  onSubmitSuccess?: () => void;
 }
-
-const getLocalDateString = (offsetDays = 0): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const date = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${date}`;
-};
-
-const formatToDisplayDate = (dateStr: string): string => {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-};
 
 const REASONS = [
   'Bé bị ốm',
@@ -35,78 +21,50 @@ const REASONS = [
   'Lý do khác'
 ];
 
+const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+const MONTHS = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+];
+
 const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
   isOpen,
   onClose,
   studentName,
-  className
+  className,
+  onSubmitSuccess
 }) => {
-  const [isLongLeave, setIsLongLeave] = useState<boolean>(false);
-  const [singleDate, setSingleDate] = useState<string>(getLocalDateString(0));
-  const [startDate, setStartDate] = useState<string>(getLocalDateString(0));
-  const [endDate, setEndDate] = useState<string>(getLocalDateString(1));
-  const [selectedReason, setSelectedReason] = useState<string>('Bé bị ốm');
-  const [note, setNote] = useState<string>('');
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    isLongLeave,
+    setIsLongLeave,
+    singleDate,
+    setSingleDate,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    selectedReason,
+    setSelectedReason,
+    note,
+    setNote,
+    attachedFile,
+    isSubmitting,
+    fileInputRef,
+    viewYear,
+    viewMonth,
+    prevMonth,
+    nextMonth,
+    handleDayClick,
+    handleFileChange,
+    handleTriggerUpload,
+    handleRemoveFile,
+    handleSubmit,
+    prefixBlanks,
+    daysInMonth,
+    todayStr,
+  } = useLeaveRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
   if (!isOpen) return null;
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAttachedFile(e.target.files[0]);
-    }
-  };
-
-  const handleTriggerUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleRemoveFile = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAttachedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleSubmit = () => {
-    const datesInfo = isLongLeave
-      ? `Từ ngày: ${formatToDisplayDate(startDate)} - Đến ngày: ${formatToDisplayDate(endDate)}`
-      : `Ngày nghỉ: ${formatToDisplayDate(singleDate)}`;
-    
-    const submittedData = {
-      studentName,
-      className,
-      datesInfo,
-      reason: selectedReason,
-      note: note.trim() || 'Không có ghi chú',
-      attachment: attachedFile ? attachedFile.name : 'Không có đính kèm'
-    };
-
-    console.log('--- Gửi đơn xin nghỉ học ---', submittedData);
-
-    alert(
-      `Gửi đơn xin nghỉ thành công!\n\n` +
-      `• Học sinh: ${submittedData.studentName}\n` +
-      `• Lớp: ${submittedData.className}\n` +
-      `• Thời gian: ${submittedData.datesInfo}\n` +
-      `• Lý do: ${submittedData.reason}\n` +
-      `• Ghi chú: ${submittedData.note}\n` +
-      `• Đính kèm: ${submittedData.attachment}`
-    );
-
-    // Reset state & close
-    setIsLongLeave(false);
-    setSingleDate(getLocalDateString(0));
-    setStartDate(getLocalDateString(0));
-    setEndDate(getLocalDateString(1));
-    setSelectedReason('Bé bị ốm');
-    setNote('');
-    setAttachedFile(null);
-    onClose();
-  };
 
   return (
     <S.Overlay onClick={onClose}>
@@ -146,6 +104,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Từ ngày</span>
                   <S.StyledInput
                     type="date"
+                    min={todayStr}
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
@@ -154,6 +113,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Đến ngày</span>
                   <S.StyledInput
                     type="date"
+                    min={startDate || todayStr}
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
@@ -164,11 +124,66 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                 <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Ngày nghỉ</span>
                 <S.StyledInput
                   type="date"
+                  min={todayStr}
                   value={singleDate}
                   onChange={(e) => setSingleDate(e.target.value)}
                 />
               </div>
             )}
+
+            {/* Interactive Mini Calendar */}
+            <S.MiniCalWrapper>
+              <S.MiniCalHeader>
+                <S.MiniCalTitle>{MONTHS[viewMonth]}, {viewYear}</S.MiniCalTitle>
+                <S.MiniCalNavs>
+                  <S.MiniCalNavBtn type="button" onClick={prevMonth}>
+                    <IconChevronLeft size={13} />
+                  </S.MiniCalNavBtn>
+                  <S.MiniCalNavBtn type="button" onClick={nextMonth}>
+                    <IconChevronRight size={13} />
+                  </S.MiniCalNavBtn>
+                </S.MiniCalNavs>
+              </S.MiniCalHeader>
+
+              <S.MiniCalGrid>
+                {WEEKDAYS.map((d) => (
+                  <S.MiniCalWeekday key={d}>{d}</S.MiniCalWeekday>
+                ))}
+
+                {Array.from({ length: prefixBlanks }).map((_, i) => (
+                  <S.MiniCalDay key={`blank-${i}`} type="button" $empty />
+                ))}
+
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const d = i + 1;
+                  const monthStr = String(viewMonth + 1).padStart(2, '0');
+                  const dayStr = String(d).padStart(2, '0');
+                  const dateStr = `${viewYear}-${monthStr}-${dayStr}`;
+
+                  const isToday = dateStr === todayStr;
+                  const isSelected = !isLongLeave && dateStr === singleDate;
+                  const isStart = isLongLeave && dateStr === startDate;
+                  const isEnd = isLongLeave && dateStr === endDate;
+                  const isBoundary = isStart || isEnd;
+                  const isInRange = !!(isLongLeave && startDate && endDate && dateStr > startDate && dateStr < endDate);
+                  const isPast = dateStr < todayStr;
+
+                  return (
+                    <S.MiniCalDay
+                      key={d}
+                      type="button"
+                      $selected={isSelected || isBoundary}
+                      $inRange={isInRange}
+                      $today={isToday}
+                      disabled={isPast}
+                      onClick={() => handleDayClick(d)}
+                    >
+                      {d}
+                    </S.MiniCalDay>
+                  );
+                })}
+              </S.MiniCalGrid>
+            </S.MiniCalWrapper>
           </S.FormGroup>
 
           {/* Quick Reasons */}
@@ -234,12 +249,12 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
         </S.ContentForm>
 
         <S.Footer>
-          <S.CancelBtn type="button" onClick={onClose}>
+          <S.CancelBtn type="button" onClick={onClose} disabled={isSubmitting}>
             Hủy
           </S.CancelBtn>
-          <S.SubmitBtn type="button" onClick={handleSubmit}>
+          <S.SubmitBtn type="button" onClick={handleSubmit} disabled={isSubmitting}>
             <IconCheck size={16} color="#ffffff" />
-            Gửi đơn
+            {isSubmitting ? 'Đang gửi...' : 'Gửi đơn'}
           </S.SubmitBtn>
         </S.Footer>
       </S.ModalContainer>

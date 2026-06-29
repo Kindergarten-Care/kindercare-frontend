@@ -49,3 +49,8 @@ mcp_config.json
 fetch-swagger.js
 
 KinderCare*.html
+# agents
+.agents/
+
+# yarn lock
+yarn.lock

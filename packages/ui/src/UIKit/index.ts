@@ -7,3 +7,4 @@ export { Responsive } from './Responsive';
 export type { ResponsiveProps } from './Responsive';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export type { LanguageSwitcherProps } from './LanguageSwitcher';
+export * from './Toast';

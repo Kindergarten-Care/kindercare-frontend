@@ -1,24 +1,16 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import * as S from './styles';
 import { IconClose, IconCheck, IconMedicine, IconPlus } from '@/assets/icons/dashboard';
-
-interface MedicineItem {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  selectedTimes: string[];
-  photo: File | null;
-  photoUrl: string | null;
-}
+import { useMedicationRequestPopup } from './useMedicationRequestPopup';
 
 interface MedicationRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
   studentName: string;
   className: string;
+  onSubmitSuccess?: () => void;
 }
 
 const TIMING_OPTIONS = [
@@ -28,175 +20,29 @@ const TIMING_OPTIONS = [
   'Khi cần'
 ];
 
-const createEmptyMedicine = (index: number): MedicineItem => ({
-  id: `med-${Date.now()}-${index}`,
-  name: '',
-  dosage: '',
-  frequency: '',
-  selectedTimes: ['Sau ăn trưa'],
-  photo: null,
-  photoUrl: null
-});
-
 const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
   isOpen,
   onClose,
   studentName,
-  className
+  className,
+  onSubmitSuccess
 }) => {
-  const [medicines, setMedicines] = useState<MedicineItem[]>([createEmptyMedicine(1)]);
-  const [generalNote, setGeneralNote] = useState<string>('');
-  const activeUrlsRef = useRef<Set<string>>(new Set());
-
-  // Cleanup all active Object URLs on unmount to prevent memory leaks
-  React.useEffect(() => {
-    return () => {
-      activeUrlsRef.current.forEach(url => {
-        URL.revokeObjectURL(url);
-      });
-    };
-  }, []);
+  const {
+    medicines,
+    generalNote,
+    setGeneralNote,
+    isSubmitting,
+    handleAddMedicine,
+    handleRemoveMedicine,
+    handleFieldChange,
+    handleTimeToggle,
+    handleFileChange,
+    handleRemovePhoto,
+    handleSubmit,
+    handleClose,
+  } = useMedicationRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
   if (!isOpen) return null;
-
-  const handleAddMedicine = () => {
-    setMedicines(prev => [...prev, createEmptyMedicine(prev.length + 1)]);
-  };
-
-  const cleanupUrls = () => {
-    activeUrlsRef.current.forEach(url => {
-      URL.revokeObjectURL(url);
-    });
-    activeUrlsRef.current.clear();
-  };
-
-  const handleClose = () => {
-    cleanupUrls();
-    onClose();
-  };
-
-  const handleRemoveMedicine = (id: string) => {
-    if (medicines.length <= 1) return;
-    setMedicines(prev => {
-      const target = prev.find(m => m.id === id);
-      if (target?.photoUrl) {
-        URL.revokeObjectURL(target.photoUrl);
-        activeUrlsRef.current.delete(target.photoUrl);
-      }
-      return prev.filter(m => m.id !== id);
-    });
-  };
-
-  const handleFieldChange = (id: string, field: keyof MedicineItem, value: any) => {
-    setMedicines(prev => prev.map(m => {
-      if (m.id === id) {
-        return { ...m, [field]: value };
-      }
-      return m;
-    }));
-  };
-
-  const handleTimeToggle = (id: string, time: string) => {
-    setMedicines(prev => prev.map(m => {
-      if (m.id === id) {
-        const isSelected = m.selectedTimes.includes(time);
-        const nextTimes = isSelected
-          ? m.selectedTimes.filter(t => t !== time)
-          : [...m.selectedTimes, time];
-        return { ...m, selectedTimes: nextTimes };
-      }
-      return m;
-    }));
-  };
-
-  const handleFileChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const newUrl = URL.createObjectURL(file);
-      activeUrlsRef.current.add(newUrl);
-
-      setMedicines(prev => prev.map(m => {
-        if (m.id === id) {
-          if (m.photoUrl) {
-            URL.revokeObjectURL(m.photoUrl);
-            activeUrlsRef.current.delete(m.photoUrl);
-          }
-          return { ...m, photo: file, photoUrl: newUrl };
-        }
-        return m;
-      }));
-    }
-  };
-
-  const handleRemovePhoto = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    setMedicines(prev => prev.map(m => {
-      if (m.id === id) {
-        if (m.photoUrl) {
-          URL.revokeObjectURL(m.photoUrl);
-          activeUrlsRef.current.delete(m.photoUrl);
-        }
-        return { ...m, photo: null, photoUrl: null };
-      }
-      return m;
-    }));
-
-    const inputEl = document.getElementById(`file-input-${id}`) as HTMLInputElement;
-    if (inputEl) {
-      inputEl.value = '';
-    }
-  };
-
-  const handleSubmit = () => {
-    // Basic validation
-    const invalidMed = medicines.find(m => !m.name.trim());
-    if (invalidMed) {
-      alert('Vui lòng điền đầy đủ tên thuốc!');
-      return;
-    }
-
-    const submittedData = {
-      studentName,
-      className,
-      medicines: medicines.map((m, idx) => ({
-        index: idx + 1,
-        name: m.name.trim(),
-        dosage: m.dosage.trim() || 'Không ghi rõ',
-        frequency: m.frequency.trim() || 'Không ghi rõ',
-        timing: m.selectedTimes.join(', ') || 'Không chọn',
-        photoName: m.photo ? m.photo.name : 'Không đính kèm'
-      })),
-      generalNote: generalNote.trim() || 'Không có ghi chú thêm'
-    };
-
-    console.log('--- Gửi dặn dò thuốc ---', submittedData);
-
-    const medString = submittedData.medicines
-      .map(
-        m =>
-          `• Thuốc ${m.index}: ${m.name}\n` +
-          `  - Liều lượng: ${m.dosage}\n` +
-          `  - Tần suất: ${m.frequency}\n` +
-          `  - Thời điểm: ${m.timing}\n` +
-          `  - Minh chứng: ${m.photoName}`
-      )
-      .join('\n\n');
-
-    alert(
-      `Gửi dặn dò thuốc thành công!\n\n` +
-      `• Học sinh: ${submittedData.studentName}\n` +
-      `• Lớp: ${submittedData.className}\n\n` +
-      `Chi tiết dặn dò:\n${medString}\n\n` +
-      `• Lưu ý chung: ${submittedData.generalNote}`
-    );
-
-    // Reset state and close
-    cleanupUrls();
-    setMedicines([createEmptyMedicine(1)]);
-    setGeneralNote('');
-    onClose();
-  };
 
   return (
     <S.Overlay onClick={handleClose}>
@@ -335,12 +181,12 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
         </S.ContentForm>
 
         <S.Footer>
-          <S.CancelBtn type="button" onClick={handleClose}>
+          <S.CancelBtn type="button" onClick={handleClose} disabled={isSubmitting}>
             Hủy
           </S.CancelBtn>
-          <S.SubmitBtn type="button" onClick={handleSubmit}>
+          <S.SubmitBtn type="button" onClick={handleSubmit} disabled={isSubmitting}>
             <IconCheck size={16} color="#ffffff" />
-            Gửi dặn dò
+            {isSubmitting ? 'Đang gửi...' : 'Gửi dặn dò'}
           </S.SubmitBtn>
         </S.Footer>
       </S.ModalContainer>
