@@ -8,6 +8,7 @@ import { useAuth } from '@kindercare/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import { initPushNotification, type NotificationDto } from '@kindercare/core';
@@ -67,7 +68,7 @@ function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const { collapsed, toggleCollapsed: handleToggle } = useSidebar();
   const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -141,7 +142,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <S.DashboardWrapper $collapsed={collapsed}>
-      <ParentSidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      <ParentSidebar collapsed={collapsed} onToggle={handleToggle} />
 
       <S.MainContent>
         <S.HeaderBand>
