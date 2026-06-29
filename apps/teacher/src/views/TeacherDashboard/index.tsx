@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
-import { QRSmartHubWidget } from './components/QRSmartHubWidget';
+import { AttendanceWidget } from './components/AttendanceWidget';
+import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
+import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
-import { QuickLogWidget } from './components/QuickLogWidget';
-import { ParentChatDrawer } from './components/ParentChatDrawer';
+import dynamic from 'next/dynamic';
+
+const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
+const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
+
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
@@ -32,7 +39,12 @@ interface ToastItem {
   text: string;
 }
 
+import { useDashboardStats, useNotifications } from '@/hooks/useTeacherQueries';
+
 export const TeacherDashboardView: React.FC = () => {
+  const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
+  const { data: notifications } = useNotifications();
+
   const [activeClassId, setActiveClassId] = useState<number | null>(null);
   const [studentsList, setStudentsList] = useState<Student[]>([]);
   const [presentCount, setPresentCount] = useState(0);
@@ -40,7 +52,25 @@ export const TeacherDashboardView: React.FC = () => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confetti, setConfetti] = useState<ConfettiItem[]>([]);
   const [dateStr, setDateStr] = useState('Hôm nay');
-  const [menuToday, setMenuToday] = useState<any[]>([]);
+
+  // Bento state variables
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [qrSuccessModal, setQrSuccessModal] = useState<{
+    isOpen: boolean;
+    studentName: string;
+    parentName: string;
+    relationship: string;
+    checkInTime: string;
+  } | null>(null);
+
+  const [activeClassName, setActiveClassName] = useState<string>('');
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
+
+  const qrScannerRef = useRef<any>(null);
 
   const getTodayDateString = () => {
     const d = new Date();
@@ -52,21 +82,24 @@ export const TeacherDashboardView: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const classes = await AttendanceService.getTeacherClasses();
+      setIsLoadingDashboard(true);
+      
+      // Still need class data explicitly for QR scanner initialization
+      const classes = dashboardData?.classes || await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
         setActiveClassId(firstClass.classId);
+        setActiveClassName(firstClass.className);
         
         const todayDate = getTodayDateString();
         const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
         setStudentsList(students);
 
-        const menu = await AttendanceService.getClassMenu(firstClass.classId, todayDate);
-        setMenuToday(menu);
-
         // Filter already checked-in students
+        const present = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
+        setPresentCount(present.length);
+
         const checkedIn = students.filter(s => s.arrivalTime && s.arrivalTime !== '--:--');
-        setPresentCount(checkedIn.length);
 
         // Map and pre-populate live check-in logs
         const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9'];
@@ -88,6 +121,8 @@ export const TeacherDashboardView: React.FC = () => {
       }
     } catch (e) {
       console.warn('Failed to load real DB dashboard data:', e);
+    } finally {
+      setIsLoadingDashboard(false);
     }
   };
 
@@ -97,9 +132,39 @@ export const TeacherDashboardView: React.FC = () => {
     let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     ds = ds.charAt(0).toUpperCase() + ds.slice(1);
     setDateStr(ds);
+  }, []);
 
-    // Initial load from real DB
-    loadDashboardData();
+  useEffect(() => {
+    if (!isLoadingDashboardQuery && dashboardData) {
+      loadDashboardData();
+    }
+  }, [isLoadingDashboardQuery, dashboardData]);
+
+  // HTML5 QR code scanner dependency loading
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const existingScript = document.getElementById('html5-qrcode-cdn');
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.id = 'html5-qrcode-cdn';
+        script.src = 'https://unpkg.com/html5-qrcode';
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }
+  }, []);
+
+  // Cleanup scanner on unmount
+  useEffect(() => {
+    return () => {
+      if (qrScannerRef.current && qrScannerRef.current.isScanning) {
+        try {
+          qrScannerRef.current.stop();
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
+    };
   }, []);
 
   const getNowTime = () => {
@@ -163,7 +228,7 @@ export const TeacherDashboardView: React.FC = () => {
   const handleScanSuccess = async (name: string, note: string | null, studentId?: string) => {
     if (!activeClassId) return;
 
-    // 1. Find the student to check-in: matching id first, then name, then first unchecked
+    // 1. Find the student to check-in
     let targetStudent = null;
     if (studentId) {
       targetStudent = studentsList.find(s => String(s.id) === String(studentId));
@@ -185,6 +250,11 @@ export const TeacherDashboardView: React.FC = () => {
       return;
     }
 
+    if (targetStudent.hasActiveLeaveRequest || targetStudent.leaveRequestStatus === 'PENDING') {
+      addToast(`Không thể điểm danh bé ${targetStudent.name} qua QR vì có đơn xin nghỉ đang chờ duyệt!`);
+      return;
+    }
+
     const checkInTime = getNowTime();
 
     try {
@@ -202,9 +272,7 @@ export const TeacherDashboardView: React.FC = () => {
       playChime();
       
       // 4. Trigger confetti drop coordinates
-      const scannerX = window.innerWidth > 992 ? 280 : window.innerWidth / 2;
-      const scannerY = 320;
-      triggerConfetti(scannerX, scannerY);
+      triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
 
       // 5. Update local present counter
       setPresentCount(prev => prev + 1);
@@ -229,40 +297,143 @@ export const TeacherDashboardView: React.FC = () => {
       addToast(`✓ Đã điểm danh thành công bé ${targetStudent.name}`);
 
       // 7. Update local students array state copy so they won't be checked-in again
-      setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime } : s));
+      setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime, attendanceStatus: 'PRESENT' } : s));
     } catch (e) {
       console.warn('Failed to commit attendance check-in to SQL Database:', e);
       addToast('Gặp lỗi khi ghi nhận điểm danh vào CSDL.');
     }
   };
 
-  const handleUpdateMealStatus = async (studentId: string, status: string) => {
-    if (!activeClassId) return;
-    try {
-      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), [
-        { studentId, eatingStatus: status }
-      ]);
-      setStudentsList(prev => prev.map(s => s.id === studentId ? { ...s, eatingStatus: status } : s));
-      addToast(`Cập nhật trạng thái bữa ăn thành công`);
-    } catch (e) {
-      addToast('Cập nhật trạng thái bữa ăn thất bại');
+  const handleStartScanner = () => {
+    setScannerOpen(true);
+    setQuickOpen(false);
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && (window as any).Html5Qrcode) {
+        try {
+          const Html5QrcodeClass = (window as any).Html5Qrcode;
+          const html5QrCode = new Html5QrcodeClass("reader-dashboard");
+          qrScannerRef.current = html5QrCode;
+          setIsCameraActive(true);
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 220, height: 220 }
+            },
+            (decodedText: string) => {
+              html5QrCode.stop().then(() => {
+                setIsCameraActive(false);
+                setScannerOpen(false);
+                handleQrCodeScanned(decodedText);
+              }).catch((err: any) => {
+                console.error("Scanner stop failed", err);
+                setIsCameraActive(false);
+                setScannerOpen(false);
+              });
+            },
+            () => {
+              // Ignore failure frames
+            }
+          ).catch((err: any) => {
+            console.error("Scanner start failed", err);
+            alert("Không thể khởi động camera: " + err);
+            setIsCameraActive(false);
+            setScannerOpen(false);
+          });
+        } catch (e) {
+          console.error(e);
+          alert("Lỗi cấu hình camera");
+          setIsCameraActive(false);
+          setScannerOpen(false);
+        }
+      } else {
+        alert("Thư viện camera chưa tải xong. Vui lòng thử lại sau vài giây.");
+        setScannerOpen(false);
+      }
+    }, 300);
+  };
+
+  const handleStopScanner = () => {
+    if (qrScannerRef.current) {
+      try {
+        if (qrScannerRef.current.isScanning) {
+          qrScannerRef.current.stop().then(() => {
+            setIsCameraActive(false);
+            setScannerOpen(false);
+          }).catch((err: any) => {
+            console.error(err);
+            setIsCameraActive(false);
+            setScannerOpen(false);
+          });
+        } else {
+          setIsCameraActive(false);
+          setScannerOpen(false);
+        }
+      } catch (e) {
+        setIsCameraActive(false);
+        setScannerOpen(false);
+      }
+    } else {
+      setIsCameraActive(false);
+      setScannerOpen(false);
     }
   };
 
-  const handleUpdateAllMealStatus = async (status: string) => {
-    if (!activeClassId || studentsList.length === 0) return;
+  const handleQrCodeScanned = async (decodedText: string) => {
+    let studentId = '';
+    let parentName = '';
+    let relationship = '';
+
     try {
-      const payload = studentsList.map(s => ({
-        studentId: s.id,
-        eatingStatus: status
-      }));
-      await AttendanceService.submitQuickMealLogs(activeClassId, getTodayDateString(), payload);
-      setStudentsList(prev => prev.map(s => ({ ...s, eatingStatus: status })));
-      addToast(`Đã ghi nhận cả lớp ăn hết suất`);
+      const data = JSON.parse(decodedText);
+      studentId = data.studentId ? String(data.studentId) : '';
+      parentName = data.parentName || data.name || '';
+      relationship = data.relationship || 'Người đưa đón';
     } catch (e) {
-      addToast('Cập nhật trạng thái bữa ăn thất bại');
+      const num = Number(decodedText.trim());
+      if (!isNaN(num) && num > 0) {
+        studentId = String(num);
+      }
     }
+
+    if (!studentId) {
+      addToast("Mã QR không đúng định dạng điểm danh!");
+      return;
+    }
+
+    const student = studentsList.find(s => String(s.id) === String(studentId));
+    if (!student) {
+      addToast(`Không tìm thấy học sinh có ID ${studentId} trong lớp!`);
+      return;
+    }
+
+    const checkInTime = getNowTime();
+    const finalParentName = parentName || 'Phụ huynh';
+    const finalRelationship = relationship || 'Người đưa đón';
+
+    playChime();
+
+    setQrSuccessModal({
+      isOpen: true,
+      studentName: student.name,
+      parentName: finalParentName,
+      relationship: finalRelationship,
+      checkInTime
+    });
+
+    setTimeout(() => {
+      setQrSuccessModal(null);
+    }, 2800);
+
+    await handleScanSuccess(student.name, student.healthNote || null, student.id);
   };
+
+  const quickActionsList = [
+    { id: 'q1', label: 'Điểm danh QR', desc: 'Quét mã check-in', color: '#005A36', tint: '#E6F3ED', icon: '📲', run: handleStartScanner },
+    { id: 'q2', label: 'Tạo nhật ký', desc: 'Ghi lại hoạt động lớp', color: '#2563EB', tint: '#E3EDFD', icon: '📝', run: () => { setNewsfeedModalOpen(true); setQuickOpen(false); } },
+    { id: 'q3', label: 'Phiếu bé ngoan', desc: 'Đánh giá hàng ngày', color: '#EC4899', tint: '#FCE7F3', icon: '🌺', run: () => { addToast('Vui lòng dùng nút Đánh giá ngay trên Widget'); setQuickOpen(false); } },
+  ];
 
   return (
     <S.DashboardContainer>
@@ -281,47 +452,197 @@ export const TeacherDashboardView: React.FC = () => {
         ))}
       </S.ConfettiContainer>
 
-      {/* TOP GREETING BANNER */}
+      {/* TOP GREETING BAR */}
       <S.GreetingHeader>
-        <S.GreetingTitle>Chào buổi sáng, Thầy Huy 👋</S.GreetingTitle>
-        <S.GreetingSubtitle>{dateStr}</S.GreetingSubtitle>
+        <S.HeaderLeft>
+          <S.GreetingTitle>Chào buổi sáng, Thầy Huy! 👋</S.GreetingTitle>
+          <S.GreetingSubtitleRow>
+            <S.CalendarIcon>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </S.CalendarIcon>
+            <span>{dateStr}</span>
+          </S.GreetingSubtitleRow>
+        </S.HeaderLeft>
+
+        <S.HeaderRight>
+          {/* QUICK CREATE DROPDOWN */}
+          <S.DropdownWrapper>
+            <S.PrimaryActionButton onClick={() => { setQuickOpen(!quickOpen); setNotifOpen(false); }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Tạo nhanh
+            </S.PrimaryActionButton>
+
+            {quickOpen && (
+              <S.QuickActionsMenu>
+                {quickActionsList.map(q => (
+                  <S.MenuItemButton key={q.id} $tint={q.tint} $color={q.color} onClick={q.run}>
+                    <S.MenuItemIcon $tint={q.tint} $color={q.color}>{q.icon}</S.MenuItemIcon>
+                    <S.MenuItemLabel>{q.label}</S.MenuItemLabel>
+                  </S.MenuItemButton>
+                ))}
+              </S.QuickActionsMenu>
+            )}
+          </S.DropdownWrapper>
+
+          {/* NOTIFICATION BUTTON */}
+          <S.DropdownWrapper>
+            <S.NotifIconButton onClick={() => { setNotifOpen(!notifOpen); setQuickOpen(false); }}>
+              <S.NotifIconWrapper>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </S.NotifIconWrapper>
+              {notifications && notifications.length > 0 && <S.RedIndicator />}
+            </S.NotifIconButton>
+
+            {notifOpen && (
+              <S.NotifMenu>
+                <S.NotifMenuTitle>Thông báo ({notifications?.length || 0})</S.NotifMenuTitle>
+                {notifications && notifications.length > 0 ? notifications.map((notif: any) => (
+                  <S.NotifItem key={notif.notificationId} onClick={() => addToast(`Mở: ${notif.title}`)}>
+                    <S.NotifItemIcon $bg="#FCE7F3" $color="#EC4899">🔔</S.NotifItemIcon>
+                    <S.NotifContent>
+                      <S.NotifText>{notif.body}</S.NotifText>
+                      <S.NotifTime>{new Date(notif.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</S.NotifTime>
+                    </S.NotifContent>
+                  </S.NotifItem>
+                )) : (
+                  <S.NotifItem>
+                    <S.NotifContent>
+                      <S.NotifText>Không có thông báo mới</S.NotifText>
+                    </S.NotifContent>
+                  </S.NotifItem>
+                )}
+              </S.NotifMenu>
+            )}
+          </S.DropdownWrapper>
+        </S.HeaderRight>
       </S.GreetingHeader>
 
-      {/* 1. HERO SPLIT QR MODULE */}
-      <QRSmartHubWidget
-        presentCount={presentCount}
-        totalCount={studentsList.length || 42}
-        liveFeed={liveFeed}
-        onScanSuccess={handleScanSuccess}
-      />
+      {/* BENTO GRID */}
+      <S.BentoGrid>
+        {/* CARD A: Attendance (col span 2) */}
+        <S.GridCol2Span>
+          <AttendanceWidget students={studentsList} className={activeClassName} loading={isLoadingDashboard} />
+        </S.GridCol2Span>
 
-      {/* 2. THREE-COLUMN ACTION WIDGETS GRID */}
-      <S.DashboardGrid3Col>
-        <S.Column>
-          <HealthAlertsWidget students={studentsList} />
-        </S.Column>
-        <S.Column>
-          <LeaveApprovalWidget onAction={addToast} />
-        </S.Column>
-        <S.Column>
-          <QuickLogWidget 
-            students={studentsList} 
-            menuInfo={menuToday}
-            onUpdateMeal={handleUpdateMealStatus} 
-            onUpdateAll={handleUpdateAllMealStatus} 
-          />
-        </S.Column>
-      </S.DashboardGrid3Col>
+        {/* CARD D: Good Behavior (col span 1) */}
+        <S.GridCol1Span>
+          <GoodBehaviorWidget students={studentsList} classId={activeClassId} />
+        </S.GridCol1Span>
 
-      {/* TOAST NOTIFICATION STACK */}
+        {/* CARD E: Health alert notes (col span 1) */}
+        <S.GridCol1Span>
+          <HealthAlertsWidget students={studentsList} classId={activeClassId} />
+        </S.GridCol1Span>
+
+        {/* CARD C: Timeline checklist (col span 2, row span 2) */}
+        <S.GridCol2Span style={{ gridRow: 'span 2' }}>
+          <TimelineWidget classId={activeClassId} />
+        </S.GridCol2Span>
+
+        {/* CARD B: Approvals list (col span 1, row span 2) */}
+        <S.GridRow2Span>
+          <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
+        </S.GridRow2Span>
+
+        {/* QUICK ACTIONS column (col span 1, row span 2) */}
+        <S.QuickActionsColumn>
+          {quickActionsList.map(q => (
+            <S.ActionTile key={q.id} onClick={q.run}>
+              <S.ActionTileIcon $bg={q.tint} $color={q.color}>{q.icon}</S.ActionTileIcon>
+              <div>
+                <S.ActionTileTitle>{q.label}</S.ActionTileTitle>
+                <S.ActionTileDesc>{q.desc}</S.ActionTileDesc>
+              </div>
+            </S.ActionTile>
+          ))}
+        </S.QuickActionsColumn>
+
+        {/* CARD F: Newsfeed (col span 4 or 2) */}
+        <div style={{ gridColumn: 'span 4', height: '400px', marginTop: '8px' }}>
+          <ClassNewsfeedWidget classId={activeClassId} />
+        </div>
+      </S.BentoGrid>
+
+      {/* FLOATING TOAST NOTIFICATIONS */}
       <S.ToastsContainer>
         {toasts.map(t => (
           <S.Toast key={t.id}>{t.text}</S.Toast>
         ))}
       </S.ToastsContainer>
 
-      {/* FLOATING PARENT MESSENGER DRAWER */}
-      <ParentChatDrawer />
+
+      {/* QR CAMERA SCANNER MODAL */}
+      <S.ScannerOverlay $active={scannerOpen}>
+        <S.ScannerContent>
+          <S.ScannerHeader>
+            <S.ScannerTitle>Quét Mã QR Điểm Danh</S.ScannerTitle>
+            <S.ScannerCloseButton onClick={handleStopScanner}>✕</S.ScannerCloseButton>
+          </S.ScannerHeader>
+          <S.ScannerDesc>
+            Căn chỉnh mã QR học sinh / phụ huynh nằm chính giữa khung camera quét bên dưới.
+          </S.ScannerDesc>
+
+          <S.VideoWrapper>
+            <div id="reader-dashboard" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} />
+            <S.ScannerOverlayGuide>
+              {isCameraActive && <S.LaserLine />}
+            </S.ScannerOverlayGuide>
+          </S.VideoWrapper>
+
+          <S.ScannerCancelButton onClick={handleStopScanner}>
+            Hủy bỏ quét
+          </S.ScannerCancelButton>
+        </S.ScannerContent>
+      </S.ScannerOverlay>
+
+      {/* QR SCAN SUCCESS OVERLAY */}
+      {qrSuccessModal && qrSuccessModal.isOpen && (
+        <S.SuccessOverlay>
+          <S.SuccessContent>
+            <S.SuccessCheckIcon>✓</S.SuccessCheckIcon>
+            <S.SuccessTitle>ĐIỂM DANH THÀNH CÔNG</S.SuccessTitle>
+            <S.SuccessDesc>Thông tin quét mã check-in đã được xác thực.</S.SuccessDesc>
+            
+            <S.SuccessInfoBlock>
+              <S.SuccessInfoRow>
+                <S.SuccessInfoLabel>Học sinh:</S.SuccessInfoLabel>
+                <S.SuccessInfoVal>{qrSuccessModal.studentName}</S.SuccessInfoVal>
+              </S.SuccessInfoRow>
+              <S.SuccessInfoRow>
+                <S.SuccessInfoLabel>Người đón:</S.SuccessInfoLabel>
+                <S.SuccessInfoVal>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</S.SuccessInfoVal>
+              </S.SuccessInfoRow>
+              <S.SuccessInfoRow>
+                <S.SuccessInfoLabel>Thời gian:</S.SuccessInfoLabel>
+                <S.SuccessInfoVal $isGreen>{qrSuccessModal.checkInTime}</S.SuccessInfoVal>
+              </S.SuccessInfoRow>
+            </S.SuccessInfoBlock>
+          </S.SuccessContent>
+        </S.SuccessOverlay>
+      )}
+
+      {/* CREATE NEWSFEED MODAL */}
+      <CreateNewsfeedModal 
+        isOpen={newsfeedModalOpen}
+        onClose={() => setNewsfeedModalOpen(false)}
+        classId={activeClassId}
+        onSuccess={() => {
+          setNewsfeedModalOpen(false);
+          addToast('🎉 Tạo nhật ký lớp thành công!');
+        }}
+      />
     </S.DashboardContainer>
   );
 };
+export default TeacherDashboardView;

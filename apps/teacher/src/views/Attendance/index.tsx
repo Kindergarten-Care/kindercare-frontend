@@ -1,1390 +1,1177 @@
-'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from 'styled-components';
+import * as S from './styles';
+import { AttendanceService } from '../../services/attendance';
+import { QrScannerModal } from '../../components/QrScannerModal';
+import { Student, LeaveRequest } from '../../config/types/attendance';
 
-import React from 'react';
-import { useAttendance } from './hooks';
-import { LeaveRequestModal } from './components/LeaveRequestModal';
-import { QuickAttendanceModal } from './components/QuickAttendanceModal';
-import { LeaveRequestsListModal } from './components/LeaveRequestsListModal';
-import { AttendanceService } from '@/services/attendance';
-import {
-  AttendancePageContainer,
-  HeaderActionsSection,
-  DateHeader,
-  ActionsGroup,
-  StatsGrid,
-  StatCard,
-  StatLabel,
-  StatValue,
-  StatSub,
-  FilterBar,
-  SearchInputWrapper,
-  SearchField,
-  FilterDropdownWrapper,
-  CustomSelect,
-  GridContainer,
-  Table,
-  TableHead,
-  TBody,
-  Tr,
-  Th,
-  Td,
-  StudentProfileCell,
-  StudentAvatar,
-  StudentMeta,
-  StudentName,
-  StudentIdBadge,
-  StatusButtonGroup,
-  StatusToggleBtn,
-  TimeInput,
-  NoteInput,
-  LeaveRequestBadge,
-  QuickFillBtn,
-  LeaveRequestsBtn,
-  LeaveRequestsBadgeCount,
-  SaveBtn,
-  ViewModeToggleContainer,
-  ViewModeBtn,
-  TabContainer,
-  TabButton,
-  TabBadge,
-  TrackerGrid,
-  TrackerCard,
-  TrackerCardHeader,
-  TrackerCardBody,
-  TrackerCardFooter,
-  TrackerInfoRow,
-  TrackerInfoLabel,
-  TrackerInfoValue,
-  CallParentBtn,
-  TrackerStatusBadge,
-} from './styles';
+const GRADS = [
+  'linear-gradient(135deg, #00794A, #005A36)',
+  'linear-gradient(135deg, #3B82F6, #2563EB)',
+  'linear-gradient(135deg, #A78BFA, #8B5CF6)',
+  'linear-gradient(135deg, #FB923C, #F97316)',
+  'linear-gradient(135deg, #34D399, #059669)',
+  'linear-gradient(135deg, #F472B6, #DB2777)'
+];
 
-const getFormattedToday = (): string => {
-  const d = new Date();
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
+const PROOF_BGS = [
+  'linear-gradient(135deg, #64748B, #334155)',
+  'linear-gradient(135deg, #0EA5E9, #0369A1)',
+  'linear-gradient(135deg, #14B8A6, #0F766E)'
+];
+
+const getAvatarGrad = (name: string) => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return GRADS[h % GRADS.length];
 };
 
-const getTodayDateString = (): string => {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+const getAvatarInitial = (name: string) => {
+  const p = name.trim().split(' ');
+  return p[p.length - 1]?.[0]?.toUpperCase() || '?';
 };
 
-const formatDateStringToDisplay = (dateStr: string): string => {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year}`;
+const ST = {
+  present: {
+    label: 'Có mặt',
+    c: '#005A36',
+    bg: '#E6F3ED',
+    bd: '#C7E3D5',
+    dot: '#005A36',
+    mini: '✓',
+    dim: false
+  },
+  excused: {
+    label: 'Vắng có phép',
+    c: '#4B5563',
+    bg: '#F1F4F1',
+    bd: '#E6EEE9',
+    dot: '#9CA3AF',
+    mini: '·',
+    dim: true
+  },
+  unexcused: {
+    label: 'Vắng không phép',
+    c: '#DC2626',
+    bg: '#FEE2E2',
+    bd: '#FCA5A5',
+    dot: '#DC2626',
+    mini: '✕',
+    dim: true
+  },
+  absent: {
+    label: 'Chưa điểm danh',
+    c: '#6B7280',
+    bg: '#F3F4F6',
+    bd: '#E5E7EB',
+    dot: '#9CA3AF',
+    mini: '·',
+    dim: true
+  }
 };
 
-export function AttendanceView(): React.ReactElement {
-  const {
-    filteredStudents,
-    loading,
-    saving,
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    statistics,
-    
-    // Date
-    selectedDate,
-    setSelectedDate,
-    
-    // Classes
-    classes,
-    selectedClassId,
-    setSelectedClassId,
+export const AttendanceView: React.FC = () => {
+  const theme = useTheme();
 
-    // Quick Attendance Modal
-    quickAttendanceModalOpen,
-    setQuickAttendanceModalOpen,
-    handleQuickAttendance,
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'time' | 'pending_leave'>('name');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'present' | 'excused' | 'unexcused' | 'absent'>('all');
+  const [dateMs, setDateMs] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  });
+  
+  const [students, setStudents] = useState<Student[]>([]);
+  const [allLeaves, setAllLeaves] = useState<LeaveRequest[]>([]);
+  const [classId, setClassId] = useState<string>('');
+  const [className, setClassName] = useState<string>('');
+  const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-    // Leave Request Modal
-    leaveRequestModalOpen,
-    setLeaveRequestModalOpen,
-    selectedLeaveRequest,
-    handleSelectLeaveRequest,
-    handleProcessLeaveRequest,
+  // Redesign states
+  const [leaveDrawerOpen, setLeaveDrawerOpen] = useState(false);
+  const [highlightedLeaveId, setHighlightedLeaveId] = useState<string | null>(null);
+  const [proofOpenId, setProofOpenId] = useState<string | null>(null);
+  const [monthOffset, setMonthOffset] = useState<number>(0);
 
-    // Leave Requests List Modal
-    leaveRequestsListModalOpen,
-    setLeaveRequestsListModalOpen,
-    classLeaveRequests,
-    pendingClassLeaveRequestsCount,
+  // QR Scanner State
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
 
-    // Actions
-    handleStatusChange,
-    handleArrivalTimeChange,
-    handleHealthNoteChange,
-    handleSave,
-    students,
-  } = useAttendance();
+  // Quick menu popover states
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
+  const [reasonDraft, setReasonDraft] = useState('');
+  const [menuStage, setMenuStage] = useState<'options' | 'reason'>('options');
 
-  // Custom bulk status payload confirmatory callback
-  const handleQuickAttendanceConfirm = (payload: { studentId: string; status: any }[]) => {
-    payload.forEach(item => {
-      handleStatusChange(item.studentId, item.status);
-    });
+  const toastIdCounter = useRef(0);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  const fetchAttendance = async (cId: string, dMs: number) => {
+    try {
+      const dateObj = new Date(dMs);
+      const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+      const data = await AttendanceService.getDailyAttendance(cId, dateStr);
+      setStudents(data);
+    } catch (error) {
+      console.error('Failed to fetch attendance:', error);
+      addToast('Lỗi khi tải dữ liệu điểm danh');
+    }
   };
 
-  const [viewMode, setViewMode] = React.useState<'EDIT' | 'TRACKER' | 'QR'>('TRACKER');
-
-  interface QrCheckInEvent {
-    studentId: string;
-    studentName: string;
-    parentName: string;
-    relationship: string;
-    checkInTime: string;
-  }
-
-  const [qrHistory, setQrHistory] = React.useState<QrCheckInEvent[]>([]);
-  const [simSelectedStudentId, setSimSelectedStudentId] = React.useState<string>('');
-  const [qrSuccessModal, setQrSuccessModal] = React.useState<{
-    isOpen: boolean;
-    studentName: string;
-    parentName: string;
-    relationship: string;
-    checkInTime: string;
-  } | null>(null);
-
-  const [isCameraScanning, setIsCameraScanning] = React.useState<boolean>(false);
-  const qrScannerRef = React.useRef<any>(null);
-
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const existingScript = document.getElementById('html5-qrcode-cdn');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.id = 'html5-qrcode-cdn';
-        script.src = 'https://unpkg.com/html5-qrcode';
-        script.async = true;
-        document.body.appendChild(script);
-      }
+  const fetchLeaves = async () => {
+    try {
+      const leavesData = await AttendanceService.getAllLeaveRequests();
+      setAllLeaves(leavesData);
+    } catch (error) {
+      console.error('Failed to fetch leave requests:', error);
     }
-  }, []);
+  };
 
-  React.useEffect(() => {
-    return () => {
-      if (qrScannerRef.current && qrScannerRef.current.isScanning) {
-        try {
-          qrScannerRef.current.stop();
-        } catch (e) {
-          // ignore cleanup errors
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const classes = await AttendanceService.getTeacherClasses();
+        if (classes.length > 0) {
+          setClassId(String(classes[0].classId));
+          setClassName(classes[0].className);
+          fetchAttendance(String(classes[0].classId), dateMs);
+          fetchLeaves();
         }
+      } catch (error) {
+        console.error('Failed to get classes:', error);
       }
     };
+    init();
   }, []);
 
-  React.useEffect(() => {
-    if (students && students.length > 0) {
-      const presentWithTime = students.filter(s => s.attendanceStatus === 'PRESENT' && s.arrivalTime && s.arrivalTime !== '--:--');
-      const mappedEvents: QrCheckInEvent[] = presentWithTime.map((s, index) => {
-        const pNames = ['Anh Tuấn', 'Công Danh', 'Thanh Hải', 'Minh Đăng', 'Quang Vinh'];
-        const relationships = ['Ba', 'Mẹ', 'Ông nội', 'Bà ngoại'];
-        const pName = `Nguyễn ${pNames[index % pNames.length]}`;
-        const rel = relationships[index % relationships.length];
-        return {
-          studentId: s.id,
-          studentName: s.name,
-          parentName: pName,
-          relationship: rel,
-          checkInTime: s.arrivalTime
-        };
+  useEffect(() => {
+    if (classId) {
+      fetchAttendance(classId, dateMs);
+    }
+  }, [dateMs]);
+
+  // Click outside menu or drawer to close
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (popoverRef.current && popoverRef.current.contains(target)) {
+        return;
+      }
+      if (target.closest('.badge-btn')) {
+        return;
+      }
+      if (openMenuId) setOpenMenuId(null);
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [openMenuId]);
+
+  // Keyboard shortcut listener (Escape key)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (proofOpenId) setProofOpenId(null);
+        else if (leaveDrawerOpen) setLeaveDrawerOpen(false);
+        else if (openMenuId) setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [proofOpenId, leaveDrawerOpen, openMenuId]);
+
+  const addToast = (text: string) => {
+    const id = 't' + (toastIdCounter.current++);
+    setToasts(prev => [...prev, { id, text }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  };
+
+  const handleProcessLeaveRequest = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await AttendanceService.processLeaveRequest(requestId, status);
+      
+      const targetStudent = students.find(s => s.leaveRequestId === requestId);
+      if (targetStudent) {
+        const dateObj = new Date(dateMs);
+        const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        const newDomainStatus = status === 'APPROVED' ? 'PERMISSION_ABSENCE' : 'UNEXCUSED_ABSENCE';
+        
+        await AttendanceService.updateAttendance(classId, dateStr, [{
+          studentId: targetStudent.id,
+          status: newDomainStatus,
+          arrivalTime: undefined,
+          healthNote: targetStudent.healthNote || ''
+        }]);
+      }
+
+      setStudents(prev => prev.map(s => {
+        if (s.leaveRequestId === requestId) {
+          const newDomainStatus = status === 'APPROVED' ? 'PERMISSION_ABSENCE' : (s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'UNEXCUSED_ABSENCE' : s.attendanceStatus);
+          return {
+            ...s,
+            leaveRequestStatus: status,
+            attendanceStatus: newDomainStatus,
+            arrivalTime: newDomainStatus !== 'PRESENT' ? '--:--' : s.arrivalTime
+          };
+        }
+        return s;
+      }));
+
+      // Update leaves list local state
+      setAllLeaves(prev => prev.map(l => l.id === requestId ? { ...l, status } : l));
+      addToast(status === 'APPROVED' ? 'Đã duyệt đơn nghỉ phép' : 'Đã từ chối đơn nghỉ phép');
+    } catch (err: any) {
+      console.error('Process leave request failed:', err);
+      const msg = err.response?.data?.message || err.message || 'Lỗi xử lý đơn';
+      addToast(`Lỗi: ${msg}`);
+    }
+  };
+
+  const handleUpdateStatus = async (studentId: string, newStatus: string, reason?: string) => {
+    if (!classId) return;
+    try {
+      const dateObj = new Date(dateMs);
+      const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+      
+      const payload: any = {
+        studentId,
+        date: dateStr,
+        status: newStatus
+      };
+
+      if (newStatus === 'Present') {
+        const now = new Date();
+        payload.arrivalTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+      
+      if (reason) {
+        payload.notes = reason;
+      }
+
+      let newDomainStatus: 'PRESENT'|'PERMISSION_ABSENCE'|'UNEXCUSED_ABSENCE' = 'PRESENT';
+      if (newStatus === 'Excused') newDomainStatus = 'PERMISSION_ABSENCE';
+      if (newStatus === 'Absent') newDomainStatus = 'UNEXCUSED_ABSENCE';
+
+      await AttendanceService.updateAttendance(classId, dateStr, [{
+        studentId,
+        status: newDomainStatus,
+        arrivalTime: payload.arrivalTime,
+        healthNote: reason
+      }]);
+      
+      const targetStudent = students.find(s => s.id === studentId);
+      let newLeaveReqStatus = targetStudent?.leaveRequestStatus;
+
+      if (targetStudent && targetStudent.leaveRequestId && newDomainStatus !== 'PRESENT') {
+        const syncActionStatus = newDomainStatus === 'PERMISSION_ABSENCE' ? 'APPROVED' : 'REJECTED';
+        try {
+          await AttendanceService.processLeaveRequest(targetStudent.leaveRequestId, syncActionStatus);
+          newLeaveReqStatus = syncActionStatus;
+          
+          setAllLeaves(prev => prev.map(l => l.id === targetStudent.leaveRequestId ? { ...l, status: syncActionStatus } : l));
+        } catch (e) {
+          console.error('Lỗi tự động đồng bộ trạng thái đơn:', e);
+        }
+      }
+      
+      setStudents(prev => prev.map(s => {
+        if (s.id === studentId) {
+          return {
+            ...s,
+            attendanceStatus: newDomainStatus,
+            arrivalTime: payload.arrivalTime || s.arrivalTime,
+            healthNote: reason || s.healthNote,
+            leaveRequestStatus: newLeaveReqStatus
+          };
+        }
+        return s;
+      }));
+      
+      const shortName = targetStudent?.name.split(' ').slice(-1)[0] || '';
+      addToast(`Đã cập nhật ${shortName} → ${ST[newDomainStatus === 'PRESENT' ? 'present' : (newDomainStatus === 'PERMISSION_ABSENCE' ? 'excused' : 'unexcused')].label}`);
+      setOpenMenuId(null);
+    } catch (err: any) {
+      console.error('Update failed:', err);
+      const msg = err.response?.data?.message || err.message || 'Lỗi cập nhật';
+      addToast(`Lỗi: ${msg}`);
+    }
+  };
+
+  const getStatusKey = (s: Student): 'present' | 'excused' | 'unexcused' | 'absent' => {
+    if (s.attendanceStatus === 'PRESENT') return 'present';
+    if (s.attendanceStatus === 'PERMISSION_ABSENCE') return 'excused';
+    if (s.attendanceStatus === 'UNEXCUSED_ABSENCE') return 'unexcused';
+    return 'absent';
+  };
+
+  const isFuture = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return dateMs > today.getTime();
+  };
+
+  const handleReasonSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const reason = reasonDraft.trim();
+    if (!reason) {
+      addToast('Vui lòng nhập lý do xin phép!');
+      return;
+    }
+    if (openMenuId) {
+      handleUpdateStatus(openMenuId, 'Excused', reason);
+    }
+  };
+
+  const prevMonth = () => setMonthOffset(prev => prev - 1);
+  const nextMonth = () => setMonthOffset(prev => prev + 1);
+
+  const exportCSV = () => {
+    const rows = [['Mã HS', 'Học sinh', 'Trạng thái', 'Giờ đến', 'Ghi chú']];
+    students.forEach(s => {
+      const key = getStatusKey(s);
+      rows.push([
+        s.id.substring(0, 8), 
+        s.name, 
+        ST[key].label, 
+        s.arrivalTime && s.arrivalTime !== '--:--' ? s.arrivalTime : '', 
+        s.healthNote || s.leaveRequestReason || ''
+      ]);
+    });
+    const csv = '\ufeff' + rows.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = `diem-danh-lop-${className || 'lop'}.csv`; 
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    addToast('📄 Đã xuất báo cáo điểm danh');
+  };
+
+  // Calculations for KPIs
+  const stTotal = students.length;
+  const cPresent = students.filter(s => s.attendanceStatus === 'PRESENT').length;
+  const cExcused = students.filter(s => s.attendanceStatus === 'PERMISSION_ABSENCE').length;
+  const cUnexcused = students.filter(s => s.attendanceStatus === 'UNEXCUSED_ABSENCE').length;
+  const cNotYet = students.filter(s => s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus).length;
+  const rate = stTotal > 0 ? Math.round((cPresent / stTotal) * 100) : 0;
+
+  // Donut chart logic
+  const a1 = stTotal > 0 ? (cPresent / stTotal) * 360 : 0;
+  const a2 = stTotal > 0 ? a1 + (cExcused / stTotal) * 360 : 0;
+  const a3 = stTotal > 0 ? a2 + (cUnexcused / stTotal) * 360 : 0;
+  const donutGradient = stTotal > 0 
+    ? `conic-gradient(#005A36 0deg ${a1}deg, #9CA3AF ${a1}deg ${a2}deg, #DC2626 ${a2}deg ${a3}deg, #E5E7EB ${a3}deg 360deg)`
+    : '#E2E8F0';
+
+  // Format date display
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDate = new Date(dateMs);
+  let dateLabel = selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+  if (dateMs === today.getTime()) {
+    dateLabel = 'Hôm nay · ' + selectedDate.toLocaleDateString('vi-VN', { weekday: 'long' });
+  }
+
+  // Filter & Sort student rows
+  const filteredByStatus = students.filter(s => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'present') return s.attendanceStatus === 'PRESENT';
+    if (statusFilter === 'excused') return s.attendanceStatus === 'PERMISSION_ABSENCE';
+    if (statusFilter === 'unexcused') return s.attendanceStatus === 'UNEXCUSED_ABSENCE';
+    if (statusFilter === 'absent') return s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus;
+    return true;
+  });
+
+  const filteredAndSearched = filteredByStatus.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+
+  const sortedStudents = (() => {
+    const copy = [...filteredAndSearched];
+    
+    const getSortKeys = (fullName: string) => {
+      const parts = fullName.trim().split(/\s+/);
+      const givenName = parts[parts.length - 1] || '';
+      const rest = parts.slice(0, -1).join(' ');
+      return { givenName, rest };
+    };
+
+    const sortByName = (a: Student, b: Student) => {
+      const aKeys = getSortKeys(a.name);
+      const bKeys = getSortKeys(b.name);
+      const compGiven = aKeys.givenName.localeCompare(bKeys.givenName, 'vi', { sensitivity: 'base' });
+      if (compGiven !== 0) return compGiven;
+      return aKeys.rest.localeCompare(bKeys.rest, 'vi', { sensitivity: 'base' });
+    };
+
+    if (sortBy === 'name') {
+      return copy.sort(sortByName);
+    } else if (sortBy === 'time') {
+      return copy.sort((a, b) => {
+        const aTime = a.arrivalTime && /^\d{2}:\d{2}$/.test(a.arrivalTime) ? a.arrivalTime : '99:99';
+        const bTime = b.arrivalTime && /^\d{2}:\d{2}$/.test(b.arrivalTime) ? b.arrivalTime : '99:99';
+        if (aTime !== bTime) return aTime.localeCompare(bTime);
+        return sortByName(a, b);
       });
-      setQrHistory(mappedEvents);
+    } else if (sortBy === 'pending_leave') {
+      return copy.sort((a, b) => {
+        const aPending = a.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        const bPending = b.leaveRequestStatus === 'PENDING' ? 1 : 0;
+        if (aPending !== bPending) return bPending - aPending;
+        return sortByName(a, b);
+      });
     }
-  }, [students]);
+    return copy;
+  })();
 
-  const playBeepSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.type = 'sine';
-      oscillator.frequency.value = 1000;
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      oscillator.start();
-      setTimeout(() => {
-        oscillator.stop();
-        audioCtx.close();
-      }, 150);
-    } catch (err) {
-      console.error('Audio beep failed', err);
-    }
-  };
+  // Weekly Trend Chart Data
+  const todayDow = new Date().getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const weekRaw = [
+    { dow: 'T2', pct: todayDow === 1 ? rate : 95, off: false },
+    { dow: 'T3', pct: todayDow === 2 ? rate : 90, off: false },
+    { dow: 'T4', pct: todayDow === 3 ? rate : 100, off: false },
+    { dow: 'T5', pct: todayDow === 4 ? rate : 85, off: false },
+    { dow: 'T6', pct: todayDow === 5 ? rate : 92, off: false },
+    { dow: 'T7', pct: 0, off: true }
+  ];
 
-  const handleQrCodeScanned = (decodedText: string) => {
-    let studentId = '';
-    let parentName = '';
-    let relationship = '';
-
-    try {
-      const data = JSON.parse(decodedText);
-      studentId = String(data.studentId);
-      parentName = data.parentName || '';
-      relationship = data.relationship || '';
-    } catch (e) {
-      const num = Number(decodedText.trim());
-      if (!isNaN(num) && num > 0) {
-        studentId = String(num);
-      }
-    }
-
-    if (!studentId) {
-      alert("Mã QR không đúng định dạng điểm danh!");
-      return;
-    }
-
-    const student = students.find(s => s.id === studentId);
-    if (!student) {
-      alert(`Không tìm thấy học sinh với ID ${studentId} trong lớp này!`);
-      return;
-    }
-
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const finalParentName = parentName || (student.leaveRequestId ? 'Phụ huynh' : 'Người thân');
-    const finalRelationship = relationship || 'Người đưa đón';
-
-    playBeepSound();
-
-    setQrSuccessModal({
-      isOpen: true,
-      studentName: student.name,
-      parentName: finalParentName,
-      relationship: finalRelationship,
-      checkInTime: timeStr
-    });
-
-    setTimeout(() => {
-      setQrSuccessModal(null);
-    }, 2500);
-
-    handleStatusChange(studentId, 'PRESENT');
-    handleArrivalTimeChange(studentId, timeStr);
-
-    const newEvent: QrCheckInEvent = {
-      studentId,
-      studentName: student.name,
-      parentName: finalParentName,
-      relationship: finalRelationship,
-      checkInTime: timeStr
+  const weekTrend = weekRaw.map((w, i) => {
+    const activeDay = i === (todayDow === 0 ? 6 : todayDow - 1);
+    const isOff = w.off;
+    const h = isOff ? 6 : Math.max(10, (w.pct / 100) * 88);
+    const barBg = isOff 
+      ? '#EEF4F0' 
+      : activeDay 
+        ? 'linear-gradient(180deg, #00794A, #005A36)' 
+        : '#A7C9B6';
+    return {
+      dow: w.dow,
+      pctText: isOff ? '–' : `${w.pct}%`,
+      h,
+      barBg,
+      activeDay,
     };
-    setQrHistory(prev => [newEvent, ...prev]);
+  });
 
-    try {
-      const updatedRecords = [{
-        studentId: student.id,
-        status: 'PRESENT' as const,
-        arrivalTime: timeStr,
-        healthNote: student.healthNote || ''
-      }];
-      AttendanceService.updateAttendance(selectedClassId || 'MN1', selectedDate, updatedRecords);
-    } catch (e) {
-      console.error('Auto save QR attendance failed', e);
+  // Calendar calculations
+  const baseDate = new Date();
+  baseDate.setDate(1);
+  const currentMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + monthOffset, 1);
+  const calendarYear = currentMonthDate.getFullYear();
+  const calendarMonth = currentMonthDate.getMonth();
+
+  const calendarCells = (() => {
+    const first = new Date(calendarYear, calendarMonth, 1);
+    const startDow = (first.getDay() + 6) % 7; // Mon=0
+    const days = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0);
+
+    const cells: ({ day: number; weekend: boolean; isToday: boolean; isFuture: boolean; kind: 'none' | 'full' | 'some' | 'high' } | null)[] = [];
+    for (let i = 0; i < startDow; i++) {
+      cells.push(null);
     }
-  };
-
-  const handleStartCameraScan = () => {
-    setIsCameraScanning(true);
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && (window as any).Html5Qrcode) {
-        try {
-          const Html5QrcodeClass = (window as any).Html5Qrcode;
-          const html5QrCode = new Html5QrcodeClass("reader");
-          qrScannerRef.current = html5QrCode;
-
-          html5QrCode.start(
-            { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 220, height: 220 }
-            },
-            (decodedText: string) => {
-              html5QrCode.stop().then(() => {
-                setIsCameraScanning(false);
-                handleQrCodeScanned(decodedText);
-              }).catch((err: any) => {
-                console.error(err);
-                setIsCameraScanning(false);
-              });
-            },
-            () => {
-              // Ignore failure frames
-            }
-          ).catch((err: any) => {
-            console.error(err);
-            alert("Không thể khởi động camera: " + err);
-            setIsCameraScanning(false);
-          });
-        } catch (e) {
-          console.error(e);
-          alert("Lỗi cấu hình trình quét camera");
-          setIsCameraScanning(false);
-        }
-      } else {
-        alert("Thư viện quét camera chưa tải xong. Vui lòng thử lại sau vài giây.");
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(calendarYear, calendarMonth, d);
+      const dow = (date.getDay() + 6) % 7;
+      const weekend = dow >= 5;
+      const isToday = date.getTime() === todayZero.getTime();
+      const isFuture = date.getTime() > todayZero.getTime();
+      
+      let kind: 'none' | 'full' | 'some' | 'high' = 'none';
+      if (!weekend && !isFuture) {
+        const r = (d * 13 + calendarMonth * 7) % 100;
+        if (r < 8) kind = 'high';
+        else if (r < 26) kind = 'some';
+        else kind = 'full';
       }
-    }, 300);
-  };
-
-  const handleStopCameraScan = () => {
-    if (qrScannerRef.current) {
-      try {
-        if (qrScannerRef.current.isScanning) {
-          qrScannerRef.current.stop().then(() => {
-            setIsCameraScanning(false);
-          }).catch((err: any) => {
-            console.error(err);
-            setIsCameraScanning(false);
-          });
-        } else {
-          setIsCameraScanning(false);
-        }
-      } catch (e) {
-        setIsCameraScanning(false);
-      }
-    } else {
-      setIsCameraScanning(false);
+      cells.push({ day: d, weekend, isToday, isFuture, kind });
     }
-  };
+    return cells;
+  })();
 
-  const handleSimulateQrScan = async (studentId: string) => {
-    if (!studentId) return;
-    const student = students.find(s => s.id === studentId);
-    if (!student) return;
+  const calendarMonthLabel = `Tháng ${calendarMonth + 1} / ${calendarYear}`;
+  const calKindColor = { full: '#005A36', some: '#D97706', high: '#DC2626', none: 'transparent' };
 
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const pNames = ['Anh Tuấn', 'Công Danh', 'Thanh Hải', 'Minh Đăng', 'Quang Vinh'];
-    const relationships = ['Ba', 'Mẹ', 'Ông nội', 'Bà ngoại'];
-    const mockParentName = `Nguyễn ${pNames[Math.floor(Math.random() * pNames.length)]}`;
-    const mockRelationship = relationships[Math.floor(Math.random() * relationships.length)];
+  // Pending leaves count
+  const pendingLeavesCount = allLeaves.filter(l => l.status === 'PENDING').length;
 
-    playBeepSound();
-
-    setQrSuccessModal({
-      isOpen: true,
-      studentName: student.name,
-      parentName: mockParentName,
-      relationship: mockRelationship,
-      checkInTime: timeStr
-    });
-
-    setTimeout(() => {
-      setQrSuccessModal(null);
-    }, 2500);
-
-    handleStatusChange(studentId, 'PRESENT');
-    handleArrivalTimeChange(studentId, timeStr);
-
-    const newEvent: QrCheckInEvent = {
-      studentId,
-      studentName: student.name,
-      parentName: mockParentName,
-      relationship: mockRelationship,
-      checkInTime: timeStr
-    };
-    setQrHistory(prev => [newEvent, ...prev]);
-
-    try {
-      const updatedRecords = [{
-        studentId: student.id,
-        status: 'PRESENT' as const,
-        arrivalTime: timeStr,
-        healthNote: student.healthNote || ''
-      }];
-      await AttendanceService.updateAttendance(selectedClassId || 'MN1', selectedDate, updatedRecords);
-    } catch (e) {
-      console.error('Auto save QR attendance failed', e);
-    }
-  };
-  const dateInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleDatePickerTrigger = () => {
-    if (dateInputRef.current) {
-      try {
-        dateInputRef.current.showPicker();
-      } catch (err) {
-        console.error('showPicker failed:', err);
-      }
-    }
-  };
-
-  const handleCallParent = (studentName: string) => {
-    alert(`Đang kết nối cuộc gọi đến phụ huynh học sinh ${studentName}...`);
-  };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid #22c55e', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-        <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>Đang tải dữ liệu điểm danh...</span>
-        <style dangerouslySetInnerHTML={{ __html: '@keyframes spin { to { transform: rotate(360deg); } }' }} />
-      </div>
-    );
-  }
+  // Selected proof object
+  const selectedProof = proofOpenId ? allLeaves.find(l => l.id === proofOpenId) : null;
 
   return (
-    <AttendancePageContainer>
-      {/* Top Header & Save Controls */}
-      <HeaderActionsSection>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-          <DateHeader 
-            onClick={handleDatePickerTrigger}
-            style={{ 
-              position: 'relative', 
-              cursor: 'pointer',
-              display: 'inline-flex',
+    <S.PageContainer>
+      {/* HEADER */}
+      <S.HeaderRow>
+        <S.HeaderLeft>
+          <S.SubTitle>Lớp {className || '...'} · Tổng quan điểm danh</S.SubTitle>
+          <S.Title>{dateLabel}</S.Title>
+        </S.HeaderLeft>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setIsQrScannerOpen(true)}
+            style={{
+              position: 'relative',
+              display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '6px 12px',
-              backgroundColor: '#f1f5f9',
-              borderRadius: '8px',
-              border: '1px solid #cbd5e1'
+              gap: '9px',
+              height: '46px',
+              padding: '0 18px',
+              borderRadius: '12px',
+              border: 'none',
+              background: '#111827',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 18px -6px rgba(17, 24, 39, 0.4)',
+              transition: 'transform 0.15s'
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1e293b' }}>
-              {formatDateStringToDisplay(selectedDate)}
-            </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#64748b', marginLeft: '4px' }}>
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-            <input 
-              ref={dateInputRef}
-              type="date" 
-              value={selectedDate} 
-              max={getTodayDateString()}
-              onChange={(e) => {
-                const val = e.target.value;
-                const today = getTodayDateString();
-                if (val > today) {
-                  alert('Không thể chọn ngày ở tương lai');
-                  return;
-                }
-                setSelectedDate(val);
-              }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                opacity: 0,
-                pointerEvents: 'none',
-                zIndex: -1
-              }}
-            />
-          </DateHeader>
-
-          <ViewModeToggleContainer>
-            <ViewModeBtn 
-              $active={viewMode === 'TRACKER'} 
-              onClick={() => setViewMode('TRACKER')}
-            >
-              Bảng theo dõi
-            </ViewModeBtn>
-            <ViewModeBtn 
-              $active={viewMode === 'EDIT'} 
-              onClick={() => setViewMode('EDIT')}
-            >
-              Nhập điểm danh
-            </ViewModeBtn>
-            <ViewModeBtn 
-              $active={viewMode === 'QR'} 
-              onClick={() => setViewMode('QR')}
-            >
-              Điểm danh QR
-            </ViewModeBtn>
-          </ViewModeToggleContainer>
-        </div>
-
-        <ActionsGroup>
-          <LeaveRequestsBtn onClick={() => setLeaveRequestsListModalOpen(true)}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-            Đơn xin nghỉ
-            {pendingClassLeaveRequestsCount > 0 && (
-              <LeaveRequestsBadgeCount>
-                {pendingClassLeaveRequestsCount}
-              </LeaveRequestsBadgeCount>
-            )}
-          </LeaveRequestsBtn>
-
-          {viewMode === 'EDIT' ? (
-            <>
-              <QuickFillBtn onClick={() => setQuickAttendanceModalOpen(true)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                Điểm danh nhanh
-              </QuickFillBtn>
-
-              <SaveBtn onClick={handleSave} disabled={saving}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                  <polyline points="7 3 7 8 15 8"></polyline>
-                </svg>
-                Lưu điểm danh & Gửi thông báo
-              </SaveBtn>
-            </>
-          ) : (
-            <SaveBtn onClick={() => setViewMode('EDIT')}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-              Cập nhật điểm danh
-            </SaveBtn>
-          )}
-        </ActionsGroup>
-      </HeaderActionsSection>
-
-      {/* Stats Board Section */}
-      <StatsGrid>
-        <StatCard $borderType="neutral" style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('ALL')}>
-          <StatLabel>Tổng sĩ số</StatLabel>
-          <StatValue>{statistics.total}</StatValue>
-          <StatSub>Học sinh trong lớp</StatSub>
-        </StatCard>
-        <StatCard $borderType="green" style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('PRESENT')}>
-          <StatLabel>Có mặt</StatLabel>
-          <StatValue style={{ color: '#15803d' }}>{statistics.present}</StatValue>
-          <StatSub>Học sinh đang ở lớp</StatSub>
-        </StatCard>
-        <StatCard $borderType="amber" style={{ cursor: 'pointer' }} onClick={() => setStatusFilter('PERMISSION_ABSENCE')}>
-          <StatLabel>Vắng phép</StatLabel>
-          <StatValue style={{ color: '#b45309' }}>{statistics.absentPermission}</StatValue>
-          <StatSub>Phụ huynh đã xin nghỉ</StatSub>
-        </StatCard>
-        <StatCard style={{ borderLeftColor: '#ef4444', cursor: 'pointer' }} onClick={() => setStatusFilter('UNEXCUSED_ABSENCE')}>
-          <StatLabel>Không phép</StatLabel>
-          <StatValue style={{ color: '#b91c1c' }}>{statistics.absentUnexcused}</StatValue>
-          <StatSub>Chưa rõ lý do vắng</StatSub>
-        </StatCard>
-      </StatsGrid>
-
-      {/* Interactive Tabs */}
-      <TabContainer>
-        <TabButton 
-          $active={statusFilter === 'ALL'} 
-          $type="all"
-          onClick={() => setStatusFilter('ALL')}
-        >
-          Tất cả
-          <TabBadge $active={statusFilter === 'ALL'} $type="all">
-            {statistics.total}
-          </TabBadge>
-        </TabButton>
-        <TabButton 
-          $active={statusFilter === 'PRESENT'} 
-          $type="present"
-          onClick={() => setStatusFilter('PRESENT')}
-        >
-          Đã điểm danh (Có mặt)
-          <TabBadge $active={statusFilter === 'PRESENT'} $type="present">
-            {statistics.present}
-          </TabBadge>
-        </TabButton>
-        <TabButton 
-          $active={statusFilter === 'PERMISSION_ABSENCE'} 
-          $type="permission"
-          onClick={() => setStatusFilter('PERMISSION_ABSENCE')}
-        >
-          Nghỉ có phép
-          <TabBadge $active={statusFilter === 'PERMISSION_ABSENCE'} $type="permission">
-            {statistics.absentPermission}
-          </TabBadge>
-        </TabButton>
-        <TabButton 
-          $active={statusFilter === 'UNEXCUSED_ABSENCE'} 
-          $type="unexcused"
-          onClick={() => setStatusFilter('UNEXCUSED_ABSENCE')}
-        >
-          Nghỉ không phép
-          <TabBadge $active={statusFilter === 'UNEXCUSED_ABSENCE'} $type="unexcused">
-            {statistics.absentUnexcused}
-          </TabBadge>
-        </TabButton>
-      </TabContainer>
-
-      {/* Filter and Search Bar */}
-      <FilterBar>
-        <SearchInputWrapper>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <SearchField 
-            type="text" 
-            placeholder="Tìm nhanh học sinh..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </SearchInputWrapper>
-
-        {classes.length > 0 && (
-          <FilterDropdownWrapper>
-            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#64748b' }}>Lớp học:</span>
-            <CustomSelect 
-              value={selectedClassId || ''} 
-              onChange={(e) => setSelectedClassId(Number(e.target.value))}
-            >
-              {classes.map((cls) => (
-                <option key={cls.classId} value={cls.classId}>
-                  {cls.className} ({cls.studentCount} học sinh)
-                </option>
-              ))}
-            </CustomSelect>
-          </FilterDropdownWrapper>
-        )}
-      </FilterBar>
-
-      {/* Main Grid View Switch */}
-      {viewMode === 'EDIT' && (
-        <GridContainer>
-          <Table>
-            <TableHead>
-              <Tr>
-                <Th style={{ width: '30%' }}>Học sinh</Th>
-                <Th style={{ width: '30%', textAlign: 'center' }}>Trạng thái điểm danh</Th>
-                <Th style={{ width: '15%', textAlign: 'center' }}>Giờ đến</Th>
-                <Th style={{ width: '25%' }}>Ghi chú sức khỏe / hoạt động</Th>
-              </Tr>
-            </TableHead>
-            <TBody>
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student, index) => (
-                  <Tr key={`${student.id}-${index}`}>
-                    <Td>
-                      <StudentProfileCell>
-                        <StudentAvatar>
-                          <img src={student.avatar} alt={student.name} />
-                        </StudentAvatar>
-                        <StudentMeta>
-                          <StudentName>{student.name}</StudentName>
-                          <StudentIdBadge>ID: {student.id}</StudentIdBadge>
-                          {student.leaveRequestId && (
-                            <div>
-                              <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                  <polyline points="14 2 14 8 20 8"></polyline>
-                                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                                  <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                                Xem đơn xin nghỉ {
-                                  student.leaveRequestStatus === 'PENDING' ? '(Chờ duyệt)' : 
-                                  student.leaveRequestStatus === 'APPROVED' ? '(Đã duyệt)' : '(Từ chối)'
-                                }
-                              </LeaveRequestBadge>
-                            </div>
-                          )}
-                        </StudentMeta>
-                      </StudentProfileCell>
-                    </Td>
-                    <Td>
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <StatusButtonGroup>
-                          <StatusToggleBtn 
-                            $active={student.attendanceStatus === 'PRESENT'}
-                            $type="present"
-                            onClick={() => handleStatusChange(student.id, 'PRESENT')}
-                          >
-                            Có mặt
-                          </StatusToggleBtn>
-                          <StatusToggleBtn 
-                            $active={student.attendanceStatus === 'PERMISSION_ABSENCE'}
-                            $type="permission"
-                            onClick={() => handleStatusChange(student.id, 'PERMISSION_ABSENCE')}
-                          >
-                            Vắng phép
-                          </StatusToggleBtn>
-                          <StatusToggleBtn 
-                            $active={student.attendanceStatus === 'UNEXCUSED_ABSENCE'}
-                            $type="unexcused"
-                            onClick={() => handleStatusChange(student.id, 'UNEXCUSED_ABSENCE')}
-                          >
-                            Không phép
-                          </StatusToggleBtn>
-                        </StatusButtonGroup>
-                      </div>
-                    </Td>
-                    <Td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <TimeInput 
-                          type="text" 
-                          value={student.arrivalTime} 
-                          onChange={(e) => handleArrivalTimeChange(student.id, e.target.value)}
-                          disabled={student.attendanceStatus !== 'PRESENT'}
-                          style={student.attendanceStatus !== 'PRESENT' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                        />
-                      </div>
-                    </Td>
-                    <Td>
-                      <NoteInput 
-                        type="text" 
-                        placeholder="Thêm ghi chú..." 
-                        value={student.healthNote}
-                        onChange={(e) => handleHealthNoteChange(student.id, e.target.value)}
-                      />
-                    </Td>
-                  </Tr>
-                ))
-              ) : (
-                <Tr>
-                  <Td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                    Không tìm thấy học sinh nào phù hợp.
-                  </Td>
-                </Tr>
-              )}
-            </TBody>
-          </Table>
-        </GridContainer>
-      )}
-      {viewMode === 'TRACKER' && (
-        <TrackerGrid>
-          {filteredStudents.length > 0 ? (
-            filteredStudents.map((student, index) => (
-              <TrackerCard key={`${student.id}-${index}`} $status={student.attendanceStatus}>
-                <TrackerCardHeader>
-                  <StudentProfileCell>
-                    <StudentAvatar>
-                      <img src={student.avatar} alt={student.name} />
-                    </StudentAvatar>
-                    <StudentMeta>
-                      <StudentName>{student.name}</StudentName>
-                      <StudentIdBadge>ID: {student.id}</StudentIdBadge>
-                    </StudentMeta>
-                  </StudentProfileCell>
-                  <TrackerStatusBadge $status={student.attendanceStatus}>
-                    {student.attendanceStatus === 'PRESENT' ? 'Có mặt' : 
-                     student.attendanceStatus === 'PERMISSION_ABSENCE' ? 'Vắng phép' : 'Không phép'}
-                  </TrackerStatusBadge>
-                </TrackerCardHeader>
-
-                <TrackerCardBody>
-                  {student.attendanceStatus === 'PRESENT' && (
-                    <>
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Thời gian đến lớp</TrackerInfoLabel>
-                        <TrackerInfoValue $highlight="green">{student.arrivalTime || 'Chưa cập nhật'}</TrackerInfoValue>
-                      </TrackerInfoRow>
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Ghi chú sức khỏe</TrackerInfoLabel>
-                        <TrackerInfoValue>{student.healthNote || 'Khỏe mạnh bình thường'}</TrackerInfoValue>
-                      </TrackerInfoRow>
-                    </>
-                  )}
-
-                  {student.attendanceStatus === 'PERMISSION_ABSENCE' && (
-                    <>
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Lý do xin nghỉ</TrackerInfoLabel>
-                        <TrackerInfoValue $highlight="amber">{student.leaveRequestReason || student.healthNote || 'Xin nghỉ học có phép'}</TrackerInfoValue>
-                      </TrackerInfoRow>
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Đơn xin nghỉ từ phụ huynh</TrackerInfoLabel>
-                        <TrackerInfoValue>
-                          {student.leaveRequestId ? (
-                            <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                              </svg>
-                              Xem đơn & Chi tiết {
-                                student.leaveRequestStatus === 'PENDING' ? '(Chờ duyệt)' : 
-                                student.leaveRequestStatus === 'APPROVED' ? '(Đã duyệt)' : '(Từ chối)'
-                              }
-                            </LeaveRequestBadge>
-                          ) : (
-                            <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: '500' }}>
-                              Không có đơn xin nghỉ
-                            </span>
-                          )}
-                        </TrackerInfoValue>
-                      </TrackerInfoRow>
-                    </>
-                  )}
-
-                  {student.attendanceStatus === 'UNEXCUSED_ABSENCE' && (
-                    <>
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Trạng thái vắng mặt</TrackerInfoLabel>
-                        <TrackerInfoValue $highlight="red">
-                          {student.leaveRequestReason ? 'Không phép (Bị từ chối phép)' : 'Không phép (Chưa rõ lý do)'}
-                        </TrackerInfoValue>
-                      </TrackerInfoRow>
-                      {student.leaveRequestReason && (
-                        <TrackerInfoRow>
-                          <TrackerInfoLabel>Lý do xin nghỉ (Bị từ chối)</TrackerInfoLabel>
-                          <TrackerInfoValue style={{ color: '#ef4444', fontWeight: '500' }}>
-                            {student.leaveRequestReason}
-                          </TrackerInfoValue>
-                        </TrackerInfoRow>
-                      )}
-                      {student.leaveRequestId && (
-                        <TrackerInfoRow>
-                          <TrackerInfoLabel>Đơn xin nghỉ từ phụ huynh</TrackerInfoLabel>
-                          <TrackerInfoValue>
-                            <LeaveRequestBadge onClick={() => handleSelectLeaveRequest(student.leaveRequestId!)}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                              </svg>
-                              Xem đơn & Chi tiết (Từ chối)
-                            </LeaveRequestBadge>
-                          </TrackerInfoValue>
-                        </TrackerInfoRow>
-                      )}
-                      <TrackerInfoRow>
-                        <TrackerInfoLabel>Hành động cần thiết</TrackerInfoLabel>
-                        <TrackerInfoValue style={{ marginTop: '4px' }}>
-                          <CallParentBtn onClick={() => handleCallParent(student.name)}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                            </svg>
-                            Liên hệ phụ huynh ngay
-                          </CallParentBtn>
-                        </TrackerInfoValue>
-                      </TrackerInfoRow>
-                    </>
-                  )}
-                </TrackerCardBody>
-              </TrackerCard>
-            ))
-          ) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px', color: '#64748b', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              Không tìm thấy học sinh nào phù hợp.
-            </div>
-          )}
-        </TrackerGrid>
-      )}
-
-      {/* QR Mode View Layout */}
-      {viewMode === 'QR' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', marginTop: '24px' }}>
-          {/* Left: QR Display & Simulator */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* QR Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '32px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              textAlign: 'center',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
-                Mã QR Điểm Danh Hôm Nay
-              </h3>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: '400px', marginBottom: '24px' }}>
-                Phụ huynh quét mã này trên ứng dụng di động để điểm danh đưa con đến lớp.
-              </p>
-              
-              {/* QR Image */}
-              <div style={{ 
-                padding: '16px', 
-                backgroundColor: '#f8fafc', 
-                borderRadius: '12px', 
-                border: '1px solid #e2e8f0',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
-              }}>
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=0e793c&data=${encodeURIComponent(
-                    JSON.stringify({
-                      classId: selectedClassId,
-                      date: selectedDate,
-                      type: 'checkin',
-                      token: `kc_qr_${selectedClassId}_${selectedDate}`
-                    })
-                  )}`} 
-                  alt="QR Code Điểm Danh"
-                  style={{ width: '200px', height: '200px' }}
-                />
-              </div>
-
-              <span style={{ 
-                marginTop: '16px', 
-                fontSize: '0.875rem', 
-                fontWeight: 600, 
-                color: '#0e793c',
-                backgroundColor: '#f0fdf4',
-                padding: '6px 16px',
-                borderRadius: '9999px',
-                border: '1px solid #bbf7d0'
-              }}>
-                ● Mã QR hoạt động • Lớp {classes.find(c => c.classId === selectedClassId)?.className || ''}
-              </span>
-            </div>
-
-            {/* Real Camera Scanner Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '24px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px'
-            }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#0e793c' }}>
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                  <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                Quét Mã QR Bằng Camera (Thực Tế)
-              </h4>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-                Kích hoạt camera của thiết bị giáo viên để quét trực tiếp mã QR do phụ huynh cung cấp.
-              </p>
-              
-              <button 
-                onClick={handleStartCameraScan}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#0e793c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.975rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 4px 12px rgba(14, 121, 60, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                  <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                Mở Camera Quét Mã
-              </button>
-            </div>
-
-            {/* QR Simulator Card */}
-            <div style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '16px', 
-              padding: '24px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#22c55e' }}>
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                </svg>
-                Trình Giả Lập Quét Mã QR Phụ Huynh (Kiểm Thử)
-              </h4>
-              <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '16px' }}>
-                Chọn học sinh bên dưới để giả lập hành động phụ huynh quét mã QR điểm danh đưa trẻ đến lớp.
-              </p>
-              
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <select 
-                  value={simSelectedStudentId} 
-                  onChange={(e) => setSimSelectedStudentId(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.875rem',
-                    color: '#1e293b',
-                    outline: 'none',
-                    backgroundColor: '#f8fafc'
-                  }}
-                >
-                  <option value="">-- Chọn học sinh cần quét mã --</option>
-                  {students
-                    .filter(s => s.attendanceStatus !== 'PRESENT')
-                    .map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.attendanceStatus === 'PERMISSION_ABSENCE' ? 'Vắng phép' : 'Chưa điểm danh'})</option>
-                    ))
-                  }
-                </select>
-                
-                <button 
-                  onClick={() => {
-                    handleSimulateQrScan(simSelectedStudentId);
-                    setSimSelectedStudentId('');
-                  }}
-                  disabled={!simSelectedStudentId}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: simSelectedStudentId ? '#0e793c' : '#cbd5e1',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    cursor: simSelectedStudentId ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s',
-                    boxShadow: simSelectedStudentId ? '0 4px 12px rgba(14, 121, 60, 0.2)' : 'none'
-                  }}
-                >
-                  Giả Lập Quét QR
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: QR History Feed */}
-          <div style={{ 
-            backgroundColor: 'white', 
-            borderRadius: '16px', 
-            padding: '24px', 
-            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'fit-content',
-            maxHeight: '600px'
-          }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Lịch Sử Quét Mã QR</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, backgroundColor: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
-                Hôm nay
-              </span>
-            </h3>
-
-            <div style={{ 
-              overflowY: 'auto', 
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '12px',
-              paddingRight: '4px'
-            }}>
-              {qrHistory.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b', fontSize: '0.875rem' }}>
-                  Chưa có lượt quét QR nào trong ngày.
-                </div>
-              ) : (
-                qrHistory.map((ev, idx) => (
-                  <div key={`${ev.studentId}-${idx}`} style={{ 
-                    display: 'flex', 
-                    alignItems: 'start', 
-                    gap: '12px', 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    backgroundColor: idx === 0 ? '#f0fdf4' : '#f8fafc',
-                    border: idx === 0 ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
-                    transition: 'all 0.3s'
-                  }}>
-                    <div style={{ 
-                      width: '32px', 
-                      height: '32px', 
-                      borderRadius: '50%', 
-                      backgroundColor: '#dcfce7', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      color: '#15803d',
-                      flexShrink: 0
-                    }}>
-                      ✓
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-                        {ev.studentName}
-                      </h4>
-                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0 0' }}>
-                        Phụ huynh: {ev.parentName} ({ev.relationship})
-                      </p>
-                    </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
-                      {ev.checkInTime}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* QR Check-in Success Popup */}
-      {qrSuccessModal && qrSuccessModal.isOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15, 23, 42, 0.6)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          animation: 'fadeIn 0.2s ease-out'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '32px',
-            width: '90%',
-            maxWidth: '400px',
-            textAlign: 'center',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            border: '1px solid #e2e8f0',
-            animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          }}>
-            {/* Animated Checkmark Circle */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              backgroundColor: '#dcfce7',
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
+            Quét mã QR
+          </button>
+          <button 
+            onClick={() => setLeaveDrawerOpen(true)}
+            style={{
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px auto',
-              color: '#15803d',
-              fontSize: '2.5rem',
-              boxShadow: '0 4px 10px rgba(21, 128, 61, 0.15)'
-            }}>
-              ✓
-            </div>
-
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
-              ĐIỂM DANH THÀNH CÔNG
-            </h3>
-            <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '24px' }}>
-              Học sinh đã được quét mã check-in thành công.
-            </p>
-
-            <div style={{
-              backgroundColor: '#f8fafc',
-              borderRadius: '16px',
-              padding: '16px',
-              textAlign: 'left',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              border: '1px solid #e2e8f0',
-              marginBottom: '8px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Học sinh:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.studentName}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Phụ huynh:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Giờ check-in:</span>
-                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#15803d' }}>{qrSuccessModal.checkInTime}</span>
-              </div>
-            </div>
-            
-            <style dangerouslySetInnerHTML={{ __html: `
-              @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-              @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-            `}} />
-          </div>
+              gap: '9px',
+              height: '46px',
+              padding: '0 18px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #00794A, #005A36)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 18px -6px rgba(0, 90, 54, 0.4)',
+              transition: 'transform 0.15s'
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Đơn xin nghỉ
+            {pendingLeavesCount > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '22px', height: '22px', padding: '0 6px', borderRadius: '999px', background: '#fff', color: '#005A36', fontSize: '12px', fontWeight: 800 }}>
+                {pendingLeavesCount}
+              </span>
+            )}
+          </button>
+          <S.ExportButton onClick={exportCSV}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '17px', height: '17px', color: '#005A36' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Xuất
+          </S.ExportButton>
         </div>
-      )}
+      </S.HeaderRow>
 
-      {/* Leave Request Approval Details Modal */}
-      <LeaveRequestModal 
-        isOpen={leaveRequestModalOpen}
-        onClose={() => setLeaveRequestModalOpen(false)}
-        leaveRequest={selectedLeaveRequest}
-        onApprove={(id) => handleProcessLeaveRequest(id, 'APPROVED')}
-        onReject={(id) => handleProcessLeaveRequest(id, 'REJECTED')}
-      />
+      {/* KPI ROW */}
+      <S.KpiGrid>
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#EEF2FF" $color="#4F46E5">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Sĩ số lớp</S.KpiLabel>
+            <S.KpiValue>{stTotal}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
 
-      {/* Quick Attendance Modal Panel */}
-      <QuickAttendanceModal 
-        isOpen={quickAttendanceModalOpen}
-        onClose={() => setQuickAttendanceModalOpen(false)}
-        students={students}
-        onConfirm={handleQuickAttendanceConfirm}
-      />
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#E6F3ED" $color="#005A36">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Có mặt</S.KpiLabel>
+            <S.KpiValue $color="#005A36">{cPresent}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
 
-      {/* Leave Requests List Modal */}
-      <LeaveRequestsListModal
-        isOpen={leaveRequestsListModalOpen}
-        onClose={() => setLeaveRequestsListModalOpen(false)}
-        leaveRequests={classLeaveRequests}
-        onSelectRequest={(id) => {
-          setLeaveRequestsListModalOpen(false);
-          handleSelectLeaveRequest(id);
-        }}
-      />
-      {/* Camera Scanner Modal */}
-      {isCameraScanning && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9998,
-          animation: 'fadeIn 0.2s ease-out'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '24px',
-            width: '90%',
-            maxWidth: '500px',
-            position: 'relative',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                Quét Mã QR Phụ Huynh
-              </h3>
-              <button 
-                onClick={handleStopCameraScan}
+        <S.KpiCard>
+          <S.KpiIconBlock $bg="#F1F4F1" $color="#4B5563">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Vắng có phép</S.KpiLabel>
+            <S.KpiValue $color="#4B5563">{cExcused}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+
+        <S.KpiCard $borderColor="#FCA5A5" style={{ background: '#FEF2F2' }}>
+          <S.KpiIconBlock $bg="#FEE2E2" $color="#DC2626">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Vắng không phép</S.KpiLabel>
+            <S.KpiValue $color="#DC2626">{cUnexcused}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+
+        <S.KpiCard $borderColor="#E5E7EB" style={{ background: '#F9FAFB' }}>
+          <S.KpiIconBlock $bg="#F3F4F6" $color="#6B7280">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          </S.KpiIconBlock>
+          <S.KpiMeta>
+            <S.KpiLabel>Chưa điểm danh</S.KpiLabel>
+            <S.KpiValue $color="#6B7280">{cNotYet}</S.KpiValue>
+          </S.KpiMeta>
+        </S.KpiCard>
+      </S.KpiGrid>
+
+      {/* CHART + CALENDAR */}
+      <S.ChartCalendarGrid>
+        {/* CHART SECTION */}
+        <section className="kc-bento" style={{ background: '#fff', border: '1px solid #E6EEE9', borderRadius: '16px', boxShadow: '0 4px 18px -4px rgba(0,90,54,.06)', padding: '22px' }}>
+          <div style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontWeight: 700, fontSize: '16px', marginBottom: '18px', color: '#1F2937' }}>
+            Tỷ lệ chuyên cần
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: 'none', width: '150px', height: '150px', borderRadius: '50%', background: donutGradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'absolute', width: '104px', height: '104px', borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 6px rgba(0,90,54,.05)' }}>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '32px', fontWeight: 800, color: '#005A36', letterSpacing: '-.02em', lineHeight: 1 }}>{rate}%</span>
+                <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.06em', marginTop: '3px' }}>Hôm nay</span>
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#005A36' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Có mặt</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#005A36', fontVariantNumeric: 'tabular-nums' }}>{cPresent}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cPresent / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#9CA3AF' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Vắng có phép</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#4B5563', fontVariantNumeric: 'tabular-nums' }}>{cExcused}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cExcused / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#DC2626' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Vắng không phép</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#DC2626', fontVariantNumeric: 'tabular-nums' }}>{cUnexcused}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cUnexcused / stTotal * 100) : 0}%</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ width: '11px', height: '11px', borderRadius: '3px', background: '#E5E7EB' }}></span>
+                <span style={{ flex: 1, fontSize: '13px', color: '#374151', fontWeight: 500 }}>Chưa điểm danh</span>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontSize: '16px', fontWeight: 800, color: '#6B7280', fontVariantNumeric: 'tabular-nums' }}>{cNotYet}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', width: '42px', textAlign: 'right' }}>{stTotal > 0 ? Math.round(cNotYet / stTotal * 100) : 0}%</span>
+              </div>
+            </div>
+          </div>
+
+          <S.WeeklyTrendContainer>
+            <S.WeeklyTrendHeader>
+              <S.WeeklyTrendTitle>Xu hướng tuần này</S.WeeklyTrendTitle>
+              <S.WeeklyTrendSubtitle>% có mặt theo ngày</S.WeeklyTrendSubtitle>
+            </S.WeeklyTrendHeader>
+            <S.WeeklyTrendBars>
+              {weekTrend.map((w, index) => (
+                <S.WeeklyBarCol key={index}>
+                  <S.WeeklyBarVal $active={w.activeDay}>{w.pctText}</S.WeeklyBarVal>
+                  <S.WeeklyBarGraphic $h={w.h} $bg={w.barBg} />
+                  <S.WeeklyBarLabel $active={w.activeDay}>{w.dow}</S.WeeklyBarLabel>
+                </S.WeeklyBarCol>
+              ))}
+            </S.WeeklyTrendBars>
+          </S.WeeklyTrendContainer>
+        </section>
+
+        {/* CALENDAR SECTION */}
+        <S.CalendarCard>
+          <S.CalendarHeaderRow>
+            <S.CalendarMonthLabel>{calendarMonthLabel}</S.CalendarMonthLabel>
+            <S.CalendarNavButtons>
+              <S.CalendarNavBtn onClick={prevMonth}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </S.CalendarNavBtn>
+              <S.CalendarNavBtn onClick={nextMonth}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </S.CalendarNavBtn>
+            </S.CalendarNavButtons>
+          </S.CalendarHeaderRow>
+
+          <S.CalendarDowsHeader>
+            {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, index) => (
+              <S.CalendarDowLabel key={index}>{d}</S.CalendarDowLabel>
+            ))}
+          </S.CalendarDowsHeader>
+
+          <S.CalendarDaysGrid>
+            {calendarCells.map((c, index) => {
+              if (!c) return <div key={index} style={{ aspectRatio: '1' }} />;
+              return (
+                <S.CalendarDayCell 
+                  key={index} 
+                  $isToday={c.isToday} 
+                  $isFuture={c.isFuture} 
+                  $weekend={c.weekend}
+                >
+                  {c.day}
+                  {c.kind !== 'none' && !c.isToday && (
+                    <S.CalendarDayDot $color={calKindColor[c.kind]} />
+                  )}
+                </S.CalendarDayCell>
+              );
+            })}
+          </S.CalendarDaysGrid>
+
+          <S.CalendarLegend>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#005A36" />
+              Đầy đủ
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#D97706" />
+              Có vắng
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <S.CalendarLegendDot $color="#DC2626" />
+              Vắng nhiều
+            </S.CalendarLegendItem>
+            <S.CalendarLegendItem>
+              <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '3px', background: '#005A36' }}></span>
+              Hôm nay
+            </S.CalendarLegendItem>
+          </S.CalendarLegend>
+        </S.CalendarCard>
+      </S.ChartCalendarGrid>
+
+      {/* STUDENT ROSTER LIST */}
+      <section style={{ background: '#fff', border: '1px solid #E6EEE9', borderRadius: '16px', boxShadow: '0 4px 18px -4px rgba(0, 90, 54, 0.06)', padding: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', padding: '14px 16px 12px' }}>
+          <span style={{ fontFamily: 'Plus Jakarta Sans, Inter, sans-serif', fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>
+            Danh sách bé
+          </span>
+          <div style={{ display: 'flex', background: '#F1F4F1', border: '1px solid #E6EEE9', borderRadius: '11px', padding: '3px', gap: '3px' }}>
+            {[
+              { key: 'all', label: 'Tất cả', count: stTotal },
+              { key: 'present', label: 'Có mặt', count: cPresent },
+              { key: 'excused', label: 'Có phép', count: cExcused },
+              { key: 'unexcused', label: 'Không phép', count: cUnexcused },
+              { key: 'absent', label: 'Chưa điểm danh', count: cNotYet }
+            ].map(f => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key as any)}
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  height: '34px',
+                  padding: '0 13px',
+                  borderRadius: '9px',
                   border: 'none',
-                  background: 'transparent',
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: '#64748b',
                   cursor: 'pointer',
-                  padding: '4px'
+                  fontFamily: 'inherit',
+                  fontWeight: statusFilter === f.key ? 700 : 600,
+                  fontSize: '12.5px',
+                  whiteSpace: 'nowrap',
+                  background: statusFilter === f.key ? '#fff' : 'transparent',
+                  color: statusFilter === f.key ? '#005A36' : '#6B7280',
+                  boxShadow: statusFilter === f.key ? '0 2px 8px rgba(0, 90, 54, 0.1)' : 'none'
                 }}
               >
-                ✕
+                {f.label} <span style={{ opacity: 0.7 }}>{f.count}</span>
               </button>
-            </div>
-            
-            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-              Căn chỉnh mã QR của Phụ huynh nằm trong khung camera bên dưới.
-            </p>
-
-            {/* Video Reader Element */}
-            <div style={{
-              width: '100%',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              backgroundColor: '#0f172a',
-              position: 'relative',
-              aspectRatio: '4/3',
-              border: 'none'
-            }}>
-              <div id="reader" style={{ width: '100%', height: '100%' }}></div>
-              
-              {/* Overlay Laser Scan Frame */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '200px',
-                height: '200px',
-                border: '2px dashed #22c55e',
-                borderRadius: '8px',
-                boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.5)',
-                pointerEvents: 'none',
-                zIndex: 10
-              }}>
-                {/* Scanner laser line */}
-                <div style={{
-                  width: '100%',
-                  height: '2px',
-                  backgroundColor: '#22c55e',
-                  boxShadow: '0 0 8px #22c55e',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  animation: 'laserSweep 2s linear infinite'
-                }}></div>
-              </div>
-            </div>
-
-            <button 
-              onClick={handleStopCameraScan}
-              style={{
-                padding: '10px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: '0.875rem'
-              }}
-            >
-              Hủy bỏ quét
-            </button>
-
-            <style dangerouslySetInnerHTML={{ __html: `
-              @keyframes laserSweep {
-                0% { top: 0%; }
-                50% { top: 100%; }
-                100% { top: 0%; }
-              }
-              #reader, #reader-dashboard {
-                border: none !important;
-              }
-              #reader__scan_region, #reader-dashboard__scan_region {
-                border: none !important;
-              }
-              #reader canvas, #reader-dashboard canvas {
-                display: none !important;
-              }
-            `}} />
+            ))}
+          </div>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '42px', padding: '0 14px', borderRadius: '11px', background: '#F8FBF9', border: '1px solid #E6EEE9', minWidth: '200px' }}>
+            <span style={{ flex: 'none', display: 'flex', width: '17px', height: '17px', color: '#9CA3AF' }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+            <input 
+              value={query} 
+              onChange={e => setQuery(e.target.value)} 
+              placeholder="Tìm bé…" 
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '13.5px', color: '#1F2937' }} 
+            />
           </div>
         </div>
+
+        <S.ToolbarRow style={{ borderBottom: '1px solid #EEF4F0', paddingTop: 0 }}>
+          <div style={{ fontSize: '13.5px', color: theme.colors.muted, fontWeight: 600 }}>
+            Hiển thị <span style={{ color: theme.colors.fg, fontWeight: 800 }}>{sortedStudents.length}</span> / {stTotal} bé
+          </div>
+          <S.SortControl>
+            <S.SortLabel>Sắp xếp:</S.SortLabel>
+            <S.SortSelect value={sortBy} onChange={e => setSortBy(e.target.value as any)}>
+              <option value="name">Tên từ A → Z</option>
+              <option value="time">Giờ điểm danh</option>
+              <option value="pending_leave">Đơn chưa duyệt</option>
+            </S.SortSelect>
+          </S.SortControl>
+        </S.ToolbarRow>
+
+        {isFuture() ? (
+          <S.FutureState>
+            <span style={{ fontSize: '52px' }}>🗓️</span>
+            <div>
+              <div style={{ fontSize: '17px', fontWeight: 700, color: theme.colors.fg }}>Chưa có dữ liệu điểm danh</div>
+              <div style={{ fontSize: '13.5px', color: theme.colors.muted, marginTop: '5px' }}>Ngày trong tương lai — dữ liệu sẽ xuất hiện khi các bé check-in.</div>
+            </div>
+            <S.NavButton 
+              $today 
+              style={{ flex: 'none', width: 'auto', padding: '0 24px', height: '42px' }} 
+              onClick={() => {
+                const d = new Date(); 
+                d.setHours(0,0,0,0); 
+                setDateMs(d.getTime());
+              }}
+            >
+              ← Về hôm nay
+            </S.NavButton>
+          </S.FutureState>
+        ) : sortedStudents.length === 0 ? (
+          <S.NoResultsState>
+            <span style={{ fontSize: '46px' }}>🔍</span>
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Không tìm thấy bé nào khớp “{query}”</span>
+          </S.NoResultsState>
+        ) : (
+          <>
+            <S.TableHeader style={{ borderBottom: '1px solid #EEF4F0' }}>
+              <span>Học sinh</span>
+              <span>Giờ đến</span>
+              <span>Trạng thái</span>
+              <span className="kc-hidecol">Ghi chú</span>
+            </S.TableHeader>
+
+            <S.TableContainer>
+              {sortedStudents.map((s, index) => {
+                const sk = getStatusKey(s);
+                const st = ST[sk];
+                const grad = getAvatarGrad(s.name);
+                const initial = getAvatarInitial(s.name);
+                const present = sk === 'present';
+                const hasError = imageErrors[s.id];
+                const showImg = s.avatar && !hasError;
+                
+                return (
+                  <S.Tr key={`${s.id}-${index}`} style={{ borderBottom: '1px solid #F3F6F4', position: 'relative', zIndex: openMenuId === s.id ? 100 : 1 }} className="kc-row">
+                    <S.StudentInfo>
+                      <S.StudentAvatar $grad={grad} $dim={st.dim} className="display">
+                        {showImg ? (
+                          <S.StudentAvatarImg 
+                            src={s.avatar} 
+                            alt={s.name} 
+                            onError={() => setImageErrors(prev => ({ ...prev, [s.id]: true }))}
+                          />
+                        ) : (
+                          initial
+                        )}
+                        <span style={{ position: 'absolute', right: '-2px', bottom: '-2px', width: '15px', height: '15px', borderRadius: '50%', background: st.dot, boxShadow: '0 0 0 2.5px #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '9px', fontWeight: 800 }}>
+                          {st.mini}
+                        </span>
+                      </S.StudentAvatar>
+                      <S.StudentMeta>
+                        <S.StudentName>{s.name}</S.StudentName>
+                        <S.StudentCode>{s.id.substring(0, 8)}</S.StudentCode>
+                      </S.StudentMeta>
+                    </S.StudentInfo>
+                    
+                    <S.TimeText $present={present} style={{ color: present ? '#374151' : '#C7CFCA' }}>
+                      {present && s.arrivalTime && s.arrivalTime !== '--:--' ? s.arrivalTime : '—'}
+                    </S.TimeText>
+                    
+                    <div style={{ position: 'relative' }}>
+                      <S.BadgeBtn 
+                        className="badge-btn"
+                        $bg={st.bg} $color={st.c} $borderColor={st.bd}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isFuture()) {
+                            addToast('Không thể điểm danh trước cho ngày tương lai!');
+                            return;
+                          }
+                          setOpenMenuId(s.id);
+                          setMenuStage('options');
+                        }}
+                      >
+                        <S.BadgeDot $color={st.dot} />
+                        {st.label}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </S.BadgeBtn>
+
+                      {openMenuId === s.id && (
+                        <S.PopoverOverlay 
+                          ref={popoverRef}
+                          className="attendance-popover"
+                          onClick={e => e.stopPropagation()} 
+                        >
+                          {menuStage === 'options' ? (
+                            <div style={{ padding: '5px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: 800, color: theme.colors.muted, textTransform: 'uppercase', letterSpacing: '0.04em', padding: '6px 8px' }}>
+                                Đổi trạng thái
+                              </div>
+                              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Present')}>
+                                <S.PopoverItemDot $color="#005A36" />
+                                Có mặt
+                              </S.PopoverItem>
+                              <S.PopoverItem onClick={() => {
+                                const targetStu = students.find(stVal => stVal.id === openMenuId);
+                                setReasonDraft(targetStu?.healthNote || targetStu?.leaveRequestReason || '');
+                                setMenuStage('reason');
+                              }}>
+                                <S.PopoverItemDot $color="#D97706" />
+                                Vắng có phép
+                              </S.PopoverItem>
+                              <S.PopoverItem onClick={() => handleUpdateStatus(openMenuId, 'Absent')}>
+                                <S.PopoverItemDot $color="#DC2626" />
+                                Vắng không phép
+                              </S.PopoverItem>
+                            </div>
+                          ) : (
+                            <S.PopoverReasonContainer>
+                              <div style={{ fontSize: '12px', fontWeight: 800, color: theme.colors.muted, paddingLeft: '2px' }}>Lý do xin phép</div>
+                              <form onSubmit={handleReasonSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <S.PopoverInput 
+                                  autoFocus
+                                  value={reasonDraft} 
+                                  onChange={e => setReasonDraft(e.target.value)} 
+                                  placeholder="VD: Bé bị ốm..." 
+                                />
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <S.PopoverSaveButton type="submit" disabled={!reasonDraft.trim()}>Lưu</S.PopoverSaveButton>
+                                  <S.PopoverSaveButton 
+                                    type="button" 
+                                    style={{ background: theme.colors.bg, color: theme.colors.muted, border: `1px solid ${theme.colors.border}` }} 
+                                    onClick={() => setOpenMenuId(null)}
+                                  >
+                                    Hủy
+                                  </S.PopoverSaveButton>
+                                </div>
+                              </form>
+                            </S.PopoverReasonContainer>
+                          )}
+                        </S.PopoverOverlay>
+                      )}
+                    </div>
+                    
+                    <S.NotesText className="kc-hidecol">
+                      <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {s.healthNote || s.leaveRequestReason || '—'}
+                      </span>
+                      {(s.attendanceStatus === 'PERMISSION_ABSENCE' || s.leaveRequestReason || s.leaveRequestId) && (
+                        <S.ViewFormBtn 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (s.leaveRequestId) {
+                              setLeaveDrawerOpen(true);
+                              setHighlightedLeaveId(s.leaveRequestId);
+                              setTimeout(() => {
+                                const element = document.getElementById(`leave-card-${s.leaveRequestId}`);
+                                if (element) {
+                                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                              }, 350);
+                            } else {
+                              addToast('Đơn xin nghỉ chưa được khởi tạo');
+                            }
+                          }}
+                        >
+                          Xem đơn
+                        </S.ViewFormBtn>
+                      )}
+                    </S.NotesText>
+                  </S.Tr>
+                );
+              })}
+            </S.TableContainer>
+          </>
+        )}
+      </section>
+
+
+
+      {/* LEAVE REQUEST DRAWER */}
+      {leaveDrawerOpen && (
+        <>
+          <S.DrawerOverlay onClick={() => setLeaveDrawerOpen(false)} />
+          <S.DrawerContainer ref={drawerRef} onClick={e => e.stopPropagation()}>
+            <S.DrawerHeader>
+              <S.DrawerHeaderIconBlock>
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              </S.DrawerHeaderIconBlock>
+              <S.DrawerHeaderMeta>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1F2937' }} className="display">Đơn xin nghỉ phép</div>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '1px' }}>
+                  {pendingLeavesCount} đơn chờ duyệt · {allLeaves.length} tổng
+                </div>
+              </S.DrawerHeaderMeta>
+              <S.DrawerCloseBtn onClick={() => setLeaveDrawerOpen(false)}>✕</S.DrawerCloseBtn>
+            </S.DrawerHeader>
+            
+            <S.DrawerContentList>
+              {allLeaves.map((l, index) => {
+                const isPending = l.status === 'PENDING';
+                const grad = getAvatarGrad(l.studentName);
+                const initial = getAvatarInitial(l.studentName);
+                
+                const fromStr = l.fromDate ? new Date(l.fromDate * 1000).toLocaleDateString('vi-VN') : '';
+                const toStr = l.toDate ? new Date(l.toDate * 1000).toLocaleDateString('vi-VN') : '';
+                const dateRangeText = fromStr === toStr ? fromStr : `${fromStr} → ${toStr}`;
+                const hasError = imageErrors[`leave-${l.id}`];
+                const showImg = l.studentAvatar && !hasError;
+                
+                return (
+                  <S.LeaveCard 
+                    key={`${l.id}-${index}`} 
+                    $isPending={isPending}
+                    id={`leave-card-${l.id}`}
+                    style={{
+                      border: highlightedLeaveId === l.id ? '2.5px solid #005A36' : undefined,
+                      boxShadow: highlightedLeaveId === l.id ? '0 8px 24px rgba(0, 90, 54, 0.15)' : undefined,
+                    }}
+                  >
+                    <S.LeaveCardHeader>
+                      <S.LeaveStudentAvatar $grad={grad} className="display">
+                        {showImg ? (
+                          <S.LeaveStudentAvatarImg 
+                            src={l.studentAvatar} 
+                            alt={l.studentName} 
+                            onError={() => setImageErrors(prev => ({ ...prev, [`leave-${l.id}`]: true }))}
+                          />
+                        ) : (
+                          initial
+                        )}
+                      </S.LeaveStudentAvatar>
+                      <S.LeaveStudentMeta>
+                        <S.LeaveStudentNameRow>
+                          <S.LeaveStudentName className="display">{l.studentName}</S.LeaveStudentName>
+                          <S.LeaveStatusPill $status={l.status}>
+                            {l.status === 'APPROVED' ? '✓ Đã duyệt' : (l.status === 'REJECTED' ? '✕ Từ chối' : 'Chờ duyệt')}
+                          </S.LeaveStatusPill>
+                        </S.LeaveStudentNameRow>
+                        <S.LeaveSubDetail>
+                          Mã HS: {l.studentId.substring(0, 8)}
+                        </S.LeaveSubDetail>
+                      </S.LeaveStudentMeta>
+                    </S.LeaveCardHeader>
+
+                    <S.LeaveDetailsBlock>
+                      <S.LeaveDetailRow>
+                        <S.LeaveDetailIconBlock $bg="#E3EDFD" $color="#2563EB">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel>Thời gian nghỉ</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue>{dateRangeText || 'Không rõ'}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      <S.LeaveDetailRow style={{ alignItems: 'flex-start' }}>
+                        <S.LeaveDetailIconBlock $bg="#FEF3C7" $color="#D97706" style={{ marginTop: '2px' }}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel style={{ paddingTop: '5px' }}>Lý do</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue style={{ flex: 1.5, textAlign: 'right', lineHeight: 1.4 }}>{l.reason || 'Không rõ lý do'}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      <S.LeaveDetailRow>
+                        <S.LeaveDetailIconBlock $bg="#E6F3ED" $color="#005A36">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                        </S.LeaveDetailIconBlock>
+                        <S.LeaveDetailLabel>Người gửi</S.LeaveDetailLabel>
+                        <S.LeaveDetailValue>{l.parentName} · {l.relationship}</S.LeaveDetailValue>
+                      </S.LeaveDetailRow>
+                      {l.parentPhone && (
+                        <S.LeaveDetailRow>
+                          <S.LeaveDetailIconBlock $bg="#E6F3ED" $color="#005A36">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                          </S.LeaveDetailIconBlock>
+                          <S.LeaveDetailLabel>SĐT liên hệ</S.LeaveDetailLabel>
+                          <S.LeaveDetailValue style={{ fontVariantNumeric: 'tabular-nums' }}>{l.parentPhone}</S.LeaveDetailValue>
+                        </S.LeaveDetailRow>
+                      )}
+                    </S.LeaveDetailsBlock>
+
+                    {/* EVIDENCE VIEW BUTTON */}
+                    {l.attachmentUrl && (
+                      <S.LeaveEvidenceBlock>
+                        <S.LeaveEvidenceTitle>Ảnh minh chứng</S.LeaveEvidenceTitle>
+                        <S.LeaveEvidenceBtn 
+                          $bg={PROOF_BGS[index % PROOF_BGS.length]}
+                          onClick={() => setProofOpenId(l.id)}
+                          style={{ padding: 0 }}
+                        >
+                          <img src={l.attachmentUrl} alt="Minh chứng" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </S.LeaveEvidenceBtn>
+                      </S.LeaveEvidenceBlock>
+                    )}
+
+                    {isPending && (
+                      <S.LeaveActionButtons>
+                        <S.LeaveActionApproveBtn className="display" onClick={() => handleProcessLeaveRequest(l.id, 'APPROVED')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          Duyệt
+                        </S.LeaveActionApproveBtn>
+                        <S.LeaveActionRejectBtn className="display" onClick={() => handleProcessLeaveRequest(l.id, 'REJECTED')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          Từ chối
+                        </S.LeaveActionRejectBtn>
+                      </S.LeaveActionButtons>
+                    )}
+                  </S.LeaveCard>
+                );
+              })}
+              {allLeaves.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '50px 20px', color: '#9CA3AF', fontWeight: 600 }}>
+                  Không tìm thấy đơn xin nghỉ học nào.
+                </div>
+              )}
+            </S.DrawerContentList>
+          </S.DrawerContainer>
+        </>
       )}
-    </AttendancePageContainer>
+
+      {/* EVIDENCE LIGHTBOX LIGHTBOX */}
+      {selectedProof && (
+        <S.LightboxOverlay onClick={() => setProofOpenId(null)}>
+          <S.LightboxContainer onClick={e => e.stopPropagation()}>
+            <S.LightboxMediaBox $bg={PROOF_BGS[allLeaves.indexOf(selectedProof) % PROOF_BGS.length]}>
+              <S.LightboxStripeOverlay />
+              {selectedProof.attachmentUrl ? (
+                <S.LightboxImage src={selectedProof.attachmentUrl} alt="Ảnh minh chứng đính kèm" />
+              ) : (
+                <>
+                  <span style={{ fontSize: '60px', position: 'relative' }}>📄</span>
+                  <span style={{ fontSize: '15px', fontWeight: 700, position: 'relative' }}>Ảnh minh chứng</span>
+                  <span style={{ fontSize: '13px', opacity: 0.85, position: 'relative' }}>Không tải được ảnh</span>
+                </>
+              )}
+            </S.LightboxMediaBox>
+            <S.LightboxFooter>
+              <S.LightboxCaption>
+                {selectedProof.studentName} · {selectedProof.fromDate ? (
+                  new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN') === new Date(selectedProof.toDate! * 1000).toLocaleDateString('vi-VN')
+                    ? new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN')
+                    : `${new Date(selectedProof.fromDate * 1000).toLocaleDateString('vi-VN')} → ${new Date(selectedProof.toDate! * 1000).toLocaleDateString('vi-VN')}`
+                ) : 'Đơn nghỉ'}
+              </S.LightboxCaption>
+              <S.LightboxCloseBtn onClick={() => setProofOpenId(null)}>Đóng</S.LightboxCloseBtn>
+            </S.LightboxFooter>
+          </S.LightboxContainer>
+        </S.LightboxOverlay>
+      )}
+
+      {/* TOASTS CONTAINER */}
+      <S.ToastContainer>
+        {toasts.map(t => (
+          <S.ToastMsg key={t.id} className="display">
+            {t.text}
+          </S.ToastMsg>
+        ))}
+      </S.ToastContainer>
+      {/* QR SCANNER MODAL */}
+      {isQrScannerOpen && (
+        <QrScannerModal 
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={() => {
+            if (classId) fetchAttendance(classId, dateMs); // Refresh data when scan successful
+          }}
+        />
+      )}
+
+    </S.PageContainer>
   );
-}
-export default AttendanceView;
+};

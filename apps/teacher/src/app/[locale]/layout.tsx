@@ -7,6 +7,7 @@ import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import type { Metadata } from 'next';
 import { Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
+import QueryProvider from '@/providers/QueryProvider';
 import '../globals.css';
 
 const montserrat = Montserrat({
@@ -73,15 +74,17 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
-          <StyledComponentsRegistry>
-            <AuthProvider>
-              <SocketProvider>
-                {children}
-              </SocketProvider>
-            </AuthProvider>
-          </StyledComponentsRegistry>
-        </NextIntlClientProvider>
+        <QueryProvider>
+          <NextIntlClientProvider messages={messages}>
+            <StyledComponentsRegistry>
+              <AuthProvider>
+                <SocketProvider>
+                  {children}
+                </SocketProvider>
+              </AuthProvider>
+            </StyledComponentsRegistry>
+          </NextIntlClientProvider>
+        </QueryProvider>
       </body>
     </html>
   );

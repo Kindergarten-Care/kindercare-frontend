@@ -34,7 +34,9 @@ export const SERVER = {
     getQrToken: '/parent/children/:studentId/qr-token',
   },
   teacher: {
-    scanAttendance: '/teacher/attendance/scan',
+    scanAttendance:      '/teacher/attendance/scan',
+    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
+    getSchedule:         '/teacher/classes/:classId/schedule',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

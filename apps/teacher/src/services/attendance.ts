@@ -45,8 +45,7 @@ function mapApiStudentToDomain(raw: any): Student {
     domainStatus = 'UNEXCUSED_ABSENCE';
   } else if (!raw.status) {
     // No attendance record exists for this student on this date
-    // Default to PRESENT (teacher hasn't taken attendance yet)
-    domainStatus = 'PRESENT';
+    domainStatus = 'NOT_YET';
   }
 
   let leaveReqStatus: LeaveRequestStatus | undefined = undefined;
@@ -62,8 +61,6 @@ function mapApiStudentToDomain(raw: any): Student {
       domainStatus = 'PERMISSION_ABSENCE';
     } else if (leaveReqStatus === 'REJECTED') {
       domainStatus = 'UNEXCUSED_ABSENCE';
-    } else if (leaveReqStatus === 'PENDING') {
-      domainStatus = 'PRESENT';
     }
   }
 
@@ -75,6 +72,9 @@ function mapApiStudentToDomain(raw: any): Student {
     arrivalTime: formatTimestampToTimeStr(raw.checkInTime),
     healthNote: raw.healthNote || '',
     eatingStatus: raw.eatingStatus,
+    sleepingStatus: raw.sleepingStatus,
+    hygieneStatus: raw.hygieneStatus,
+    teacherNote: raw.teacherNote,
     hasActiveLeaveRequest: leaveStatusLower === 'pending',
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
     leaveRequestStatus: leaveReqStatus,
@@ -82,10 +82,17 @@ function mapApiStudentToDomain(raw: any): Student {
   };
 }
 
-function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
+export function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
   let domainStatus: LeaveRequestStatus = 'PENDING';
   if (raw.status === 'Approved') domainStatus = 'APPROVED';
   if (raw.status === 'Rejected') domainStatus = 'REJECTED';
+
+  let attachmentUrl = raw.evidenceUrl || undefined;
+  if (attachmentUrl && !attachmentUrl.startsWith('http') && !attachmentUrl.startsWith('data:')) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+    const host = apiBase.split('/api')[0];
+    attachmentUrl = `${host}/${attachmentUrl.replace(/^\//, '')}`;
+  }
 
   return {
     id: String(raw.requestId),
@@ -94,11 +101,17 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     parentName: raw.parentName || 'Phụ huynh',
     relationship: 'Phụ huynh', // Default relationship since backend route does not expose it
     reason: raw.reason,
-    attachmentUrl: raw.evidenceUrl || undefined,
+    attachmentUrl,
     status: domainStatus,
     classId: raw.classId ? Number(raw.classId) : undefined,
     fromDate: raw.fromDate,
     toDate: raw.toDate,
+    parentPhone: raw.parentPhone || undefined,
+    isMealFeeDeducted: raw.isMealFeeDeducted,
+    parentNotes: raw.parentNotes,
+    createdAt: raw.createdAt || undefined,
+    className: raw.className || undefined,
+    studentAvatar: raw.studentAvatar || undefined,
   };
 }
 
@@ -136,11 +149,10 @@ export class AttendanceService {
    * Fetch details for a specific leave request.
    */
   public static async getLeaveRequestDetail(requestId: string): Promise<LeaveRequest | null> {
-    const res = await apiClient.get('/teacher/leave-requests');
-    const list = res.data?.data || [];
-    const match = list.find((r: any) => String(r.requestId) === requestId);
-    if (!match) return null;
-    return mapApiLeaveRequestToDomain(match);
+    const res = await apiClient.get(`/teacher/leave-requests/${requestId}`);
+    const data = res.data?.data;
+    if (!data) return null;
+    return mapApiLeaveRequestToDomain(data);
   }
 
   /**
@@ -180,6 +192,7 @@ export class AttendanceService {
         checkInTime,
         checkOutTime: null,
         pickedUpBy: null,
+        notes: r.healthNote,
       };
     });
 

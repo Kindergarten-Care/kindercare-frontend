@@ -44,6 +44,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# agents
+.agents/
 # MCP & local configs
 mcp_config.json
 fetch-swagger.js
@@ -54,3 +56,11 @@ KinderCare*.html
 
 # yarn lock
 yarn.lock
+# Agent config & logs
+.agent/
+.agent
+.agents/
+.agents
+
+KinderCare*.html
+*.sql

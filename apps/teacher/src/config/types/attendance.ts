@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE';
+export type AttendanceStatus = 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' | 'NOT_YET';
 
 export interface Student {
   id: string;
@@ -8,6 +8,9 @@ export interface Student {
   arrivalTime: string; // e.g. "07:45" or "--:--"
   healthNote: string;
   eatingStatus?: string;
+  sleepingStatus?: string;
+  hygieneStatus?: string;
+  teacherNote?: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;
@@ -28,4 +31,10 @@ export interface LeaveRequest {
   classId?: number;
   fromDate?: number;
   toDate?: number;
+  parentPhone?: string;
+  isMealFeeDeducted?: number | boolean;
+  parentNotes?: string;
+  createdAt?: number;
+  className?: string;
+  studentAvatar?: string;
 }

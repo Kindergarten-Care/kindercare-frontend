@@ -33,9 +33,9 @@ export function useActivities() {
         setLoading(true);
         const [menuData, mealsData, activitiesData, scheduleData] = await Promise.all([
           ActivitiesService.getMenuOfTheDay('today'),
-          ActivitiesService.getStudentMealRecords('M1', 'today'),
-          ActivitiesService.getStudentActivityRecords('M1', 'today'),
-          ActivitiesService.getDailySchedule('M1', 'today')
+          ActivitiesService.getStudentMealRecords('1', 'today'),
+          ActivitiesService.getStudentActivityRecords('1', 'today'),
+          ActivitiesService.getDailySchedule('1', 'today')
         ]);
         setMenu(menuData);
         setEditedMenu(menuData);
@@ -133,19 +133,29 @@ export function useActivities() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      if (activeTab === 'meals') {
-        await Promise.all([
-          ActivitiesService.updateMenuOfTheDay('today', editedMenu),
-          ActivitiesService.updateStudentMealRecords('M1', 'today', mealRecords)
-        ]);
+
+      // Nhóm chính (bắt buộc thành công): Lưu trạng thái Ăn + Ngủ
+      await Promise.all([
+        ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords),
+        ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords)
+      ]);
+
+      // Nhóm phụ (chấp nhận lỗi): Menu + Lịch trình
+      try {
+        await ActivitiesService.updateMenuOfTheDay('today', editedMenu);
         setMenu(editedMenu);
         setIsMenuEditing(false);
-      } else if (activeTab === 'activities') {
-        await ActivitiesService.updateStudentActivityRecords('M1', 'today', activityRecords);
-      } else {
-        await ActivitiesService.updateDailySchedule('M1', 'today', scheduleItems);
+      } catch (e) {
+        console.warn('Lỗi lưu menu (không ảnh hưởng):', e);
       }
-      alert('Đã lưu thành công dữ liệu ngày hôm nay!');
+
+      try {
+        await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
+      } catch (e) {
+        console.warn('Lỗi lưu lịch trình (không ảnh hưởng):', e);
+      }
+
+      alert('Đã lưu thành công trạng thái Ăn/Ngủ của các bé!');
     } catch (error) {
       console.error('Error saving daily activities:', error);
       alert('Có lỗi xảy ra trong quá trình lưu dữ liệu!');
