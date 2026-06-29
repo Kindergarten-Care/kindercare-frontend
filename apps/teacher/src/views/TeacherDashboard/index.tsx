@@ -7,6 +7,7 @@ import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
 import { HealthAlertsWidget } from './components/HealthAlertsWidget';
 import { TimelineWidget } from './components/TimelineWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
+import { QrScannerModal } from '@/components/QrScannerModal';
 import dynamic from 'next/dynamic';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
@@ -307,126 +308,6 @@ export const TeacherDashboardView: React.FC = () => {
   const handleStartScanner = () => {
     setScannerOpen(true);
     setQuickOpen(false);
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && (window as any).Html5Qrcode) {
-        try {
-          const Html5QrcodeClass = (window as any).Html5Qrcode;
-          const html5QrCode = new Html5QrcodeClass("reader-dashboard");
-          qrScannerRef.current = html5QrCode;
-          setIsCameraActive(true);
-
-          html5QrCode.start(
-            { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 220, height: 220 }
-            },
-            (decodedText: string) => {
-              html5QrCode.stop().then(() => {
-                setIsCameraActive(false);
-                setScannerOpen(false);
-                handleQrCodeScanned(decodedText);
-              }).catch((err: any) => {
-                console.error("Scanner stop failed", err);
-                setIsCameraActive(false);
-                setScannerOpen(false);
-              });
-            },
-            () => {
-              // Ignore failure frames
-            }
-          ).catch((err: any) => {
-            console.error("Scanner start failed", err);
-            alert("Không thể khởi động camera: " + err);
-            setIsCameraActive(false);
-            setScannerOpen(false);
-          });
-        } catch (e) {
-          console.error(e);
-          alert("Lỗi cấu hình camera");
-          setIsCameraActive(false);
-          setScannerOpen(false);
-        }
-      } else {
-        alert("Thư viện camera chưa tải xong. Vui lòng thử lại sau vài giây.");
-        setScannerOpen(false);
-      }
-    }, 300);
-  };
-
-  const handleStopScanner = () => {
-    if (qrScannerRef.current) {
-      try {
-        if (qrScannerRef.current.isScanning) {
-          qrScannerRef.current.stop().then(() => {
-            setIsCameraActive(false);
-            setScannerOpen(false);
-          }).catch((err: any) => {
-            console.error(err);
-            setIsCameraActive(false);
-            setScannerOpen(false);
-          });
-        } else {
-          setIsCameraActive(false);
-          setScannerOpen(false);
-        }
-      } catch (e) {
-        setIsCameraActive(false);
-        setScannerOpen(false);
-      }
-    } else {
-      setIsCameraActive(false);
-      setScannerOpen(false);
-    }
-  };
-
-  const handleQrCodeScanned = async (decodedText: string) => {
-    let studentId = '';
-    let parentName = '';
-    let relationship = '';
-
-    try {
-      const data = JSON.parse(decodedText);
-      studentId = data.studentId ? String(data.studentId) : '';
-      parentName = data.parentName || data.name || '';
-      relationship = data.relationship || 'Người đưa đón';
-    } catch (e) {
-      const num = Number(decodedText.trim());
-      if (!isNaN(num) && num > 0) {
-        studentId = String(num);
-      }
-    }
-
-    if (!studentId) {
-      addToast("Mã QR không đúng định dạng điểm danh!");
-      return;
-    }
-
-    const student = studentsList.find(s => String(s.id) === String(studentId));
-    if (!student) {
-      addToast(`Không tìm thấy học sinh có ID ${studentId} trong lớp!`);
-      return;
-    }
-
-    const checkInTime = getNowTime();
-    const finalParentName = parentName || 'Phụ huynh';
-    const finalRelationship = relationship || 'Người đưa đón';
-
-    playChime();
-
-    setQrSuccessModal({
-      isOpen: true,
-      studentName: student.name,
-      parentName: finalParentName,
-      relationship: finalRelationship,
-      checkInTime
-    });
-
-    setTimeout(() => {
-      setQrSuccessModal(null);
-    }, 2800);
-
-    await handleScanSuccess(student.name, student.healthNote || null, student.id);
   };
 
   const quickActionsList = [
@@ -582,54 +463,15 @@ export const TeacherDashboardView: React.FC = () => {
       </S.ToastsContainer>
 
 
-      {/* QR CAMERA SCANNER MODAL */}
-      <S.ScannerOverlay $active={scannerOpen}>
-        <S.ScannerContent>
-          <S.ScannerHeader>
-            <S.ScannerTitle>Quét Mã QR Điểm Danh</S.ScannerTitle>
-            <S.ScannerCloseButton onClick={handleStopScanner}>✕</S.ScannerCloseButton>
-          </S.ScannerHeader>
-          <S.ScannerDesc>
-            Căn chỉnh mã QR học sinh / phụ huynh nằm chính giữa khung camera quét bên dưới.
-          </S.ScannerDesc>
-
-          <S.VideoWrapper>
-            <div id="reader-dashboard" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} />
-            <S.ScannerOverlayGuide>
-              {isCameraActive && <S.LaserLine />}
-            </S.ScannerOverlayGuide>
-          </S.VideoWrapper>
-
-          <S.ScannerCancelButton onClick={handleStopScanner}>
-            Hủy bỏ quét
-          </S.ScannerCancelButton>
-        </S.ScannerContent>
-      </S.ScannerOverlay>
-
-      {/* QR SCAN SUCCESS OVERLAY */}
-      {qrSuccessModal && qrSuccessModal.isOpen && (
-        <S.SuccessOverlay>
-          <S.SuccessContent>
-            <S.SuccessCheckIcon>✓</S.SuccessCheckIcon>
-            <S.SuccessTitle>ĐIỂM DANH THÀNH CÔNG</S.SuccessTitle>
-            <S.SuccessDesc>Thông tin quét mã check-in đã được xác thực.</S.SuccessDesc>
-            
-            <S.SuccessInfoBlock>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Học sinh:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal>{qrSuccessModal.studentName}</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Người đón:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal>{qrSuccessModal.parentName} ({qrSuccessModal.relationship})</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-              <S.SuccessInfoRow>
-                <S.SuccessInfoLabel>Thời gian:</S.SuccessInfoLabel>
-                <S.SuccessInfoVal $isGreen>{qrSuccessModal.checkInTime}</S.SuccessInfoVal>
-              </S.SuccessInfoRow>
-            </S.SuccessInfoBlock>
-          </S.SuccessContent>
-        </S.SuccessOverlay>
+      {/* QR SCANNER MODAL (Unified) */}
+      {scannerOpen && (
+        <QrScannerModal 
+          onClose={() => setScannerOpen(false)}
+          onScanSuccess={() => {
+            loadDashboardData();
+            triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
+          }}
+        />
       )}
 
       {/* CREATE NEWSFEED MODAL */}
