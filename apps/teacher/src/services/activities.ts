@@ -30,18 +30,57 @@ export class ActivitiesService {
   /**
    * Fetch the general menu of the day.
    */
-  public static async getMenuOfTheDay(date: string): Promise<MenuOfTheDay> {
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    return { ...mockMenuState };
+  public static async getMenuOfTheDay(classId: string, date: string): Promise<MenuOfTheDay> {
+    try {
+      let realDate = date;
+      if (date === 'today') {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      const response = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
+      const data = response.data?.data || [];
+      
+      const menu: MenuOfTheDay = { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
+      data.forEach((item: any) => {
+        if (item.mealType === 'Breakfast') menu.breakfastMenu = item.dishName;
+        if (item.mealType === 'Lunch') menu.lunchMenu = item.dishName;
+        if (item.mealType === 'Snack') menu.afternoonSnackMenu = item.dishName;
+      });
+
+      return menu;
+    } catch (error) {
+      console.error('Error fetching menu API:', error);
+      return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
+    }
   }
 
   /**
    * Update the daily menu.
    */
-  public static async updateMenuOfTheDay(date: string, menu: MenuOfTheDay): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    mockMenuState = { ...menu };
-    return true;
+  public static async updateMenuOfTheDay(classId: string, date: string, menu: MenuOfTheDay): Promise<boolean> {
+    try {
+      let realDate = date;
+      if (date === 'today') {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      await apiClient.put(`/teacher/classes/${classId}/menu`, {
+        date: dateSeconds,
+        breakfastMenu: menu.breakfastMenu,
+        lunchMenu: menu.lunchMenu,
+        afternoonSnackMenu: menu.afternoonSnackMenu
+      });
+      return true;
+    } catch (error) {
+      console.error('Error updating menu:', error);
+      return false;
+    }
   }
 
   /**
@@ -70,7 +109,9 @@ export class ActivitiesService {
               avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
               breakfast: breakfast as MealStatus,
               lunch: lunch as MealStatus,
-              afternoonSnack: 'ALL'
+              afternoonSnack: 'ALL',
+              note: s.teacherNote || '',
+              photoUrl: s.photoUrl || undefined
             };
           });
       }
@@ -99,13 +140,25 @@ export class ActivitiesService {
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const mealData = records.map(r => {
-        let eatingStatus = 'Ăn hết suất';
-        if (r.lunch === 'HALF' || r.breakfast === 'HALF') eatingStatus = 'Ăn chậm';
-        if (r.lunch === 'NONE' || r.breakfast === 'NONE') eatingStatus = 'Bỏ bữa';
+        let breakfastStatus = 'Ăn hết suất';
+        if (r.breakfast === 'HALF') breakfastStatus = 'Ăn chậm';
+        if (r.breakfast === 'NONE') breakfastStatus = 'Bỏ bữa';
+
+        let lunchStatus = 'Ăn hết suất';
+        if (r.lunch === 'HALF') lunchStatus = 'Ăn chậm';
+        if (r.lunch === 'NONE') lunchStatus = 'Bỏ bữa';
+
+        let snackStatus = 'Ăn hết suất';
+        if (r.afternoonSnack === 'HALF') snackStatus = 'Ăn chậm';
+        if (r.afternoonSnack === 'NONE') snackStatus = 'Bỏ bữa';
 
         return {
           studentId: Number(r.studentId),
-          eatingStatus
+          breakfastStatus,
+          lunchStatus,
+          snackStatus,
+          teacherNote: r.note?.trim() || undefined,
+          photoUrl: r.photoUrl
         };
       });
 
@@ -138,11 +191,11 @@ export class ActivitiesService {
           .filter(s => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
           .map(s => {
             let nap = 'GOOD';
-            if (s.sleepingStatus === 'Khó ngủ') nap = 'RESTLESS';
-            if (s.sleepingStatus === 'Không ngủ') nap = 'POOR';
+            if (s.sleepingStatus === 'Khó ngủ') nap = 'POOR';
+            if (s.sleepingStatus === 'Không ngủ') nap = 'NONE';
 
             let participation = 'ACTIVE';
-            if (s.teacherNote?.includes('quan sát')) participation = 'OBSERVING';
+            if (s.teacherNote?.includes('quan sát')) participation = 'NORMAL';
             if (s.teacherNote?.includes('Mệt mỏi')) participation = 'TIRED';
 
             let note = s.teacherNote?.replace('Vui chơi tích cực. ', '').replace('Chỉ quan sát bạn chơi. ', '').replace('Mệt mỏi, ít tham gia. ', '') || '';
@@ -150,10 +203,11 @@ export class ActivitiesService {
             return {
               studentId: String(s.id),
               studentName: s.name,
-              avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
+              studentAvatar: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
               nap: nap as NapStatus,
               participation: participation as ParticipationStatus,
-              note: note.trim()
+              note: note.trim(),
+              photoUrl: s.photoUrl || undefined
             };
           });
       }
@@ -182,9 +236,9 @@ export class ActivitiesService {
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const activityData = records.map(r => {
-        let sleepingStatus = 'Ngủ ngoan';
-        if (r.nap === 'POOR') sleepingStatus = 'Khó ngủ';
-        if (r.nap === 'POOR') sleepingStatus = 'Không ngủ';
+        let napStatus = 'Ngủ ngoan';
+        if (r.nap === 'POOR') napStatus = 'Khó ngủ';
+        if (r.nap === 'NONE') napStatus = 'Không ngủ';
 
         let hygieneStatus = 'Bình thường';
 
@@ -196,9 +250,10 @@ export class ActivitiesService {
 
         return {
           studentId: Number(r.studentId),
-          sleepingStatus,
+          napStatus,
           hygieneStatus,
-          teacherNote: teacherNote.trim()
+          teacherNote: teacherNote.trim(),
+          photoUrl: r.photoUrl
         };
       });
 
@@ -239,8 +294,23 @@ export class ActivitiesService {
         };
       });
     } catch (e) {
-      console.error('Error fetching real schedule API, fallback to mock:', e);
-      return [...mockScheduleState];
+      console.error('Error fetching schedule, fallback to empty:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Upload an image to the backend and return the URL
+   */
+  public static async uploadImage(file: File): Promise<string | null> {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await apiClient.post('/teacher/upload', formData);
+      return response.data?.data?.url || null;
+    } catch (e) {
+      console.error('Error uploading image:', e);
+      return null;
     }
   }
 

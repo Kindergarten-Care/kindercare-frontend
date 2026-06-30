@@ -10,8 +10,11 @@
   "dependencies": {
     "@kindercare/config": "*",
     "@kindercare/core": "*",
+
     "@kindercare/ui": "*",
     "@tanstack/react-query": "^5.101.1",
+
+
     "axios": "^1.15.2",
     "lucide-react": "^1.17.0",
     "next": "16.2.3",

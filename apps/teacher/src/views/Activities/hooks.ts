@@ -4,6 +4,7 @@ import { ActivitiesService } from '@/services/activities';
 
 export function useActivities() {
   const [loading, setLoading] = useState(true);
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'meals' | 'activities' | 'schedule'>('meals');
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,7 +33,7 @@ export function useActivities() {
       try {
         setLoading(true);
         const [menuData, mealsData, activitiesData, scheduleData] = await Promise.all([
-          ActivitiesService.getMenuOfTheDay('today'),
+          ActivitiesService.getMenuOfTheDay('1', 'today'),
           ActivitiesService.getStudentMealRecords('1', 'today'),
           ActivitiesService.getStudentActivityRecords('1', 'today'),
           ActivitiesService.getDailySchedule('1', 'today')
@@ -67,6 +68,14 @@ export function useActivities() {
     );
   };
 
+  const handleMealPhotoChange = (studentId: string, photoUrl: string | undefined) => {
+    setMealRecords(prev =>
+      prev.map(record =>
+        record.studentId === studentId ? { ...record, photoUrl } : record
+      )
+    );
+  };
+
   const handleActivityNapChange = (studentId: string, nap: NapStatus) => {
     setActivityRecords(prev =>
       prev.map(record =>
@@ -87,6 +96,14 @@ export function useActivities() {
     setActivityRecords(prev =>
       prev.map(record =>
         record.studentId === studentId ? { ...record, note } : record
+      )
+    );
+  };
+
+  const handleActivityPhotoChange = (studentId: string, photoUrl: string | undefined) => {
+    setActivityRecords(prev =>
+      prev.map(record =>
+        record.studentId === studentId ? { ...record, photoUrl } : record
       )
     );
   };
@@ -129,7 +146,22 @@ export function useActivities() {
     );
   };
 
-  // Save changes handler
+  const handleSaveMenu = async () => {
+    try {
+      setSaving(true);
+      await ActivitiesService.updateMenuOfTheDay('1', 'today', editedMenu);
+      setMenu(editedMenu);
+      setIsMenuEditing(false);
+      return true;
+    } catch (e) {
+      console.warn('Lỗi lưu menu:', e);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Save changes handler (for everything else)
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -139,15 +171,6 @@ export function useActivities() {
         ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords),
         ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords)
       ]);
-
-      // Nhóm phụ (chấp nhận lỗi): Menu + Lịch trình
-      try {
-        await ActivitiesService.updateMenuOfTheDay('today', editedMenu);
-        setMenu(editedMenu);
-        setIsMenuEditing(false);
-      } catch (e) {
-        console.warn('Lỗi lưu menu (không ảnh hưởng):', e);
-      }
 
       try {
         await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
@@ -201,13 +224,18 @@ export function useActivities() {
     // Actions
     handleMealStatusChange,
     handleMealNoteChange,
+    handleMealPhotoChange,
     handleActivityNapChange,
     handleActivityParticipationChange,
+    expandedStudentId,
+    setExpandedStudentId,
     handleActivityNoteChange,
+    handleActivityPhotoChange,
     handleScheduleStatusChange,
     handleSchedulePhotoChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
+    handleSaveMenu,
   };
 }

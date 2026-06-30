@@ -11,6 +11,7 @@ export interface Student {
   sleepingStatus?: string;
   hygieneStatus?: string;
   teacherNote?: string;
+  photoUrl?: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;

@@ -78,3 +78,35 @@ export const LessonDesc = styled.div`
   margin-top: 3px;
   line-height: 1.45;
 `;
+
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  text-align: center;
+`;
+
+export const EmptyIcon = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--brand-tint, #eaf7f0);
+  color: var(--brand, #005a36);
+  display: grid;
+  place-items: center;
+`;
+
+export const EmptyTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+`;
+
+export const EmptySub = styled.div`
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+`;

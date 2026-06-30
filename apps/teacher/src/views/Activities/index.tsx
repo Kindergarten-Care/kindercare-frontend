@@ -10,8 +10,11 @@ import {
   BookOpen, 
   Users,
   Check,
-  MapPin
+  MapPin,
+  MessageSquare,
+  Camera
 } from 'lucide-react';
+import { ActivitiesService } from '@/services/activities';
 
 interface ToastItem {
   id: string;
@@ -56,12 +59,31 @@ const OPTSETS = {
   ],
 };
 
-const ICON_MAP = {
+const ICON_MAP: Record<ActivityUIGroup, React.ReactNode> = {
   meal: <Utensils size={19} />,
   nap: <Moon size={19} />,
   study: <BookOpen size={19} />,
   play: <Users size={19} />,
   arrival: <Sun size={19} />
+};
+
+const LocalNoteTextarea = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
+  const [localVal, setLocalVal] = useState(value);
+  
+  useEffect(() => {
+    setLocalVal(value);
+  }, [value]);
+
+  return (
+    <S.NoteTextarea 
+      placeholder={placeholder}
+      value={localVal}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onBlur={() => {
+        if (localVal !== value) onChange(localVal);
+      }}
+    />
+  );
 };
 
 export const ActivitiesView: React.FC = () => {
@@ -73,13 +95,25 @@ export const ActivitiesView: React.FC = () => {
     activityRecords,
     scheduleItems,
     handleMealStatusChange,
+    handleMealNoteChange,
+    handleMealPhotoChange,
     handleActivityNapChange,
     handleActivityParticipationChange,
+    expandedStudentId,
+    setExpandedStudentId,
+    handleActivityNoteChange,
+    handleActivityPhotoChange,
     handleScheduleStatusChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,
-    saving
+    handleSaveMenu,
+    saving,
+    menu,
+    isMenuEditing,
+    setIsMenuEditing,
+    editedMenu,
+    setEditedMenu
   } = useActivities();
 
   // Selected item tracking
@@ -304,6 +338,75 @@ export const ActivitiesView: React.FC = () => {
 
         {/* RIGHT COLUMN: LOGGING & MATRIX */}
         <S.RightCol>
+          {curGroup === 'meal' && (
+            <S.MenuSection>
+              <S.MenuHeader>
+                <S.MenuTitle><Utensils size={18} /> Thực đơn hôm nay</S.MenuTitle>
+                {!isMenuEditing ? (
+                  <S.EditMenuBtn onClick={() => setIsMenuEditing(true)}>
+                    Sửa thực đơn
+                  </S.EditMenuBtn>
+                ) : (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <S.EditMenuBtn 
+                      onClick={() => setIsMenuEditing(false)} 
+                      style={{ background: '#fff', color: '#6b7280', borderColor: '#d1d5db' }}
+                    >
+                      Hủy
+                    </S.EditMenuBtn>
+                    <S.EditMenuBtn 
+                      onClick={async () => {
+                        const success = await handleSaveMenu();
+                        if (success) addToast('✅ Đã lưu thực đơn thành công!');
+                      }}
+                      style={{ background: '#d97706', color: '#fff' }}
+                    >
+                      Lưu thực đơn
+                    </S.EditMenuBtn>
+                  </div>
+                )}
+              </S.MenuHeader>
+              <S.MenuGrid>
+                <S.MenuMealBox>
+                  <S.MenuMealLabel>Bữa sáng</S.MenuMealLabel>
+                  {isMenuEditing ? (
+                    <S.MenuInput 
+                      value={editedMenu.breakfastMenu}
+                      onChange={(e) => setEditedMenu({...editedMenu, breakfastMenu: e.target.value})}
+                      placeholder="Nhập thực đơn bữa sáng..."
+                    />
+                  ) : (
+                    <S.MenuMealText>{menu.breakfastMenu || 'Chưa cập nhật'}</S.MenuMealText>
+                  )}
+                </S.MenuMealBox>
+                <S.MenuMealBox>
+                  <S.MenuMealLabel>Bữa trưa</S.MenuMealLabel>
+                  {isMenuEditing ? (
+                    <S.MenuInput 
+                      value={editedMenu.lunchMenu}
+                      onChange={(e) => setEditedMenu({...editedMenu, lunchMenu: e.target.value})}
+                      placeholder="Nhập thực đơn bữa trưa..."
+                    />
+                  ) : (
+                    <S.MenuMealText>{menu.lunchMenu || 'Chưa cập nhật'}</S.MenuMealText>
+                  )}
+                </S.MenuMealBox>
+                <S.MenuMealBox>
+                  <S.MenuMealLabel>Bữa xế</S.MenuMealLabel>
+                  {isMenuEditing ? (
+                    <S.MenuInput 
+                      value={editedMenu.afternoonSnackMenu}
+                      onChange={(e) => setEditedMenu({...editedMenu, afternoonSnackMenu: e.target.value})}
+                      placeholder="Nhập thực đơn bữa xế..."
+                    />
+                  ) : (
+                    <S.MenuMealText>{menu.afternoonSnackMenu || 'Chưa cập nhật'}</S.MenuMealText>
+                  )}
+                </S.MenuMealBox>
+              </S.MenuGrid>
+            </S.MenuSection>
+          )}
+
           <S.SectionCard>
             <S.MatrixHeader>
               <S.MatrixIconBox $bg={PALETTES[curGroup].tint} $color={PALETTES[curGroup].solid}>
@@ -334,34 +437,79 @@ export const ActivitiesView: React.FC = () => {
 
             {hasMatrix ? (
               <S.MatrixList>
-                {matrix.map((m) => (
-                  <S.MatrixRow key={m.id}>
-                    <S.AvatarNode $bg={m.grad} $imgUrl={m.avatar}>{m.initial}</S.AvatarNode>
-                    <S.StudentNameNode>{m.name}</S.StudentNameNode>
-                    <S.OptionsGroup $width={m.groupWidth}>
-                      <S.ActiveHighlight 
-                        $index={m.activeIndex} 
-                        $total={m.totalOptions} 
-                        $color={m.activeColor} 
-                      />
-                      {m.options.map((opt: any) => (
-                        <S.OptionBtn 
-                          key={opt.k} 
-                          $active={opt.active} 
-                          onClick={() => {
-                            if (!selectedItem?.completed) opt.pick();
-                          }}
-                          style={{
-                            opacity: selectedItem?.completed && !opt.active ? 0.4 : 1,
-                            cursor: selectedItem?.completed ? 'not-allowed' : 'pointer'
-                          }}
+                {matrix.map((m: any) => {
+                  const isExpanded = expandedStudentId === m.id;
+                  const hasNoteOrPhoto = !!m.note || !!m.photoUrl;
+                  return (
+                    <div key={m.id}>
+                      <S.MatrixRow style={{ borderRadius: isExpanded ? '12px 12px 0 0' : '12px' }}>
+                        <S.AvatarNode $bg={m.grad} $imgUrl={m.avatar}>{m.initial}</S.AvatarNode>
+                        <S.StudentNameNode>{m.name}</S.StudentNameNode>
+                        <S.OptionsGroup $width={m.groupWidth}>
+                          <S.ActiveHighlight 
+                            $index={m.activeIndex} 
+                            $total={m.totalOptions} 
+                            $color={m.activeColor} 
+                          />
+                          {m.options.map((opt: any) => (
+                            <S.OptionBtn 
+                              key={opt.k} 
+                              $active={opt.active} 
+                              onClick={() => {
+                                if (!selectedItem?.completed) opt.pick();
+                              }}
+                              style={{
+                                opacity: selectedItem?.completed && !opt.active ? 0.4 : 1,
+                                cursor: selectedItem?.completed ? 'not-allowed' : 'pointer'
+                              }}
+                            >
+                              {opt.label}
+                            </S.OptionBtn>
+                          ))}
+                        </S.OptionsGroup>
+                        <S.EditNoteBtn 
+                          $active={isExpanded || hasNoteOrPhoto} 
+                          onClick={() => setExpandedStudentId(isExpanded ? null : m.id)}
+                          title="Thêm nhận xét và ảnh minh chứng"
                         >
-                          {opt.label}
-                        </S.OptionBtn>
-                      ))}
-                    </S.OptionsGroup>
-                  </S.MatrixRow>
-                ))}
+                          <MessageSquare size={18} />
+                        </S.EditNoteBtn>
+                      </S.MatrixRow>
+                      
+                      <S.NoteAccordion $expanded={isExpanded}>
+                        <S.AccordionContent>
+                          <div>
+                            <LocalNoteTextarea 
+                              placeholder="Nhận xét chi tiết của giáo viên về bé..." 
+                              value={m.note || ''}
+                              onChange={(val) => curGroup === 'meal' ? handleMealNoteChange(m.id, val) : handleActivityNoteChange(m.id, val)}
+                            />
+                            <S.PhotoUploadBox>
+                              {m.photoUrl ? (
+                                <S.PhotoPreview src={m.photoUrl} alt="Minh chứng" />
+                              ) : (
+                                <>
+                                  <Camera size={24} />
+                                  <span style={{ fontSize: '12px', fontWeight: 500 }}>Tải ảnh</span>
+                                </>
+                              )}
+                              <input type="file" accept="image/*" onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const url = await ActivitiesService.uploadImage(file);
+                                  if (url) {
+                                    if (curGroup === 'meal') handleMealPhotoChange(m.id, url);
+                                    else handleActivityPhotoChange(m.id, url);
+                                  }
+                                }
+                              }} />
+                            </S.PhotoUploadBox>
+                          </div>
+                        </S.AccordionContent>
+                      </S.NoteAccordion>
+                    </div>
+                  );
+                })}
               </S.MatrixList>
             ) : (
               <S.EmptyMatrixCard>

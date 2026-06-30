@@ -8,6 +8,7 @@ import { kcToast } from '@kindercare/ui';
 interface UseLeaveRequestPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
 }
 
 const getLocalDateString = (offsetDays = 0): string => {
@@ -19,7 +20,7 @@ const getLocalDateString = (offsetDays = 0): string => {
   return `${year}-${month}-${date}`;
 };
 
-export const useLeaveRequestPopup = ({ isOpen, onClose }: UseLeaveRequestPopupProps) => {
+export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLeaveRequestPopupProps) => {
   const { activeStudent } = useStudent();
   const [isLongLeave, setIsLongLeave] = useState<boolean>(false);
   const [singleDate, setSingleDate] = useState<string>(getLocalDateString(0));
@@ -128,9 +129,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose }: UseLeaveRequestPopupPr
       return;
     }
 
-    // Convert to Unix timestamps in seconds (UTC midnight / end of day)
-    const fromTimestamp = Math.floor(new Date(`${fromDateStr}T00:00:00Z`).getTime() / 1000);
-    const toTimestamp = Math.floor(new Date(`${toDateStr}T23:59:59Z`).getTime() / 1000);
+    // Convert to Unix timestamps in seconds (midnight / end of day in UTC+7)
+    const fromTimestamp = Math.floor(new Date(`${fromDateStr}T00:00:00+07:00`).getTime() / 1000);
+    const toTimestamp = Math.floor(new Date(`${toDateStr}T23:59:59+07:00`).getTime() / 1000);
 
     if (isLongLeave && fromTimestamp > toTimestamp) {
       kcToast.error('Ngày bắt đầu không được lớn hơn ngày kết thúc.', 'Lỗi');
@@ -158,6 +159,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose }: UseLeaveRequestPopupPr
       setSelectedReason('Bé bị ốm');
       setNote('');
       setAttachedFile(null);
+      onSubmitSuccess?.();
       onClose();
     } catch (err: any) {
       console.error('Failed to create leave request:', err);

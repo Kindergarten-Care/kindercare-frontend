@@ -10,6 +10,7 @@ export interface StudentMealRecord {
   lunch: MealStatus;
   afternoonSnack: MealStatus;
   note?: string;
+  photoUrl?: string;
 }
 
 export interface StudentActivityRecord {
@@ -19,6 +20,7 @@ export interface StudentActivityRecord {
   nap: NapStatus;
   participation: ParticipationStatus;
   note?: string;
+  photoUrl?: string;
 }
 
 export interface MenuOfTheDay {

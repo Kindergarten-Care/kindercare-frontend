@@ -3,12 +3,12 @@
 import React from 'react';
 import * as S from './styles';
 import { IconChart } from '@/assets/icons/dashboard';
+import { AssessmentDomainModel } from '@/config/types/assessment';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
-// Inline SVGs for required icons
 const BarbellIcon: React.FC<IconProps> = ({ size = 18, ...props }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M6 12h12" />
@@ -45,71 +45,62 @@ const PaintbrushIcon: React.FC<IconProps> = ({ size = 18, ...props }) => (
   </svg>
 );
 
-interface DomainItem {
+interface DomainConfig {
   id: string;
   name: string;
-  score: number;
-  diff: string;
-  trend: 'up' | 'down';
   color: string;
   bg: string;
   Icon: React.FC<IconProps>;
+  scoreKey: keyof Pick<AssessmentDomainModel, 'physicalScore' | 'cognitiveScore' | 'languageScore' | 'socioEmotionalScore' | 'aestheticScore'>;
+  fallbackScore: number;
 }
 
-const DOMAINS: DomainItem[] = [
-  {
-    id: 'physical',
-    name: 'Thể chất',
-    score: 7.8,
-    diff: '+0.4',
-    trend: 'up',
-    color: '#2563eb', // Blue
-    bg: '#eff6ff',
-    Icon: BarbellIcon,
-  },
-  {
-    id: 'cognitive',
-    name: 'Nhận thức',
-    score: 9.1,
-    diff: '+0.8',
-    trend: 'up',
-    color: '#005A36', // Green (Brand)
-    bg: '#eaf7f0', // Brand-tint
-    Icon: BrainIcon,
-  },
-  {
-    id: 'language',
-    name: 'Ngôn ngữ',
-    score: 9.4,
-    diff: '+1.1',
-    trend: 'up',
-    color: '#7c3aed', // Purple
-    bg: '#f5f3ff',
-    Icon: MessageSquareIcon,
-  },
-  {
-    id: 'social',
-    name: 'Tình cảm – Xã hội',
-    score: 8.5,
-    diff: '+0.2',
-    trend: 'up',
-    color: '#f97316', // Orange
-    bg: '#fff7ed',
-    Icon: HeartIcon,
-  },
-  {
-    id: 'aesthetic',
-    name: 'Thẩm mỹ',
-    score: 8.2,
-    diff: '-0.1',
-    trend: 'down',
-    color: '#ec4899', // Pink
-    bg: '#fdf2f8',
-    Icon: PaintbrushIcon,
-  },
+const DOMAIN_CONFIGS: DomainConfig[] = [
+  { id: 'physical',  name: 'Thể chất',           color: '#2563eb', bg: '#eff6ff',  Icon: BarbellIcon,      scoreKey: 'physicalScore',        fallbackScore: 7.8 },
+  { id: 'cognitive', name: 'Nhận thức',            color: '#005A36', bg: '#eaf7f0',  Icon: BrainIcon,        scoreKey: 'cognitiveScore',        fallbackScore: 9.1 },
+  { id: 'language',  name: 'Ngôn ngữ',             color: '#7c3aed', bg: '#f5f3ff',  Icon: MessageSquareIcon, scoreKey: 'languageScore',         fallbackScore: 9.4 },
+  { id: 'social',    name: 'Tình cảm – Xã hội',   color: '#f97316', bg: '#fff7ed',  Icon: HeartIcon,        scoreKey: 'socioEmotionalScore',   fallbackScore: 8.5 },
+  { id: 'aesthetic', name: 'Thẩm mỹ',              color: '#ec4899', bg: '#fdf2f8',  Icon: PaintbrushIcon,   scoreKey: 'aestheticScore',        fallbackScore: 8.2 },
 ];
 
-const DevelopmentalDomainsWidget: React.FC = () => {
+interface DevelopmentalDomainsWidgetProps {
+  assessment?: AssessmentDomainModel | null;
+}
+
+const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment }) => {
+  if (!assessment) {
+    return (
+      <S.Card>
+        <S.CardHead>
+          <S.CardTitleContainer>
+            <S.CardTitle>
+              <IconChart size={18} color="var(--brand, #005a36)" />
+              5 lĩnh vực phát triển
+            </S.CardTitle>
+          </S.CardTitleContainer>
+        </S.CardHead>
+        <S.EmptyState>
+          <S.EmptyIcon>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+          </S.EmptyIcon>
+          <S.EmptyTitle>Chưa có đánh giá tháng này</S.EmptyTitle>
+          <S.EmptySub>Kết quả 5 lĩnh vực phát triển của bé<br />sẽ được cập nhật sớm nhất</S.EmptySub>
+        </S.EmptyState>
+      </S.Card>
+    );
+  }
+
+  const scores = DOMAIN_CONFIGS.map(cfg => {
+    const raw = assessment[cfg.scoreKey];
+    const score = raw !== null && raw !== undefined ? raw * 2 : 0;
+    return { ...cfg, score };
+  });
+
+  const avg = scores.reduce((sum, d) => sum + d.score, 0) / scores.length;
+
   return (
     <S.Card>
       <S.CardHead>
@@ -118,7 +109,7 @@ const DevelopmentalDomainsWidget: React.FC = () => {
             <IconChart size={18} color="var(--brand, #005a36)" />
             5 lĩnh vực phát triển
           </S.CardTitle>
-          <S.AvgBadge>TB 8.6</S.AvgBadge>
+          <S.AvgBadge>TB {avg.toFixed(1)}</S.AvgBadge>
         </S.CardTitleContainer>
         <S.DetailLink onClick={() => alert('Xem chi tiết 5 lĩnh vực phát triển')}>
           Chi tiết →
@@ -126,15 +117,12 @@ const DevelopmentalDomainsWidget: React.FC = () => {
       </S.CardHead>
 
       <S.DomainsGrid>
-        {DOMAINS.map(({ id, name, score, diff, trend, color, bg, Icon }) => (
+        {scores.map(({ id, name, score, color, bg, Icon }) => (
           <S.DomainCard key={id} $color={color}>
             <S.DomainHead>
               <S.DomainIcon $bg={bg} $color={color}>
                 <Icon size={16} />
               </S.DomainIcon>
-              <S.TrendBadge $trend={trend}>
-                {trend === 'up' ? '↑' : '↓'} {diff}
-              </S.TrendBadge>
             </S.DomainHead>
 
             <S.DomainLabel>{name}</S.DomainLabel>
@@ -150,6 +138,12 @@ const DevelopmentalDomainsWidget: React.FC = () => {
           </S.DomainCard>
         ))}
       </S.DomainsGrid>
+
+      {assessment.teacherComment && (
+        <S.TeacherComment>
+          <strong>Nhận xét của giáo viên:</strong> {assessment.teacherComment}
+        </S.TeacherComment>
+      )}
     </S.Card>
   );
 };
