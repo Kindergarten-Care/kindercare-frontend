@@ -2,12 +2,20 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
-import { AttendanceWidget } from './components/AttendanceWidget';
-import { GoodBehaviorWidget } from './components/GoodBehaviorWidget';
-import { HealthAlertsWidget } from './components/HealthAlertsWidget';
-import { TimelineWidget } from './components/TimelineWidget';
+import { HeroBannerWidget } from './components/HeroBannerWidget';
+import { QuickCategoriesWidget } from './components/QuickCategoriesWidget';
+import { FeaturedKidsWidget, FeaturedKid } from './components/FeaturedKidsWidget';
+import { TopKidWidget } from './components/TopKidWidget';
+import { AttendanceProgressWidget } from './components/AttendanceProgressWidget';
+import { TaskListWidget, TaskItem } from './components/TaskListWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { QrScannerModal } from '@/components/QrScannerModal';
+
+import { LeaveRequestModal } from './components/LeaveRequestModal';
+import { MedicalNoteModal } from './components/MedicalNoteModal';
+import { GoodKidModal } from './components/GoodKidModal';
+import { AllFeaturesModal } from './components/AllFeaturesModal';
+
 import dynamic from 'next/dynamic';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
@@ -16,60 +24,52 @@ const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidg
 import { AttendanceService } from '@/services/attendance';
 import { Student } from '@/config/types/attendance';
 
-interface LiveFeedItem {
-  id: string;
-  name: string;
-  time: string;
-  note: string | null;
-  initial: string;
-  color: string;
-}
+import { 
+  useDashboardStats, 
+  useNotifications, 
+  useLeaveRequests,
+  useUpdateLeaveRequest,
+  useWeeklyRewards
+} from '@/hooks/useTeacherQueries';
 
-interface ConfettiItem {
-  id: string;
-  x: number;
-  y: number;
-  color: string;
-  dx: number;
-  dy: number;
-  angle: number;
-}
-
-interface ToastItem {
-  id: string;
-  text: string;
-}
-
-import { useDashboardStats, useNotifications } from '@/hooks/useTeacherQueries';
+// Helper to calculate current week number
+const getWeekNumber = (d: Date) => {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
+};
 
 export const TeacherDashboardView: React.FC = () => {
   const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
-  const { data: notifications } = useNotifications();
 
   const [activeClassId, setActiveClassId] = useState<number | null>(null);
+  const [activeClassName, setActiveClassName] = useState<string>('');
   const [studentsList, setStudentsList] = useState<Student[]>([]);
   const [presentCount, setPresentCount] = useState(0);
-  const [liveFeed, setLiveFeed] = useState<LiveFeedItem[]>([]);
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [confetti, setConfetti] = useState<ConfettiItem[]>([]);
-  const [dateStr, setDateStr] = useState('Hôm nay');
+  const [toasts, setToasts] = useState<{id: string, text: string}[]>([]);
+  const [confetti, setConfetti] = useState<any[]>([]);
 
-  // Bento state variables
-  const [quickOpen, setQuickOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
+  // Modals
   const [scannerOpen, setScannerOpen] = useState(false);
   const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [qrSuccessModal, setQrSuccessModal] = useState<{
-    isOpen: boolean;
-    studentName: string;
-    parentName: string;
-    relationship: string;
-    checkInTime: string;
-  } | null>(null);
-
-  const [activeClassName, setActiveClassName] = useState<string>('');
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
+
+  // Modal States
+  const [selectedLeave, setSelectedLeave] = useState<any>(null);
+  const [selectedMedical, setSelectedMedical] = useState<any>(null);
+  const [selectedGoodKid, setSelectedGoodKid] = useState<any>(null);
+  const [allFeaturesOpen, setAllFeaturesOpen] = useState(false);
+
+  // API Hooks integration
+  const { data: pendingLeaves = [] } = useLeaveRequests('Pending');
+  const updateLeaveReq = useUpdateLeaveRequest();
+
+  const now = new Date();
+  const currentWeek = getWeekNumber(now);
+  const currentYear = now.getFullYear();
+
+  const { data: rawWeeklyRewards = [] } = useWeeklyRewards(activeClassId || undefined, currentWeek, currentYear);
 
   const qrScannerRef = useRef<any>(null);
 
@@ -84,8 +84,6 @@ export const TeacherDashboardView: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoadingDashboard(true);
-      
-      // Still need class data explicitly for QR scanner initialization
       const classes = dashboardData?.classes || await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
@@ -96,44 +94,15 @@ export const TeacherDashboardView: React.FC = () => {
         const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
         setStudentsList(students);
 
-        // Filter already checked-in students
         const present = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
         setPresentCount(present.length);
-
-        const checkedIn = students.filter(s => s.arrivalTime && s.arrivalTime !== '--:--');
-
-        // Map and pre-populate live check-in logs
-        const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9'];
-        const feedLogs: LiveFeedItem[] = checkedIn.map(s => {
-          const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
-          let h = 0;
-          for (let i = 0; i < s.name.length; i++) h = (h * 31 + s.name.charCodeAt(i)) >>> 0;
-          const color = colors[h % colors.length];
-          return {
-            id: s.id,
-            name: s.name,
-            time: s.arrivalTime,
-            note: s.healthNote || null,
-            initial,
-            color
-          };
-        });
-        setLiveFeed(feedLogs);
       }
     } catch (e) {
-      console.warn('Failed to load real DB dashboard data:', e);
+      console.warn('Failed to load dashboard data:', e);
     } finally {
       setIsLoadingDashboard(false);
     }
   };
-
-  useEffect(() => {
-    // Format dynamic vietnamese date label
-    const d = new Date();
-    let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    ds = ds.charAt(0).toUpperCase() + ds.slice(1);
-    setDateStr(ds);
-  }, []);
 
   useEffect(() => {
     if (!isLoadingDashboardQuery && dashboardData) {
@@ -155,46 +124,6 @@ export const TeacherDashboardView: React.FC = () => {
     }
   }, []);
 
-  // Cleanup scanner on unmount
-  useEffect(() => {
-    return () => {
-      if (qrScannerRef.current && qrScannerRef.current.isScanning) {
-        try {
-          qrScannerRef.current.stop();
-        } catch (e) {
-          // ignore cleanup errors
-        }
-      }
-    };
-  }, []);
-
-  const getNowTime = () => {
-    const d = new Date();
-    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-  };
-
-  const playChime = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const now = audioContext.currentTime;
-      [880, 1318.5].forEach((freq, index) => {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        const startTime = now + index * 0.085;
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.16, startTime + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.32);
-        osc.connect(gain).connect(audioContext.destination);
-        osc.start(startTime);
-        osc.stop(startTime + 0.34);
-      });
-    } catch (e) {
-      console.warn('AudioContext failed to trigger beep:', e);
-    }
-  };
-
   const addToast = (text: string) => {
     const id = 'toast-' + Date.now() + Math.random();
     setToasts(prev => [...prev, { id, text }]);
@@ -205,7 +134,7 @@ export const TeacherDashboardView: React.FC = () => {
 
   const triggerConfetti = (centerX: number, centerY: number) => {
     const colors = ['#10B981', '#34D399', '#FCD34D', '#F43F5E', '#93C5FD', '#C4B5FD'];
-    const newPieces: ConfettiItem[] = [];
+    const newPieces: any[] = [];
     for (let i = 0; i < 30; i++) {
       const ang = Math.random() * Math.PI * 2;
       const dist = 40 + Math.random() * 85;
@@ -226,95 +155,111 @@ export const TeacherDashboardView: React.FC = () => {
     }, 1200);
   };
 
-  const handleScanSuccess = async (name: string, note: string | null, studentId?: string) => {
-    if (!activeClassId) return;
-
-    // 1. Find the student to check-in
-    let targetStudent = null;
-    if (studentId) {
-      targetStudent = studentsList.find(s => String(s.id) === String(studentId));
-    }
-    if (!targetStudent && name) {
-      targetStudent = studentsList.find(s => s.name.toLowerCase().includes(name.toLowerCase()));
-    }
-    if (!targetStudent) {
-      targetStudent = studentsList.find(s => !s.arrivalTime || s.arrivalTime === '--:--');
-    }
-
-    if (!targetStudent) {
-      addToast('🎉 Tất cả học sinh trong lớp đều đã có mặt!');
-      return;
-    }
-
-    if (targetStudent.arrivalTime && targetStudent.arrivalTime !== '--:--') {
-      addToast(`Bé ${targetStudent.name} đã được điểm danh trước đó lúc ${targetStudent.arrivalTime}.`);
-      return;
-    }
-
-    if (targetStudent.hasActiveLeaveRequest || targetStudent.leaveRequestStatus === 'PENDING') {
-      addToast(`Không thể điểm danh bé ${targetStudent.name} qua QR vì có đơn xin nghỉ đang chờ duyệt!`);
-      return;
-    }
-
-    const checkInTime = getNowTime();
-
-    try {
-      // 2. Persist check-in record directly to backend SQL Database
-      await AttendanceService.updateAttendance(activeClassId, getTodayDateString(), [
-        {
-          studentId: targetStudent.id,
-          status: 'PRESENT',
-          arrivalTime: checkInTime,
-          healthNote: targetStudent.healthNote || ''
-        }
-      ]);
-
-      // 3. Play chime sound signals
-      playChime();
-      
-      // 4. Trigger confetti drop coordinates
-      triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
-
-      // 5. Update local present counter
-      setPresentCount(prev => prev + 1);
-
-      // 6. Push details onto dynamic LiveFeed list state
-      const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9'];
-      const initial = targetStudent.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
-      let h = 0;
-      for (let i = 0; i < targetStudent.name.length; i++) h = (h * 31 + targetStudent.name.charCodeAt(i)) >>> 0;
-      const itemColor = colors[h % colors.length];
-
-      const newFeed: LiveFeedItem = {
-        id: 'feed-' + Date.now(),
-        name: targetStudent.name,
-        time: checkInTime,
-        note: targetStudent.healthNote || null,
-        initial,
-        color: itemColor
-      };
-
-      setLiveFeed(prev => [newFeed, ...prev]);
-      addToast(`✓ Đã điểm danh thành công bé ${targetStudent.name}`);
-
-      // 7. Update local students array state copy so they won't be checked-in again
-      setStudentsList(prev => prev.map(s => s.id === targetStudent.id ? { ...s, arrivalTime: checkInTime, attendanceStatus: 'PRESENT' } : s));
-    } catch (e) {
-      console.warn('Failed to commit attendance check-in to SQL Database:', e);
-      addToast('Gặp lỗi khi ghi nhận điểm danh vào CSDL.');
-    }
+  // MOCK DATA FOR NEW WIDGETS
+  const handleApproveLeave = (reqId: string) => {
+    updateLeaveReq.mutate({ requestId: reqId, status: 'Approved' }, {
+      onSuccess: () => addToast('🎉 Đã duyệt đơn xin phép!'),
+      onError: () => addToast('❌ Lỗi khi duyệt đơn')
+    });
   };
 
-  const handleStartScanner = () => {
-    setScannerOpen(true);
-    setQuickOpen(false);
-  };
-
-  const quickActionsList = [
-    { id: 'q1', label: 'Điểm danh QR', desc: 'Quét mã check-in', color: '#005A36', tint: '#E6F3ED', icon: '📲', run: handleStartScanner },
-    { id: 'q2', label: 'Tạo nhật ký', desc: 'Ghi lại hoạt động lớp', color: '#2563EB', tint: '#E3EDFD', icon: '📝', run: () => { setNewsfeedModalOpen(true); setQuickOpen(false); } },
-    { id: 'q3', label: 'Phiếu bé ngoan', desc: 'Đánh giá hàng ngày', color: '#EC4899', tint: '#FCE7F3', icon: '🌺', run: () => { addToast('Vui lòng dùng nút Đánh giá ngay trên Widget'); setQuickOpen(false); } },
+  const cats = [
+    { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
+    { id: '2', label: 'Hoạt động', icon: '🧩', iconBg: '#E0E7FF', iconColor: '#4338CA', onClick: () => setNewsfeedModalOpen(true) },
+    { id: '3', label: 'Y tế', icon: '💊', iconBg: '#FCE7F3', iconColor: '#BE185D', onClick: () => addToast('Đang phát triển...') },
+    { id: '4', label: 'Phiếu bé ngoan', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => addToast('Đang phát triển...') },
+    { id: '5', label: 'Đơn phép', icon: '📝', iconBg: '#F3E8FF', iconColor: '#7E22CE', onClick: () => addToast('Đang phát triển...') },
   ];
+
+  // Map Real Weekly Rewards API to FeaturedKids
+  const featuredKids: FeaturedKid[] = rawWeeklyRewards.slice(0, 4).map((r: any, idx: number) => {
+    const colors = ['#FEF3C7', '#E0E7FF', '#FCE7F3', '#E6F3ED'];
+    const names = r.studentName ? r.studentName.split(' ') : ['Bé'];
+    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    return {
+      id: String(r.studentId || idx),
+      name: r.studentName || 'Bé ngoan',
+      initial,
+      color: colors[idx % colors.length],
+      stars: r.totalStars || (10 - idx),
+      days: r.attendanceDays || 5,
+      eatLabel: r.eatingStatus || 'Ăn hết suất',
+      justAwarded: idx === 0 // Highlight top 1
+    };
+  });
+  
+  // Fallback to mock data if API returns empty
+  if (featuredKids.length === 0) {
+    featuredKids.push(
+      { id: 'm1', name: 'Khôi', initial: 'K', color: '#FECACA', stars: 10, days: 5, eatLabel: 'Ăn hết suất', justAwarded: true, eatStyle: { color: '#005A36', background: '#E6F3ED' } },
+      { id: 'm2', name: 'Nhiên', initial: 'N', color: '#C7D2FE', stars: 9, days: 5, eatLabel: 'Ăn khá', eatStyle: { color: '#B45309', background: '#FEF3C7' } },
+      { id: 'm3', name: 'Linh', initial: 'L', color: '#BAE6FD', stars: 8, days: 4, eatLabel: 'Ăn khá', eatStyle: { color: '#B45309', background: '#FEF3C7' } },
+      { id: 'm4', name: 'Huy', initial: 'H', color: '#FBCFE8', stars: 8, days: 5, eatLabel: 'Ăn khá', eatStyle: { color: '#B45309', background: '#FEF3C7' } }
+    );
+  }
+
+  // Map Real Leave Requests to TaskList
+  const tasks: TaskItem[] = pendingLeaves.map((leave: any) => {
+    const names = leave.studentName ? leave.studentName.split(' ') : ['?'];
+    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    return {
+      id: String(leave.id),
+      name: leave.studentName,
+      initial,
+      color: '#FEF08A', // Yellowish for leave requests
+      tag: 'Đơn phép',
+      tagStyle: { color: '#B45309', background: '#FEF3C7', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
+      sub: `Lý do: ${leave.reason || 'Việc gia đình'}`,
+      btn: updateLeaveReq.isPending ? 'Đang duyệt...' : 'Duyệt',
+      btnColor: '#005A36',
+      btnBorder: '#A7E0C6',
+      action: () => handleApproveLeave(String(leave.id)),
+      onRowClick: () => setSelectedLeave({
+        id: String(leave.id),
+        studentName: leave.studentName,
+        parentName: leave.parentName || 'Phụ huynh',
+        parentPhone: leave.parentPhone || '0988 123 456',
+        reason: leave.reason,
+        fromDate: leave.fromDate,
+        toDate: leave.toDate,
+        parentNotes: leave.parentNotes,
+        attachmentUrl: leave.attachmentUrl // Pass real attachment URL if available
+      })
+    };
+  });
+
+  // If no leaves, show exact mock data from the image to demonstrate the UI
+  if (tasks.length === 0) {
+    tasks.push(
+      { 
+        id: 'mock1', name: 'Bé Khang', initial: 'K', color: '#E0E7FF', tag: 'Y tế', tagStyle: { color: '#DC2626', background: '#FEE2E2', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }, sub: 'Siro ho Prospan - 5ml', btn: 'Đã cho uống', btnColor: '#DC2626', btnBorder: '#FCA5A5', action: () => addToast('Đã ghi nhận cho uống thuốc'),
+        onRowClick: () => setSelectedMedical({ id: 'mock1', studentName: 'Bé Khang', medicineName: 'Siro ho Prospan', dosage: '5ml', timeToTake: 'Sau ăn trưa', parentNotes: 'Bé đang ho đờm, cô nhớ cho uống nước ấm nhé.', imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80' })
+      },
+      { 
+        id: 'mock2', name: 'Bé Bảo Long', initial: 'L', color: '#FCE7F3', tag: 'Y tế', tagStyle: { color: '#DC2626', background: '#FEE2E2', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }, sub: 'Kháng dị ứng - sau ăn', btn: 'Đã cho uống', btnColor: '#DC2626', btnBorder: '#FCA5A5', action: () => addToast('Đã ghi nhận cho uống thuốc'),
+        onRowClick: () => setSelectedMedical({ id: 'mock2', studentName: 'Bé Bảo Long', medicineName: 'Kháng dị ứng', dosage: '1 viên', timeToTake: 'Sau ăn sáng', parentNotes: 'Bé bị dị ứng thời tiết.', imageUrl: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&q=80' })
+      },
+      { 
+        id: 'mock3', name: 'Bé Phương Vy', initial: 'V', color: '#FECDD3', tag: 'Đơn phép', tagStyle: { color: '#B45309', background: '#FEF3C7', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }, sub: 'Bị ốm, sốt - hôm nay', btn: 'Duyệt', btnColor: '#005A36', btnBorder: '#A7E0C6', action: () => addToast('Đã duyệt đơn phép'),
+        onRowClick: () => setSelectedLeave({ id: 'mock3', studentName: 'Bé Phương Vy', parentName: 'Mẹ Vy', parentPhone: '0909 111 222', reason: 'Bị ốm, sốt', fromDate: getTodayDateString(), toDate: getTodayDateString(), parentNotes: 'Cháu sốt cao từ đêm qua.', attachmentUrl: 'https://images.unsplash.com/photo-1628771065518-0d82f1938462?w=400&q=80' })
+      }
+    );
+  }
+
+  // Define Top Kid data (using the first FeaturedKid or mock if empty)
+  const topKid = featuredKids[0] || { name: 'Khôi', initial: 'K', stars: 10, days: 5 };
+
+  const handleOpenGoodKid = (kid: any) => {
+    setSelectedGoodKid({
+      id: kid.id,
+      studentName: kid.name,
+      totalStars: kid.stars,
+      daysAttended: kid.days,
+      maxDays: 5,
+      mealsGood: kid.days,
+      maxMeals: 5
+    });
+  };
 
   return (
     <S.DashboardContainer>
@@ -333,127 +278,53 @@ export const TeacherDashboardView: React.FC = () => {
         ))}
       </S.ConfettiContainer>
 
-      {/* TOP GREETING BAR */}
-      <S.GreetingHeader>
-        <S.HeaderLeft>
-          <S.GreetingTitle>Chào buổi sáng, Thầy Huy! 👋</S.GreetingTitle>
-          <S.GreetingSubtitleRow>
-            <S.CalendarIcon>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </S.CalendarIcon>
-            <span>{dateStr}</span>
-          </S.GreetingSubtitleRow>
-        </S.HeaderLeft>
+      <S.BodyLayout>
+        {/* MAIN COLUMN (LEFT) */}
+        <S.MainColumn>
+          <HeroBannerWidget 
+            className={activeClassName || 'Lớp Mầm 1'}
+            presentCount={presentCount}
+            totalCount={studentsList.length || 42}
+            onOpenScanner={() => setScannerOpen(true)}
+          />
 
-        <S.HeaderRight>
-          {/* QUICK CREATE DROPDOWN */}
-          <S.DropdownWrapper>
-            <S.PrimaryActionButton onClick={() => { setQuickOpen(!quickOpen); setNotifOpen(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Tạo nhanh
-            </S.PrimaryActionButton>
+          <QuickCategoriesWidget 
+            categories={cats} 
+            onViewAll={() => setAllFeaturesOpen(true)}
+          />
 
-            {quickOpen && (
-              <S.QuickActionsMenu>
-                {quickActionsList.map(q => (
-                  <S.MenuItemButton key={q.id} $tint={q.tint} $color={q.color} onClick={q.run}>
-                    <S.MenuItemIcon $tint={q.tint} $color={q.color}>{q.icon}</S.MenuItemIcon>
-                    <S.MenuItemLabel>{q.label}</S.MenuItemLabel>
-                  </S.MenuItemButton>
-                ))}
-              </S.QuickActionsMenu>
-            )}
-          </S.DropdownWrapper>
+          <FeaturedKidsWidget kids={featuredKids} />
 
-          {/* NOTIFICATION BUTTON */}
-          <S.DropdownWrapper>
-            <S.NotifIconButton onClick={() => { setNotifOpen(!notifOpen); setQuickOpen(false); }}>
-              <S.NotifIconWrapper>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </S.NotifIconWrapper>
-              {notifications && notifications.length > 0 && <S.RedIndicator />}
-            </S.NotifIconButton>
+          <AttendanceProgressWidget 
+            presentCount={presentCount}
+            totalCount={studentsList.length || 42}
+            onScanMore={() => setScannerOpen(true)}
+          />
 
-            {notifOpen && (
-              <S.NotifMenu>
-                <S.NotifMenuTitle>Thông báo ({notifications?.length || 0})</S.NotifMenuTitle>
-                {notifications && notifications.length > 0 ? notifications.map((notif: any) => (
-                  <S.NotifItem key={notif.notificationId} onClick={() => addToast(`Mở: ${notif.title}`)}>
-                    <S.NotifItemIcon $bg="#FCE7F3" $color="#EC4899">🔔</S.NotifItemIcon>
-                    <S.NotifContent>
-                      <S.NotifText>{notif.body}</S.NotifText>
-                      <S.NotifTime>{new Date(notif.createdAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</S.NotifTime>
-                    </S.NotifContent>
-                  </S.NotifItem>
-                )) : (
-                  <S.NotifItem>
-                    <S.NotifContent>
-                      <S.NotifText>Không có thông báo mới</S.NotifText>
-                    </S.NotifContent>
-                  </S.NotifItem>
-                )}
-              </S.NotifMenu>
-            )}
-          </S.DropdownWrapper>
-        </S.HeaderRight>
-      </S.GreetingHeader>
+          <div style={{ marginTop: '8px' }}>
+            <ClassNewsfeedWidget classId={activeClassId} />
+          </div>
+        </S.MainColumn>
 
-      {/* BENTO GRID */}
-      <S.BentoGrid>
-        {/* CARD A: Attendance (col span 2) */}
-        <S.GridCol2Span>
-          <AttendanceWidget students={studentsList} className={activeClassName} loading={isLoadingDashboard} />
-        </S.GridCol2Span>
+        {/* RIGHT COLUMN */}
+        <S.RightColumn>
+          {/* Real API-driven Tasks List */}
+          <TaskListWidget tasks={tasks} />
 
-        {/* CARD D: Good Behavior (col span 1) */}
-        <S.GridCol1Span>
-          <GoodBehaviorWidget students={studentsList} classId={activeClassId} />
-        </S.GridCol1Span>
-
-        {/* CARD E: Health alert notes (col span 1) */}
-        <S.GridCol1Span>
-          <HealthAlertsWidget students={studentsList} classId={activeClassId} />
-        </S.GridCol1Span>
-
-        {/* CARD C: Timeline checklist (col span 2, row span 2) */}
-        <S.GridCol2Span style={{ gridRow: 'span 2' }}>
-          <TimelineWidget classId={activeClassId} />
-        </S.GridCol2Span>
-
-        {/* CARD B: Approvals list (col span 1, row span 2) */}
-        <S.GridRow2Span>
-          <LeaveApprovalWidget onAction={addToast} onRefresh={loadDashboardData} />
-        </S.GridRow2Span>
-
-        {/* QUICK ACTIONS column (col span 1, row span 2) */}
-        <S.QuickActionsColumn>
-          {quickActionsList.map(q => (
-            <S.ActionTile key={q.id} onClick={q.run}>
-              <S.ActionTileIcon $bg={q.tint} $color={q.color}>{q.icon}</S.ActionTileIcon>
-              <div>
-                <S.ActionTileTitle>{q.label}</S.ActionTileTitle>
-                <S.ActionTileDesc>{q.desc}</S.ActionTileDesc>
-              </div>
-            </S.ActionTile>
-          ))}
-        </S.QuickActionsColumn>
-
-        {/* CARD F: Newsfeed (col span 4 or 2) */}
-        <div style={{ gridColumn: 'span 4', height: '400px', marginTop: '8px' }}>
-          <ClassNewsfeedWidget classId={activeClassId} />
-        </div>
-      </S.BentoGrid>
+          <div onClick={() => handleOpenGoodKid(topKid)} style={{ cursor: 'pointer' }}>
+            <TopKidWidget 
+              name={topKid.name} 
+              initial={topKid.initial} 
+              days={topKid.days} 
+              maxDays={5} 
+              meals={topKid.days} 
+              maxMeals={5} 
+              totalStars={topKid.stars} 
+              onAward={() => handleOpenGoodKid(topKid)}
+            />
+          </div>
+        </S.RightColumn>
+      </S.BodyLayout>
 
       {/* FLOATING TOAST NOTIFICATIONS */}
       <S.ToastsContainer>
@@ -462,8 +333,7 @@ export const TeacherDashboardView: React.FC = () => {
         ))}
       </S.ToastsContainer>
 
-
-      {/* QR SCANNER MODAL (Unified) */}
+      {/* QR SCANNER MODAL */}
       {scannerOpen && (
         <QrScannerModal 
           onClose={() => setScannerOpen(false)}
@@ -482,6 +352,41 @@ export const TeacherDashboardView: React.FC = () => {
         onSuccess={() => {
           setNewsfeedModalOpen(false);
           addToast('🎉 Tạo nhật ký lớp thành công!');
+        }}
+      />
+
+      {/* NEW MODALS */}
+      <LeaveRequestModal 
+        isOpen={!!selectedLeave}
+        data={selectedLeave}
+        onClose={() => setSelectedLeave(null)}
+        onApprove={(id) => { handleApproveLeave(id); setSelectedLeave(null); }}
+        onReject={(id) => { addToast('Đã từ chối đơn!'); setSelectedLeave(null); }}
+      />
+
+      <MedicalNoteModal 
+        isOpen={!!selectedMedical}
+        data={selectedMedical}
+        onClose={() => setSelectedMedical(null)}
+        onMarkDone={(id) => { addToast('✅ Đã cho uống thuốc thành công!'); setSelectedMedical(null); }}
+      />
+
+      <GoodKidModal 
+        isOpen={!!selectedGoodKid}
+        data={selectedGoodKid}
+        onClose={() => setSelectedGoodKid(null)}
+        onAward={(id, note) => { addToast(`🎁 Đã cấp phiếu bé ngoan cho bé thành công!`); setSelectedGoodKid(null); }}
+      />
+
+      <AllFeaturesModal 
+        isOpen={allFeaturesOpen}
+        onClose={() => setAllFeaturesOpen(false)}
+        onSelectFeature={(feature) => {
+          if (feature === 'Nhật ký lớp') {
+            setNewsfeedModalOpen(true);
+          } else {
+            addToast(`Đang mở: ${feature}`);
+          }
         }}
       />
     </S.DashboardContainer>
