@@ -35,8 +35,10 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const { user, logout } = useAuth();
   
   const isDashboardActive = pathname === '/';
+  const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
   const isActivitiesActive = pathname === '/activities';
+  const isProfileActive = pathname === '/profile';
 
   // Extract user initials
   const getInitials = (name?: string) => {
@@ -100,12 +102,14 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>LỚP & HỌC TẬP</S.SectTitle>
-        <S.NavItem $isCollapsed={isCollapsed}>
+        <S.NavItem $active={isStudentsActive} $isCollapsed={isCollapsed} onClick={() => router.push('/students')}>
+          {isStudentsActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Users size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Danh sách lớp</S.NavLabel>
           <S.NavBadge $isCollapsed={isCollapsed}>20</S.NavBadge>
         </S.NavItem>
-        <S.NavItem $isCollapsed={isCollapsed}>
+        <S.NavItem $active={isProfileActive} $isCollapsed={isCollapsed} onClick={() => router.push('/profile')}>
+          {isProfileActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Contact size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Hồ sơ bé</S.NavLabel>
         </S.NavItem>

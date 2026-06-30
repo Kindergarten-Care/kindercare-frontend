@@ -43,16 +43,16 @@ export const useUpdateLeaveRequest = () => {
 };
 
 // --- TIMELINE (SCHEDULE & MENU) ---
-export const useClassSchedule = (classId: string | number | undefined) => {
+export const useClassSchedule = (classId: number | string | undefined, dateSeconds?: number) => {
   return useQuery({
-    queryKey: ['classSchedule', classId],
+    queryKey: ['classSchedule', classId, dateSeconds],
     queryFn: async () => {
       if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/schedule`);
-      return response.data.data;
+      const { scheduleService } = await import('@/services/schedule/ScheduleService');
+      return scheduleService.getSchedule(classId, dateSeconds);
     },
-    enabled: !!classId, // Only fetch if classId is available
-    staleTime: 5 * 60 * 1000, // 5 minutes since schedule doesn't change often
+    enabled: !!classId,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 };
 

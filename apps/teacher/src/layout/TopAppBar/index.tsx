@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { NotificationDropdown } from './components/NotificationDropdown';
 import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
+import { NotificationService, NotificationItem } from '@/services/notifications';
 
 interface TopAppBarProps {
   fullName: string;
@@ -13,6 +14,25 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      setLoading(true);
+      const data = await NotificationService.getNotifications();
+      setNotifications(data);
+      setLoading(false);
+    };
+    fetchNotifs();
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    await NotificationService.markAllAsRead();
+    setNotifications(prev => prev.map(n => ({ ...n, isUnread: false })));
+  };
+
+  const unreadCount = notifications.filter(n => n.isUnread).length;
 
   // Helper to get first name
   const getFirstName = (name: string) => {
@@ -51,9 +71,16 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
         <S.NotificationWrapper>
           <S.ActionButton aria-label="Notifications" onClick={() => setIsNotifOpen(!isNotifOpen)}>
             <Bell size={20} strokeWidth={2} />
-            <S.NotificationBadge />
+            {unreadCount > 0 && <S.NotificationBadge>{unreadCount}</S.NotificationBadge>}
           </S.ActionButton>
-          {isNotifOpen && <NotificationDropdown onClose={() => setIsNotifOpen(false)} />}
+          {isNotifOpen && (
+            <NotificationDropdown 
+              onClose={() => setIsNotifOpen(false)} 
+              notifications={notifications}
+              loading={loading}
+              onMarkAllRead={handleMarkAllRead}
+            />
+          )}
         </S.NotificationWrapper>
 
         {/* Profile Card */}
