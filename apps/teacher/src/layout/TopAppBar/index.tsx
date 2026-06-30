@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
-import { NotificationDropdown } from './components/NotificationDropdown';
+import { NotificationPopup } from './components/NotificationPopup';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
+import type { AppDispatch } from '@/store';
+import type { NotificationDto } from '@kindercare/core';
 import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
-import { NotificationService, NotificationItem } from '@/services/notifications';
 
 interface TopAppBarProps {
   fullName: string;
@@ -14,25 +17,39 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const unreadCount = useSelector(selectUnreadCount);
 
+  // Lấy inbox khi mount
   useEffect(() => {
-    const fetchNotifs = async () => {
-      setLoading(true);
-      const data = await NotificationService.getNotifications();
-      setNotifications(data);
-      setLoading(false);
+    dispatch(fetchNotifications());
+  }, [dispatch]);
+
+  // Lắng nghe Push FCM Foreground
+  useEffect(() => {
+    let counter = 0;
+    const handler = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const notif: NotificationDto = {
+        NotifID:     --counter,
+        UserID:      0,
+        Title:       payload.notification?.title ?? '',
+        Message:     payload.notification?.body  ?? '',
+        Type:        payload.data?.type           ?? 'OTHER',
+        IsRead:      0,
+        IsCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
+        DataPayload: JSON.stringify(payload.data  ?? {}),
+        CreatedAt:   Math.floor(Date.now() / 1000),
+        UpdatedAt:   Math.floor(Date.now() / 1000),
+      };
+      // Ngăn prepend nếu payload trống
+      if (notif.Title || notif.Message) {
+        dispatch(prependItem(notif));
+      }
     };
-    fetchNotifs();
-  }, []);
-
-  const handleMarkAllRead = async () => {
-    await NotificationService.markAllAsRead();
-    setNotifications(prev => prev.map(n => ({ ...n, isUnread: false })));
-  };
-
-  const unreadCount = notifications.filter(n => n.isUnread).length;
+    window.addEventListener('kc:push:message', handler);
+    return () => window.removeEventListener('kc:push:message', handler);
+  }, [dispatch]);
 
   // Helper to get first name
   const getFirstName = (name: string) => {
@@ -73,14 +90,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
             <Bell size={20} strokeWidth={2} />
             {unreadCount > 0 && <S.NotificationBadge>{unreadCount}</S.NotificationBadge>}
           </S.ActionButton>
-          {isNotifOpen && (
-            <NotificationDropdown 
-              onClose={() => setIsNotifOpen(false)} 
-              notifications={notifications}
-              loading={loading}
-              onMarkAllRead={handleMarkAllRead}
-            />
-          )}
+          <NotificationPopup isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
         </S.NotificationWrapper>
 
         {/* Profile Card */}
