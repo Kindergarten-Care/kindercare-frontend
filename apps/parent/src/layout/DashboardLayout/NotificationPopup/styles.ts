@@ -279,6 +279,10 @@ export const IconWrapper = styled.div<{ $type: string }>`
           color: #0a7a4c;
         `;
       case 'LEAVE_REQUEST':
+      case 'MEDICATION':
+      case 'MEDICATION_REQUEST':
+      case 'MEDICINE':
+      case 'MEDICINE_REQUEST':
         return `
           background: #fff8ec;
           color: #d97706;
@@ -354,6 +358,10 @@ export const TypeTag = styled.span<{ $type: string }>`
           border: 1px solid #dcfce7;
         `;
       case 'LEAVE_REQUEST':
+      case 'MEDICATION':
+      case 'MEDICATION_REQUEST':
+      case 'MEDICINE':
+      case 'MEDICINE_REQUEST':
         return `
           color: #9a3412;
           background: #fff7ed;

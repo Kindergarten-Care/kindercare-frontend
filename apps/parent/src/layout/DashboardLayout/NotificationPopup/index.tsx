@@ -5,6 +5,9 @@ import { useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { useDispatch, useSelector } from 'react-redux';
 import { notificationService, type NotificationDto } from '@kindercare/core';
+import { useStudent } from '@/contexts/StudentContext';
+import { leaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
+import { medicationRequestService } from '@/services/MedicationRequest/MedicationRequestService';
 import {
   fetchNotifications,
   markOneRead,
@@ -28,9 +31,13 @@ function relativeTime(ts: number, isVi: boolean): string {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  ATTENDANCE:    'Điểm danh',
-  LEAVE_REQUEST: 'Đơn nghỉ',
-  HEALTH_ALERT:  'Sức khỏe',
+  ATTENDANCE:         'Điểm danh',
+  LEAVE_REQUEST:      'Đơn nghỉ',
+  HEALTH_ALERT:       'Sức khỏe',
+  MEDICATION:         'Dặn thuốc',
+  MEDICATION_REQUEST: 'Dặn thuốc',
+  MEDICINE:           'Dặn thuốc',
+  MEDICINE_REQUEST:   'Dặn thuốc',
 };
 
 const getIcon = (type: string) => {
@@ -54,6 +61,20 @@ const getIcon = (type: string) => {
             <path d="M10 9H8" />
             <path d="M16 13H8" />
             <path d="M16 17H8" />
+          </svg>
+        </S.IconWrapper>
+      );
+    case 'MEDICATION':
+    case 'MEDICATION_REQUEST':
+    case 'MEDICINE':
+    case 'MEDICINE_REQUEST':
+      return (
+        <S.IconWrapper $type="MEDICATION_REQUEST">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 2h8a2 2 0 0 1 2 2v1H6V4a2 2 0 0 1 2-2z" />
+            <rect x="4" y="5" width="16" height="15" rx="2" />
+            <line x1="12" y1="9" x2="12" y2="17" />
+            <line x1="8" y1="13" x2="16" y2="13" />
           </svg>
         </S.IconWrapper>
       );
@@ -93,6 +114,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
   const items   = useSelector(selectNotifications);
   const loading = useSelector(selectNotifLoading);
   const unread  = useSelector(selectUnreadCount);
+  const { children: students, setActiveStudent } = useStudent();
 
   const [shouldRender, setShouldRender] = React.useState(isOpen);
   const [isClosing, setIsClosing]       = React.useState(false);
@@ -114,10 +136,69 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
 
   const isVi = locale !== 'en';
 
-  const handleMarkOne = (item: NotificationDto) => {
+  const handleMarkOne = async (item: NotificationDto) => {
     if (item.isRead === 0) {
       dispatch(markOneRead(item.notifId));
       notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
+    }
+
+    let targetStudentId = item.dataPayload?.studentId ||
+                          item.dataPayload?.student_id ||
+                          item.dataPayload?.childId ||
+                          item.dataPayload?.child_id;
+
+    let targetStudent = null;
+    if (targetStudentId && students && students.length > 0) {
+      const parsedId = Number(targetStudentId);
+      targetStudent = students.find(s => s.studentId === parsedId) || null;
+    }
+
+    // Fallback: search all students' requests if no studentId was mapped or found
+    if (!targetStudent && students && students.length > 0) {
+      if (item.type === 'LEAVE_REQUEST') {
+        const requestId = Number(item.dataPayload?.requestId || item.dataPayload?.leaveRequestId);
+        if (requestId) {
+          const studentPromises = students.map(async (student) => {
+            try {
+              const leaves = await leaveRequestService.getLeaveRequests(student.studentId);
+              if (leaves.some(l => Number(l.requestId) === requestId)) {
+                return student;
+              }
+            } catch (e) {
+              console.error(e);
+            }
+            return null;
+          });
+          const results = await Promise.all(studentPromises);
+          targetStudent = results.find((s): s is typeof students[0] => s !== null) || null;
+        }
+      } else if (
+        item.type === 'MEDICATION' ||
+        item.type === 'MEDICATION_REQUEST' ||
+        item.type === 'MEDICINE' ||
+        item.type === 'MEDICINE_REQUEST'
+      ) {
+        const requestId = Number(item.dataPayload?.medRequestId || item.dataPayload?.requestId);
+        if (requestId) {
+          const studentPromises = students.map(async (student) => {
+            try {
+              const meds = await medicationRequestService.getMedicationRequests(student.studentId);
+              if (meds.some(m => Number(m.medRequestId) === requestId)) {
+                return student;
+              }
+            } catch (e) {
+              console.error(e);
+            }
+            return null;
+          });
+          const results = await Promise.all(studentPromises);
+          targetStudent = results.find((s): s is typeof students[0] => s !== null) || null;
+        }
+      }
+    }
+
+    if (targetStudent) {
+      setActiveStudent(targetStudent);
     }
 
     switch (item.type) {
@@ -125,8 +206,16 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
         router.push('/diary');
         break;
       case 'LEAVE_REQUEST': {
-        const requestId = item.dataPayload?.requestId;
+        const requestId = item.dataPayload?.requestId || item.dataPayload?.leaveRequestId;
         router.push(requestId ? `/request/leave-${requestId}` : '/request');
+        break;
+      }
+      case 'MEDICATION':
+      case 'MEDICATION_REQUEST':
+      case 'MEDICINE':
+      case 'MEDICINE_REQUEST': {
+        const requestId = item.dataPayload?.medRequestId || item.dataPayload?.requestId;
+        router.push(requestId ? `/request/medicine-${requestId}` : '/request');
         break;
       }
       case 'HEALTH_ALERT':

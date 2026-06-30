@@ -188,7 +188,7 @@ export function useParentDashboard() {
   const openQrPopup         = useCallback(() => setIsQrPopupOpen(true),          []);
   const closeQrPopup        = useCallback(() => setIsQrPopupOpen(false),         []);
 
-  useEffect(() => {
+  const fetchDashboardData = useCallback(() => {
     if (!activeStudent?.studentId) return;
     const id = activeStudent.studentId;
     setApiLoading(true);
@@ -218,6 +218,34 @@ export function useParentDashboard() {
       })
       .finally(() => setApiLoading(false));
   }, [activeStudent?.studentId]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const handlePushMessage = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const type = payload.data?.type;
+      const title = payload.notification?.title || '';
+      const body = payload.notification?.body || '';
+      if (
+        type === 'ATTENDANCE' ||
+        title.toLowerCase().includes('điểm danh') ||
+        title.toLowerCase().includes('attendance') ||
+        body.toLowerCase().includes('điểm danh') ||
+        body.toLowerCase().includes('attendance')
+      ) {
+        setIsQrPopupOpen(false);
+        fetchDashboardData();
+      }
+    };
+
+    window.addEventListener('kc:push:message', handlePushMessage);
+    return () => {
+      window.removeEventListener('kc:push:message', handlePushMessage);
+    };
+  }, [fetchDashboardData]);
 
   useEffect(() => {
     const { calendarDays: days, attendanceStats: stats } = calculateAttendanceData(allRecords, viewYear, viewMonth);
