@@ -5,12 +5,11 @@ import { Crown, Star, Gift } from 'lucide-react';
 interface TopKidProps {
   name: string;
   initial: string;
-  days: number;
-  maxDays: number;
-  meals: number;
-  maxMeals: number;
-  totalStars: number;
-  onAward: () => void;
+  attendancePoints: number;
+  eatSleepPoints: number;
+  violationPoints: number;
+  avatarUrl?: string;
+  onView: () => void;
 }
 
 const Card = styled.div`
@@ -33,17 +32,17 @@ const CrownIcon = styled.div`
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.div<{ $imgUrl?: string }>`
   width: 68px;
   height: 68px;
-  background: #fff;
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : '#fff'};
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
   font-weight: 800;
-  color: #005A36;
+  color: ${props => props.$imgUrl ? 'transparent' : '#005A36'};
   margin-bottom: 12px;
   box-shadow: 0 8px 16px -8px rgba(0,0,0,0.3);
 `;
@@ -145,48 +144,47 @@ const AwardButton = styled.button`
 export const TopKidWidget: React.FC<TopKidProps> = ({ 
   name, 
   initial, 
-  days, 
-  maxDays, 
-  meals, 
-  maxMeals, 
-  totalStars,
-  onAward 
+  attendancePoints,
+  eatSleepPoints,
+  violationPoints,
+  avatarUrl,
+  onView 
 }) => {
   return (
     <Card>
       <CrownIcon>👑</CrownIcon>
       
-      <Avatar>{initial}</Avatar>
+      <Avatar $imgUrl={avatarUrl}>{!avatarUrl && initial}</Avatar>
       <Name>{name}</Name>
       
       <Badge>
-        <Star size={12} fill="#FBBF24" /> Bé ngoan nhất tuần
+        <Star size={12} fill="#FBBF24" /> Bé ngoan nhất tháng
       </Badge>
       
       <Description>
-        Sao bé ngoan được tính tự động: <strong>mỗi ngày đi học +1</strong> và <strong>ăn uống tốt +1</strong> mỗi ngày. 
-        {name} đạt điểm cao nhất tuần này 🎉
+        Xếp hạng được tính tự động dựa trên <strong>Điểm danh, Ăn/Ngủ</strong> và <strong>Trừ điểm Vi phạm</strong>. 
+        {name} đạt điểm cao nhất tháng này 🎉
       </Description>
       
       <StatsContainer>
         <StatItem>
-          <StatValue>{days}<small>/{maxDays}</small></StatValue>
-          <StatLabel>Ngày đi học</StatLabel>
+          <StatValue>{attendancePoints}</StatValue>
+          <StatLabel>Điểm danh</StatLabel>
         </StatItem>
         <StatItem>
-          <StatValue>{meals}<small>/{maxMeals}</small></StatValue>
-          <StatLabel>Bữa ăn tốt</StatLabel>
+          <StatValue>{eatSleepPoints}</StatValue>
+          <StatLabel>Ăn/Ngủ</StatLabel>
         </StatItem>
         <StatItem>
-          <StatValue style={{ color: '#FBBF24' }}>
-            <Star size={16} fill="#FBBF24" color="#FBBF24" /> {totalStars}
+          <StatValue style={{ color: violationPoints < 0 ? '#FCA5A5' : '#86EFAC' }}>
+            {violationPoints}
           </StatValue>
-          <StatLabel>Tổng sao</StatLabel>
+          <StatLabel>Vi phạm</StatLabel>
         </StatItem>
       </StatsContainer>
       
-      <AwardButton onClick={onAward}>
-        <Gift size={16} /> Cấp phiếu bé ngoan
+      <AwardButton onClick={onView}>
+        Xem bảng điểm chi tiết
       </AwardButton>
     </Card>
   );

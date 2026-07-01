@@ -15,7 +15,7 @@ import {
 } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import * as S from './styles';
-import { IconClose } from '@/assets/icons/dashboard';
+import { X } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -125,9 +125,21 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
         router.push('/attendance');
         break;
       case 'LEAVE_REQUEST':
-      case 'HEALTH_ALERT':
-        router.push('/');
+      case 'HEALTH_ALERT': {
+        let url = '/';
+        try {
+          const data = item.dataPayload || {};
+          if (item.type === 'LEAVE_REQUEST') {
+            url = data.requestId ? `/?openLeaveRequest=${data.requestId}` : `/?openRequestList=leave`;
+          } else if (item.type === 'HEALTH_ALERT') {
+            url = data.medRequestId ? `/?openMedRequest=${data.medRequestId}` : `/?openRequestList=medical`;
+          }
+        } catch (e) {
+          console.error('Failed to extract data payload', e);
+        }
+        router.push(url);
         break;
+      }
     }
     onClose();
   };
@@ -154,7 +166,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
               </S.MarkAllBtn>
             )}
             <S.CloseBtn onClick={onClose} aria-label="Đóng">
-              <IconClose size={16} />
+              <X size={16} />
             </S.CloseBtn>
           </S.HeadActions>
         </S.HeadRow>

@@ -7,6 +7,7 @@ import type { AppDispatch } from '@/store';
 import type { NotificationDto } from '@kindercare/core';
 import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 interface TopAppBarProps {
   fullName: string;
@@ -30,21 +31,31 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
     let counter = 0;
     const handler = (e: Event) => {
       const payload = (e as CustomEvent).detail;
-      const notif: NotificationDto = {
-        NotifID:     --counter,
-        UserID:      0,
-        Title:       payload.notification?.title ?? '',
-        Message:     payload.notification?.body  ?? '',
-        Type:        payload.data?.type           ?? 'OTHER',
-        IsRead:      0,
-        IsCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
-        DataPayload: JSON.stringify(payload.data  ?? {}),
-        CreatedAt:   Math.floor(Date.now() / 1000),
-        UpdatedAt:   Math.floor(Date.now() / 1000),
+      const notif = {
+        notifId:     --counter,
+        userId:      0,
+        title:       payload.notification?.title ?? '',
+        message:     payload.notification?.body  ?? '',
+        type:        payload.data?.type           ?? 'OTHER',
+        isRead:      0 as 0 | 1,
+        isCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
+        dataPayload: payload.data  ?? {},
+        createdAt:   Math.floor(Date.now() / 1000),
+        updatedAt:   Math.floor(Date.now() / 1000),
       };
       // Ngăn prepend nếu payload trống
-      if (notif.Title || notif.Message) {
-        dispatch(prependItem(notif));
+      if (notif.title || notif.message) {
+        dispatch(prependItem(notif as any));
+        
+        toast.info(notif.title || 'Bạn có thông báo mới!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
       }
     };
     window.addEventListener('kc:push:message', handler);

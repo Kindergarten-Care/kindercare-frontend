@@ -15,10 +15,13 @@ export interface TaskItem {
   action: (e: React.MouseEvent) => void;
   onRowClick?: () => void;
   rowStyle?: React.CSSProperties;
+  createdAt?: number;
+  avatarUrl?: string;
 }
 
 interface TaskListProps {
   tasks: TaskItem[];
+  onViewAll?: () => void;
 }
 
 const Section = styled.section`
@@ -78,7 +81,7 @@ const TaskRow = styled.div<{ $clickable?: boolean }>`
   }
 `;
 
-const Avatar = styled.span<{ $bg: string }>`
+const Avatar = styled.span<{ $bg: string; $imgUrl?: string }>`
   flex: none;
   width: 42px;
   height: 42px;
@@ -88,8 +91,8 @@ const Avatar = styled.span<{ $bg: string }>`
   justify-content: center;
   font-weight: 800;
   font-size: 15px;
-  color: #374151;
-  background: ${props => props.$bg};
+  color: ${props => props.$imgUrl ? 'transparent' : '#374151'};
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : props.$bg};
 `;
 
 const InfoCol = styled.div`
@@ -159,38 +162,42 @@ const EmptyState = styled.div`
   color: #005A36;
 `;
 
-export const TaskListWidget: React.FC<TaskListProps> = ({ tasks }) => {
+export const TaskListWidget: React.FC<TaskListProps> = ({ tasks, onViewAll }) => {
+  if (!tasks || tasks.length === 0) return null;
+
   return (
     <Section>
       <HeaderRow>
-        <Title>Cần xử lý</Title>
-        <ViewAllLink>Tất cả</ViewAllLink>
+        <Title>Đơn cần xử lý</Title>
+        {onViewAll && <ViewAllLink onClick={onViewAll}>Xem tất cả</ViewAllLink>}
       </HeaderRow>
       <TaskList>
-        {tasks.map(t => (
+        {tasks.map(task => (
           <TaskRow 
-            key={t.id} 
-            style={t.rowStyle}
-            $clickable={!!t.onRowClick}
-            onClick={t.onRowClick}
+            key={task.id} 
+            $clickable={!!task.onRowClick}
+            onClick={() => task.onRowClick && task.onRowClick()}
+            style={task.rowStyle}
           >
-            <Avatar $bg={t.color}>{t.initial}</Avatar>
+            <Avatar $bg={task.color} $imgUrl={task.avatarUrl}>
+              {!task.avatarUrl && task.initial}
+            </Avatar>
             <InfoCol>
               <NameRow>
-                <TaskName>{t.name}</TaskName>
-                <TagBadge style={t.tagStyle}>{t.tag}</TagBadge>
+                <TaskName>{task.name}</TaskName>
+                <TagBadge style={task.tagStyle}>{task.tag}</TagBadge>
               </NameRow>
-              <TaskSub>{t.sub}</TaskSub>
+              <TaskSub>{task.sub}</TaskSub>
             </InfoCol>
             <ActionBtn 
-              $color={t.btnColor} 
-              $border={t.btnBorder} 
+              $color={task.btnColor} 
+              $border={task.btnBorder} 
               onClick={(e) => {
                 e.stopPropagation();
-                t.action(e);
+                task.action(e);
               }}
             >
-              {t.btn}
+              {task.btn}
             </ActionBtn>
           </TaskRow>
         ))}

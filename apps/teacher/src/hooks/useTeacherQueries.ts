@@ -82,6 +82,19 @@ export const useMedicalRequests = (classId: string | number | undefined) => {
   });
 };
 
+export const useUpdateMedicalRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ requestId, status, teacherNote }: { requestId: string | number; status: string; teacherNote?: string }) => {
+      const response = await apiClient.put(`/teacher/medical-requests/${requestId}`, { status, teacherNote });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });
+    },
+  });
+};
+
 // --- NOTIFICATIONS ---
 export const useNotifications = () => {
   return useQuery({
@@ -104,32 +117,17 @@ export const useRewardBadges = () => {
   });
 };
 
-export const useWeeklyRewards = (classId: string | number | undefined, weekNumber: number, year: number) => {
+export const useMonthlyGoodKids = (classId: string | number | undefined, month: number, year: number) => {
   return useQuery({
-    queryKey: ['weeklyRewards', classId, weekNumber, year],
+    queryKey: ['monthlyGoodKids', classId, month, year],
     queryFn: async () => {
       if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/weekly-rewards`, {
-        params: { weekNumber, year }
+      const response = await apiClient.get(`/teacher/classes/${classId}/monthly-good-kids`, {
+        params: { month, year }
       });
       return response.data.data;
     },
     enabled: !!classId,
-  });
-};
-
-export const useAwardWeeklyRewards = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ classId, weekNumber, year, awards }: { classId: number, weekNumber: number, year: number, awards: any[] }) => {
-      const response = await apiClient.post(`/teacher/classes/${classId}/weekly-rewards`, {
-        weekNumber, year, awards
-      });
-      return response.data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['weeklyRewards', variables.classId, variables.weekNumber, variables.year] });
-    },
   });
 };
 
@@ -158,3 +156,38 @@ export const useCreateNewsfeed = () => {
   });
 };
 
+// --- WEEKLY REWARDS (Award) ---
+export const useWeeklyRewards = (classId: string | number | undefined, weekNumber: number, year: number) => {
+  return useQuery({
+    queryKey: ['weeklyRewards', classId, weekNumber, year],
+    queryFn: async () => {
+      if (!classId) return [];
+      const response = await apiClient.get(`/teacher/classes/${classId}/weekly-rewards`, {
+        params: { weekNumber, year }
+      });
+      return response.data.data;
+    },
+    enabled: !!classId,
+  });
+};
+
+export const useAwardWeeklyRewards = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ classId, weekNumber, year, awards }: { 
+      classId: number | string; 
+      weekNumber: number; 
+      year: number; 
+      awards: { studentId: number; teacherNote?: string }[] 
+    }) => {
+      const response = await apiClient.post(`/teacher/classes/${classId}/weekly-rewards`, {
+        weekNumber, year, awards
+      });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['weeklyRewards', variables.classId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
+  });
+};

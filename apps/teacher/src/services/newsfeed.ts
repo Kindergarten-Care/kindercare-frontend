@@ -23,4 +23,18 @@ export class NewsfeedService {
     const res = await apiClient.get(`/teacher/classes/${classId}/newsfeed`);
     return res.data?.data || [];
   }
+
+  /**
+   * Tải ảnh lên máy chủ
+   * @param file Tệp ảnh
+   * @returns URL tĩnh của ảnh sau khi tải
+   */
+  public static async uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('folder', 'newsfeeds');
+
+    const res = await apiClient.post('/teacher/upload', formData);
+    return res.data?.data?.url || '';
+  }
 }

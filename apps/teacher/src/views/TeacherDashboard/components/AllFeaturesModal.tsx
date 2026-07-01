@@ -163,6 +163,7 @@ const features = [
   { id: '4', name: 'Thực đơn & Lịch học', icon: '📅', bg: '#F3E8FF', color: '#7E22CE' },
   { id: '5', name: 'Soạn giáo án', icon: '📝', bg: '#ECFDF5', color: '#047857' },
   { id: '6', name: 'Y tế & Sức khỏe', icon: '💊', bg: '#FEE2E2', color: '#DC2626' },
+  { id: 'leave', name: 'Đơn xin nghỉ', icon: '📬', bg: '#FEF9C3', color: '#854D0E' },
   { id: '7', name: 'Phiếu bé ngoan', icon: '⭐', bg: '#FEF3C7', color: '#D97706' },
   { id: '8', name: 'Nhật ký lớp', icon: '📸', bg: '#DBEAFE', color: '#1D4ED8' },
   { id: '9', name: 'Hồ sơ & Cài đặt', icon: '⚙️', bg: '#F3F4F6', color: '#4B5563' },

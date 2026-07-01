@@ -12,6 +12,7 @@ interface LeaveRequestDetails {
   toDate: string;
   parentNotes?: string;
   attachmentUrl?: string;
+  avatarUrl?: string;
 }
 
 interface LeaveRequestModalProps {
@@ -110,12 +111,12 @@ const StudentInfoCard = styled.div`
   border: 1px solid #E2E8F0;
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.div<{ $imgUrl?: string }>`
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: #E0E7FF;
-  color: #4338CA;
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : '#E0E7FF'};
+  color: ${props => props.$imgUrl ? 'transparent' : '#4338CA'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +234,7 @@ export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, da
         
         <Content>
           <StudentInfoCard>
-            <Avatar>{initial}</Avatar>
+            <Avatar $imgUrl={data.avatarUrl}>{!data.avatarUrl && initial}</Avatar>
             <InfoCol>
               <StName>{data.studentName}</StName>
               <StClass>

@@ -63,6 +63,6 @@ export async function initPushNotification(): Promise<void> {
       }
     });
   } catch (error) {
-    console.error('[FCM] Initialization error:', error);
+    console.warn('[FCM] Push notification unavailable — server may be offline');
   }
 }

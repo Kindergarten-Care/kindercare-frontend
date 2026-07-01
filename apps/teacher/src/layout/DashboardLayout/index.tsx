@@ -4,6 +4,8 @@ import React from 'react';
 import * as S from './styles';
 import { TeacherSidebar } from '../TeacherSidebar';
 import { TopAppBar } from '../TopAppBar';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -42,6 +44,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {children}
         </S.PageContent>
       </S.MainContent>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
     </S.LayoutContainer>
   );
 };
