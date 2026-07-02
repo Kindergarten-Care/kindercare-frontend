@@ -95,7 +95,7 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
 
   const scores = DOMAIN_CONFIGS.map(cfg => {
     const raw = assessment[cfg.scoreKey];
-    const score = raw !== null && raw !== undefined ? raw * 2 : 0;
+    const score = raw !== null && raw !== undefined ? raw : 0;
     return { ...cfg, score };
   });
 

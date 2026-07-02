@@ -5,6 +5,7 @@ import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, Ch
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
+import { formatPersonName } from '@/utils/formatName';
 import { attendanceService } from '@/services/Attendance/AttendanceService';
 import { AttendanceDomainModel } from '@/config/types/attendance';
 import { dailyScheduleService } from '@/services/DailySchedule/DailyScheduleService';
@@ -15,16 +16,7 @@ import { DailyScheduleDomainModel, ActivityType } from '@/config/types/dailySche
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AssessmentDomainModel } from '@/config/types/assessment';
-
-// ─── Public helper (used by GlobalChatFab) ────────────────────────────────────
-
-export const getTeacherDisplayName = (teacher: { fullName: string; gender?: string }) => {
-  if (!teacher) return '';
-  const fullName = teacher.fullName || '';
-  if (/^(cô|thầy)\b/i.test(fullName)) return fullName;
-  const prefix = (teacher.gender || '').toLowerCase() === 'nam' ? 'Thầy' : 'Cô';
-  return `${prefix} ${fullName}`;
-};
+import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
 
 // ─── Domain → Widget mappers ──────────────────────────────────────────────────
 
@@ -156,6 +148,7 @@ export function useParentDashboard() {
   const [apiLoading, setApiLoading] = useState(false);
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
   const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState(false);
+  const [isProxyPopupOpen, setIsProxyPopupOpen] = useState(false);
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false);
 
   const now = new Date();
@@ -185,6 +178,8 @@ export function useParentDashboard() {
   const closeLeavePopup     = useCallback(() => setIsLeavePopupOpen(false),      []);
   const openMedicPopup      = useCallback(() => setIsMedicationPopupOpen(true),  []);
   const closeMedicPopup     = useCallback(() => setIsMedicationPopupOpen(false), []);
+  const openProxyPopup      = useCallback(() => setIsProxyPopupOpen(true),       []);
+  const closeProxyPopup     = useCallback(() => setIsProxyPopupOpen(false),      []);
   const openQrPopup         = useCallback(() => setIsQrPopupOpen(true),          []);
   const closeQrPopup        = useCallback(() => setIsQrPopupOpen(false),         []);
 
@@ -301,11 +296,13 @@ export function useParentDashboard() {
             const outTime = tsToHHMM(todayRecord.checkOutTime);
             attendanceStatus = 'checked_out';
             checkinTime = `Đã ra về · ${outTime}`;
-            checkinSub = todayRecord.pickedUpBy ? `Đón bởi: ${todayRecord.pickedUpBy}` : 'Đã đón bé';
+            const pickupDisplay = formatPersonName(todayRecord.pickedUpBy, todayRecord.pickedUpRelationship, '');
+            checkinSub = pickupDisplay ? `Đón bởi: ${pickupDisplay}` : 'Đã đón bé';
           } else {
             attendanceStatus = 'studying';
             checkinTime = `Đã đến trường · ${inTime}`;
-            checkinSub = 'Đang học';
+            const dropoffDisplay = formatPersonName(todayRecord.droppedOffBy, todayRecord.droppedOffRelationship, '');
+            checkinSub = dropoffDisplay ? `Đưa bởi: ${dropoffDisplay}` : 'Đang học';
           }
         }
       }
@@ -358,6 +355,7 @@ export function useParentDashboard() {
     nextMonth,
     isLeavePopupOpen,  openLeavePopup,  closeLeavePopup,
     isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isProxyPopupOpen, openProxyPopup, closeProxyPopup,
     isQrPopupOpen,     openQrPopup,     closeQrPopup,
   };
 }

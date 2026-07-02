@@ -49,6 +49,19 @@ class NotificationService {
     );
     if (!res.success) throw new Error(res.message);
   }
+
+  async deleteNotification(notifId: number): Promise<void> {
+    const url = SERVER.notifications.deleteNotification.replace(':id', String(notifId));
+    const { data: res } = await apiClient.delete<ApiResponse<null>>(url);
+    if (!res.success) throw new Error(res.message);
+  }
+
+  async deleteAllNotifications(): Promise<void> {
+    const { data: res } = await apiClient.delete<ApiResponse<null>>(
+      SERVER.notifications.deleteAllNotifications,
+    );
+    if (!res.success) throw new Error(res.message);
+  }
 }
 
 export const notificationService = new NotificationService();

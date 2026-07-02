@@ -258,13 +258,17 @@ export const FilterTabs = styled.div`
   width: fit-content;
 `;
 
-export const TabBtn = styled.button<{ $active: boolean }>`
+export const TabBtn = styled.button<{ $active: boolean; $isMedication?: boolean }>`
   background: ${p => p.$active ? '#fff' : 'none'};
   border: none;
   font: inherit;
   font-size: 13px;
   font-weight: ${p => p.$active ? '700' : '600'};
-  color: ${p => p.$active ? 'var(--brand, #005a36)' : 'var(--muted, #64748b)'};
+  color: ${p => {
+    if (p.$active && p.$isMedication) return '#dc2626';
+    if (p.$active) return 'var(--brand, #005a36)';
+    return 'var(--muted, #64748b)';
+  }};
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -277,8 +281,16 @@ export const TabBtn = styled.button<{ $active: boolean }>`
   span {
     font-size: 11px;
     font-weight: 700;
-    background: ${p => p.$active ? 'var(--brand-tint, #eaf7f0)' : '#e2e8f0'};
-    color: ${p => p.$active ? 'var(--brand, #005a36)' : 'var(--muted, #64748b)'};
+    background: ${p => {
+      if (p.$active && p.$isMedication) return '#fee2e2';
+      if (p.$active) return 'var(--brand-tint, #eaf7f0)';
+      return '#e2e8f0';
+    }};
+    color: ${p => {
+      if (p.$active && p.$isMedication) return '#dc2626';
+      if (p.$active) return 'var(--brand, #005a36)';
+      return 'var(--muted, #64748b)';
+    }};
     padding: 2px 6px;
     border-radius: 6px;
   }

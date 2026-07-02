@@ -17,6 +17,7 @@ import { useParentDashboard } from './hooks/useParentDashboard';
 
 const LeaveRequestPopup      = dynamic(() => import('./components/LeaveRequestPopup'),      { ssr: false });
 const MedicationRequestPopup = dynamic(() => import('./components/MedicationRequestPopup'), { ssr: false });
+const ProxyRequestPopup      = dynamic(() => import('./components/ProxyRequestPopup'),      { ssr: false });
 const AttendanceQrPopup      = dynamic(() => import('./components/AttendanceQrPopup'),      { ssr: false });
 
 export function ParentDashboard(): React.ReactElement {
@@ -39,6 +40,7 @@ export function ParentDashboard(): React.ReactElement {
     nextMonth,
     isLeavePopupOpen,     openLeavePopup,  closeLeavePopup,
     isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isProxyPopupOpen,      openProxyPopup,  closeProxyPopup,
     isQrPopupOpen,        openQrPopup,     closeQrPopup,
   } = useParentDashboard();
 
@@ -71,7 +73,7 @@ export function ParentDashboard(): React.ReactElement {
                 onMedication={openMedicPopup}
                 onFee={() => alert('Đóng học phí')}
                 onDiary={() => alert('Nhật ký')}
-                onPickup={() => alert('Đăng ký người đón hộ')}
+                onPickup={openProxyPopup}
               />
               <DevelopmentalDomainsWidget assessment={latestAssessment} />
             </S.ColumnStack>
@@ -118,6 +120,13 @@ export function ParentDashboard(): React.ReactElement {
       <MedicationRequestPopup
         isOpen={isMedicationPopupOpen}
         onClose={closeMedicPopup}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <ProxyRequestPopup
+        isOpen={isProxyPopupOpen}
+        onClose={closeProxyPopup}
         studentName={activeStudent.fullName}
         className={activeStudent.className}
       />

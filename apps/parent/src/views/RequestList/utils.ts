@@ -2,6 +2,8 @@ import { RequestItem } from './types';
 import { LeaveRequestDomainModel } from '@/config/types/leaveRequest';
 import { MedicationRequestDomainModel } from '@/config/types/medicationRequest';
 import { StudentDomainModel } from '@/config/types/student';
+import { ProxyAuthorizationDomainModel } from '@/config/types/proxyAuthorization';
+import { isMaleTeacher, getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
 
 export const formatDate = (timestampSec: bigint | number): string => {
   let val = Number(timestampSec);
@@ -125,8 +127,8 @@ export const mapMedicationsToRequestItems = (
       updatedTime,
       note: combinedNote,
       status: normalizedStatus,
-      color: '#ea580c', // Orange
-      bg: '#fff7ed',
+      color: '#ef4444', // Red
+      bg: '#fee2e2',
       rawDate: Number(rep.requestDate),
       medicines: groupMedicines,
       teacherNote: combinedTeacherNote,
@@ -134,9 +136,39 @@ export const mapMedicationsToRequestItems = (
   });
 };
 
+export const mapProxiesToRequestItems = (
+  proxies: ProxyAuthorizationDomainModel[]
+): RequestItem[] => {
+  return proxies.map(p => {
+    const authDateStr = formatDate(p.authorizationDate);
+    const typeLabel = p.type === 'checkin' ? 'đưa bé đi học' : p.type === 'checkout' ? 'đón bé về' : 'đưa đón bé';
+    const detail = `Ủy quyền ${typeLabel} hộ ngày ${authDateStr}. Người nhận: ${p.proxyName} (${p.proxyPhone || 'Không có SĐT'})`;
+    const normalizedStatus = (p.status || 'Pending').toLowerCase() as any;
+    const sentTime = p.createdAt ? formatLocaltime(p.createdAt) : authDateStr;
+    const rawDate = p.createdAt ? Number(p.createdAt) : Number(p.authorizationDate);
+
+    return {
+      id: `proxy-${p.authorizationId}`,
+      requestId: Number(p.authorizationId),
+      type: 'proxy',
+      title: 'Ủy quyền đón hộ',
+      detail,
+      sentTime,
+      note: p.notes || undefined,
+      status: normalizedStatus,
+      color: '#0d9488', // Teal
+      bg: '#f0fdfa',
+      rawDate,
+      proxyPhone: p.proxyPhone,
+      proxyIDCard: p.proxyIDCard,
+      proxyPhotoUrl: p.proxyPhotoUrl,
+    };
+  });
+};
+
 export const filterRequests = (
   requests: RequestItem[],
-  activeTab: 'all' | 'leave' | 'medication',
+  activeTab: 'all' | 'leave' | 'medication' | 'proxy',
   activeStatusFilter: 'all' | 'pending' | 'approved_completed' | 'rejected' | 'cancelled'
 ): RequestItem[] => {
   return requests.filter(r => {
@@ -176,6 +208,7 @@ export const calculateRequestStats = (requests: RequestItem[]) => {
     total: requests.length,
     leaveCount: requests.filter(r => r.type === 'leave').length,
     medicationCount: requests.filter(r => r.type === 'medication').length,
+    proxyCount: requests.filter(r => r.type === 'proxy').length,
   };
 };
 
@@ -188,28 +221,15 @@ export interface TeacherInfo {
   teacherDisplayName: string;
 }
 
-export const getTeacherDisplayName = (teacher: any): string => {
-  if (!teacher) return '';
-  const fullName = teacher.fullName || '';
-  if (/^(cô|thầy)\b/i.test(fullName)) {
-    return fullName;
-  }
-  const isMale = (teacher.gender || '').toLowerCase() === 'nam' || (teacher.gender || '').toLowerCase() === 'male';
-  const prefix = isMale ? 'Thầy' : 'Cô';
-  return `${prefix} ${fullName}`;
-};
-
 export const resolveTeacherInfo = (activeStudent: StudentDomainModel | null): TeacherInfo => {
   const leadTeacher = activeStudent?.teachers?.find(
     t => t.roleInClass?.toLowerCase() === 'homeroom' || t.roleInClass?.toLowerCase() === 'primary'
   ) || activeStudent?.teachers?.[0];
 
-  const isMaleTeacher = leadTeacher
-    ? (leadTeacher.gender || '').toLowerCase() === 'nam' || (leadTeacher.gender || '').toLowerCase() === 'male'
-    : false;
+  const isMale = leadTeacher ? isMaleTeacher(leadTeacher.gender) : false;
 
-  const teacherTitle = isMaleTeacher ? 'Thầy giáo' : 'Cô giáo';
-  const homeroomTitle = isMaleTeacher ? 'Thầy giáo chủ nhiệm' : 'Cô giáo chủ nhiệm';
+  const teacherTitle = isMale ? 'Thầy giáo' : 'Cô giáo';
+  const homeroomTitle = isMale ? 'Thầy giáo chủ nhiệm' : 'Cô giáo chủ nhiệm';
 
   const homeroomTitleWithName = leadTeacher
     ? `${homeroomTitle} ${leadTeacher.fullName}`
@@ -221,7 +241,7 @@ export const resolveTeacherInfo = (activeStudent: StudentDomainModel | null): Te
 
   return {
     leadTeacher,
-    isMaleTeacher,
+    isMaleTeacher: isMale,
     teacherTitle,
     homeroomTitle,
     homeroomTitleWithName,

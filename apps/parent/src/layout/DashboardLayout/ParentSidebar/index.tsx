@@ -128,19 +128,19 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         {collapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
         {collapsed && <S.Tooltip>Nhật ký bé</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/schedule`} $active={pathname.includes('/schedule')} $collapsed={collapsed}>
         <S.NavIcon><IconMenu size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Thực đơn & Lịch học</S.NavSpan>
         {collapsed && <S.Tooltip>Thực đơn & Lịch học</S.Tooltip>}
       </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Bé & Học tập</S.NavLabel>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/profile`} $active={pathname.includes('/profile')} $collapsed={collapsed}>
         <S.NavIcon><IconProfile size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Hồ sơ bé</S.NavSpan>
         {collapsed && <S.Tooltip>Hồ sơ bé</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/growth`} $active={pathname.includes('/growth')} $collapsed={collapsed}>
         <S.NavIcon><IconChart size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch sử phát triển</S.NavSpan>
         {collapsed && <S.Tooltip>Lịch sử phát triển</S.Tooltip>}
