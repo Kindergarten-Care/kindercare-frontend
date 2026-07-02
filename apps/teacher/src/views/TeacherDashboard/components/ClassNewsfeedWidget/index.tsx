@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as S from './styles';
-import { useNewsfeeds } from '@/hooks/useTeacherQueries';
+import { useNewsfeeds, useDeleteNewsfeed } from '@/hooks/useTeacherQueries';
 
 interface ClassNewsfeedWidgetProps {
   classId: number | string | null;
@@ -8,6 +8,7 @@ interface ClassNewsfeedWidgetProps {
 
 export const ClassNewsfeedWidget: React.FC<ClassNewsfeedWidgetProps> = ({ classId }) => {
   const { data: newsfeeds, isLoading, isError, error } = useNewsfeeds(classId || undefined);
+  const deleteNewsfeed = useDeleteNewsfeed();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const formatTime = (timestampRaw: string | number) => {
@@ -29,6 +30,12 @@ export const ClassNewsfeedWidget: React.FC<ClassNewsfeedWidgetProps> = ({ classI
     if (diff < 86400000) return `${Math.floor(diff / 3600000)} giờ trước`;
     
     return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const handleDelete = (postId: string | number) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa bài đăng này không?')) {
+      deleteNewsfeed.mutate({ classId: classId as any, postId });
+    }
   };
 
   return (
@@ -72,6 +79,12 @@ export const ClassNewsfeedWidget: React.FC<ClassNewsfeedWidgetProps> = ({ classI
                     <S.TeacherName>{teacherName}</S.TeacherName>
                     <S.PostTime>{formatTime(postedAt)}</S.PostTime>
                   </S.HeaderInfo>
+                  <S.DeleteBtn onClick={() => handleDelete(postId)} title="Xóa bài đăng">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </S.DeleteBtn>
                 </S.FeedHeader>
                 
                 <S.FeedContent>{content}</S.FeedContent>

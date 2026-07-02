@@ -141,9 +141,10 @@ export class ActivitiesService {
             if (s.sleepingStatus === 'Khó ngủ') nap = 'RESTLESS';
             if (s.sleepingStatus === 'Không ngủ') nap = 'POOR';
 
-            let participation = 'ACTIVE';
-            if (s.teacherNote?.includes('quan sát')) participation = 'OBSERVING';
-            if (s.teacherNote?.includes('Mệt mỏi')) participation = 'TIRED';
+            let participation: any = (s as any).activityStatus || 'Hòa đồng';
+            // Legacy mapping if using teacherNote
+            if (s.teacherNote?.includes('quan sát')) participation = 'Thụ động';
+            if (s.teacherNote?.includes('Mệt mỏi')) participation = 'Không tham gia';
 
             let note = s.teacherNote?.replace('Vui chơi tích cực. ', '').replace('Chỉ quan sát bạn chơi. ', '').replace('Mệt mỏi, ít tham gia. ', '') || '';
 
@@ -153,6 +154,7 @@ export class ActivitiesService {
               avatarUrl: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
               nap: nap as NapStatus,
               participation: participation as ParticipationStatus,
+              activityStatus: (s as any).activityStatus,
               note: note.trim()
             };
           });
@@ -188,17 +190,19 @@ export class ActivitiesService {
 
         let hygieneStatus = 'Bình thường';
 
-        let teacherNote = '';
-        if (r.participation === 'ACTIVE') teacherNote += 'Vui chơi tích cực. ';
-        if (r.participation === 'NORMAL') teacherNote += 'Chỉ quan sát bạn chơi. ';
-        if (r.participation === 'TIRED') teacherNote += 'Mệt mỏi, ít tham gia. ';
-        if (r.note) teacherNote += r.note;
+        let teacherNote = r.note ? r.note.trim() : '';
+
+        // Legacy mapping backwards compatibility
+        if (r.participation === 'ACTIVE') r.participation = 'Năng động';
+        if (r.participation === 'NORMAL') r.participation = 'Bình thường';
+        if (r.participation === 'TIRED') r.participation = 'Thụ động';
 
         return {
           studentId: Number(r.studentId),
           sleepingStatus,
           hygieneStatus,
-          teacherNote: teacherNote.trim()
+          activityStatus: r.participation || 'Bình thường', // Send to backend
+          teacherNote
         };
       });
 

@@ -156,6 +156,18 @@ export const useCreateNewsfeed = () => {
   });
 };
 
+export const useDeleteNewsfeed = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ classId, postId }: { classId: number | string; postId: number | string }) => 
+      NewsfeedService.deleteNewsfeedPost(classId, postId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
+    }
+  });
+};
+
 // --- WEEKLY REWARDS (Award) ---
 export const useWeeklyRewards = (classId: string | number | undefined, weekNumber: number, year: number) => {
   return useQuery({

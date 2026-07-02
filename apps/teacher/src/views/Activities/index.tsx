@@ -50,9 +50,11 @@ const OPTSETS = {
     { k: 'POOR', label: '🟠 Khó ngủ', dot: '#D97706' },
   ],
   study: [
-    { k: 'ACTIVE', label: '🟢 Hăng hái', dot: '#005A36' }, 
-    { k: 'NORMAL', label: '🔵 Bình thường', dot: '#2563EB' }, 
-    { k: 'TIRED', label: '🟠 Cần hỗ trợ', dot: '#D97706' }
+    { k: 'Năng động', label: '🌟 Năng động', dot: '#F59E0B' },
+    { k: 'Hòa đồng', label: '🟢 Hòa đồng', dot: '#005A36' }, 
+    { k: 'Bình thường', label: '🔵 Bình thường', dot: '#2563EB' },
+    { k: 'Thụ động', label: '🟠 Thụ động', dot: '#D97706' }, 
+    { k: 'Không tham gia', label: '🔴 Không tham gia', dot: '#DC2626' }
   ],
 };
 
@@ -194,7 +196,7 @@ export const ActivitiesView: React.FC = () => {
 
     const opts = OPTSETS[optType];
     const batchLabel = 'Tất cả: ' + opts[0].label.replace(/^.*? /, '');
-    const GROUP_WIDTHS = { meal: 318, nap: 220, study: 330 };
+    const GROUP_WIDTHS = { meal: 318, nap: 220, study: 650 };
     const groupWidth = GROUP_WIDTHS[optType];
 
     const matrix = records.map((rec, i) => {
