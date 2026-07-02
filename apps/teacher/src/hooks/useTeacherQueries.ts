@@ -35,7 +35,23 @@ export const useUpdateLeaveRequest = () => {
       const response = await apiClient.put(`/teacher/leave-requests/${requestId}/status`, { status });
       return response.data;
     },
-    onSuccess: () => {
+    onMutate: async ({ requestId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['leaveRequests'] });
+      const previousLeaves = queryClient.getQueryData(['leaveRequests', 'Pending']);
+      
+      queryClient.setQueryData(['leaveRequests', 'Pending'], (old: any) => {
+        if (!old) return [];
+        return old.map((req: any) => String(req.id) === String(requestId) ? { ...req, status } : req);
+      });
+      
+      return { previousLeaves };
+    },
+    onError: (err, newRequest, context) => {
+      if (context?.previousLeaves) {
+        queryClient.setQueryData(['leaveRequests', 'Pending'], context.previousLeaves);
+      }
+    },
+    onSettled: () => {
       // Invalidate the query to refetch pending requests
       queryClient.invalidateQueries({ queryKey: ['leaveRequests'] });
     },
@@ -89,7 +105,30 @@ export const useUpdateMedicalRequest = () => {
       const response = await apiClient.put(`/teacher/medical-requests/${requestId}`, { status, teacherNote });
       return response.data;
     },
-    onSuccess: () => {
+    onMutate: async ({ requestId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['medicalRequests'] });
+      
+      const previousMedicalRequests = queryClient.getQueriesData({ queryKey: ['medicalRequests'] });
+      
+      queryClient.setQueriesData({ queryKey: ['medicalRequests'] }, (old: any) => {
+        if (!old) return old;
+        return old.map((req: any) => 
+          (String(req.requestId) === String(requestId) || String(req.id) === String(requestId))
+            ? { ...req, status } 
+            : req
+        );
+      });
+      
+      return { previousMedicalRequests };
+    },
+    onError: (err, newRequest, context) => {
+      if (context?.previousMedicalRequests) {
+        context.previousMedicalRequests.forEach(([queryKey, oldData]) => {
+          queryClient.setQueryData(queryKey, oldData);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });
     },
   });

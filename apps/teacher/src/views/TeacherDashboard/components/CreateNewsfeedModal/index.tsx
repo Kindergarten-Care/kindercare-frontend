@@ -19,6 +19,7 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
   const [content, setContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const createNewsfeedMutation = useCreateNewsfeed();
@@ -47,9 +48,29 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Task 5.6: Ràng buộc File (Validation)
+    // 1. Chỉ cho phép ảnh và video
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      alert('Chỉ hỗ trợ tải lên tệp định dạng Ảnh hoặc Video.');
+      return;
+    }
+
+    // 2. Giới hạn dung lượng 20MB
+    const MAX_SIZE_MB = 20;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`Dung lượng file quá lớn. Vui lòng chọn file dưới ${MAX_SIZE_MB}MB.`);
+      return;
+    }
+
     try {
       setIsUploading(true);
-      const url = await NewsfeedService.uploadImage(file);
+      setUploadProgress(0);
+      const url = await NewsfeedService.uploadImage(file, (progressEvent) => {
+        if (progressEvent.total) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      });
       if (url) {
         setMediaUrl(url);
       }
@@ -100,11 +121,16 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
               onChange={handleFileChange}
             />
             {isUploading ? (
-              <S.UploadText>⏳ Đang tải ảnh lên...</S.UploadText>
+              <div style={{ width: '100%', padding: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <S.UploadText>⏳ Đang tải ảnh lên... {uploadProgress}%</S.UploadText>
+                <div style={{ width: '100%', height: '8px', background: '#E5E7EB', borderRadius: '4px', marginTop: '10px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#005A36', transition: 'width 0.2s' }} />
+                </div>
+              </div>
             ) : (
               <>
                 <S.UploadIcon>📸</S.UploadIcon>
-                <S.UploadText>Bấm vào đây để tải ảnh đính kèm</S.UploadText>
+                <S.UploadText>Bấm vào đây để tải ảnh đính kèm (Tối đa 20MB)</S.UploadText>
               </>
             )}
           </S.ImageUploadWrapper>
