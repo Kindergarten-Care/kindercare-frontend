@@ -5,18 +5,17 @@ import { X, Star, Calendar, Utensils, Gift } from 'lucide-react';
 interface GoodKidDetails {
   id: string;
   studentName: string;
-  totalStars: number;
-  daysAttended: number;
-  maxDays: number;
-  mealsGood: number;
-  maxMeals: number;
+  attendancePoints: number;
+  eatSleepPoints: number;
+  violationPoints: number;
+  avatarUrl?: string;
 }
 
 interface GoodKidModalProps {
   isOpen: boolean;
   data: GoodKidDetails | null;
   onClose: () => void;
-  onAward: (id: string, notes: string) => void;
+  onAward?: (id: string, note: string) => void;
 }
 
 const fadeIn = keyframes`
@@ -85,12 +84,12 @@ const CloseBtn = styled.button`
   }
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.div<{ $imgUrl?: string }>`
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #fff;
-  color: #005A36;
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : '#fff'};
+  color: ${props => props.$imgUrl ? 'transparent' : '#005A36'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -214,6 +213,13 @@ export const GoodKidModal: React.FC<GoodKidModalProps> = ({ isOpen, data, onClos
 
   const initial = data.studentName.split(' ').pop()?.charAt(0).toUpperCase() || '?';
 
+  const handleAward = () => {
+    if (onAward) {
+      onAward(data.id, note);
+      setNote(''); // reset note sau khi tặng
+    }
+  };
+
   return (
     <Overlay onClick={onClose}>
       <ModalBox onClick={e => e.stopPropagation()}>
@@ -221,51 +227,53 @@ export const GoodKidModal: React.FC<GoodKidModalProps> = ({ isOpen, data, onClos
           <CloseBtn onClick={onClose}>
             <X size={20} strokeWidth={2.5} />
           </CloseBtn>
-          <Avatar>{initial}</Avatar>
+          <Avatar $imgUrl={data.avatarUrl}>{!data.avatarUrl && initial}</Avatar>
           <Title>{data.studentName}</Title>
-          <Subtitle>Đánh giá Phiếu bé ngoan Tuần</Subtitle>
+          <Subtitle>Đánh giá Phiếu bé ngoan Tháng Tự Động</Subtitle>
         </Header>
         
         <Content>
           <StatsGrid>
             <StatCard>
               <StatValue>
-                {data.daysAttended}<small>/{data.maxDays}</small>
+                {data.attendancePoints}
               </StatValue>
-              <StatLabel><Calendar size={12} style={{ display: 'block', margin: '0 auto 4px' }} /> Ngày đi học</StatLabel>
+              <StatLabel><Calendar size={12} style={{ display: 'block', margin: '0 auto 4px' }} /> Điểm đi học</StatLabel>
             </StatCard>
             
             <StatCard>
               <StatValue>
-                {data.mealsGood}<small>/{data.maxMeals}</small>
+                {data.eatSleepPoints}
               </StatValue>
-              <StatLabel><Utensils size={12} style={{ display: 'block', margin: '0 auto 4px' }} /> Bữa ăn tốt</StatLabel>
+              <StatLabel><Utensils size={12} style={{ display: 'block', margin: '0 auto 4px' }} /> Điểm Ăn/Ngủ</StatLabel>
             </StatCard>
 
-            <StatCard style={{ background: '#FEF3C7', borderColor: '#FDE68A' }}>
-              <StatValue $highlight>
-                {data.totalStars}
+            <StatCard style={{ background: '#FEE2E2', borderColor: '#FECACA' }}>
+              <StatValue style={{ color: '#B91C1C' }}>
+                {data.violationPoints}
               </StatValue>
-              <StatLabel style={{ color: '#92400E' }}><Star size={12} fill="#D97706" style={{ display: 'block', margin: '0 auto 4px' }} /> Tổng Sao</StatLabel>
+              <StatLabel style={{ color: '#991B1B' }}><Star size={12} style={{ display: 'block', margin: '0 auto 4px' }} /> Lỗi vi phạm</StatLabel>
             </StatCard>
           </StatsGrid>
 
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' }}>
-              Lời phê của Giáo viên (Tùy chọn)
-            </div>
-            <NoteArea 
-              placeholder="VD: Tuần này con rất ngoan, ăn hết suất và hăng hái phát biểu..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+          <div style={{ background: '#F9FAFB', padding: '16px', borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '13.5px', color: '#4B5563', lineHeight: 1.5 }}>
+            <strong>Cơ chế tính điểm tự động:</strong><br/>
+            - <strong>Điểm danh:</strong> Có mặt (+1 điểm)<br/>
+            - <strong>Ăn/Ngủ:</strong> Hết suất/Ngoan (+1 điểm), Chậm/Khó ngủ (+0.5 điểm)<br/>
+            - <strong>Vi phạm:</strong> Nhẹ (-2), Vừa (-5), Nặng (-10)
           </div>
+
+          <NoteArea 
+            placeholder="Viết lời phê/chúc mừng dành cho bé (không bắt buộc)..." 
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
         </Content>
 
         <Footer>
-          <ActionBtn onClick={() => { onAward(data.id, note); onClose(); }}>
-            <Gift size={18} />
-            Cấp phiếu Bé Ngoan ngay
+          <ActionBtn onClick={handleAward}>
+            <Gift size={20} />
+            Trao Phiếu Bé Ngoan
           </ActionBtn>
         </Footer>
       </ModalBox>

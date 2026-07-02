@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import * as S from './styles';
 import { useCreateNewsfeed } from '@/hooks/useTeacherQueries';
+import { NewsfeedService } from '@/services/newsfeed';
 
 interface CreateNewsfeedModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
 }) => {
   const [content, setContent] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const createNewsfeedMutation = useCreateNewsfeed();
 
@@ -40,10 +43,29 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
     }
   };
 
-  const handleSimulateUpload = () => {
-    // Giả lập upload ảnh lên S3 hoặc Local và nhận về URL
-    // Ở đây dùng ảnh random từ unsplash cho demo
-    setMediaUrl(`https://images.unsplash.com/photo-1540479859555-17af45c78602?w=600&auto=format&fit=crop&q=60&v=${Date.now()}`);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const url = await NewsfeedService.uploadImage(file);
+      if (url) {
+        setMediaUrl(url);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải ảnh:', error);
+      alert('Tải ảnh lên thất bại. Hãy kiểm tra kết nối mạng hoặc thử lại sau.');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleTriggerUpload = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -69,9 +91,22 @@ export const CreateNewsfeedModal: React.FC<CreateNewsfeedModalProps> = ({
             >✕</button>
           </div>
         ) : (
-          <S.ImageUploadWrapper onClick={handleSimulateUpload}>
-            <S.UploadIcon>📸</S.UploadIcon>
-            <S.UploadText>Bấm vào đây để tải ảnh đính kèm (Giả lập)</S.UploadText>
+          <S.ImageUploadWrapper onClick={handleTriggerUpload}>
+            <input 
+              type="file" 
+              accept="image/png, image/jpeg, image/jpg, image/webp"
+              style={{ display: 'none' }}
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            {isUploading ? (
+              <S.UploadText>⏳ Đang tải ảnh lên...</S.UploadText>
+            ) : (
+              <>
+                <S.UploadIcon>📸</S.UploadIcon>
+                <S.UploadText>Bấm vào đây để tải ảnh đính kèm</S.UploadText>
+              </>
+            )}
           </S.ImageUploadWrapper>
         )}
 

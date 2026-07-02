@@ -10,6 +10,7 @@ interface MedicalNoteDetails {
   timeToTake: string;
   parentNotes?: string;
   imageUrl?: string;
+  avatarUrl?: string;
 }
 
 interface MedicalNoteModalProps {
@@ -108,12 +109,12 @@ const StudentInfoCard = styled.div`
   border: 1px dashed #FCA5A5;
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.div<{ $imgUrl?: string }>`
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #FEE2E2;
-  color: #DC2626;
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : '#FEE2E2'};
+  color: ${props => props.$imgUrl ? 'transparent' : '#DC2626'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,7 +263,7 @@ export const MedicalNoteModal: React.FC<MedicalNoteModalProps> = ({ isOpen, data
         
         <Content>
           <StudentInfoCard>
-            <Avatar>{initial}</Avatar>
+            <Avatar $imgUrl={data.avatarUrl}>{!data.avatarUrl && initial}</Avatar>
             <InfoCol>
               <StName>{data.studentName}</StName>
             </InfoCol>

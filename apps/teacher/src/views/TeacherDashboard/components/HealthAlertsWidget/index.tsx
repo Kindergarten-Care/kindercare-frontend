@@ -154,7 +154,12 @@ export const HealthAlertsWidget: React.FC<HealthAlertsWidgetProps> = ({ students
                   <S.ModalMetaField>
                     <S.ModalLabel>Ngày dặn: </S.ModalLabel>
                     <span style={{ color: '#1F2937', fontWeight: 500 }}>
-                      {new Date(selectedAlert.raw.requestDate * 1000).toLocaleDateString('vi-VN')}
+                      {(() => {
+                        const d = new Date(selectedAlert.raw.requestDate * 1000);
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        return `${day}/${month}/${d.getFullYear()}`;
+                      })()}
                     </span>
                   </S.ModalMetaField>
                   <S.ModalMetaField>

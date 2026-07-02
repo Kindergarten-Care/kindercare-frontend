@@ -6,15 +6,16 @@ export interface FeaturedKid {
   name: string;
   initial: string;
   color: string;
-  stars: number;
-  days: number;
-  eatLabel: string;
-  eatStyle?: React.CSSProperties;
+  attendancePoints: number;
+  eatSleepPoints: number;
+  violationPoints: number;
   justAwarded?: boolean;
+  avatarUrl?: string;
 }
 
 interface FeaturedKidsProps {
   kids: FeaturedKid[];
+  onViewAll?: () => void;
 }
 
 const starpop = keyframes`
@@ -90,14 +91,14 @@ const Card = styled.button`
   }
 `;
 
-const Avatar = styled.span<{ $bg: string }>`
+const Avatar = styled.span<{ $bg: string; $imgUrl?: string }>`
   position: relative;
   flex: none;
   width: 64px;
   height: 64px;
   border-radius: 20px;
-  background: ${props => props.$bg};
-  color: #374151;
+  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : props.$bg};
+  color: ${props => props.$imgUrl ? 'transparent' : '#374151'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,11 +130,11 @@ const Score = styled.span`
   gap: 3px;
   font-size: 15px;
   font-weight: 800;
-  color: #D97706;
+  color: #005A36;
 `;
 
 const StarIcon = styled.span`
-  color: #FBBF24;
+  color: #D97706;
 `;
 
 const MaxScore = styled.span`
@@ -161,14 +162,10 @@ const Badge = styled.span`
   border-radius: 999px;
 `;
 
-const AttendanceBadge = styled(Badge)`
-  color: #0F766E;
-  background: #E6F3ED;
-`;
-
-const EatBadge = styled(Badge)`
-  color: #92400E;
-  background: #FEF3C7;
+const SmallBadge = styled(Badge)`
+  background: #F3F4F6;
+  color: #374151;
+  border: 1px solid #E5E7EB;
 `;
 
 const FooterBtn = styled.span`
@@ -180,28 +177,31 @@ const FooterBtn = styled.span`
   border-radius: 999px;
 `;
 
-export const FeaturedKidsWidget: React.FC<FeaturedKidsProps> = ({ kids }) => {
+export const FeaturedKidsWidget: React.FC<FeaturedKidsProps> = ({ kids, onViewAll }) => {
   return (
     <Wrapper>
       <HeaderRow>
         <Title>Bé ngoan nổi bật tuần</Title>
-        <ViewMoreLink>Xem thêm</ViewMoreLink>
+        {onViewAll && <ViewMoreLink onClick={onViewAll}>Xem thêm</ViewMoreLink>}
       </HeaderRow>
       <Grid>
         {kids.map(k => (
           <Card key={k.id}>
-            <Avatar $bg={k.color}>
-              {k.initial}
+            <Avatar $bg={k.color} $imgUrl={k.avatarUrl}>
+              {!k.avatarUrl && k.initial}
               {k.justAwarded && <NewStar>⭐</NewStar>}
             </Avatar>
             <Name>{k.name}</Name>
             <Score>
-              <StarIcon>★</StarIcon>{k.stars}
-              <MaxScore>/10</MaxScore>
+              <StarIcon>★</StarIcon> {k.attendancePoints + k.eatSleepPoints + k.violationPoints} <MaxScore>điểm</MaxScore>
             </Score>
             <BadgesRow>
-              <AttendanceBadge>📅 {k.days}/5 ngày</AttendanceBadge>
-              <EatBadge style={k.eatStyle}>🍚 {k.eatLabel}</EatBadge>
+              <SmallBadge>
+                <span role="img" aria-label="Lỗi" style={{color: k.violationPoints < 0 ? '#DC2626' : '#10B981'}}>{k.violationPoints < 0 ? '⚠️' : '✓'}</span> {k.violationPoints}đ
+              </SmallBadge>
+              <SmallBadge>
+                <span role="img" aria-label="Ăn/Ngủ">🍱</span> {k.eatSleepPoints}đ
+              </SmallBadge>
             </BadgesRow>
             <FooterBtn>Xem cách tính</FooterBtn>
           </Card>

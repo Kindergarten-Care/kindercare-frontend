@@ -12,14 +12,19 @@ const formatDate = (timestamp: number | undefined): string => {
   const d = new Date(timestamp * 1000);
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}/${month}`;
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 const formatCreatedAt = (val: any): string => {
   if (!val) return '...';
   const d = new Date(val);
   if (isNaN(d.getTime())) return String(val);
-  return d.toLocaleString('vi-VN');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  return `${time} ${day}/${month}/${year}`;
 };
 
 interface LeaveApprovalWidgetProps {
@@ -229,7 +234,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
                   <S.ModalMetaField>
                     <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
                     <span style={{ color: '#1F2937', fontWeight: 500 }}>
-                      Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
+                      Từ {formatDate(leaveReqDetail.fromDate)} đến {formatDate(leaveReqDetail.toDate)}
                     </span>
                   </S.ModalMetaField>
                   <S.ModalMetaField>

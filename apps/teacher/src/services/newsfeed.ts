@@ -23,4 +23,29 @@ export class NewsfeedService {
     const res = await apiClient.get(`/teacher/classes/${classId}/newsfeed`);
     return res.data?.data || [];
   }
+
+  /**
+   * Xóa bài đăng nhật ký
+   * @param classId ID của lớp học
+   * @param postId ID của bài đăng
+   */
+  public static async deleteNewsfeedPost(classId: number | string, postId: number | string): Promise<boolean> {
+    const res = await apiClient.delete(`/teacher/classes/${classId}/newsfeed/${postId}`);
+    return res.status === 200;
+  }
+
+  /**
+   * Tải ảnh lên máy chủ
+   * @param file Tệp ảnh
+   * @returns URL tĩnh của ảnh sau khi tải
+   */
+  public static async uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+    formData.append('folder', `newsfeeds/feed-${dateStr}`);
+    const res = await apiClient.post('/teacher/upload', formData);
+    return res.data?.data?.url || '';
+  }
 }
