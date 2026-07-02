@@ -198,45 +198,65 @@ export const TeacherDashboardView: React.FC = () => {
 
   // Tự động mở Modal từ Deep Link (khi bấm vào Thông báo)
   useEffect(() => {
-    if (openLeaveId && pendingLeaves.length > 0 && !selectedLeave) {
-      const target = pendingLeaves.find((l: any) => String(l.id) === openLeaveId);
-      if (target) {
-        setSelectedLeave({
-          id: String(target.id),
-          studentName: target.studentName,
-          parentName: target.parentName || 'Phụ huynh',
-          parentPhone: target.parentPhone || '0988 123 456',
-          reason: target.reason,
-          fromDate: target.fromDate,
-          toDate: target.toDate,
-          parentNotes: target.parentNotes,
-          attachmentUrl: target.attachmentUrl
-        });
+    const handleDeepLinks = async () => {
+      // Handle Leave Request
+      if (openLeaveId && !selectedLeave) {
+        let target = pendingLeaves.find((l: any) => String(l.id) === openLeaveId);
+        
+        // Nếu không có trong list pending (đã duyệt, hoặc chưa có request nào pending), fetch trực tiếp
+        if (!target) {
+          try {
+            target = await AttendanceService.getLeaveRequestDetail(openLeaveId);
+          } catch (e) {
+            console.warn('Could not fetch leave request detail for deep link');
+          }
+        }
+        
+        if (target) {
+          setSelectedLeave({
+            id: String(target.id),
+            studentName: target.studentName,
+            parentName: target.parentName || 'Phụ huynh',
+            parentPhone: target.parentPhone || '0988 123 456',
+            reason: target.reason,
+            fromDate: target.fromDate,
+            toDate: target.toDate,
+            parentNotes: target.parentNotes,
+            attachmentUrl: target.attachmentUrl,
+            avatarUrl: target.studentAvatar || target.avatarUrl || target.avatar
+          });
+        }
       }
-    }
-    
-    if (openMedId && rawMedicalReqs.length > 0 && !selectedMedical) {
-      const target = rawMedicalReqs.find((m: any) => String(m.requestId || m.id) === openMedId);
-      if (target) {
-        setSelectedMedical({
-          id: String(target.requestId || target.id),
-          studentName: target.studentName,
-          medicineName: target.medicineName,
-          dosage: target.dosage,
-          timeToTake: target.timeToTake,
-          parentNotes: target.parentNotes,
-          imageUrl: target.attachmentUrl
-        });
+      
+      // Handle Medical Request
+      if (openMedId && !selectedMedical) {
+        // Có thể medical reqs chưa fetch xong
+        const target = rawMedicalReqs.find((m: any) => String(m.requestId || m.id) === openMedId);
+        if (target) {
+          setSelectedMedical({
+            id: String(target.requestId || target.id),
+            studentName: target.studentName,
+            medicineName: target.medicineName,
+            dosage: target.dosage,
+            timeToTake: target.timeToTake,
+            parentNotes: target.parentNotes,
+            imageUrl: target.attachmentUrl,
+            avatarUrl: target.studentAvatar || target.avatarUrl || target.avatar
+          });
+        }
       }
-    }
-    
-    if (openRequestList && !requestListType) {
-      if (openRequestList === 'leave' || openRequestList === 'medical') {
-        setRequestListType(openRequestList);
+      
+      // Handle Request List
+      if (openRequestList && !requestListType) {
+        if (openRequestList === 'leave' || openRequestList === 'medical') {
+          setRequestListType(openRequestList);
+        }
       }
-    }
+    };
+
+    handleDeepLinks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openLeaveId, openMedId, openRequestList, pendingLeaves, rawMedicalReqs]);
+  }, [openLeaveId, openMedId, openRequestList, pendingLeaves.length, rawMedicalReqs.length]);
 
   const cats = [
     { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
@@ -294,12 +314,16 @@ export const TeacherDashboardView: React.FC = () => {
       tag: 'Đơn phép',
       tagStyle: { color: '#B45309', background: '#FEF3C7', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
       sub: `Lý do: ${leave.reason || 'Việc gia đình'}`,
-      btn: updateLeaveReq.isPending ? 'Đang duyệt...' : 'Duyệt',
-      btnColor: '#005A36',
-      btnBorder: '#A7E0C6',
-      action: () => handleApproveLeave(String(leave.requestId || leave.id)),
-      rowStyle: undefined,
-      isDone: false, // For sorting
+      btn: leave.status === 'Approved' ? 'Đã duyệt' : (leave.status === 'Rejected' ? 'Đã từ chối' : (updateLeaveReq.isPending && String(updateLeaveReq.variables?.requestId) === String(leave.requestId || leave.id) ? 'Đang duyệt...' : 'Duyệt')),
+      btnColor: (leave.status === 'Approved' || leave.status === 'Rejected') ? '#9CA3AF' : '#005A36',
+      btnBorder: (leave.status === 'Approved' || leave.status === 'Rejected') ? '#D1D5DB' : '#A7E0C6',
+      action: () => {
+        if (leave.status !== 'Approved' && leave.status !== 'Rejected') {
+          handleApproveLeave(String(leave.requestId || leave.id));
+        }
+      },
+      rowStyle: (leave.status === 'Approved' || leave.status === 'Rejected') ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
+      isDone: leave.status === 'Approved' || leave.status === 'Rejected', // For sorting
       createdAt: leave.createdAt ? new Date(leave.createdAt).getTime() : Date.now(),
       onRowClick: () => setSelectedLeave({
         id: String(leave.requestId || leave.id),
@@ -330,7 +354,7 @@ export const TeacherDashboardView: React.FC = () => {
       tag: 'Y tế',
       tagStyle: { color: isDone ? '#9CA3AF' : '#DC2626', background: isDone ? '#E5E7EB' : '#FEE2E2', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
       sub: `${med.medicineName || 'Thuốc'} - ${med.dosage || 'Liều'}`,
-      btn: isDone ? 'Đã cho uống' : (updateMedicalReq.isPending ? 'Đang lưu...' : 'Xác nhận uống'),
+      btn: isDone ? 'Đã cho uống' : (updateMedicalReq.isPending && String(updateMedicalReq.variables?.requestId) === String(med.requestId || med.id) ? 'Đang lưu...' : 'Xác nhận uống'),
       btnColor: isDone ? '#9CA3AF' : '#DC2626',
       btnBorder: isDone ? '#D1D5DB' : '#FCA5A5',
       action: () => {
