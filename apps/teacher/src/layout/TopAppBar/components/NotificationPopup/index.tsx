@@ -28,9 +28,10 @@ function relativeTime(ts: number, isVi: boolean): string {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  ATTENDANCE:    'Điểm danh',
-  LEAVE_REQUEST: 'Đơn nghỉ',
-  HEALTH_ALERT:  'Sức khỏe',
+  ATTENDANCE:      'Điểm danh',
+  LEAVE_REQUEST:   'Đơn nghỉ',
+  HEALTH_ALERT:    'Sức khỏe',
+  MEDICAL_REQUEST: 'Y tế',
 };
 
 const getIcon = (type: string) => {
@@ -58,6 +59,7 @@ const getIcon = (type: string) => {
         </S.IconWrapper>
       );
     case 'HEALTH_ALERT':
+    case 'MEDICAL_REQUEST':
       return (
         <S.IconWrapper $type="HEALTH_ALERT">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -125,14 +127,20 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
         router.push('/attendance');
         break;
       case 'LEAVE_REQUEST':
+      case 'MEDICAL_REQUEST':
       case 'HEALTH_ALERT': {
         let url = '/';
         try {
-          const data = item.dataPayload || {};
+          let data: any = {};
+          if (typeof item.dataPayload === 'string') {
+            data = JSON.parse(item.dataPayload);
+          } else {
+            data = item.dataPayload || {};
+          }
           if (item.type === 'LEAVE_REQUEST') {
             url = data.requestId ? `/?openLeaveRequest=${data.requestId}` : `/?openRequestList=leave`;
-          } else if (item.type === 'HEALTH_ALERT') {
-            url = data.medRequestId ? `/?openMedRequest=${data.medRequestId}` : `/?openRequestList=medical`;
+          } else if (item.type === 'HEALTH_ALERT' || item.type === 'MEDICAL_REQUEST') {
+            url = data.requestId ? `/?openMedRequest=${data.requestId}` : `/?openRequestList=medical`;
           }
         } catch (e) {
           console.error('Failed to extract data payload', e);
