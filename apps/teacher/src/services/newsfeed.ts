@@ -37,15 +37,16 @@ export class NewsfeedService {
   /**
    * Tải ảnh lên máy chủ
    * @param file Tệp ảnh
+   * @param onUploadProgress Callback theo dõi tiến trình (Tùy chọn)
    * @returns URL tĩnh của ảnh sau khi tải
    */
-  public static async uploadImage(file: File): Promise<string> {
+  public static async uploadImage(file: File, onUploadProgress?: (progressEvent: any) => void): Promise<string> {
     const formData = new FormData();
     formData.append('image', file);
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
     formData.append('folder', `newsfeeds/feed-${dateStr}`);
-    const res = await apiClient.post('/teacher/upload', formData);
+    const res = await apiClient.post('/teacher/upload', formData, { onUploadProgress });
     return res.data?.data?.url || '';
   }
 }

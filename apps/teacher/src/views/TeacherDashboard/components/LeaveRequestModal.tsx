@@ -214,6 +214,16 @@ const ActionBtn = styled.button<{ $type: 'reject' | 'approve' }>`
   }
 `;
 
+const formatDate = (val: string | number) => {
+  if (!val) return '';
+  // If it's already a formatted string like '2026-10-10' or '10/10/2026', don't convert it if it's not a valid numeric timestamp.
+  const num = Number(val);
+  if (isNaN(num)) return val;
+  // If the number is too small, it might be seconds. If it's very large, it might be ms. Backend sends seconds.
+  const date = new Date(num > 9999999999 ? num : num * 1000);
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+};
+
 export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, data, onClose, onApprove, onReject }) => {
   if (!isOpen || !data) return null;
 
@@ -247,7 +257,7 @@ export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, da
           <FieldRow>
             <Label><Calendar size={15} /> Thời gian nghỉ</Label>
             <ValueBox>
-              Từ <strong>{data.fromDate}</strong> đến <strong>{data.toDate}</strong>
+              Từ <strong>{formatDate(data.fromDate)}</strong> đến <strong>{formatDate(data.toDate)}</strong>
             </ValueBox>
           </FieldRow>
 
