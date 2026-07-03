@@ -11,10 +11,11 @@ export const API_BASE_URL =
 /** All API endpoints — single source of truth for the monorepo. */
 export const SERVER = {
   auth: {
-    login:   '/auth/login',
-    logout:  '/auth/logout',
-    refresh: '/auth/refresh',
-    me:      '/auth/me',
+    login:          '/auth/login',
+    logout:         '/auth/logout',
+    refresh:        '/auth/refresh',
+    me:             '/auth/me',
+    changePassword: '/auth/change-password',
   },
   parent: {
     getChildren: '/parent/children',
