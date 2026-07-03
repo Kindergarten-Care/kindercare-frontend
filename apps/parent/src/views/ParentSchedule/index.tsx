@@ -14,7 +14,9 @@ import {
   getActivityColorMeta,
   DAYS_OF_WEEK_ORDER,
   exportTimetableToPDF,
+  getWeeksInMonth,
 } from './utils';
+import { Dropdown } from '@kindercare/ui';
 import {
   IconMealBreakfast,
   IconBook,
@@ -25,8 +27,11 @@ import {
 const pad = (n: number): string => String(n).padStart(2, '0');
 
 export function ParentSchedule() {
-  const { anchorDate, goPrevWeek, goNextWeek, goCurrentWeek, weekLabel } = useWeekSelector();
+  const { anchorDate, goPrevWeek, goNextWeek, goCurrentWeek, setAnchorDate, weekLabel } = useWeekSelector();
   const { activeStudent, loading, days, weeklyTimetable, gridItems, weekStart, weekEnd } = useParentSchedule(anchorDate);
+
+  const weeks = React.useMemo(() => getWeeksInMonth(anchorDate), [anchorDate]);
+  const currentWeekVal = React.useMemo(() => String(Math.floor(weekStart.getTime() / 1000)), [weekStart]);
 
 
   if (loading || !activeStudent) {
@@ -60,10 +65,12 @@ export function ParentSchedule() {
           </S.WeekNavBtn>
         </S.WeekNav>
         <S.WeekCurrent>
-          <S.WeekPickLabel>{weekLabel}</S.WeekPickLabel>
-          <S.WeekRange>
-            {pad(weekStart.getDate())} – {pad(weekEnd.getDate())}/{pad(weekEnd.getMonth() + 1)}/{weekEnd.getFullYear()}
-          </S.WeekRange>
+          <Dropdown
+            value={currentWeekVal}
+            onChange={(val) => setAnchorDate(new Date(Number(val) * 1000))}
+            options={weeks}
+            placeholder="Chọn tuần"
+          />
         </S.WeekCurrent>
         <S.WeekTodayBtn onClick={goCurrentWeek}>Về tuần hiện tại</S.WeekTodayBtn>
         <S.WeekDayTabs>

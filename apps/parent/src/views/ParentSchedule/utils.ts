@@ -261,3 +261,45 @@ export async function exportTimetableToPDF(studentName: string, weekLabel: strin
 
   html2pdf().from(element).set(opt).save();
 }
+
+export interface WeekOption {
+  value: string;
+  label: string;
+}
+
+export function getWeeksInMonth(anchorDate: Date): WeekOption[] {
+  const year = anchorDate.getFullYear();
+  const month = anchorDate.getMonth(); // 0-indexed
+
+  // Find all Mondays in the month
+  const weeks: WeekOption[] = [];
+  const tempDate = new Date(year, month, 1);
+  
+  // Find the first Monday of the month (or go back to the Monday of the week containing the 1st of the month)
+  const firstDow = tempDate.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = (firstDow + 6) % 7;
+  const currentMonday = new Date(tempDate);
+  currentMonday.setDate(tempDate.getDate() - diffToMonday);
+
+  let weekIndex = 1;
+  const monthEndDate = new Date(year, month + 1, 0); // Last day of month
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  while (currentMonday <= monthEndDate) {
+    const monday = new Date(currentMonday);
+    const friday = new Date(currentMonday);
+    friday.setDate(currentMonday.getDate() + 4);
+
+    const label = `Tuần ${weekIndex}: ${pad(monday.getDate())}/${pad(monday.getMonth() + 1)} – ${pad(friday.getDate())}/${pad(friday.getMonth() + 1)}`;
+    const value = String(Math.floor(monday.getTime() / 1000));
+
+    weeks.push({ value, label });
+
+    // Go to next Monday
+    currentMonday.setDate(currentMonday.getDate() + 7);
+    weekIndex++;
+  }
+
+  return weeks;
+}
