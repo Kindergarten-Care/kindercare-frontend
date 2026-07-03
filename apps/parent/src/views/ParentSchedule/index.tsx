@@ -15,6 +15,7 @@ import {
   DAYS_OF_WEEK_ORDER,
   exportTimetableToPDF,
   getWeeksInMonth,
+  getScheduleConfigFromDate,
 } from './utils';
 import { Dropdown } from '@kindercare/ui';
 import {
@@ -30,7 +31,8 @@ export function ParentSchedule() {
   const { anchorDate, goPrevWeek, goNextWeek, goCurrentWeek, setAnchorDate, weekLabel } = useWeekSelector();
   const { activeStudent, loading, days, weeklyTimetable, gridItems, weekStart, weekEnd } = useParentSchedule(anchorDate);
 
-  const weeks = React.useMemo(() => getWeeksInMonth(anchorDate), [anchorDate]);
+  const scheduleConfig = React.useMemo(() => getScheduleConfigFromDate(anchorDate), [anchorDate]);
+  const weeks = React.useMemo(() => getWeeksInMonth(scheduleConfig.year, scheduleConfig.month), [scheduleConfig]);
   const currentWeekVal = React.useMemo(() => String(Math.floor(weekStart.getTime() / 1000)), [weekStart]);
 
 
@@ -88,7 +90,7 @@ export function ParentSchedule() {
         <S.ThemeItem>
           <S.ThemeIcon $variant="month"><IconClock size={22} /></S.ThemeIcon>
           <div>
-            <S.ThemeLabel>Chủ đề tháng {anchorDate.getMonth() + 1}</S.ThemeLabel>
+            <S.ThemeLabel>Chủ đề tháng {scheduleConfig.month}</S.ThemeLabel>
             <S.ThemeValue>{monthTheme}</S.ThemeValue>
           </div>
         </S.ThemeItem>

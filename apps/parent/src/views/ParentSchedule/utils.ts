@@ -291,14 +291,14 @@ export function getScheduleConfigFromDate(date: Date): { year: number; month: nu
   return { year, month, weekOrder };
 }
 
-export function getWeeksInMonth(anchorDate: Date): WeekOption[] {
-  const targetYear = anchorDate.getFullYear();
-  const targetMonth = anchorDate.getMonth() + 1; // 1-indexed
+export function getWeeksInMonth(year: number, month: number): WeekOption[] {
+  const targetYear = year;
+  const targetMonth = month; // 1-indexed
 
   const weeks: WeekOption[] = [];
   
   // Start from the first Monday of the target month
-  let tempDate = new Date(targetYear, anchorDate.getMonth(), 1);
+  let tempDate = new Date(targetYear, targetMonth - 1, 1);
   while (tempDate.getDay() !== 1) {
     tempDate.setDate(tempDate.getDate() + 1);
   }
