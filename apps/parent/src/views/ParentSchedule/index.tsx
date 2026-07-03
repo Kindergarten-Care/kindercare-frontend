@@ -266,10 +266,12 @@ export function ParentSchedule() {
   // Only fall back to mock content when the ENTIRE week has no real data —
   // never mix real and mock data day-by-day, to avoid misleading parents.
   const weekHasRealMenu = days.some(d => (d.menu?.details.length ?? 0) > 0);
+  const activeMenu = days.find(d => d.menu)?.menu;
+  const menuName = activeMenu?.menuName;
   const weekHasRealLessons = days.some(d => d.lessons.length > 0);
 
-  const monthTheme = weeklyTimetable?.monthTheme || MOCK_MONTH_THEME;
-  const weekTheme = weeklyTimetable?.weekTheme || MOCK_WEEK_THEME;
+  const monthTheme = weeklyTimetable?.monthTheme || 'Chưa cập nhật';
+  const weekTheme = weeklyTimetable?.weekTheme || 'Chưa cập nhật';
   const hasRealTimetable = gridItems.length > 0;
 
   return (
@@ -324,7 +326,6 @@ export function ParentSchedule() {
         <S.SecHead>
           <S.SecIcon $bg="#E3EDFD" $fg="#2563EB"><IconClock size={19} /></S.SecIcon>
           <S.SecTitle>Lịch sinh hoạt trong tuần</S.SecTitle>
-          {!hasRealTimetable && <S.MockBadge>Dữ liệu minh họa</S.MockBadge>}
           {hasRealTimetable && (
             <button 
               onClick={handleExportPDF}
@@ -356,9 +357,9 @@ export function ParentSchedule() {
           )}
         </S.SecHead>
         <S.TimetableWrap id="timetable-pdf-area">
-          <S.Timetable>
-            {hasRealTimetable ? (
-              gridItems.map((item, idx) => {
+          {hasRealTimetable ? (
+            <S.Timetable>
+              {gridItems.map((item, idx) => {
                 const style = {
                   gridRow: item.gridRow,
                   gridColumn: item.gridCol
@@ -418,48 +419,28 @@ export function ParentSchedule() {
                   );
                 }
                 return null;
-              })
-            ) : (
-              <React.Fragment>
-                <S.TtHead $corner>Khung giờ</S.TtHead>
-                {days.map((d, i) => (
-                  <S.TtHead key={i} $today={d.isToday}>
-                    {DOW_LABELS[i]}
-                    <S.TtHeadDate $today={d.isToday}>{pad(d.date.getDate())}/{pad(d.date.getMonth() + 1)}</S.TtHeadDate>
-                  </S.TtHead>
-                ))}
-                {MOCK_TIMETABLE.map(period => (
-                  <React.Fragment key={period.label}>
-                    <S.TtPeriod $c={period.c} $tint={period.tint}>
-                      <S.TtPeriodIcon>{React.createElement(getTimetableIcon(period.icon), { size: 13 })}</S.TtPeriodIcon>
-                      {period.label}
-                    </S.TtPeriod>
-                    {period.slots.map(slot => (
-                      <React.Fragment key={slot.time}>
-                        <S.TtTime><IconClock size={12} /> {slot.time}</S.TtTime>
-                        {days.map((d, i) => {
-                          const override = slot.perDayLessonIndex !== undefined
-                            ? MOCK_WEEK_LESSONS[i]?.[slot.perDayLessonIndex]
-                            : undefined;
-                          const name = override ? override.title : slot.name;
-                          const iconKey = override ? getLessonMeta(override.iconType) : null;
-                          const c = iconKey ? iconKey.c : slot.c;
-                          const tint = iconKey ? iconKey.tint : slot.tint;
-                          const ActIcon = iconKey ? iconKey.Icon : getTimetableIcon(slot.icon);
-                          return (
-                            <S.TtAct key={i} $c={c} $tint={tint} $today={d.isToday}>
-                              <S.TtActIcon $c={c} $tint={tint}><ActIcon size={15} /></S.TtActIcon>
-                              <S.TtActName>{name}</S.TtActName>
-                            </S.TtAct>
-                          );
-                        })}
-                      </React.Fragment>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </React.Fragment>
-            )}
-          </S.Timetable>
+              })}
+            </S.Timetable>
+          ) : (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              padding: '60px 20px', 
+              color: '#6B7280', 
+              background: '#FFFFFF', 
+              border: '1px dashed #E5E7EB', 
+              borderRadius: '12px',
+              textAlign: 'center',
+              gap: '8px',
+              margin: '0 10px'
+            }}>
+              <IconClock size={28} style={{ color: '#9CA3AF' }} />
+              <div style={{ fontWeight: 600, fontSize: '15px', color: '#374151' }}>Chưa cập nhật lịch sinh hoạt</div>
+              <div style={{ fontSize: '13px', color: '#9CA3AF' }}>Vui lòng quay lại sau để xem lịch sinh hoạt của tuần này</div>
+            </div>
+          )}
         </S.TimetableWrap>
       </S.Section>
 
@@ -467,8 +448,9 @@ export function ParentSchedule() {
       <S.Section>
         <S.SecHead>
           <S.SecIcon $bg="#FFEEDF" $fg="#F97316"><IconMealBreakfast size={19} /></S.SecIcon>
-          <S.SecTitle>Thực đơn dinh dưỡng trong tuần</S.SecTitle>
-          {!weekHasRealMenu && <S.MockBadge>Dữ liệu minh họa</S.MockBadge>}
+          <S.SecTitle>
+            Thực đơn dinh dưỡng trong tuần{menuName ? ` (${menuName})` : ''}
+          </S.SecTitle>
           <S.SecSub>Thứ 2 – Thứ 6</S.SecSub>
         </S.SecHead>
         <S.WeekCols>
@@ -481,7 +463,7 @@ export function ParentSchedule() {
 
             const groupEntries = weekHasRealMenu
               ? Object.entries(realGroups)
-              : MOCK_WEEK_MENU[i].groups.map(g => [g.label, g.dishes] as const);
+              : [];
             const hasMenu = groupEntries.length > 0;
 
             return (
@@ -539,14 +521,13 @@ export function ParentSchedule() {
         <S.SecHead>
           <S.SecIcon $bg="#F1ECFE" $fg="#8B5CF6"><IconBook size={19} /></S.SecIcon>
           <S.SecTitle>Bài học trong tuần</S.SecTitle>
-          {!weekHasRealLessons && <S.MockBadge>Dữ liệu minh họa</S.MockBadge>}
           <S.SecSub>Chủ đề: {weekTheme}</S.SecSub>
         </S.SecHead>
         <S.WeekCols>
           {days.map((d, i) => {
             const lessonItems = weekHasRealLessons
               ? d.lessons.map(l => ({ key: String(l.lessonLogId), subject: l.subjectName, iconType: l.iconType, title: l.lessonTitle, details: l.details }))
-              : MOCK_WEEK_LESSONS[i].map((l, idx) => ({ key: `mock-${i}-${idx}`, subject: l.subject, iconType: l.iconType, title: l.title, details: l.details }));
+              : [];
 
             return (
               <S.DayCol key={i} $today={d.isToday}>
