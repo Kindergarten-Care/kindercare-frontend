@@ -267,39 +267,62 @@ export interface WeekOption {
   label: string;
 }
 
-export function getWeeksInMonth(anchorDate: Date): WeekOption[] {
-  const year = anchorDate.getFullYear();
-  const month = anchorDate.getMonth(); // 0-indexed
+export function getScheduleConfigFromDate(date: Date): { year: number; month: number; weekOrder: number } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth() + 1;
 
-  // Find all Mondays in the month
-  const weeks: WeekOption[] = [];
-  const tempDate = new Date(year, month, 1);
-  
-  // Find the first Monday of the month (or go back to the Monday of the week containing the 1st of the month)
-  const firstDow = tempDate.getDay(); // 0=Sun..6=Sat
-  const diffToMonday = (firstDow + 6) % 7;
-  const currentMonday = new Date(tempDate);
-  currentMonday.setDate(tempDate.getDate() - diffToMonday);
-
-  let weekIndex = 1;
-  const monthEndDate = new Date(year, month + 1, 0); // Last day of month
-
-  const pad = (n: number) => String(n).padStart(2, '0');
-
-  while (currentMonday <= monthEndDate) {
-    const monday = new Date(currentMonday);
-    const friday = new Date(currentMonday);
-    friday.setDate(currentMonday.getDate() + 4);
-
-    const label = `Tuần ${weekIndex}: ${pad(monday.getDate())}/${pad(monday.getMonth() + 1)} – ${pad(friday.getDate())}/${pad(friday.getMonth() + 1)}`;
-    const value = String(Math.floor(monday.getTime() / 1000));
-
-    weeks.push({ value, label });
-
-    // Go to next Monday
-    currentMonday.setDate(currentMonday.getDate() + 7);
-    weekIndex++;
+  // Find the first Monday of the month
+  let firstMonday = new Date(Date.UTC(year, d.getUTCMonth(), 1));
+  while (firstMonday.getUTCDay() !== 1) {
+    firstMonday.setUTCDate(firstMonday.getUTCDate() + 1);
   }
 
+  // If the date is before the first Monday of this month, it belongs to the previous month
+  if (d < firstMonday) {
+    const prevMonthLastDay = new Date(Date.UTC(year, d.getUTCMonth(), 0));
+    return getScheduleConfigFromDate(new Date(prevMonthLastDay.getUTCFullYear(), prevMonthLastDay.getUTCMonth(), prevMonthLastDay.getUTCDate()));
+  }
+
+  const diffInMs = d.getTime() - firstMonday.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  const weekOrder = Math.floor(diffInDays / 7) + 1;
+
+  return { year, month, weekOrder };
+}
+
+export function getWeeksInMonth(anchorDate: Date): WeekOption[] {
+  const targetYear = anchorDate.getFullYear();
+  const targetMonth = anchorDate.getMonth() + 1; // 1-indexed
+
+  const weeks: WeekOption[] = [];
+  
+  // Start from the first Monday of the target month
+  let tempDate = new Date(targetYear, anchorDate.getMonth(), 1);
+  while (tempDate.getDay() !== 1) {
+    tempDate.setDate(tempDate.getDate() + 1);
+  }
+  
+  const pad = (n: number) => String(n).padStart(2, '0');
+  
+  // Standard safety bounds: check up to 6 weeks starting from the first Monday
+  const currentMonday = new Date(tempDate);
+  for (let w = 0; w < 6; w++) {
+    const config = getScheduleConfigFromDate(currentMonday);
+    
+    if (config.month === targetMonth && config.year === targetYear) {
+      const monday = new Date(currentMonday);
+      const friday = new Date(currentMonday);
+      friday.setDate(currentMonday.getDate() + 4);
+      
+      const label = `Tuần ${config.weekOrder}: ${pad(monday.getDate())}/${pad(monday.getMonth() + 1)} – ${pad(friday.getDate())}/${pad(friday.getMonth() + 1)}`;
+      const value = String(Math.floor(monday.getTime() / 1000));
+      
+      weeks.push({ value, label });
+    }
+    
+    currentMonday.setDate(currentMonday.getDate() + 7);
+  }
+  
   return weeks;
 }
