@@ -37,6 +37,8 @@ export const SERVER = {
     scanAttendance:      '/teacher/attendance/scan',
     getDetailedStudents: '/teacher/classes/:classId/detailed-students',
     getSchedule:         '/teacher/classes/:classId/schedule',
+    workHistory:         '/teacher/work-history',
+    settings:            '/teacher/settings',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

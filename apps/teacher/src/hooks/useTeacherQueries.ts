@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@kindercare/core';
 import { NewsfeedService } from '@/services/newsfeed';
+import { AttendanceService } from '@/services/attendance';
 
 // --- DASHBOARD STATS ---
 export const useDashboardStats = () => {
@@ -11,6 +12,41 @@ export const useDashboardStats = () => {
       return response.data.data;
     },
     staleTime: 60 * 1000, // 1 minute
+  });
+};
+
+export const useTeacherClasses = () => {
+  return useQuery({
+    queryKey: ['teacherClasses'],
+    queryFn: () => AttendanceService.getTeacherClasses(),
+  });
+};
+
+// --- PROFILE ---
+import { profileService } from '@/services/profile/ProfileService';
+import { SettingsDomainModel } from '@/config/types/profile';
+
+export const useTeacherWorkHistory = () => {
+  return useQuery({
+    queryKey: ['teacherWorkHistory'],
+    queryFn: () => profileService.getWorkHistory(),
+  });
+};
+
+export const useTeacherSettings = () => {
+  return useQuery({
+    queryKey: ['teacherSettings'],
+    queryFn: () => profileService.getSettings(),
+  });
+};
+
+export const useUpdateSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (settings: SettingsDomainModel) => profileService.updateSettings(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacherSettings'] });
+    }
   });
 };
 
