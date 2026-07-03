@@ -33,8 +33,9 @@ export interface LeaveRequest {
   fromDate?: number;
   toDate?: number;
   parentPhone?: string;
-  isMealFeeDeducted?: number;
+  isMealFeeDeducted?: number | boolean;
   parentNotes?: string;
   createdAt?: number;
   className?: string;
+  studentAvatar?: string;
 }

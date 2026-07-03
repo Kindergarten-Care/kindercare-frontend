@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import * as S from './styles';
 import { ScheduleItem } from '@/config/types/dashboard';
 import { ActivityType } from '@/config/types/dailySchedule';
@@ -53,6 +55,8 @@ interface LiveScheduleWidgetProps {
 }
 
 const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, className, todayAttendanceStatus }) => {
+  const router = useRouter();
+  const locale = useLocale();
   const [nowMin, setNowMin] = useState(() => {
     const d = new Date();
     return d.getHours() * 60 + d.getMinutes();
@@ -170,7 +174,7 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
       )}
 
       {!(emptyState && isAbsent) && (
-        <S.ViewBtn onClick={() => alert('Xem thời khóa biểu đầy đủ')}>
+        <S.ViewBtn onClick={() => router.push(`/${locale}/schedule`)}>
           Xem thời khóa biểu
           <ArrowIcon size={16} />
         </S.ViewBtn>

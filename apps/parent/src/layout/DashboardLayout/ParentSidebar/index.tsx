@@ -90,6 +90,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
             <S.CSChev $open={csOpen} $hidden={collapsed}>
               <IconChevronDown size={14} />
             </S.CSChev>
+            {collapsed && <S.Tooltip>{activeChild.name}</S.Tooltip>}
           </S.CSTrigger>
 
           <ChildSelectorDropdown
@@ -118,30 +119,36 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.NavItem href={`/${locale}/dashboard`} $active={pathname.includes('/dashboard')} $collapsed={collapsed}>
         <S.NavIcon><IconHome size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Tổng quan</S.NavSpan>
+        {collapsed && <S.Tooltip>Tổng quan</S.Tooltip>}
       </S.NavItem>
       <S.NavItem href={`/${locale}/diary`} $active={pathname.includes('/diary')} $collapsed={collapsed}>
         <S.NavIcon><IconDiary size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Nhật ký bé</S.NavSpan>
         {!collapsed && <S.NavBadge>MỚI</S.NavBadge>}
         {collapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
+        {collapsed && <S.Tooltip>Nhật ký bé</S.Tooltip>}
       </S.NavItem>
-<S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/schedule`} $active={pathname.includes('/schedule')} $collapsed={collapsed}>
         <S.NavIcon><IconMenu size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Thực đơn & Lịch học</S.NavSpan>
+        {collapsed && <S.Tooltip>Thực đơn & Lịch học</S.Tooltip>}
       </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Bé & Học tập</S.NavLabel>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/profile`} $active={pathname.includes('/profile')} $collapsed={collapsed}>
         <S.NavIcon><IconProfile size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Hồ sơ bé</S.NavSpan>
+        {collapsed && <S.Tooltip>Hồ sơ bé</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/growth`} $active={pathname.includes('/growth')} $collapsed={collapsed}>
         <S.NavIcon><IconChart size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch sử phát triển</S.NavSpan>
+        {collapsed && <S.Tooltip>Lịch sử phát triển</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/calendar`} $active={pathname.includes('/calendar')} $collapsed={collapsed}>
         <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
+        {collapsed && <S.Tooltip>Lịch & Sự kiện</S.Tooltip>}
       </S.NavItem>
       <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={collapsed}>
         <S.NavIcon><IconRequest size={18} /></S.NavIcon>
@@ -152,6 +159,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         {pendingRequestCount > 0 && collapsed && (
           <S.NavBadge $collapsed>{pendingRequestCount > 9 ? '9+' : pendingRequestCount}</S.NavBadge>
         )}
+        {collapsed && <S.Tooltip>Yêu cầu phụ huynh</S.Tooltip>}
       </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
@@ -159,10 +167,12 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         <S.NavIcon><IconCreditCard size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Học phí & Lệ phí</S.NavSpan>
         {!collapsed && <S.NavBadge style={{ background: '#d97706' }}>!</S.NavBadge>}
+        {collapsed && <S.Tooltip>Học phí & Lệ phí</S.Tooltip>}
       </S.NavItem>
       <S.NavItem href="#" $collapsed={collapsed}>
         <S.NavIcon><IconReceipt size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch sử thanh toán</S.NavSpan>
+        {collapsed && <S.Tooltip>Lịch sử thanh toán</S.Tooltip>}
       </S.NavItem>
 
       {/* Footer */}
@@ -197,6 +207,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
             )}
           </S.DropdownContainer>
         )}
+        {collapsed && <S.Tooltip>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</S.Tooltip>}
       </S.SideProfile>
     </S.SidebarContainer>
     <S.ToggleBtn $collapsed={collapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>

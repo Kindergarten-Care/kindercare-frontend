@@ -1,12 +1,13 @@
 import React from 'react';
 import * as S from '../styles';
-import { IconMedicine, IconRequest } from '@/assets/icons/dashboard';
+import { IconMedicine, IconRequest, IconProfile } from '@/assets/icons/dashboard';
 
 interface SelectRequestTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectLeave: () => void;
   onSelectMedication: () => void;
+  onSelectProxy: () => void;
 }
 
 export const SelectRequestTypeModal: React.FC<SelectRequestTypeModalProps> = ({
@@ -14,6 +15,7 @@ export const SelectRequestTypeModal: React.FC<SelectRequestTypeModalProps> = ({
   onClose,
   onSelectLeave,
   onSelectMedication,
+  onSelectProxy,
 }) => {
   if (!isOpen) return null;
 
@@ -39,6 +41,14 @@ export const SelectRequestTypeModal: React.FC<SelectRequestTypeModalProps> = ({
             </S.CardIconCircle>
             <S.SelectionCardTitle>Dặn dò thuốc</S.SelectionCardTitle>
             <S.SelectionCardSub>Gửi lịch và hướng dẫn uống thuốc cho bé</S.SelectionCardSub>
+          </S.SelectionCard>
+
+          <S.SelectionCard onClick={onSelectProxy}>
+            <S.CardIconCircle $bg="#e2f8f0" $color="#0f766e">
+              <IconProfile size={24} />
+            </S.CardIconCircle>
+            <S.SelectionCardTitle>Ủy quyền đón hộ</S.SelectionCardTitle>
+            <S.SelectionCardSub>Ủy quyền cho người thân đón hoặc đưa bé</S.SelectionCardSub>
           </S.SelectionCard>
         </S.SelectionGrid>
       </S.ModalContent>

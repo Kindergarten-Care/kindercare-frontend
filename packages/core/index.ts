@@ -22,11 +22,8 @@ export {
 
 // Utils & Helpers
 export * from './src/utils/i18n';
-
-
 // Session Storage Helper
 export * from './src/utils/session';
-
 export * from './src/utils/pushNotification';
 
 // Notification

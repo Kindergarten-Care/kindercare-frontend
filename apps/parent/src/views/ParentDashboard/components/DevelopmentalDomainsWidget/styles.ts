@@ -51,6 +51,21 @@ export const AvgBadge = styled.span`
   letter-spacing: 0.02em;
 `;
 
+export const MonthTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 3px 9px;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+`;
+
 export const DetailLink = styled.button`
   background: none;
   border: none;

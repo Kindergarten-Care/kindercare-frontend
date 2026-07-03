@@ -11,10 +11,11 @@ export const API_BASE_URL =
 /** All API endpoints — single source of truth for the monorepo. */
 export const SERVER = {
   auth: {
-    login:   '/auth/login',
-    logout:  '/auth/logout',
-    refresh: '/auth/refresh',
-    me:      '/auth/me',
+    login:          '/auth/login',
+    logout:         '/auth/logout',
+    refresh:        '/auth/refresh',
+    me:             '/auth/me',
+    changePassword: '/auth/change-password',
   },
   parent: {
     getChildren: '/parent/children',
@@ -27,16 +28,27 @@ export const SERVER = {
     getMedicationRequests: '/parent/children/:studentId/medication-requests',
     cancelLeaveRequest: '/parent/leave-requests/:requestId/cancel',
     cancelMedicationRequest: '/parent/medication-requests/:medRequestId/cancel',
+    createProxyAuthorization: '/parent/proxy-authorizations',
+    getProxyAuthorizations: '/parent/children/:studentId/proxy-authorizations',
+    cancelProxyAuthorization: '/parent/proxy-authorizations/:authorizationId/cancel',
     getDailySchedule: '/parent/children/:studentId/daily-schedule',
     getDailyLessons: '/parent/children/:studentId/daily-lessons',
     getDailyAlbums: '/parent/children/:studentId/daily-albums',
     getAssessments: '/parent/children/:studentId/assessments',
     getQrToken: '/parent/children/:studentId/qr-token',
+    getNewsfeeds: '/parent/children/:studentId/newsfeeds',
+    getMenu: '/parent/children/:studentId/menu',
+    getDailyActivities: '/parent/children/:studentId/daily-activities',
+    getRelatives: '/parent/children/:studentId/relatives',
+    getWeeklyTimetable: '/parent/children/:studentId/weekly-timetable',
+    getDailyEvents: '/parent/events/daily',
   },
   teacher: {
-    scanAttendance: '/teacher/attendance/scan',
+    scanAttendance:      '/teacher/attendance/scan',
     getDetailedStudents: '/teacher/classes/:classId/detailed-students',
-    getSchedule: '/teacher/classes/:classId/schedule',
+    getSchedule:         '/teacher/classes/:classId/schedule',
+    workHistory:         '/teacher/work-history',
+    settings:            '/teacher/settings',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',
@@ -44,5 +56,7 @@ export const SERVER = {
     getInbox:          '/notifications',
     markAsRead:        '/notifications/:id/read',
     markAllAsRead:     '/notifications/read-all',
+    deleteNotification: '/notifications/:id',
+    deleteAllNotifications: '/notifications',
   },
 } as const;

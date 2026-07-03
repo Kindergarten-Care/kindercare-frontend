@@ -1,6 +1,6 @@
 export type MealStatus = 'ALL' | 'HALF' | 'NONE'; // Ăn hết, Ăn 1/2, Không ăn
 export type NapStatus = 'GOOD' | 'POOR' | 'NONE'; // Ngủ tốt, Ngủ ít, Không ngủ
-export type ParticipationStatus = 'ACTIVE' | 'NORMAL' | 'TIRED'; // Năng nổ, Bình thường, Mệt mỏi
+export type ParticipationStatus = 'Hòa đồng' | 'Thụ động' | 'Năng động' | 'Không tham gia' | 'Bình thường' | 'ACTIVE' | 'NORMAL' | 'TIRED'; // New dropdown options + old ones
 
 export interface StudentMealRecord {
   studentId: string;
@@ -19,6 +19,7 @@ export interface StudentActivityRecord {
   studentAvatar?: string;
   nap: NapStatus;
   participation: ParticipationStatus;
+  activityStatus?: string; // Tích hợp cột mới
   note?: string;
   photoUrl?: string;
 }

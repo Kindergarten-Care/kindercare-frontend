@@ -216,6 +216,7 @@ export class ActivitiesService {
               studentAvatar: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
               nap: nap as NapStatus,
               participation: participation as ParticipationStatus,
+              activityStatus: (s as any).activityStatus,
               note: note.trim(),
               photoUrl: s.photoUrl || undefined
             };
@@ -252,16 +253,18 @@ export class ActivitiesService {
 
         let hygieneStatus = 'Bình thường';
 
-        let teacherNote = '';
-        if (r.participation === 'ACTIVE') teacherNote += 'Vui chơi tích cực. ';
-        if (r.participation === 'NORMAL') teacherNote += 'Chỉ quan sát bạn chơi. ';
-        if (r.participation === 'TIRED') teacherNote += 'Mệt mỏi, ít tham gia. ';
-        if (r.note) teacherNote += r.note;
+        let teacherNote = r.note ? r.note.trim() : '';
+
+        // Legacy mapping backwards compatibility
+        if (r.participation === 'ACTIVE') r.participation = 'Năng động';
+        if (r.participation === 'NORMAL') r.participation = 'Bình thường';
+        if (r.participation === 'TIRED') r.participation = 'Thụ động';
 
         return {
           studentId: Number(r.studentId),
           napStatus,
           hygieneStatus,
+          activityStatus: r.participation || 'Bình thường', // Send to backend
           teacherNote: teacherNote.trim(),
           photoUrl: r.photoUrl
         };

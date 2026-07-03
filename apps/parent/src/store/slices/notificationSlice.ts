@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector, type PayloadAction } from '@reduxjs/toolkit';
 import { notificationService, type NotificationDto } from '@kindercare/core';
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -22,6 +22,21 @@ export const fetchNotifications = createAsyncThunk(
   () => notificationService.getInbox(),
 );
 
+export const deleteNotification = createAsyncThunk(
+  'notifications/delete',
+  async (notifId: number) => {
+    await notificationService.deleteNotification(notifId);
+    return notifId;
+  }
+);
+
+export const deleteAllNotifications = createAsyncThunk(
+  'notifications/deleteAll',
+  async () => {
+    await notificationService.deleteAllNotifications();
+  }
+);
+
 // ─── Slice ────────────────────────────────────────────────────────────────────
 
 const notificationSlice = createSlice({
@@ -30,12 +45,12 @@ const notificationSlice = createSlice({
   reducers: {
     // Optimistic: mark one as read immediately; caller fires the API in background
     markOneRead(state, action: PayloadAction<number>) {
-      const item = state.items.find(n => n.NotifID === action.payload);
-      if (item) item.IsRead = 1;
+      const item = state.items.find(n => n.notifId === action.payload);
+      if (item) item.isRead = 1;
     },
     // Optimistic: mark all as read immediately
     markAllRead(state) {
-      state.items.forEach(n => { n.IsRead = 1; });
+      state.items.forEach(n => { n.isRead = 1; });
     },
     // Prepend a new item received via FCM foreground
     prependItem(state, action: PayloadAction<NotificationDto>) {
@@ -55,6 +70,12 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error   = action.error.message ?? 'Lỗi tải thông báo';
+      })
+      .addCase(deleteNotification.fulfilled, (state, action) => {
+        state.items = state.items.filter(n => n.notifId !== action.payload);
+      })
+      .addCase(deleteAllNotifications.fulfilled, state => {
+        state.items = [];
       });
   },
 });
@@ -66,8 +87,12 @@ export const { markOneRead, markAllRead, prependItem } = notificationSlice.actio
 export const selectNotifications = (state: { notifications: NotificationState }) =>
   state.notifications.items;
 
-export const selectUnreadCount = (state: { notifications: NotificationState }) =>
-  state.notifications.items.filter(n => n.IsRead === 0).length;
+const selectItems = (state: { notifications: NotificationState }) => state.notifications.items;
+
+export const selectUnreadCount = createSelector(
+  selectItems,
+  items => items.filter(n => n.isRead === 0).length,
+);
 
 export const selectNotifLoading = (state: { notifications: NotificationState }) =>
   state.notifications.loading;
