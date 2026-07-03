@@ -1,7 +1,7 @@
 import React from 'react';
 import * as S from '../styles';
 import { Dropdown } from '@kindercare/ui';
-import { IconPlus, IconMedicine, IconRequest, IconSchedule } from '@/assets/icons/dashboard';
+import { IconPlus, IconMedicine, IconRequest, IconSchedule, IconProfile } from '@/assets/icons/dashboard';
 import { RequestItem } from '../types';
 
 /**
@@ -21,11 +21,12 @@ interface RequestListViewProps {
     total: number;
     leaveCount: number;
     medicationCount: number;
+    proxyCount: number;
   };
   /** Currently selected type tab filter */
-  activeTab: 'all' | 'leave' | 'medication';
+  activeTab: 'all' | 'leave' | 'medication' | 'proxy';
   /** Callback to switch active type tab filter */
-  setActiveTab: (tab: 'all' | 'leave' | 'medication') => void;
+  setActiveTab: (tab: 'all' | 'leave' | 'medication' | 'proxy') => void;
   /** Currently selected status filter */
   activeStatusFilter: 'all' | 'pending' | 'approved_completed' | 'rejected' | 'cancelled';
   /** Callback to switch active status filter */
@@ -61,7 +62,7 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
       <S.HeaderRow>
         <S.HeaderLeft>
           <S.PageTitle>Yêu cầu của phụ huynh</S.PageTitle>
-          <S.PageSub>Theo dõi đơn xin nghỉ & dặn dò thuốc của {studentName}</S.PageSub>
+          <S.PageSub>Theo dõi đơn xin nghỉ, dặn dò thuốc & ủy quyền đón hộ của {studentName}</S.PageSub>
         </S.HeaderLeft>
 
         <S.BtnPrimary onClick={onCreateRequestClick}>
@@ -92,29 +93,44 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
       <S.FilterRow>
         <S.FilterTabs>
           <S.TabBtn $active={activeTab === 'all'} onClick={() => setActiveTab('all')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
             Tất cả <span>{stats.total}</span>
           </S.TabBtn>
           <S.TabBtn $active={activeTab === 'leave'} onClick={() => setActiveTab('leave')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>
+            </svg>
             Đơn xin nghỉ <span>{stats.leaveCount}</span>
           </S.TabBtn>
-          <S.TabBtn $active={activeTab === 'medication'} onClick={() => setActiveTab('medication')}>
+          <S.TabBtn $active={activeTab === 'medication'} $isMedication onClick={() => setActiveTab('medication')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'medication' ? '#dc2626' : '#94a3b8'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
             Dặn dò thuốc <span>{stats.medicationCount}</span>
+          </S.TabBtn>
+          <S.TabBtn $active={activeTab === 'proxy'} onClick={() => setActiveTab('proxy')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            Đón hộ <span>{stats.proxyCount}</span>
           </S.TabBtn>
         </S.FilterTabs>
 
         <S.DropdownWrapper>
           <Dropdown
-            value={activeStatusFilter}
-            onChange={(value) => setActiveStatusFilter(value as any)}
-            options={[
-              { value: 'all', label: 'Tất cả trạng thái' },
-              { value: 'pending', label: 'Chờ phản hồi' },
-              { value: 'approved_completed', label: 'Đã duyệt / xác nhận' },
-              { value: 'rejected', label: 'Từ chối' },
-              { value: 'cancelled', label: 'Đã hủy' },
-            ]}
-            placeholder="Lọc theo trạng thái"
-            fullWidth
+             value={activeStatusFilter}
+             onChange={(value) => setActiveStatusFilter(value as any)}
+             options={[
+               { value: 'all', label: 'Tất cả trạng thái' },
+               { value: 'pending', label: 'Chờ phản hồi' },
+               { value: 'approved_completed', label: 'Đã duyệt / xác nhận' },
+               { value: 'rejected', label: 'Từ chối' },
+               { value: 'cancelled', label: 'Đã hủy' },
+             ]}
+             placeholder="Lọc theo trạng thái"
+             fullWidth
           />
         </S.DropdownWrapper>
       </S.FilterRow>
@@ -130,7 +146,16 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
           {filteredRequests.map(r => (
             <S.RequestCard key={r.id} $color={r.color}>
               <S.CardIconWrapper $bg={r.bg} $color={r.color}>
-                {r.type === 'leave' ? <IconRequest size={20} /> : <IconMedicine size={20} />}
+                {r.type === 'leave' ? (
+                  <IconRequest size={20} />
+                ) : r.type === 'medication' ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                ) : (
+                  <IconProfile size={20} />
+                )}
               </S.CardIconWrapper>
 
               <S.CardMiddle>
@@ -184,15 +209,15 @@ export const RequestListView: React.FC<RequestListViewProps> = ({
               <S.CardRight>
                 <S.StatusBadge $status={r.status}>
                   {r.status === 'pending' && '⏱ Chờ phản hồi'}
-                  {r.status === 'approved' && '✓ Đã duyệt'}
-                  {r.status === 'completed' && '✓ Đã cho uống'}
+                  {r.status === 'approved' && (r.type === 'proxy' ? '✓ Ủy quyền active' : '✓ Đã duyệt')}
+                  {r.status === 'completed' && '✓ Đã hoàn thành'}
                   {r.status === 'rejected' && '✕ Từ chối'}
                   {r.status === 'cancelled' && '✕ Đã hủy'}
                 </S.StatusBadge>
 
                 <S.CardActions>
                   <S.BtnDetail onClick={() => onShowDetail(r)}>👁 Chi tiết</S.BtnDetail>
-                  {r.status === 'pending' && (
+                  {((r.status === 'pending') || (r.status === 'approved' && r.type === 'proxy')) && (
                     <S.BtnCancel onClick={() => onCancelRequest(r.id)}>✕ Hủy đơn</S.BtnCancel>
                   )}
                 </S.CardActions>

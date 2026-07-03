@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as S from './styles';
-import { IconClose, IconDownload } from '@/assets/icons/dashboard';
+import { IconClose } from '@/assets/icons/dashboard';
 import { QrGenerator } from './QrGenerator';
 import { qrTokenService } from '@/services/QrToken/QrTokenService';
 
@@ -97,10 +97,6 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
     fetchToken().finally(() => setRefreshing(false));
   };
 
-  const handleDownload = () => {
-    alert(`Tải mã QR điểm danh của bé ${student.fullName} thành công!`);
-  };
-
   const studentCode = `KC-${student.studentId.toString().padStart(4, '0')}`;
 
   return (
@@ -164,12 +160,6 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
             </S.InfoRow>
           </S.InfoCard>
         </S.ContentBody>
-
-        <S.Footer>
-          <S.DownloadBtn onClick={handleDownload}>
-            <IconDownload size={16} /> Tải mã QR
-          </S.DownloadBtn>
-        </S.Footer>
       </S.ModalContainer>
     </S.Overlay>
   );

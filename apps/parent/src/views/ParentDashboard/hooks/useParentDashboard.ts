@@ -5,26 +5,19 @@ import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, Ch
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
+import { formatPersonName } from '@/utils/formatName';
 import { attendanceService } from '@/services/Attendance/AttendanceService';
 import { AttendanceDomainModel } from '@/config/types/attendance';
-import { dailyScheduleService } from '@/services/DailySchedule/DailyScheduleService';
 import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
 import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
 import { assessmentService } from '@/services/Assessment/AssessmentService';
-import { DailyScheduleDomainModel, ActivityType } from '@/config/types/dailySchedule';
+import { weeklyScheduleService } from '@/services/WeeklySchedule/WeeklyScheduleService';
+import { ActivityType } from '@/config/types/dailySchedule';
+import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AssessmentDomainModel } from '@/config/types/assessment';
-
-// ─── Public helper (used by GlobalChatFab) ────────────────────────────────────
-
-export const getTeacherDisplayName = (teacher: { fullName: string; gender?: string }) => {
-  if (!teacher) return '';
-  const fullName = teacher.fullName || '';
-  if (/^(cô|thầy)\b/i.test(fullName)) return fullName;
-  const prefix = (teacher.gender || '').toLowerCase() === 'nam' ? 'Thầy' : 'Cô';
-  return `${prefix} ${fullName}`;
-};
+import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
 
 // ─── Domain → Widget mappers ──────────────────────────────────────────────────
 
@@ -49,20 +42,30 @@ const LESSON_META: Record<string, { icon: string; color: string }> = {
   sport:    { icon: '⚽', color: '#059669' },
 };
 
-const scheduleToItems = (items: DailyScheduleDomainModel[]): ScheduleItem[] =>
-  items.map(item => {
-    const meta = ACTIVITY_META[item.activityType] ?? ACTIVITY_META.other;
-    return {
-      id: String(item.dailyScheduleId),
-      time: tsToHHMM(item.startTime),
-      endTime: tsToHHMM(item.endTime),
-      title: item.activityName,
-      note: item.details ?? item.location ?? '',
-      icon: meta.icon,
-      color: meta.color,
-      activityType: item.activityType ?? 'other',
-    };
-  });
+const DOW_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+/** Today's activities from the weekly routine timetable, sorted by start time. */
+const weeklyTimetableToTodayItems = (timetable: WeeklyScheduleDomainModel | null): ScheduleItem[] => {
+  if (!timetable?.details?.length) return [];
+  const todayKey = DOW_KEYS[new Date().getDay()];
+
+  return timetable.details
+    .filter(d => d.dayOfWeek === todayKey)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+    .map(d => {
+      const meta = ACTIVITY_META[d.activityType] ?? ACTIVITY_META.other;
+      return {
+        id: String(d.scheduleDetailId),
+        time: d.startTime.slice(0, 5),   // "HH:mm[:ss]" → "HH:mm"
+        endTime: d.endTime.slice(0, 5),
+        title: d.activityName,
+        note: d.details ?? d.location ?? '',
+        icon: meta.icon,
+        color: meta.color,
+        activityType: d.activityType ?? 'other',
+      };
+    });
+};
 
 const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
   lessons.map(lesson => {
@@ -156,6 +159,7 @@ export function useParentDashboard() {
   const [apiLoading, setApiLoading] = useState(false);
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
   const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState(false);
+  const [isProxyPopupOpen, setIsProxyPopupOpen] = useState(false);
   const [isQrPopupOpen, setIsQrPopupOpen] = useState(false);
 
   const now = new Date();
@@ -185,27 +189,29 @@ export function useParentDashboard() {
   const closeLeavePopup     = useCallback(() => setIsLeavePopupOpen(false),      []);
   const openMedicPopup      = useCallback(() => setIsMedicationPopupOpen(true),  []);
   const closeMedicPopup     = useCallback(() => setIsMedicationPopupOpen(false), []);
+  const openProxyPopup      = useCallback(() => setIsProxyPopupOpen(true),       []);
+  const closeProxyPopup     = useCallback(() => setIsProxyPopupOpen(false),      []);
   const openQrPopup         = useCallback(() => setIsQrPopupOpen(true),          []);
   const closeQrPopup        = useCallback(() => setIsQrPopupOpen(false),         []);
 
-  useEffect(() => {
+  const fetchDashboardData = useCallback(() => {
     if (!activeStudent?.studentId) return;
     const id = activeStudent.studentId;
     setApiLoading(true);
 
     Promise.allSettled([
       attendanceService.getAttendance(id),
-      dailyScheduleService.getDailySchedule(id),
+      weeklyScheduleService.getWeeklyTimetable(id),
       dailyLessonService.getDailyLessons(id),
       dailyAlbumService.getDailyAlbums(id),
       assessmentService.getAssessments(id, currentMonthParam()),
     ])
-      .then(([attendance, schedule, lessons, albums, assessments]) => {
+      .then(([attendance, timetable, lessons, albums, assessments]) => {
         if (attendance.status === 'fulfilled') setAllRecords(attendance.value);
         else console.error('Attendance API failed:', attendance.reason);
 
-        if (schedule.status === 'fulfilled') setSchedule(scheduleToItems(schedule.value));
-        else console.error('Daily schedule API failed:', schedule.reason);
+        if (timetable.status === 'fulfilled') setSchedule(weeklyTimetableToTodayItems(timetable.value));
+        else console.error('Weekly timetable API failed:', timetable.reason);
 
         if (lessons.status === 'fulfilled') setLessons(lessonsToItems(lessons.value));
         else console.error('Daily lessons API failed:', lessons.reason);
@@ -218,6 +224,34 @@ export function useParentDashboard() {
       })
       .finally(() => setApiLoading(false));
   }, [activeStudent?.studentId]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const handlePushMessage = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const type = payload.data?.type;
+      const title = payload.notification?.title || '';
+      const body = payload.notification?.body || '';
+      if (
+        type === 'ATTENDANCE' ||
+        title.toLowerCase().includes('điểm danh') ||
+        title.toLowerCase().includes('attendance') ||
+        body.toLowerCase().includes('điểm danh') ||
+        body.toLowerCase().includes('attendance')
+      ) {
+        setIsQrPopupOpen(false);
+        fetchDashboardData();
+      }
+    };
+
+    window.addEventListener('kc:push:message', handlePushMessage);
+    return () => {
+      window.removeEventListener('kc:push:message', handlePushMessage);
+    };
+  }, [fetchDashboardData]);
 
   useEffect(() => {
     const { calendarDays: days, attendanceStats: stats } = calculateAttendanceData(allRecords, viewYear, viewMonth);
@@ -273,11 +307,13 @@ export function useParentDashboard() {
             const outTime = tsToHHMM(todayRecord.checkOutTime);
             attendanceStatus = 'checked_out';
             checkinTime = `Đã ra về · ${outTime}`;
-            checkinSub = todayRecord.pickedUpBy ? `Đón bởi: ${todayRecord.pickedUpBy}` : 'Đã đón bé';
+            const pickupDisplay = formatPersonName(todayRecord.pickedUpBy, todayRecord.pickedUpRelationship, '');
+            checkinSub = pickupDisplay ? `Đón bởi: ${pickupDisplay}` : 'Đã đón bé';
           } else {
             attendanceStatus = 'studying';
             checkinTime = `Đã đến trường · ${inTime}`;
-            checkinSub = 'Đang học';
+            const dropoffDisplay = formatPersonName(todayRecord.droppedOffBy, todayRecord.droppedOffRelationship, '');
+            checkinSub = dropoffDisplay ? `Đưa bởi: ${dropoffDisplay}` : 'Đang học';
           }
         }
       }
@@ -330,6 +366,7 @@ export function useParentDashboard() {
     nextMonth,
     isLeavePopupOpen,  openLeavePopup,  closeLeavePopup,
     isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isProxyPopupOpen, openProxyPopup, closeProxyPopup,
     isQrPopupOpen,     openQrPopup,     closeQrPopup,
   };
 }

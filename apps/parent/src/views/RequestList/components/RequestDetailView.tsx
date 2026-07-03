@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as S from '../styles';
-import { IconSchedule, IconRequest, IconMedicine, IconChevronLeft, IconCheck, IconClose } from '@/assets/icons/dashboard';
+import { IconSchedule, IconRequest, IconMedicine, IconChevronLeft, IconCheck, IconClose, IconProfile } from '@/assets/icons/dashboard';
 import { RequestItem } from '../types';
 import { StudentDomainModel } from '@/config/types/student';
 import { resolveTeacherInfo } from '../utils';
@@ -45,6 +45,12 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
     onCancel(request.id);
   };
 
+  const getBreadcrumbTitle = () => {
+    if (request.type === 'leave') return 'Đơn xin nghỉ học';
+    if (request.type === 'medication') return 'Dặn dò thuốc';
+    return 'Ủy quyền đón hộ';
+  };
+
   return (
     <>
       {/* Detail Header */}
@@ -53,7 +59,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
           <IconChevronLeft size={16} /> Quay lại
         </S.DetailBackBtn>
         <S.Breadcrumbs>
-          Yêu cầu của phụ huynh <span>·</span> <strong>{request.type === 'leave' ? 'Đơn xin nghỉ học' : 'Dặn dò thuốc'}</strong>
+          Yêu cầu của phụ huynh <span>·</span> <strong>{getBreadcrumbTitle()}</strong>
         </S.Breadcrumbs>
       </S.DetailHeader>
 
@@ -62,17 +68,23 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
         <S.SummaryTop>
           <S.SummaryLeft>
             <S.SummaryIconWrapper $bg={request.bg} $color={request.color}>
-              {request.type === 'leave' ? <IconRequest size={24} /> : <IconMedicine size={24} />}
+              {request.type === 'leave' ? (
+                <IconRequest size={24} />
+              ) : request.type === 'medication' ? (
+                <IconMedicine size={24} />
+              ) : (
+                <IconProfile size={24} />
+              )}
             </S.SummaryIconWrapper>
             <div>
-              <S.SummaryTitle>{request.type === 'leave' ? 'Đơn xin nghỉ học' : 'Dặn dò thuốc'}</S.SummaryTitle>
+              <S.SummaryTitle>{getBreadcrumbTitle()}</S.SummaryTitle>
               <S.SummaryMeta>Mã đơn #{request.requestId} · Gửi tới {homeroomTitleWithName}</S.SummaryMeta>
             </div>
           </S.SummaryLeft>
           <S.StatusBadge $status={request.status}>
             {request.status === 'pending' && '⏱ Chờ phản hồi'}
-            {request.status === 'approved' && '✓ Đã duyệt'}
-            {request.status === 'completed' && (request.type === 'leave' ? '✓ Đã duyệt' : '✓ Đã cho uống')}
+            {request.status === 'approved' && (request.type === 'proxy' ? '✓ Ủy quyền active' : '✓ Đã duyệt')}
+            {request.status === 'completed' && '✓ Đã hoàn thành'}
             {request.status === 'rejected' && '✕ Từ chối'}
             {request.status === 'cancelled' && '✕ Đã hủy'}
           </S.StatusBadge>
@@ -105,7 +117,15 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
           Phản hồi từ {teacherDisplayName}
         </S.DetailCardTitle>
         <S.TeacherResponseText>
-          {request.type === 'medication' ? (
+          {request.type === 'proxy' ? (
+            request.status === 'approved'
+              ? 'Ủy quyền đưa đón đang có hiệu lực. Giáo viên lớp sẽ đối chiếu ảnh chụp và số CCCD khi đón bé.'
+              : request.status === 'cancelled'
+              ? 'Yêu cầu ủy quyền đã được hủy.'
+              : request.status === 'completed'
+              ? 'Bé đã được đưa/đón thành công bởi người được ủy quyền.'
+              : 'Đơn ủy quyền không hoạt động.'
+          ) : request.type === 'medication' ? (
             request.teacherNote || (request.status === 'pending'
               ? `Chưa có phản hồi từ ${isMaleTeacher ? 'thầy' : 'cô'}.`
               : request.status === 'cancelled'
@@ -141,7 +161,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                   <S.DetailInfoLabel>Ngày xin nghỉ</S.DetailInfoLabel>
                   <S.DetailInfoValue>
                     <S.InfoIconWrapper><IconSchedule size={14} color="var(--muted)" /></S.InfoIconWrapper>
-                    {request.type === 'leave' ? request.detail.replace('Xin nghỉ ', '') : request.sentTime}
+                    {request.detail.replace('Xin nghỉ ', '')}
                   </S.DetailInfoValue>
                 </S.DetailInfoRow>
 
@@ -172,7 +192,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 </S.EvidenceBlock>
               )}
             </S.DetailCard>
-          ) : (
+          ) : request.type === 'medication' ? (
             <S.DetailCard>
               <S.DetailCardTitle>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(45deg)', color: 'var(--brand, #005a36)' }}><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
@@ -235,6 +255,53 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 <S.DetailInfoValue>{request.sentTime}</S.DetailInfoValue>
               </S.SentTimeRow>
             </S.DetailCard>
+          ) : (
+            <S.DetailCard>
+              <S.DetailCardTitle>
+                <IconProfile size={18} color="var(--brand, #005a36)" />
+                Thông tin người đón hộ
+              </S.DetailCardTitle>
+
+              <S.DetailInfoTable>
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Họ tên người nhận</S.DetailInfoLabel>
+                  <S.DetailInfoValue>
+                    {request.detail.split('Người nhận: ').pop()?.split(' (')[0] || ''}
+                  </S.DetailInfoValue>
+                </S.DetailInfoRow>
+
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Số điện thoại</S.DetailInfoLabel>
+                  <S.DetailInfoValue>{request.proxyPhone || 'Không cung cấp'}</S.DetailInfoValue>
+                </S.DetailInfoRow>
+
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Số CCCD / CMND</S.DetailInfoLabel>
+                  <S.DetailInfoValue>{request.proxyIDCard || 'Không cung cấp'}</S.DetailInfoValue>
+                </S.DetailInfoRow>
+
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Thời điểm gửi</S.DetailInfoLabel>
+                  <S.DetailInfoValue>{request.sentTime}</S.DetailInfoValue>
+                </S.DetailInfoRow>
+              </S.DetailInfoTable>
+
+              <S.DetailNoteBlock>
+                <S.DetailNoteHeader>GHI CHÚ ỦY QUYỀN</S.DetailNoteHeader>
+                <S.DetailNoteContent>
+                  {request.note || 'Không có ghi chú thêm.'}
+                </S.DetailNoteContent>
+              </S.DetailNoteBlock>
+
+              {request.proxyPhotoUrl && (
+                <S.EvidenceBlock>
+                  <S.EvidenceHeader>ẢNH CHÂN DUNG ĐỐI CHIẾU</S.EvidenceHeader>
+                  <S.MedImageWrapper onClick={() => setZoomedImageUrl(request.proxyPhotoUrl || null)}>
+                    <img src={request.proxyPhotoUrl} alt="Ảnh chân dung người đón hộ" />
+                  </S.MedImageWrapper>
+                </S.EvidenceBlock>
+              )}
+            </S.DetailCard>
           )}
         </S.DetailLeftCol>
 
@@ -252,7 +319,9 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                   <IconCheck size={12} />
                 </S.TimelineIcon>
                 <S.TimelineContent>
-                  <S.TimelineTitle>Bạn đã gửi đơn {request.type === 'leave' ? 'xin nghỉ' : 'dặn thuốc'}</S.TimelineTitle>
+                  <S.TimelineTitle>
+                    {request.type === 'leave' ? 'Bạn đã gửi đơn xin nghỉ' : request.type === 'medication' ? 'Bạn đã gửi đơn dặn thuốc' : 'Bạn đã đăng ký đón hộ'}
+                  </S.TimelineTitle>
                   <S.TimelineSub>{request.sentTime}</S.TimelineSub>
                 </S.TimelineContent>
               </S.TimelineItem>
@@ -263,7 +332,9 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                     <IconCheck size={12} />
                   </S.TimelineIcon>
                   <S.TimelineContent>
-                    <S.TimelineTitle>{teacherDisplayName} đã tiếp nhận</S.TimelineTitle>
+                    <S.TimelineTitle>
+                      {request.type === 'proxy' ? 'Đơn ủy quyền hoạt động' : `${teacherDisplayName} đã tiếp nhận`}
+                    </S.TimelineTitle>
                     <S.TimelineSub>{request.sentTime}</S.TimelineSub>
                   </S.TimelineContent>
                 </S.TimelineItem>
@@ -281,9 +352,9 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
                 </S.TimelineIcon>
                 <S.TimelineContent>
                   <S.TimelineTitle>
-                    {request.status === 'pending' && `Chờ ${isMaleTeacher ? 'thầy' : 'cô'} duyệt đơn`}
-                    {request.status === 'approved' && 'Đã duyệt đơn'}
-                    {request.status === 'completed' && (request.type === 'leave' ? 'Đã duyệt đơn' : `${teacherDisplayName} đã cho bé uống thuốc`)}
+                    {request.status === 'pending' && `Chờ xử lý`}
+                    {request.status === 'approved' && (request.type === 'proxy' ? 'Ủy quyền active' : 'Đã duyệt đơn')}
+                    {request.status === 'completed' && (request.type === 'proxy' ? 'Bé đã được đưa/đón thành công' : request.type === 'leave' ? 'Đã duyệt đơn' : `${teacherDisplayName} đã cho bé uống thuốc`)}
                     {request.status === 'rejected' && 'Từ chối'}
                     {request.status === 'cancelled' && 'Đã hủy'}
                   </S.TimelineTitle>
@@ -299,7 +370,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
             </S.Timeline>
 
             <S.TimelineActions>
-              {request.status === 'pending' && (
+              {((request.status === 'pending') || (request.status === 'approved' && request.type === 'proxy')) && (
                 <S.BtnCancelDetail onClick={handleCancel}>
                   ✕ Hủy đơn
                 </S.BtnCancelDetail>
@@ -316,7 +387,7 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
         <S.ZoomOverlay onClick={() => setZoomedImageUrl(null)}>
           <S.ZoomContainer onClick={e => e.stopPropagation()}>
             <S.ZoomCloseBtn onClick={() => setZoomedImageUrl(null)}>✕</S.ZoomCloseBtn>
-            <S.ZoomedImg src={zoomedImageUrl} alt="Zoomed medicine" />
+            <S.ZoomedImg src={zoomedImageUrl} alt="Zoomed detail photo" />
           </S.ZoomContainer>
         </S.ZoomOverlay>
       )}
