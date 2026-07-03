@@ -108,11 +108,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           <S.NavLabel $isCollapsed={isCollapsed}>Danh sách lớp</S.NavLabel>
           <S.NavBadge $isCollapsed={isCollapsed}>20</S.NavBadge>
         </S.NavItem>
-        <S.NavItem $active={isProfileActive} $isCollapsed={isCollapsed} onClick={() => router.push('/profile')}>
-          {isProfileActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
-          <S.NavIcon><Contact size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Hồ sơ bé</S.NavLabel>
-        </S.NavItem>
+
         <S.NavItem $isCollapsed={isCollapsed}>
           <S.NavIcon><BookOpen size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Soạn giáo án</S.NavLabel>
