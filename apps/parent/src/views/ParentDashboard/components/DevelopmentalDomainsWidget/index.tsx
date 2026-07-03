@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import * as S from './styles';
 import { IconChart } from '@/assets/icons/dashboard';
 import { AssessmentDomainModel } from '@/config/types/assessment';
@@ -67,7 +69,17 @@ interface DevelopmentalDomainsWidgetProps {
   assessment?: AssessmentDomainModel | null;
 }
 
+/** "MM-YYYY" (API format) → "Tháng M/YYYY". */
+const formatAssessmentMonth = (assessmentMonth: string): string | null => {
+  const [month, year] = assessmentMonth.split('-').map(Number);
+  if (!month || !year) return null;
+  return `Tháng ${month}/${year}`;
+};
+
 const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment }) => {
+  const router = useRouter();
+  const locale = useLocale();
+
   if (!assessment) {
     return (
       <S.Card>
@@ -100,6 +112,7 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
   });
 
   const avg = scores.reduce((sum, d) => sum + d.score, 0) / scores.length;
+  const monthLabel = formatAssessmentMonth(assessment.assessmentMonth);
 
   return (
     <S.Card>
@@ -110,8 +123,9 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
             5 lĩnh vực phát triển
           </S.CardTitle>
           <S.AvgBadge>TB {avg.toFixed(1)}</S.AvgBadge>
+          {monthLabel && <S.MonthTag>{monthLabel}</S.MonthTag>}
         </S.CardTitleContainer>
-        <S.DetailLink onClick={() => alert('Xem chi tiết 5 lĩnh vực phát triển')}>
+        <S.DetailLink onClick={() => router.push(`/${locale}/growth`)}>
           Chi tiết →
         </S.DetailLink>
       </S.CardHead>

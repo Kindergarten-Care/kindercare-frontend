@@ -8,11 +8,12 @@ import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Stude
 import { formatPersonName } from '@/utils/formatName';
 import { attendanceService } from '@/services/Attendance/AttendanceService';
 import { AttendanceDomainModel } from '@/config/types/attendance';
-import { dailyScheduleService } from '@/services/DailySchedule/DailyScheduleService';
 import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
 import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
 import { assessmentService } from '@/services/Assessment/AssessmentService';
-import { DailyScheduleDomainModel, ActivityType } from '@/config/types/dailySchedule';
+import { weeklyScheduleService } from '@/services/WeeklySchedule/WeeklyScheduleService';
+import { ActivityType } from '@/config/types/dailySchedule';
+import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AssessmentDomainModel } from '@/config/types/assessment';
@@ -41,20 +42,30 @@ const LESSON_META: Record<string, { icon: string; color: string }> = {
   sport:    { icon: '⚽', color: '#059669' },
 };
 
-const scheduleToItems = (items: DailyScheduleDomainModel[]): ScheduleItem[] =>
-  items.map(item => {
-    const meta = ACTIVITY_META[item.activityType] ?? ACTIVITY_META.other;
-    return {
-      id: String(item.dailyScheduleId),
-      time: tsToHHMM(item.startTime),
-      endTime: tsToHHMM(item.endTime),
-      title: item.activityName,
-      note: item.details ?? item.location ?? '',
-      icon: meta.icon,
-      color: meta.color,
-      activityType: item.activityType ?? 'other',
-    };
-  });
+const DOW_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+/** Today's activities from the weekly routine timetable, sorted by start time. */
+const weeklyTimetableToTodayItems = (timetable: WeeklyScheduleDomainModel | null): ScheduleItem[] => {
+  if (!timetable?.details?.length) return [];
+  const todayKey = DOW_KEYS[new Date().getDay()];
+
+  return timetable.details
+    .filter(d => d.dayOfWeek === todayKey)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+    .map(d => {
+      const meta = ACTIVITY_META[d.activityType] ?? ACTIVITY_META.other;
+      return {
+        id: String(d.scheduleDetailId),
+        time: d.startTime.slice(0, 5),   // "HH:mm[:ss]" → "HH:mm"
+        endTime: d.endTime.slice(0, 5),
+        title: d.activityName,
+        note: d.details ?? d.location ?? '',
+        icon: meta.icon,
+        color: meta.color,
+        activityType: d.activityType ?? 'other',
+      };
+    });
+};
 
 const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
   lessons.map(lesson => {
@@ -190,17 +201,17 @@ export function useParentDashboard() {
 
     Promise.allSettled([
       attendanceService.getAttendance(id),
-      dailyScheduleService.getDailySchedule(id),
+      weeklyScheduleService.getWeeklyTimetable(id),
       dailyLessonService.getDailyLessons(id),
       dailyAlbumService.getDailyAlbums(id),
       assessmentService.getAssessments(id, currentMonthParam()),
     ])
-      .then(([attendance, schedule, lessons, albums, assessments]) => {
+      .then(([attendance, timetable, lessons, albums, assessments]) => {
         if (attendance.status === 'fulfilled') setAllRecords(attendance.value);
         else console.error('Attendance API failed:', attendance.reason);
 
-        if (schedule.status === 'fulfilled') setSchedule(scheduleToItems(schedule.value));
-        else console.error('Daily schedule API failed:', schedule.reason);
+        if (timetable.status === 'fulfilled') setSchedule(weeklyTimetableToTodayItems(timetable.value));
+        else console.error('Weekly timetable API failed:', timetable.reason);
 
         if (lessons.status === 'fulfilled') setLessons(lessonsToItems(lessons.value));
         else console.error('Daily lessons API failed:', lessons.reason);

@@ -40,6 +40,7 @@ export const SERVER = {
     getDailyActivities: '/parent/children/:studentId/daily-activities',
     getRelatives: '/parent/children/:studentId/relatives',
     getWeeklyTimetable: '/parent/children/:studentId/weekly-timetable',
+    getDailyEvents: '/parent/events/daily',
   },
   teacher: {
     scanAttendance: '/teacher/attendance/scan',

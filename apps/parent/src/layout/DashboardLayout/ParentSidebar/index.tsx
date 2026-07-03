@@ -145,7 +145,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         <S.NavSpan $hidden={collapsed}>Lịch sử phát triển</S.NavSpan>
         {collapsed && <S.Tooltip>Lịch sử phát triển</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/calendar`} $active={pathname.includes('/calendar')} $collapsed={collapsed}>
         <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
         {collapsed && <S.Tooltip>Lịch & Sự kiện</S.Tooltip>}
