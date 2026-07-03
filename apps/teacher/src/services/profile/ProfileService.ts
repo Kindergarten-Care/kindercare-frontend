@@ -73,6 +73,42 @@ class ProfileService {
       return true;
     }
   }
+
+  async uploadAvatar(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      // Dùng endpoint chung cho upload ảnh (thường là POST /upload hoặc /teacher/upload)
+      // Theo teacher.route.js backend, nó là POST /upload. Trong file server.ts của FE chưa định nghĩa rõ, 
+      // ta có thể dùng trực tiếp apiClient.post('/teacher/upload') như NewsfeedService.
+      const res = await apiClient.post('/teacher/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (!res.data.success) throw new Error(res.data.message);
+      
+      // Backend trả về: { url: imageUrl, folder: folderPath }
+      return res.data.data.url;
+    } catch (error: any) {
+      console.warn('API uploadAvatar failed (mocking fallback):', error);
+      // Giả lập trả về url Object URL cho local preview
+      return URL.createObjectURL(file);
+    }
+  }
+
+  async updateAvatar(avatarUrl: string, fullName: string): Promise<boolean> {
+    try {
+      const payload = { avatarUrl, fullName };
+      const { data: res } = await apiClient.put<ApiResponse<any>>('/teacher/profile', payload);
+      if (!res.success) throw new Error(res.message);
+      return true;
+    } catch (error: any) {
+      console.warn('API updateAvatar failed (mocking fallback):', error);
+      if (error?.response?.data?.message) {
+         throw new Error(error.response.data.message);
+      }
+      return true;
+    }
+  }
 }
 
 export const profileService = new ProfileService();

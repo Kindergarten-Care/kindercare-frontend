@@ -63,6 +63,43 @@ export const AvatarWrapper = styled.div`
   font-size: 52px;
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .camera-icon {
+    position: absolute;
+    color: white;
+    z-index: 10;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease-in-out;
+  }
+
+  &:hover {
+    &::after {
+      opacity: 1;
+    }
+    .camera-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 `;
 
 export const HeaderInfo = styled.div`
