@@ -57,6 +57,18 @@ export const useChangePassword = () => {
   });
 };
 
+export const useUploadAvatar = () => {
+  return useMutation({
+    mutationFn: (file: File) => profileService.uploadAvatar(file)
+  });
+};
+
+export const useUpdateAvatar = () => {
+  return useMutation({
+    mutationFn: (avatarUrl: string) => profileService.updateAvatar(avatarUrl)
+  });
+};
+
 import { mapApiLeaveRequestToDomain } from '@/services/attendance';
 
 // --- LEAVE REQUESTS ---
