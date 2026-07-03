@@ -10,15 +10,7 @@ import { DailyScheduleDomainModel } from '@/config/types/dailySchedule';
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { MenuDomainModel } from '@/config/types/menu';
 import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
-
-export interface WeekDayData {
-  date: Date;
-  isToday: boolean;
-  schedule: DailyScheduleDomainModel[];
-  lessons: DailyLessonDomainModel[];
-  menu: MenuDomainModel | null;
-}
-
+import { WeekDayData, computeGridItems } from '../utils';
 const startOfDay = (d: Date): Date => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 const sameDay = (a: Date, b: Date): boolean =>
@@ -96,11 +88,14 @@ export function useParentSchedule(anchorDate: Date) {
     }).finally(() => setLoading(false));
   }, [activeStudent?.studentId, weekKey]);
 
+  const gridItems = useMemo(() => computeGridItems(weeklyTimetable, days), [weeklyTimetable, days]);
+
   return {
     activeStudent,
     loading: studentLoading || loading,
     days,
     weeklyTimetable,
+    gridItems,
     weekStart: weekDates[0],
     weekEnd: weekDates[4],
   };

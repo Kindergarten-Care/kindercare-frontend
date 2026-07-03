@@ -514,3 +514,63 @@ export const EmptyState = styled.div`
 
   p { font-size: 12.5px; font-weight: 500; }
 `;
+
+export const TimetableEmpty = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6B7280;
+  background: #FFFFFF;
+  border: 1px dashed #E5E7EB;
+  border-radius: 12px;
+  text-align: center;
+  gap: 8px;
+  margin: 0 10px;
+`;
+
+export const TimetableEmptyTitle = styled.div`
+  font-weight: 600;
+  font-size: 15px;
+  color: #374151;
+`;
+
+export const TimetableEmptyDesc = styled.div`
+  font-size: 13px;
+  color: #9CA3AF;
+`;
+
+export const ExportPdfBtn = styled.button`
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #005A36;
+  background: #E6F3ED;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #d1e7dd;
+  }
+`;
+
+export const TtActMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+export const TtActDetails = styled.div`
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 3px;
+  font-weight: normal;
+  line-height: 1.3;
+`;
