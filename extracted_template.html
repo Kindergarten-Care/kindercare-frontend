@@ -1,1634 +1,965 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="d5d1e100-e83f-4ecb-8e9f-ea3732148f9d"></script>
-  </head>
-  <body>
-    <x-dc>
-      <helmet>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin=""
-        />
-        <style>
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("ed7cfe13-56e8-46c5-af60-bef7457d0e7a") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* cyrillic */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("8fd72063-abdf-49df-b3f6-78e977a0f5bb") format("woff2");
-            unicode-range:
-              U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-          }
-          /* greek-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("3b795bf8-37e2-4bc3-9126-2c1be69dfa8d") format("woff2");
-            unicode-range: U+1F00-1FFF;
-          }
-          /* greek */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("6881c618-ae65-4f07-a358-49e29ae99e0f") format("woff2");
-            unicode-range:
-              U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
-              U+03A3-03FF;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("77a2f01a-9076-48de-99af-5227e0c95be1") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("02b8b160-d33b-466a-ba0a-1ddf1e64b05f") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("9a7f1e7b-784e-484f-986a-dda21ba6a420") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("ed7cfe13-56e8-46c5-af60-bef7457d0e7a") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* cyrillic */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("8fd72063-abdf-49df-b3f6-78e977a0f5bb") format("woff2");
-            unicode-range:
-              U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-          }
-          /* greek-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("3b795bf8-37e2-4bc3-9126-2c1be69dfa8d") format("woff2");
-            unicode-range: U+1F00-1FFF;
-          }
-          /* greek */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("6881c618-ae65-4f07-a358-49e29ae99e0f") format("woff2");
-            unicode-range:
-              U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
-              U+03A3-03FF;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("77a2f01a-9076-48de-99af-5227e0c95be1") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("02b8b160-d33b-466a-ba0a-1ddf1e64b05f") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("9a7f1e7b-784e-484f-986a-dda21ba6a420") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("ed7cfe13-56e8-46c5-af60-bef7457d0e7a") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* cyrillic */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("8fd72063-abdf-49df-b3f6-78e977a0f5bb") format("woff2");
-            unicode-range:
-              U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-          }
-          /* greek-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("3b795bf8-37e2-4bc3-9126-2c1be69dfa8d") format("woff2");
-            unicode-range: U+1F00-1FFF;
-          }
-          /* greek */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("6881c618-ae65-4f07-a358-49e29ae99e0f") format("woff2");
-            unicode-range:
-              U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
-              U+03A3-03FF;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("77a2f01a-9076-48de-99af-5227e0c95be1") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("02b8b160-d33b-466a-ba0a-1ddf1e64b05f") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("9a7f1e7b-784e-484f-986a-dda21ba6a420") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("ed7cfe13-56e8-46c5-af60-bef7457d0e7a") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* cyrillic */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("8fd72063-abdf-49df-b3f6-78e977a0f5bb") format("woff2");
-            unicode-range:
-              U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-          }
-          /* greek-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("3b795bf8-37e2-4bc3-9126-2c1be69dfa8d") format("woff2");
-            unicode-range: U+1F00-1FFF;
-          }
-          /* greek */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("6881c618-ae65-4f07-a358-49e29ae99e0f") format("woff2");
-            unicode-range:
-              U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
-              U+03A3-03FF;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("77a2f01a-9076-48de-99af-5227e0c95be1") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("02b8b160-d33b-466a-ba0a-1ddf1e64b05f") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Inter";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("9a7f1e7b-784e-484f-986a-dda21ba6a420") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("690f9985-64b9-4160-97bd-c361529990f9") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("e063900e-da80-4cca-91f7-07848c244f94") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("67cb12c9-8dc1-46db-bacb-b97dd28a7f6a") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url("5a24a3ea-3ee3-4663-9f4e-b160f013d845") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("690f9985-64b9-4160-97bd-c361529990f9") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("e063900e-da80-4cca-91f7-07848c244f94") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("67cb12c9-8dc1-46db-bacb-b97dd28a7f6a") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url("5a24a3ea-3ee3-4663-9f4e-b160f013d845") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("690f9985-64b9-4160-97bd-c361529990f9") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("e063900e-da80-4cca-91f7-07848c244f94") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("67cb12c9-8dc1-46db-bacb-b97dd28a7f6a") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url("5a24a3ea-3ee3-4663-9f4e-b160f013d845") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("690f9985-64b9-4160-97bd-c361529990f9") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("e063900e-da80-4cca-91f7-07848c244f94") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("67cb12c9-8dc1-46db-bacb-b97dd28a7f6a") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url("5a24a3ea-3ee3-4663-9f4e-b160f013d845") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-          /* cyrillic-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 800;
-            font-display: swap;
-            src: url("690f9985-64b9-4160-97bd-c361529990f9") format("woff2");
-            unicode-range:
-              U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-              U+FE2E-FE2F;
-          }
-          /* vietnamese */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 800;
-            font-display: swap;
-            src: url("e063900e-da80-4cca-91f7-07848c244f94") format("woff2");
-            unicode-range:
-              U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
-              U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
-              U+0329, U+1EA0-1EF9, U+20AB;
-          }
-          /* latin-ext */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 800;
-            font-display: swap;
-            src: url("67cb12c9-8dc1-46db-bacb-b97dd28a7f6a") format("woff2");
-            unicode-range:
-              U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-              U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-              U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-          }
-          /* latin */
-          @font-face {
-            font-family: "Plus Jakarta Sans";
-            font-style: normal;
-            font-weight: 800;
-            font-display: swap;
-            src: url("5a24a3ea-3ee3-4663-9f4e-b160f013d845") format("woff2");
-            unicode-range:
-              U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-              U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
-              U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-          }
-        </style>
-        <style>
-          * {
-            box-sizing: border-box;
-          }
-          html,
-          body {
-            margin: 0;
-            padding: 0;
-          }
-          body {
-            font-family: "Inter", system-ui, sans-serif;
-            background: #eff6f1;
-            color: #1f2937;
-            -webkit-font-smoothing: antialiased;
-          }
-          .display {
-            font-family: "Plus Jakarta Sans", "Inter", sans-serif;
-          }
-          ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-          }
-          ::-webkit-scrollbar-thumb {
-            background: #cfe0d6;
-            border-radius: 8px;
-          }
-          .kc-side {
-            width: 80px;
-            transition:
-              width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s;
-            overflow: hidden;
-          }
-          .kc-side:hover {
-            width: 282px;
-            box-shadow: 8px 0 40px rgba(0, 90, 54, 0.1);
-          }
-          .kc-lbl {
-            opacity: 0;
-            transform: translateX(-8px);
-            transition:
-              opacity 0.22s,
-              transform 0.22s;
-            white-space: nowrap;
-          }
-          .kc-side:hover .kc-lbl {
-            opacity: 1;
-            transform: none;
-          }
-          .kc-tl {
-            transition:
-              transform 0.25s,
-              box-shadow 0.25s,
-              background 0.25s,
-              border-color 0.25s;
-          }
-          .kc-tl:hover {
-            background: #f6faf7;
-          }
-          .kc-srow {
-            transition: background 0.2s;
-          }
-          .kc-srow:hover {
-            background: #f6faf7 !important;
-          }
-          @keyframes kc-toastin {
-            from {
-              opacity: 0;
-              transform: translateX(60px) scale(0.9);
-            }
-            to {
-              opacity: 1;
-              transform: none;
-            }
-          }
-          @keyframes kc-pop {
-            from {
-              opacity: 0;
-              transform: scale(0.94) translateY(8px);
-            }
-            to {
-              opacity: 1;
-              transform: none;
-            }
-          }
-          @keyframes kc-pulsering {
-            0% {
-              transform: scale(0.8);
-              opacity: 0.7;
-            }
-            100% {
-              transform: scale(2.5);
-              opacity: 0;
-            }
-          }
-          @keyframes kc-slidepanel {
-            from {
-              opacity: 0;
-              transform: translateX(14px);
-            }
-            to {
-              opacity: 1;
-              transform: none;
-            }
-          }
-          @media (max-width: 1080px) {
-            .kc-split {
-              grid-template-columns: 1fr !important;
-            }
-            .kc-tlcol {
-              position: static !important;
-            }
-          }
-        </style>
-      </helmet>
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="aa550e95-35c3-42b9-ab99-8e369f4e09bf"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("688a6409-a0a1-443b-8ace-967d6f0e60e5") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fab4214f-9fa3-45b6-a2a7-b1376c52d19e") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b3a31043-3eff-4325-a8ea-b3f80663f93d") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("8261bdd2-1d48-471c-baac-5d02cff93015") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("5b9019f0-316c-4706-b30d-42535f4e0111") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bdae02c2-29ea-4932-8d5a-2c96a629fdb2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b53aa94e-c62f-4fe9-a4cc-b50319539e55") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("688a6409-a0a1-443b-8ace-967d6f0e60e5") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fab4214f-9fa3-45b6-a2a7-b1376c52d19e") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b3a31043-3eff-4325-a8ea-b3f80663f93d") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("8261bdd2-1d48-471c-baac-5d02cff93015") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("5b9019f0-316c-4706-b30d-42535f4e0111") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("bdae02c2-29ea-4932-8d5a-2c96a629fdb2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b53aa94e-c62f-4fe9-a4cc-b50319539e55") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("688a6409-a0a1-443b-8ace-967d6f0e60e5") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fab4214f-9fa3-45b6-a2a7-b1376c52d19e") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b3a31043-3eff-4325-a8ea-b3f80663f93d") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("8261bdd2-1d48-471c-baac-5d02cff93015") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("5b9019f0-316c-4706-b30d-42535f4e0111") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("bdae02c2-29ea-4932-8d5a-2c96a629fdb2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b53aa94e-c62f-4fe9-a4cc-b50319539e55") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("688a6409-a0a1-443b-8ace-967d6f0e60e5") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fab4214f-9fa3-45b6-a2a7-b1376c52d19e") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b3a31043-3eff-4325-a8ea-b3f80663f93d") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("8261bdd2-1d48-471c-baac-5d02cff93015") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("5b9019f0-316c-4706-b30d-42535f4e0111") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("bdae02c2-29ea-4932-8d5a-2c96a629fdb2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b53aa94e-c62f-4fe9-a4cc-b50319539e55") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c6855279-e0a5-48e4-bd11-f43770cffdd1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6ac04898-54a3-4048-bffc-90ab3fc2ee83") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ebccd140-b7ea-46f4-a645-2d7332bd83b2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("28072de8-ab93-48a7-8689-9c86638c2597") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c6855279-e0a5-48e4-bd11-f43770cffdd1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6ac04898-54a3-4048-bffc-90ab3fc2ee83") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("ebccd140-b7ea-46f4-a645-2d7332bd83b2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("28072de8-ab93-48a7-8689-9c86638c2597") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c6855279-e0a5-48e4-bd11-f43770cffdd1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6ac04898-54a3-4048-bffc-90ab3fc2ee83") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("ebccd140-b7ea-46f4-a645-2d7332bd83b2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("28072de8-ab93-48a7-8689-9c86638c2597") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c6855279-e0a5-48e4-bd11-f43770cffdd1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("6ac04898-54a3-4048-bffc-90ab3fc2ee83") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("ebccd140-b7ea-46f4-a645-2d7332bd83b2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("28072de8-ab93-48a7-8689-9c86638c2597") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("c6855279-e0a5-48e4-bd11-f43770cffdd1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("6ac04898-54a3-4048-bffc-90ab3fc2ee83") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("ebccd140-b7ea-46f4-a645-2d7332bd83b2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("28072de8-ab93-48a7-8689-9c86638c2597") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:#E9F1EC;color:#1F2937;-webkit-font-smoothing:antialiased;}
+.display{font-family:'Plus Jakarta Sans','Inter',sans-serif;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#cfe0d6;border-radius:8px;}
+.kc-nav{transition:background .15s,color .15s;}
+.kc-nav:hover{background:rgba(255,255,255,.1);}
+.kc-nav.kc-active:hover{background:#fff;}
+.kc-tl{transition:transform .25s,box-shadow .25s,background .25s,border-color .25s;}
+.kc-tl:hover{background:#F6FAF7;}
+.kc-srow{transition:background .2s;}
+.kc-srow:hover{background:#F6FAF7 !important;}
+.kc-meal{transition:transform .2s,box-shadow .2s;}
+.kc-meal:hover{transform:translateY(-3px);box-shadow:0 16px 38px -14px rgba(0,90,54,.2) !important;}
+.kc-sb{width:262px;}
+.kc-main{margin-left:262px;}
+body.kc-collapsed .kc-label,body.kc-collapsed .kc-sect,body.kc-collapsed .kc-fullonly,body.kc-collapsed .kc-badge{display:none !important;}
+body.kc-collapsed .kc-navitem{justify-content:center !important;padding-left:0 !important;padding-right:0 !important;}
+body.kc-collapsed .kc-logo,body.kc-collapsed .kc-profile,body.kc-collapsed .kc-userbar{justify-content:center !important;padding-left:8px !important;padding-right:8px !important;}
+body.kc-collapsed .kc-active-bar{display:none !important;}
+.kc-collapse-btn{transition:transform .2s;}
+body.kc-collapsed .kc-collapse-btn{transform:rotate(180deg);}
+@keyframes kc-toastin{from{opacity:0;transform:translateX(60px) scale(.9);}to{opacity:1;transform:none;}}
+@keyframes kc-pop{from{opacity:0;transform:scale(.94) translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes kc-pulsering{0%{transform:scale(.8);opacity:.7;}100%{transform:scale(2.5);opacity:0;}}
+@keyframes kc-slidepanel{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:none;}}
+@keyframes kc-bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-9px) rotate(3deg);}}
+@media(max-width:1080px){.kc-split{grid-template-columns:1fr !important;}.kc-tlcol{position:static !important;}.kc-menu3{grid-template-columns:1fr !important;}}
+@media(max-width:760px){.kc-sidebar{display:none !important;}.kc-main{margin-left:0 !important;}}
+</style>
+</helmet>
 
-      <!-- SIDEBAR -->
-      <aside
-        class="kc-side"
-        style="
-          position: fixed;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          z-index: 40;
-          display: flex;
-          flex-direction: column;
-          padding: 18px 0;
-          background: rgba(255, 255, 255, 0.72);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border-right: 1px solid #e6eee9;
-        "
-      >
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            height: 46px;
-            padding: 0 26px;
-            margin-bottom: 18px;
-          "
-        >
-          <span
-            style="
-              flex: none;
-              width: 40px;
-              height: 40px;
-              border-radius: 13px;
-              background: linear-gradient(135deg, #00794a, #005a36);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: #fff;
-              font-weight: 800;
-              font-size: 20px;
-              box-shadow: 0 8px 18px -6px rgba(0, 90, 54, 0.45);
-            "
-            class="display"
-            >K</span
-          >
-          <span
-            class="kc-lbl display"
-            style="
-              font-weight: 800;
-              font-size: 19px;
-              color: #005a36;
-              letter-spacing: -0.02em;
-            "
-            >KinderCare</span
-          >
-        </div>
-        <nav style="display: flex; flex-direction: column; gap: 2px; flex: 1">
-          <a
-            href="KinderCare Bento.dc.html"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              color: #6b7280;
-              transition:
-                background 0.2s,
-                color 0.2s;
-            "
-            style-hover="background:#F1F4F1;color:#005A36;"
-          >
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline></svg
-            ></span>
-            <span class="kc-lbl">Tổng quan</span>
-          </a>
-          <a
-            href="#"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              color: #6b7280;
-              transition:
-                background 0.2s,
-                color 0.2s;
-            "
-            style-hover="background:#F1F4F1;color:#005A36;"
-          >
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="3"></circle>
-                <path d="M22 19v-2a4 4 0 0 0-3-3.87"></path></svg
-            ></span>
-            <span class="kc-lbl">Danh sách lớp</span>
-          </a>
-          <a
-            href="KinderCare Attendance Bento.dc.html"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              color: #6b7280;
-              transition:
-                background 0.2s,
-                color 0.2s;
-            "
-            style-hover="background:#F1F4F1;color:#005A36;"
-          >
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="9 11 12 14 20 6"></polyline>
-                <path
-                  d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"
-                ></path></svg
-            ></span>
-            <span class="kc-lbl">Điểm danh</span>
-          </a>
-          <a
-            href="#"
-            style="
-              position: relative;
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 700;
-              font-size: 14px;
-              color: #005a36;
-              background: #e6f3ed;
-            "
-          >
-            <span
-              style="
-                position: absolute;
-                left: -16px;
-                top: 9px;
-                bottom: 9px;
-                width: 3px;
-                border-radius: 0 3px 3px 0;
-                background: #005a36;
-              "
-            ></span>
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line></svg
-            ></span>
-            <span class="kc-lbl">Hoạt động</span>
-          </a>
-          <a
-            href="#"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              color: #6b7280;
-              transition:
-                background 0.2s,
-                color 0.2s;
-            "
-            style-hover="background:#F1F4F1;color:#005A36;"
-          >
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M21 11.5a8.38 8.38 0 0 1-9 8.34 8.5 8.5 0 0 1-3.6-.8L3 21l1.96-4.4A8.45 8.45 0 0 1 12 3a8.38 8.38 0 0 1 9 8.5z"
-                ></path></svg
-            ></span>
-            <span class="kc-lbl">Liên lạc phụ huynh</span>
-          </a>
-        </nav>
-        <div style="border-top: 1px solid #eef4f0; padding-top: 10px">
-          <a
-            href="KinderCare Profile.dc.html"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 16px;
-              height: 46px;
-              margin: 1px 16px;
-              padding: 0 15px;
-              border-radius: 11px;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              color: #6b7280;
-              transition:
-                background 0.2s,
-                color 0.2s;
-            "
-            style-hover="background:#F1F4F1;color:#005A36;"
-          >
-            <span style="flex: none; display: flex; width: 22px; height: 22px"
-              ><svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="3"></circle>
-                <path
-                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-                ></path></svg
-            ></span>
-            <span class="kc-lbl">Hồ sơ &amp; Cài đặt</span>
-          </a>
-        </div>
-      </aside>
+<!-- SIDEBAR -->
+<aside class="kc-sb kc-sidebar" ref="{{ setSb }}" style="position:fixed;left:0;top:0;bottom:0;z-index:40;display:flex;flex-direction:column;padding:18px 0 14px;background:#005A36;overflow:visible;">
+  <button onclick="{{ toggleSidebar }}" class="kc-collapse-btn" title="Thu gọn" style="position:absolute;right:-13px;top:64px;width:26px;height:26px;border-radius:50%;border:1px solid #E6EEE9;background:#fff;color:#005A36;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px -4px rgba(0,0,0,.25);z-index:5;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
 
-      <!-- MAIN -->
-      <div
-        style="
-          margin-left: 80px;
-          min-height: 100vh;
-          padding: 24px 40px 44px;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        "
-      >
-        <div
-          style="
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-          "
-        >
-          <div>
-            <div
-              style="
-                font-size: 11px;
-                font-weight: 600;
-                letter-spacing: 0.07em;
-                text-transform: uppercase;
-                color: #9ca3af;
-              "
-            >
-              Lớp Mầm 1 · {{ dateStr }}
-            </div>
-            <div
-              class="display"
-              style="
-                font-size: 30px;
-                font-weight: 800;
-                letter-spacing: -0.03em;
-                margin-top: 4px;
-              "
-            >
-              Hoạt động &amp; Lịch trình
-            </div>
-          </div>
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              background: rgba(255, 255, 255, 0.8);
-              backdrop-filter: blur(12px);
-              border: 1px solid #e6eee9;
-              border-radius: 11px;
-              padding: 9px 16px;
-              box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06);
-            "
-          >
-            <span
-              style="
-                width: 9px;
-                height: 9px;
-                border-radius: 50%;
-                background: #005a36;
-                box-shadow: 0 0 0 3px rgba(0, 90, 54, 0.15);
-              "
-            ></span>
-            <span style="font-size: 13px; font-weight: 600; color: #374151"
-              >Đang diễn ra:
-              <span class="display" style="color: #005a36; font-weight: 700"
-                >{{ currentName }}</span
-              ></span
-            >
-          </div>
-        </div>
+  <div class="kc-logo" style="display:flex;align-items:center;gap:11px;margin:0 14px 14px;padding:11px 12px;border-radius:15px;background:rgba(255,255,255,.1);">
+    <span style="flex:none;width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#005A36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg></span>
+    <div class="kc-fullonly" style="line-height:1.15;"><div class="display" style="font-weight:800;font-size:13.5px;color:#fff;letter-spacing:.02em;">KINDER CARE</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.12em;color:#9FD3BA;margin-top:2px;">QUẢN LÝ GIÁO VIÊN</div></div>
+  </div>
 
-        <div
-          class="kc-split"
-          style="
-            display: grid;
-            grid-template-columns: 340px 1fr;
-            gap: 18px;
-            align-items: start;
-          "
-        >
-          <!-- LEFT: TIMELINE -->
-          <div
-            class="kc-tlcol"
-            style="
-              position: sticky;
-              top: 24px;
-              background: rgba(255, 255, 255, 0.9);
-              backdrop-filter: blur(16px);
-              -webkit-backdrop-filter: blur(16px);
-              border: 1px solid #e6eee9;
-              border-radius: 16px;
-              box-shadow:
-                0 4px 18px -4px rgba(0, 90, 54, 0.06),
-                0 2px 6px -1px rgba(0, 0, 0, 0.03);
-              padding: 20px;
-            "
-          >
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 16px;
-              "
-            >
-              <span class="display" style="font-weight: 700; font-size: 16px"
-                >Lịch sinh hoạt</span
-              >
-              <span
-                style="
-                  font-size: 11px;
-                  font-weight: 600;
-                  letter-spacing: 0.05em;
-                  text-transform: uppercase;
-                  color: #9ca3af;
-                "
-                >{{ doneCount }}/{{ totalActs }} xong</span
-              >
-            </div>
-            <div style="position: relative">
-              <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="6">
-                <div
-                  style="
-                    position: relative;
-                    display: flex;
-                    gap: 14px;
-                    padding-bottom: 12px;
-                  "
-                >
-                  <div
-                    style="
-                      flex: none;
-                      position: relative;
-                      display: flex;
-                      flex-direction: column;
-                      align-items: center;
-                      padding-top: 14px;
-                    "
-                  >
-                    <span
-                      style="position:relative;width:14px;height:14px;border-radius:50%;background:{{ t.dot }};z-index:1;display:flex;align-items:center;justify-content:center;"
-                    >
-                      <sc-if
-                        value="{{ t.current }}"
-                        hint-placeholder-val="{{ false }}"
-                        ><span
-                          style="
-                            position: absolute;
-                            inset: 0;
-                            border-radius: 50%;
-                            background: #005a36;
-                            animation: kc-pulsering 1.8s ease-out infinite;
-                          "
-                        ></span
-                      ></sc-if>
-                    </span>
-                    <span style="{{ t.lineStyle }}"></span>
-                  </div>
-                  <button
-                    onclick="{{ t.select }}"
-                    class="kc-tl"
-                    style="{{ t.cardStyle }}"
-                  >
-                    <span
-                      style="flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:{{ t.icColor }};background:{{ t.icBg }};"
-                      >{{ t.icon }}</span
-                    >
-                    <div style="flex: 1; min-width: 0; text-align: left">
-                      <div
-                        class="display"
-                        style="font-size:13px;font-weight:700;color:{{ t.timeColor }};font-variant-numeric:tabular-nums;"
-                      >
-                        {{ t.time }}
-                      </div>
-                      <div
-                        style="font-size:13.5px;font-weight:600;color:{{ t.titleColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                      >
-                        {{ t.title }}
-                      </div>
-                    </div>
-                    <sc-if
-                      value="{{ t.done }}"
-                      hint-placeholder-val="{{ false }}"
-                      ><span style="flex: none; color: #005a36; display: flex"
-                        ><svg
-                          width="17"
-                          height="17"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2.4"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <polyline
-                            points="20 6 9 17 4 12"
-                          ></polyline></svg></span
-                    ></sc-if>
-                    <sc-if
-                      value="{{ t.current }}"
-                      hint-placeholder-val="{{ false }}"
-                      ><span
-                        style="
-                          flex: none;
-                          font-size: 10px;
-                          font-weight: 700;
-                          color: #fff;
-                          background: #005a36;
-                          padding: 3px 8px;
-                          border-radius: 7px;
-                        "
-                        >LIVE</span
-                      ></sc-if
-                    >
-                  </button>
-                </div>
-              </sc-for>
-            </div>
-          </div>
+  <button class="kc-profile" style="display:flex;align-items:center;gap:11px;margin:0 14px 14px;padding:9px 11px;border-radius:15px;background:#fff;border:none;cursor:pointer;text-align:left;">
+    <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#34D399,#005A36);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;" class="display">M1</span>
+    <div class="kc-fullonly" style="flex:1;min-width:0;"><div class="display" style="font-weight:700;font-size:13.5px;color:#1F2937;">Lớp Mầm 1</div><div style="font-size:11.5px;color:#9CA3AF;">42 học sinh</div></div>
+    <svg class="kc-fullonly" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </button>
 
-          <!-- RIGHT: QUICK-LOG -->
-          <div style="display: flex; flex-direction: column; gap: 18px">
-            <!-- SECTION A: STUDENT MATRIX -->
-            <section
-              style="
-                background: rgba(255, 255, 255, 0.9);
-                backdrop-filter: blur(16px);
-                -webkit-backdrop-filter: blur(16px);
-                border: 1px solid #e6eee9;
-                border-radius: 16px;
-                box-shadow:
-                  0 4px 18px -4px rgba(0, 90, 54, 0.06),
-                  0 2px 6px -1px rgba(0, 0, 0, 0.03);
-                padding: 22px;
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: 14px;
-                  flex-wrap: wrap;
-                  margin-bottom: 16px;
-                "
-              >
-                <span
-                  style="flex:none;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:{{ selColor }};background:{{ selTint }};font-size:22px;"
-                  >{{ selIcon }}</span
-                >
-                <div style="flex: 1; min-width: 0">
-                  <div
-                    class="display"
-                    style="
-                      font-size: 18px;
-                      font-weight: 700;
-                      letter-spacing: -0.01em;
-                    "
-                  >
-                    {{ selTitle }}
-                  </div>
-                  <div style="font-size: 13px; color: #6b7280">
-                    {{ selDesc }}
-                  </div>
-                </div>
-                <sc-if
-                  value="{{ hasMatrix }}"
-                  hint-placeholder-val="{{ true }}"
-                >
-                  <button
-                    onclick="{{ batchAll }}"
-                    class="display"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 8px;
-                      height: 44px;
-                      padding: 0 18px;
-                      border-radius: 12px;
-                      border: none;
-                      background: linear-gradient(135deg, #00794a, #005a36);
-                      color: #fff;
-                      font-family: inherit;
-                      font-weight: 700;
-                      font-size: 13.5px;
-                      cursor: pointer;
-                      box-shadow: 0 8px 18px -6px rgba(0, 90, 54, 0.45);
-                      transition: transform 0.15s;
-                    "
-                    style-hover="transform:scale(1.03);"
-                    style-active="transform:scale(.97);"
-                  >
-                    ⚡ {{ batchLabel }}
-                  </button>
-                </sc-if>
-              </div>
+  <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding:0 14px;">
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:10px 12px 7px;">HÔM NAY</div>
+    <a href="KinderCare Dashboard v4.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span><span class="kc-label">Tổng quan</span>
+    </a>
+    <a href="KinderCare Attendance v2.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 20 6"></polyline><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"></path></svg></span><span class="kc-label">Điểm danh</span>
+    </a>
+    <a href="#" class="kc-navitem kc-nav kc-active" style="position:relative;display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:700;font-size:13.5px;color:#005A36;background:#fff;">
+      <span class="kc-active-bar" style="position:absolute;left:-14px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:#FBBF24;"></span>
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span><span class="kc-label">Thực đơn &amp; Lịch học</span>
+    </a>
 
-              <sc-if value="{{ hasMatrix }}" hint-placeholder-val="{{ true }}">
-                <div
-                  style="
-                    display: flex;
-                    flex-direction: column;
-                    gap: 3px;
-                    animation: kc-slidepanel 0.3s ease;
-                  "
-                >
-                  <sc-for
-                    list="{{ matrix }}"
-                    as="m"
-                    hint-placeholder-count="10"
-                  >
-                    <div
-                      class="kc-srow"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        gap: 14px;
-                        padding: 9px 12px;
-                        border-radius: 13px;
-                      "
-                    >
-                      <span
-                        style="flex:none;width:40px;height:40px;border-radius:50%;background:{{ m.grad }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;"
-                        class="display"
-                        >{{ m.initial }}</span
-                      >
-                      <span
-                        style="
-                          flex: 1;
-                          min-width: 0;
-                          font-weight: 600;
-                          font-size: 14px;
-                          color: #1f2937;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
-                        >{{ m.name }}</span
-                      >
-                      <div
-                        style="flex:none;position:relative;display:flex;background:#F1F4F1;border:1px solid #E6EEE9;border-radius:12px;padding:4px;width:{{ m.groupWidth }}px;"
-                      >
-                        <span style="{{ m.highlightStyle }}"></span>
-                        <sc-for
-                          list="{{ m.options }}"
-                          as="o"
-                          hint-placeholder-count="3"
-                        >
-                          <button onclick="{{ o.pick }}" style="{{ o.style }}">
-                            {{ o.label }}
-                          </button>
-                        </sc-for>
-                      </div>
-                    </div>
-                  </sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ noMatrix }}" hint-placeholder-val="{{ false }}">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 13px;
-                    padding: 20px;
-                    border-radius: 14px;
-                    background: #f4f8f5;
-                    border: 1px dashed #c7dbcf;
-                    animation: kc-slidepanel 0.3s ease;
-                  "
-                >
-                  <span style="font-size: 26px">{{ selIcon }}</span>
-                  <div>
-                    <div
-                      class="display"
-                      style="font-size: 15px; font-weight: 700; color: #1f2937"
-                    >
-                      Hoạt động này không cần ghi nhận chi tiết
-                    </div>
-                    <div
-                      style="font-size: 13px; color: #6b7280; margin-top: 2px"
-                    >
-                      Chọn một mốc sinh hoạt khác (ăn, ngủ, học) ở cột trái để
-                      ghi nhanh cho từng bé.
-                    </div>
-                  </div>
-                </div>
-              </sc-if>
-            </section>
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:14px 12px 7px;">LỚP &amp; HỌC TẬP</div>
+    <a href="KinderCare Class Redesign v2.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="3"></circle><path d="M22 19v-2a4 4 0 0 0-3-3.87"></path></svg></span><span class="kc-label">Danh sách lớp</span><span class="kc-badge" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#005A36;background:#fff;padding:1px 8px;border-radius:999px;">20</span>
+    </a>
+    <a href="KinderCare Lesson Plan.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M9 7h6"></path><path d="M9 11h4"></path></svg></span><span class="kc-label">Soạn giáo án</span>
+    </a>
 
-            <!-- SECTION B: LESSON LOG -->
-            <section>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: 9px;
-                  margin-bottom: 14px;
-                "
-              >
-                <span class="display" style="font-weight: 700; font-size: 16px"
-                  >Bài học hôm nay</span
-                >
-                <span style="font-size: 12px; color: #9ca3af"
-                  >· Nhật ký giảng dạy</span
-                >
-              </div>
-              <div
-                style="
-                  display: grid;
-                  grid-template-columns: repeat(3, 1fr);
-                  gap: 14px;
-                "
-              >
-                <sc-for list="{{ lessons }}" as="l" hint-placeholder-count="3">
-                  <div
-                    style="position:relative;overflow:hidden;background:{{ l.bg }};border:1px solid {{ l.border }};border-radius:16px;padding:18px;min-height:128px;display:flex;flex-direction:column;justify-content:flex-end;"
-                  >
-                    <span
-                      style="position:absolute;right:-12px;top:-12px;color:{{ l.wm }};opacity:.5;"
-                      >{{ l.icon }}</span
-                    >
-                    <div
-                      style="position:relative;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ l.tagColor }};"
-                    >
-                      {{ l.subject }}
-                    </div>
-                    <div
-                      class="display"
-                      style="
-                        position: relative;
-                        font-size: 16px;
-                        font-weight: 700;
-                        color: #1f2937;
-                        margin-top: 4px;
-                        line-height: 1.3;
-                      "
-                    >
-                      {{ l.title }}
-                    </div>
-                    <div
-                      style="
-                        position: relative;
-                        font-size: 12.5px;
-                        color: #6b7280;
-                        margin-top: 4px;
-                      "
-                    >
-                      {{ l.note }}
-                    </div>
-                  </div>
-                </sc-for>
-              </div>
-            </section>
-          </div>
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:14px 12px 7px;">CHĂM SÓC</div>
+    <a href="KinderCare Health.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"></path><path d="M11 2v2M5 2v2"></path><path d="M5 4v6a6 6 0 0 0 12 0"></path><circle cx="20" cy="10" r="2"></circle></svg></span><span class="kc-label">Y tế &amp; Sức khỏe</span>
+    </a>
+    <a href="#" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;color:#FBBF24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span><span class="kc-label">Phiếu bé ngoan</span>
+    </a>
+  </nav>
+
+  <div class="kc-userbar" style="display:flex;align-items:center;gap:11px;margin:8px 14px 0;padding:10px 11px;border-radius:15px;background:rgba(255,255,255,.1);">
+    <span style="flex:none;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FB923C,#F97316);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;" class="display">H</span>
+    <div class="kc-fullonly" style="flex:1;min-width:0;"><div class="display" style="font-weight:700;font-size:13px;color:#fff;">Thầy Lê Quang Huy</div><div style="font-size:11px;color:#9FD3BA;">Giáo viên</div></div>
+    <a href="KinderCare Profile Bento.dc.html" class="kc-fullonly" style="flex:none;width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;" style-hover="background:rgba(255,255,255,.26);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="kc-main" ref="{{ setMainEl }}" style="min-height:100vh;padding:24px 32px 44px;display:flex;flex-direction:column;gap:20px;">
+
+  <!-- HERO -->
+  <section style="position:relative;overflow:hidden;border-radius:24px;background:linear-gradient(120deg,#005A36 0%,#00794A 60%,#0A8A57 100%);box-shadow:0 18px 44px -18px rgba(0,90,54,.5);padding:28px 32px;">
+    <div style="position:absolute;inset:0;background:radial-gradient(420px 280px at 90% 130%,rgba(255,255,255,.12),transparent 60%);"></div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div style="min-width:240px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:#A7E0C6;text-transform:uppercase;">Lớp Mầm 1 · {{ dateStr }}</div>
+        <div class="display" style="font-size:27px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.02em;margin-top:6px;">Thực đơn &amp; Lịch học</div>
+        <div style="display:inline-flex;align-items:center;gap:9px;margin-top:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:8px 16px;">
+          <span style="position:relative;width:9px;height:9px;"><span style="position:absolute;inset:0;border-radius:50%;background:#FBBF24;"></span><span style="position:absolute;inset:0;border-radius:50%;background:#FBBF24;animation:kc-pulsering 1.8s ease-out infinite;"></span></span>
+          <span style="font-size:13px;font-weight:600;color:#fff;">Đang diễn ra: <b class="display">{{ currentName }}</b> · {{ currentTime }}</span>
         </div>
       </div>
+      <div style="position:relative;flex:none;display:flex;align-items:center;justify-content:center;font-size:60px;line-height:1;filter:drop-shadow(0 12px 18px rgba(0,0,0,.25));">
+        <span style="animation:kc-bob 4s ease-in-out infinite;">🍱</span>
+        <span style="animation:kc-bob 4s ease-in-out infinite .5s;margin-left:-6px;">📚</span>
+      </div>
+    </div>
+  </section>
 
-      <!-- TOASTS -->
-      <div
-        style="
-          position: fixed;
-          left: 50%;
-          bottom: 28px;
-          transform: translateX(-50%);
-          z-index: 9000;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          align-items: center;
-          pointer-events: none;
-        "
-      >
-        <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
-          <div
-            class="display"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              padding: 13px 20px;
-              border-radius: 13px;
-              background: #005a36;
-              color: #fff;
-              font-size: 13.5px;
-              font-weight: 600;
-              box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.4);
-              animation: kc-pop 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
-              max-width: 380px;
-            "
-          >
-            {{ t.text }}
+  <!-- THỰC ĐƠN HÔM NAY -->
+  <section style="background:#fff;border:1px solid #E6EEE9;border-radius:18px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:22px;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
+      <span style="flex:none;width:42px;height:42px;border-radius:12px;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg></span>
+      <div style="flex:1;"><div class="display" style="font-weight:800;font-size:17px;letter-spacing:-.01em;">Thực đơn hôm nay</div><div style="font-size:12.5px;color:#9CA3AF;font-weight:500;">Bếp ăn lớp Mầm 1 · đã duyệt dinh dưỡng</div></div>
+      <span style="font-size:11px;font-weight:700;color:#005A36;background:#E6F3ED;border:1px solid #C7E3D5;padding:5px 12px;border-radius:999px;">🥗 Cân bằng 4 nhóm chất</span>
+    </div>
+    <div class="kc-menu3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+      <sc-for list="{{ menus }}" as="m" hint-placeholder-count="3">
+        <div class="kc-meal" style="{{ m.cardStyle }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="flex:none;width:38px;height:38px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 3px 8px -3px rgba(0,0,0,.12);">{{ m.icon }}</span>
+            <div style="flex:1;"><div class="display" style="font-weight:800;font-size:14.5px;color:#1F2937;">{{ m.meal }}</div><div style="font-size:11.5px;font-weight:600;color:{{ m.timeColor }};font-variant-numeric:tabular-nums;">{{ m.time }}</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <sc-for list="{{ m.dishes }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <span style="flex:none;width:18px;height:18px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;">{{ d.emoji }}</span>
+                <span style="flex:1;font-size:13px;font-weight:600;color:#374151;">{{ d.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- SPLIT: TIMELINE | QUICK-LOG -->
+  <div class="kc-split" style="display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start;">
+
+    <!-- TIMELINE -->
+    <div class="kc-tlcol" style="position:sticky;top:24px;background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span class="display" style="font-weight:700;font-size:16px;">Lịch sinh hoạt</span>
+        <span style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;">{{ doneCount }}/{{ totalActs }} xong</span>
+      </div>
+      <div style="position:relative;">
+        <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="6">
+          <div style="position:relative;display:flex;gap:14px;padding-bottom:12px;">
+            <div style="flex:none;position:relative;display:flex;flex-direction:column;align-items:center;padding-top:14px;">
+              <span style="position:relative;width:14px;height:14px;border-radius:50%;background:{{ t.dot }};z-index:1;display:flex;align-items:center;justify-content:center;">
+                <sc-if value="{{ t.current }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;inset:0;border-radius:50%;background:#005A36;animation:kc-pulsering 1.8s ease-out infinite;"></span></sc-if>
+              </span>
+              <span style="{{ t.lineStyle }}"></span>
+            </div>
+            <button onclick="{{ t.select }}" class="kc-tl" style="{{ t.cardStyle }}">
+              <span style="flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:{{ t.icColor }};background:{{ t.icBg }};">{{ t.icon }}</span>
+              <div style="flex:1;min-width:0;text-align:left;">
+                <div class="display" style="font-size:13px;font-weight:700;color:{{ t.timeColor }};font-variant-numeric:tabular-nums;">{{ t.time }}</div>
+                <div style="font-size:13.5px;font-weight:600;color:{{ t.titleColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ t.title }}</div>
+              </div>
+              <sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><span style="flex:none;color:#005A36;display:flex;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span></sc-if>
+              <sc-if value="{{ t.current }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:10px;font-weight:700;color:#fff;background:#005A36;padding:3px 8px;border-radius:7px;">LIVE</span></sc-if>
+            </button>
           </div>
         </sc-for>
       </div>
-    </x-dc>
-    <script
-      type="text/x-dc"
-      data-dc-script=""
-      data-props='{"$preview":{"width":1280,"height":900}}'
-    >
-      class Component extends DCLogic {
-        nid = 100;
-        grads = ['linear-gradient(135deg,#00794A,#005A36)','linear-gradient(135deg,#3B82F6,#2563EB)','linear-gradient(135deg,#A78BFA,#8B5CF6)','linear-gradient(135deg,#FB923C,#F97316)','linear-gradient(135deg,#34D399,#059669)','linear-gradient(135deg,#F472B6,#DB2777)'];
-        gradFor = (n) => { let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0; return this.grads[h % this.grads.length]; };
-        ini = (n) => { const p = n.trim().split(' '); return p[p.length - 1][0].toUpperCase(); };
-        ic(path, w) { return React.createElement('svg', { width: w || 20, height: w || 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, path); }
+    </div>
 
-        // semantic palettes within DS
-        PAL = {
-          meal:    { c: '#92400E', tint: '#FEF3C7', solid: '#D97706' },
-          nap:     { c: '#2563EB', tint: '#E3EDFD', solid: '#2563EB' },
-          study:   { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
-          play:    { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
-          arrival: { c: '#8B5CF6', tint: '#F1ECFE', solid: '#8B5CF6' },
-        };
-        OPTSETS = {
-          meal:  [{ k: 'full', label: '🟢 Ăn hết', dot: '#005A36' }, { k: 'slow', label: '🟠 Ăn chậm', dot: '#D97706' }, { k: 'skip', label: '🔴 Bỏ bữa', dot: '#DC2626' }],
-          nap:   [{ k: 'good', label: '🟢 Ngủ ngoan', dot: '#005A36' }, { k: 'hard', label: '🟠 Khó ngủ', dot: '#D97706' }],
-          study: [{ k: 'active', label: '🟢 Hăng hái', dot: '#005A36' }, { k: 'ok', label: '🔵 Bình thường', dot: '#2563EB' }, { k: 'support', label: '🟠 Cần hỗ trợ', dot: '#D97706' }],
-        };
-        optType = (t) => (t === 'play' ? 'study' : t);
-        groupW = { meal: 318, nap: 220, study: 330 };
+    <!-- QUICK-LOG -->
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <section style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:22px;">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+          <span style="flex:none;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:{{ selColor }};background:{{ selTint }};font-size:22px;">{{ selIcon }}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="display" style="font-size:18px;font-weight:700;letter-spacing:-.01em;">{{ selTitle }}</div>
+            <div style="font-size:13px;color:#6B7280;">{{ selDesc }}</div>
+          </div>
+          <sc-if value="{{ hasMatrix }}" hint-placeholder-val="{{ true }}">
+            <button onclick="{{ batchAll }}" class="display" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:12px;border:none;background:linear-gradient(135deg,#00794A,#005A36);color:#fff;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 8px 18px -6px rgba(0,90,54,.45);transition:transform .15s;" style-hover="transform:scale(1.03);" style-active="transform:scale(.97);">⚡ {{ batchLabel }}</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ hasMatrix }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:3px;animation:kc-slidepanel .3s ease;">
+            <sc-for list="{{ matrix }}" as="m" hint-placeholder-count="10">
+              <div class="kc-srow" style="display:flex;align-items:center;gap:14px;padding:9px 12px;border-radius:13px;">
+                <span style="flex:none;width:40px;height:40px;border-radius:50%;background:{{ m.grad }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;" class="display">{{ m.initial }}</span>
+                <span style="flex:1;min-width:0;font-weight:600;font-size:14px;color:#1F2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.name }}</span>
+                <div style="flex:none;position:relative;display:flex;background:#F1F4F1;border:1px solid #E6EEE9;border-radius:12px;padding:4px;width:{{ m.groupWidth }}px;">
+                  <span style="{{ m.highlightStyle }}"></span>
+                  <sc-for list="{{ m.options }}" as="o" hint-placeholder-count="3">
+                    <button onclick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+                <button onclick="{{ m.openNote }}" title="Nhận xét &amp; ảnh" style="{{ m.noteBtnStyle }}">
+                  <sc-if value="{{ m.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ m.photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                  </sc-if>
+                  <sc-if value="{{ m.showIcon }}" hint-placeholder-val="{{ true }}">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ m.hasNote }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:#FBBF24;box-shadow:0 0 0 2px #fff;"></span></sc-if>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noMatrix }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:13px;padding:20px;border-radius:14px;background:#F4F8F5;border:1px dashed #C7DBCF;animation:kc-slidepanel .3s ease;">
+            <span style="font-size:26px;">{{ selIcon }}</span>
+            <div><div class="display" style="font-size:15px;font-weight:700;color:#1F2937;">Hoạt động này không cần ghi nhận chi tiết</div><div style="font-size:13px;color:#6B7280;margin-top:2px;">Chọn một mốc sinh hoạt khác (ăn, ngủ, học) ở cột trái để ghi nhanh cho từng bé.</div></div>
+          </div>
+        </sc-if>
+      </section>
 
-        state = {
-          dateStr: '', selId: null, current: null,
-          logs: {},
-          toasts: [],
-          students: ['Minh Khôi','Khánh Linh','An Nhiên','Gia Huy','Bảo Trâm','Hoàng Long','Ngọc Diệp','Tường Vy','Đăng Khoa','Mỹ Anh','Quốc Bảo','Hà My'],
-          schedule: [
-            { id: 'a1', time: '07:30', title: 'Đón bé', type: 'arrival', m: 450 },
-            { id: 'a2', time: '08:00', title: 'Ăn sáng', type: 'meal', m: 480 },
-            { id: 'a3', time: '08:45', title: 'Học chữ cái', type: 'study', m: 525 },
-            { id: 'a4', time: '09:30', title: 'Hoạt động ngoài trời', type: 'play', m: 570 },
-            { id: 'a5', time: '11:00', title: 'Ăn trưa', type: 'meal', m: 660 },
-            { id: 'a6', time: '12:00', title: 'Ngủ trưa', type: 'nap', m: 720 },
-            { id: 'a7', time: '14:30', title: 'Ăn xế', type: 'meal', m: 870 },
-            { id: 'a8', time: '15:00', title: 'Giờ tạo hình', type: 'study', m: 900 },
-            { id: 'a9', time: '16:30', title: 'Trả bé', type: 'arrival', m: 990 },
-          ],
-        };
+      <section>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+          <span class="display" style="font-weight:700;font-size:16px;">Bài học hôm nay</span>
+          <span style="font-size:12px;color:#9CA3AF;">· Nhật ký giảng dạy</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+          <sc-for list="{{ lessons }}" as="l" hint-placeholder-count="3">
+            <div style="position:relative;overflow:hidden;background:{{ l.bg }};border:1px solid {{ l.border }};border-radius:16px;padding:18px;min-height:128px;display:flex;flex-direction:column;justify-content:flex-end;">
+              <span style="position:absolute;right:-12px;top:-12px;color:{{ l.wm }};opacity:.5;">{{ l.icon }}</span>
+              <div style="position:relative;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ l.tagColor }};">{{ l.subject }}</div>
+              <div class="display" style="position:relative;font-size:16px;font-weight:700;color:#1F2937;margin-top:4px;line-height:1.3;">{{ l.title }}</div>
+              <div style="position:relative;font-size:12.5px;color:#6B7280;margin-top:4px;">{{ l.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
 
-        componentDidMount() {
-          const d = new Date();
-          let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
-          ds = ds.charAt(0).toUpperCase() + ds.slice(1);
-          const sch = this.state.schedule;
-          let cur = 'a5'; // demo "now" = Ăn trưa, so the matrix + live state always showcase well
-          // demo: prefill done meals/study with positive
-          const logs = {};
-          sch.forEach(a => {
-            if (a.m < (sch.find(x => x.id === cur) || sch[0]).m && (a.type === 'meal' || a.type === 'nap' || a.type === 'study' || a.type === 'play')) {
-              const ot = this.optType(a.type); logs[a.id] = {};
-              this.state.students.forEach(n => { logs[a.id][n] = this.OPTSETS[ot][0].k; });
-            }
-          });
-          this.setState({ dateStr: ds, current: cur, selId: cur, logs });
-        }
+<!-- NOTE MODAL -->
+<sc-if value="{{ noteOpen }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ closeNote }}" style="position:fixed;inset:0;z-index:9300;background:rgba(15,30,22,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;animation:kc-pop .2s ease;">
+    <div onclick="{{ stop }}" style="width:min(460px,100%);background:#fff;border-radius:20px;box-shadow:0 32px 80px -20px rgba(0,0,0,.4);overflow:hidden;animation:kc-pop .24s cubic-bezier(.2,.8,.3,1);">
+      <div style="display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid #EEF4F0;">
+        <span style="flex:none;width:42px;height:42px;border-radius:50%;background:{{ noteGrad }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;" class="display">{{ noteInitial }}</span>
+        <div style="flex:1;"><div class="display" style="font-size:16px;font-weight:700;">{{ noteName }}</div><div style="font-size:12.5px;color:#9CA3AF;">Nhận xét · {{ noteAct }}</div></div>
+        <button onclick="{{ closeNote }}" style="flex:none;width:36px;height:36px;border-radius:10px;border:1px solid #E6EEE9;background:#fff;color:#6B7280;font-size:17px;cursor:pointer;" style-hover="background:#F6FAF7;color:#DC2626;">✕</button>
+      </div>
+      <div style="padding:18px 22px 22px;display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;margin-bottom:7px;">Nhận xét của cô</div>
+          <textarea ref="{{ setNoteInput }}" placeholder="Ví dụ: Bé ăn ngoan, tự xúc cơm rất giỏi…" style="width:100%;min-height:92px;resize:vertical;border:1px solid #E6EEE9;border-radius:13px;padding:12px 14px;font-family:inherit;font-size:13.5px;color:#1F2937;outline:none;background:#F8FBF9;line-height:1.5;" style-focus="border-color:#005A36;background:#fff;">{{ noteDraft }}</textarea>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;margin-bottom:7px;">Ảnh đính kèm</div>
+          <sc-if value="{{ draftHasPhoto }}" hint-placeholder-val="{{ false }}">
+            <div style="position:relative;border-radius:13px;overflow:hidden;border:1px solid #E6EEE9;">
+              <img src="{{ draftPhoto }}" alt="" style="width:100%;max-height:220px;object-fit:cover;display:block;">
+              <button onclick="{{ removePhoto }}" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:9px;border:none;background:rgba(15,23,42,.6);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">✕</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ draftNoPhoto }}" hint-placeholder-val="{{ true }}">
+            <button onclick="{{ pickPhoto }}" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;border-radius:13px;border:1.5px dashed #C7DBCF;background:#F8FBF9;cursor:pointer;color:#005A36;transition:background .15s,border-color .15s;" style-hover="background:#E6F3ED;border-color:#005A36;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span style="font-size:13px;font-weight:700;">Tải ảnh lên</span>
+              <span style="font-size:11.5px;color:#9CA3AF;font-weight:500;">Chạm để chọn ảnh hoạt động của bé</span>
+            </button>
+          </sc-if>
+          <input ref="{{ setFileInput }}" onchange="{{ onFile }}" type="file" accept="image/*" style="display:none;">
+        </div>
+        <div style="display:flex;gap:9px;">
+          <button onclick="{{ closeNote }}" style="flex:none;height:46px;padding:0 18px;border-radius:12px;border:1px solid #E6EEE9;background:#fff;color:#6B7280;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="background:#F6FAF7;">Huỷ</button>
+          <button onclick="{{ saveNote }}" class="display" style="flex:1;height:46px;border-radius:12px;border:none;background:linear-gradient(135deg,#00794A,#005A36);color:#fff;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 8px 18px -6px rgba(0,90,54,.45);transition:transform .15s;" style-hover="transform:scale(1.02);" style-active="transform:scale(.98);">Lưu nhận xét</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
 
-        addToast = (text) => {
-          const id = 't' + (this.nid++);
-          this.setState(s => ({ toasts: [...s.toasts, { id, text }] }));
-          setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 2600);
-        };
+<!-- TOASTS -->
+<div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div class="display" style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-radius:13px;background:#005A36;color:#fff;font-size:13.5px;font-weight:600;box-shadow:0 18px 48px -12px rgba(0,90,54,.4);animation:kc-pop .28s cubic-bezier(.2,.8,.3,1);max-width:380px;">{{ t.text }}</div>
+  </sc-for>
+</div>
 
-        select = (id) => this.setState({ selId: id });
 
-        setLog = (actId, stu, key) => {
-          this.setState(s => ({ logs: { ...s.logs, [actId]: { ...(s.logs[actId] || {}), [stu]: key } } }));
-        };
-        batchAll = () => {
-          const act = this.state.schedule.find(a => a.id === this.state.selId);
-          if (!act) return;
-          const ot = this.optType(act.type);
-          const k = this.OPTSETS[ot][0].k;
-          const map = {};
-          this.state.students.forEach(n => { map[n] = k; });
-          this.setState(s => ({ logs: { ...s.logs, [act.id]: map } }));
-          this.addToast('⚡ Đã đánh dấu cả lớp: ' + this.OPTSETS[ot][0].label.replace(/^\S+\s/, ''));
-        };
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  nid = 100;
+  grads = ['linear-gradient(135deg,#00794A,#005A36)','linear-gradient(135deg,#3B82F6,#2563EB)','linear-gradient(135deg,#A78BFA,#8B5CF6)','linear-gradient(135deg,#FB923C,#F97316)','linear-gradient(135deg,#34D399,#059669)','linear-gradient(135deg,#F472B6,#DB2777)'];
+  gradFor = (n) => { let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0; return this.grads[h % this.grads.length]; };
+  ini = (n) => { const p = n.trim().split(' '); return p[p.length - 1][0].toUpperCase(); };
+  ic(path, w) { return React.createElement('svg', { width: w || 20, height: w || 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, path); }
 
-        renderVals() {
-          const s = this.state, R = React.createElement;
-          const sch = this.state.schedule;
-          const curAct = sch.find(a => a.id === s.current) || sch[0];
-          const sel = sch.find(a => a.id === s.selId) || curAct;
+  PAL = {
+    meal:    { c: '#92400E', tint: '#FEF3C7', solid: '#D97706' },
+    nap:     { c: '#2563EB', tint: '#E3EDFD', solid: '#2563EB' },
+    study:   { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
+    play:    { c: '#005A36', tint: '#E6F3ED', solid: '#005A36' },
+    arrival: { c: '#8B5CF6', tint: '#F1ECFE', solid: '#8B5CF6' },
+  };
+  OPTSETS = {
+    meal:  [{ k: 'full', label: '🟢 Ăn hết', dot: '#005A36' }, { k: 'slow', label: '🟠 Ăn chậm', dot: '#D97706' }, { k: 'skip', label: '🔴 Bỏ bữa', dot: '#DC2626' }],
+    nap:   [{ k: 'good', label: '🟢 Ngủ ngoan', dot: '#005A36' }, { k: 'hard', label: '🟠 Khó ngủ', dot: '#D97706' }],
+    study: [{ k: 'active', label: '🟢 Hăng hái', dot: '#005A36' }, { k: 'ok', label: '🔵 Bình thường', dot: '#2563EB' }, { k: 'support', label: '🟠 Cần hỗ trợ', dot: '#D97706' }],
+  };
+  optType = (t) => (t === 'play' ? 'study' : t);
+  groupW = { meal: 318, nap: 220, study: 330 };
 
-          const icons = {
-            arrival: this.ic([R('circle',{cx:12,cy:12,r:5,key:1}),R('line',{x1:12,y1:1,x2:12,y2:3,key:2}),R('line',{x1:12,y1:21,x2:12,y2:23,key:3}),R('line',{x1:4.2,y1:4.2,x2:5.6,y2:5.6,key:4}),R('line',{x1:18.4,y1:18.4,x2:19.8,y2:19.8,key:5}),R('line',{x1:1,y1:12,x2:3,y2:12,key:6}),R('line',{x1:21,y1:12,x2:23,y2:12,key:7}),R('line',{x1:4.2,y1:19.8,x2:5.6,y2:18.4,key:8}),R('line',{x1:18.4,y1:5.6,x2:19.8,y2:4.2,key:9})], 19),
-            meal: this.ic([R('path',{d:'M18 8h1a4 4 0 0 1 0 8h-1',key:1}),R('path',{d:'M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z',key:2}),R('line',{x1:6,y1:1,x2:6,y2:4,key:3}),R('line',{x1:10,y1:1,x2:10,y2:4,key:4}),R('line',{x1:14,y1:1,x2:14,y2:4,key:5})], 19),
-            study: this.ic([R('path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20',key:1}),R('path',{d:'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',key:2})], 19),
-            play: this.ic([R('circle',{cx:12,cy:12,r:10,key:1}),R('path',{d:'M12 2a10 10 0 0 0 0 20M2 12h20',key:2})], 19),
-            nap: this.ic([R('path',{d:'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z',key:1})], 19),
-          };
-          const bigIcon = { arrival: '🌞', meal: '🍽️', study: '✏️', play: '⚽', nap: '🌙' };
+  state = {
+    dateStr: '', selId: null, current: null,
+    logs: {},
+    notes: {},
+    noteOpen: false, noteKey: null, noteName: '', noteGrad: '', noteInitial: '', noteAct: '',
+    noteDraft: '', draftPhoto: null,
+    toasts: [],
+    students: ['Minh Khôi','Khánh Linh','An Nhiên','Gia Huy','Bảo Trâm','Hoàng Long','Ngọc Diệp','Tường Vy','Đăng Khoa','Mỹ Anh','Quốc Bảo','Hà My'],
+    schedule: [
+      { id: 'a1', time: '07:30', title: 'Đón bé', type: 'arrival', m: 450 },
+      { id: 'a2', time: '08:00', title: 'Ăn sáng', type: 'meal', m: 480 },
+      { id: 'a3', time: '08:45', title: 'Học chữ cái', type: 'study', m: 525 },
+      { id: 'a4', time: '09:30', title: 'Hoạt động ngoài trời', type: 'play', m: 570 },
+      { id: 'a5', time: '11:00', title: 'Ăn trưa', type: 'meal', m: 660 },
+      { id: 'a6', time: '12:00', title: 'Ngủ trưa', type: 'nap', m: 720 },
+      { id: 'a7', time: '14:30', title: 'Ăn xế', type: 'meal', m: 870 },
+      { id: 'a8', time: '15:00', title: 'Giờ tạo hình', type: 'study', m: 900 },
+      { id: 'a9', time: '16:30', title: 'Trả bé', type: 'arrival', m: 990 },
+    ],
+    menus: [
+      { meal: 'Bữa sáng', time: '08:00', icon: '🥣', tone: 'amber', dishes: [
+        { emoji: '🍲', name: 'Cháo thịt bằm bí đỏ' }, { emoji: '🥛', name: 'Sữa tươi không đường' }, { emoji: '🍌', name: 'Chuối tráng miệng' } ] },
+      { meal: 'Bữa trưa', time: '11:00', icon: '🍱', tone: 'green', dishes: [
+        { emoji: '🍚', name: 'Cơm trắng' }, { emoji: '🍳', name: 'Thịt kho trứng cút' }, { emoji: '🥬', name: 'Canh cải nấu tôm' }, { emoji: '🍉', name: 'Dưa hấu' } ] },
+      { meal: 'Bữa xế', time: '14:30', icon: '🍮', tone: 'blue', dishes: [
+        { emoji: '🦀', name: 'Súp cua trứng' }, { emoji: '🍮', name: 'Bánh flan' }, { emoji: '🧃', name: 'Nước cam' } ] },
+    ],
+  };
 
-          const totalActs = sch.length;
-          const doneCount = sch.filter(a => a.m < curAct.m).length;
-
-          const timeline = sch.map((a, i) => {
-            const isCur = a.id === s.current;
-            const isSel = a.id === s.selId;
-            const done = a.m < curAct.m;
-            const pal = this.PAL[a.type];
-            const dot = done ? '#A7C9B6' : (isCur ? '#005A36' : '#D1D5DB');
-            let cardBg = '#fff', cardBorder = '#EEF4F0', scale = '';
-            if (isSel) { cardBg = pal.tint; cardBorder = pal.solid; }
-            if (isCur) { scale = 'transform:scale(1.02);box-shadow:0 0 0 2px ' + pal.solid + ',0 8px 20px -8px rgba(0,90,54,.3);'; }
-            return {
-              time: a.time, title: a.title, current: isCur, done,
-              select: () => this.select(a.id),
-              dot, icon: icons[a.type], icColor: pal.solid, icBg: pal.tint,
-              timeColor: done ? '#9CA3AF' : pal.solid,
-              titleColor: done ? '#9CA3AF' : '#1F2937',
-              cardStyle: 'flex:1;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:14px;border:1.5px solid ' + cardBorder + ';background:' + cardBg + ';cursor:pointer;' + (done ? 'opacity:.62;' : '') + scale,
-              lineStyle: i < sch.length - 1 ? 'position:absolute;top:21px;bottom:-12px;width:2px;background:#E6EEE9;' : 'display:none;',
-            };
-          });
-
-          // matrix for selected
-          const ot = this.optType(sel.type);
-          const hasMatrix = !!this.OPTSETS[ot];
-          const selPal = this.PAL[sel.type];
-          let matrix = [], batchLabel = '';
-          if (hasMatrix) {
-            const set = this.OPTSETS[ot];
-            const n = set.length;
-            const gw = this.groupW[ot];
-            batchLabel = 'Tất cả: ' + set[0].label.replace(/^\S+\s/, '');
-            const cur = s.logs[sel.id] || {};
-            matrix = s.students.map(name => {
-              const selKey = cur[name];
-              const selIdx = set.findIndex(o => o.k === selKey);
-              const hiColor = selIdx >= 0 ? set[selIdx].dot : '#005A36';
-              const options = set.map(o => ({
-                k: o.k, label: o.label, pick: () => this.setLog(sel.id, name, o.k),
-                style: 'position:relative;z-index:1;flex:1;height:34px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;font-size:12.5px;white-space:nowrap;padding:0 6px;transition:color .25s;color:' + (o.k === selKey ? '#fff' : '#6B7280') + ';',
-              }));
-              const highlightStyle = selIdx >= 0
-                ? 'position:absolute;top:4px;bottom:4px;left:calc((100% - 8px) * ' + (selIdx / n) + ' + 4px);width:calc((100% - 8px) / ' + n + ');background:' + hiColor + ';border-radius:9px;box-shadow:0 2px 6px -1px rgba(0,0,0,.18);transition:left .28s cubic-bezier(.4,0,.2,1),width .28s,background .28s;'
-                : 'position:absolute;opacity:0;';
-              return { name, initial: this.ini(name), grad: this.gradFor(name), options, highlightStyle, groupWidth: gw };
-            });
-          }
-
-          const descMap = {
-            arrival: 'Giáo viên đón và điểm danh các bé tại cửa lớp.',
-            meal: 'Chạm để ghi nhanh tình trạng ăn của từng bé · tự lưu.',
-            nap: 'Ghi nhận giấc ngủ trưa của từng bé · tự lưu.',
-            study: 'Đánh giá mức độ tham gia của bé trong tiết học.',
-            play: 'Đánh giá mức độ tham gia của bé trong hoạt động.',
-          };
-
-          const lessons = [
-            { subject: 'Môn: Tạo hình', title: 'Học vẽ hình tròn', note: 'Bé tập cầm bút & tô màu', icon: this.ic([R('path',{d:'M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z',key:1}),R('path',{d:'M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7',key:2})], 92), bg: '#FFEEDF', border: '#FBD9BC', wm: '#F97316', tagColor: '#C2410C' },
-            { subject: 'Môn: Âm nhạc', title: 'Hát "Cháu yêu bà"', note: 'Vận động theo nhịp', icon: this.ic([R('path',{d:'M9 18V5l12-2v13',key:1}),R('circle',{cx:6,cy:18,r:3,key:2}),R('circle',{cx:18,cy:16,r:3,key:3})], 92), bg: '#F1ECFE', border: '#DDD0FB', wm: '#8B5CF6', tagColor: '#7C3AED' },
-            { subject: 'Môn: Làm quen chữ', title: 'Nhóm chữ O · Ô · Ơ', note: 'Nhận mặt & phát âm', icon: this.ic([R('path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20',key:1}),R('path',{d:'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',key:2})], 92), bg: '#E3EDFD', border: '#C7DBFB', wm: '#2563EB', tagColor: '#1D4ED8' },
-          ];
-
-          return {
-            dateStr: s.dateStr, currentName: curAct.title,
-            timeline, totalActs, doneCount,
-            selTitle: sel.title + ' · ' + sel.time, selDesc: descMap[sel.type], selIcon: bigIcon[sel.type], selColor: selPal.solid, selTint: selPal.tint,
-            hasMatrix, noMatrix: !hasMatrix, matrix, batchLabel, batchAll: this.batchAll,
-            lessons, toasts: s.toasts,
-          };
-        }
+  componentDidMount() {
+    const d = new Date();
+    let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
+    ds = ds.charAt(0).toUpperCase() + ds.slice(1);
+    const sch = this.state.schedule;
+    let cur = 'a5';
+    const logs = {};
+    sch.forEach(a => {
+      if (a.m < (sch.find(x => x.id === cur) || sch[0]).m && (a.type === 'meal' || a.type === 'nap' || a.type === 'study' || a.type === 'play')) {
+        const ot = this.optType(a.type); logs[a.id] = {};
+        this.state.students.forEach(n => { logs[a.id][n] = this.OPTSETS[ot][0].k; });
       }
-    </script>
-  </body>
-</html>
+    });
+    this.setState({ dateStr: ds, current: cur, selId: cur, logs });
+  }
+
+  toggleSidebar = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    this._collapsed = !this._collapsed;
+    if (typeof document !== 'undefined') document.body.classList.toggle('kc-collapsed', this._collapsed);
+    if (this.sb) this.sb.style.width = this._collapsed ? '88px' : '262px';
+    if (this.mainEl) this.mainEl.style.marginLeft = this._collapsed ? '88px' : '262px';
+  };
+
+  addToast = (text) => {
+    const id = 't' + (this.nid++);
+    this.setState(s => ({ toasts: [...s.toasts, { id, text }] }));
+    setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 2600);
+  };
+
+  select = (id) => this.setState({ selId: id });
+
+  stop = (e) => { if (e) e.stopPropagation(); };
+  openNote = (actId, name) => {
+    const key = actId + '|' + name;
+    const existing = this.state.notes[key] || {};
+    this.setState({ noteOpen: true, noteKey: key, noteName: name, noteGrad: this.gradFor(name), noteInitial: this.ini(name),
+      noteAct: (this.state.schedule.find(a => a.id === actId) || {}).title || '',
+      noteDraft: existing.text || '', draftPhoto: existing.photo || null });
+  };
+  closeNote = () => { this.setState({ noteOpen: false }); };
+  setNoteInput = (el) => { this.noteInputEl = el; };
+  setFileInput = (el) => { this.fileInputEl = el; };
+  pickPhoto = () => { if (this.fileInputEl) this.fileInputEl.click(); };
+  onFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    this.setState({ draftPhoto: url });
+  };
+  removePhoto = () => this.setState({ draftPhoto: null });
+  saveNote = () => {
+    const key = this.state.noteKey;
+    const text = this.noteInputEl ? this.noteInputEl.value.trim() : this.state.noteDraft;
+    const photo = this.state.draftPhoto;
+    this.setState(s => {
+      const notes = { ...s.notes };
+      if (!text && !photo) delete notes[key];
+      else notes[key] = { text, photo };
+      return { notes, noteOpen: false };
+    });
+    this.addToast((text || photo) ? '📝 Đã lưu nhận xét cho bé ' + this.state.noteName : 'Đã xoá nhận xét');
+  };
+  setLog = (actId, stu, key) => { this.setState(s => ({ logs: { ...s.logs, [actId]: { ...(s.logs[actId] || {}), [stu]: key } } })); };
+  batchAll = () => {
+    const act = this.state.schedule.find(a => a.id === this.state.selId);
+    if (!act) return;
+    const ot = this.optType(act.type);
+    const k = this.OPTSETS[ot][0].k;
+    const map = {};
+    this.state.students.forEach(n => { map[n] = k; });
+    this.setState(s => ({ logs: { ...s.logs, [act.id]: map } }));
+    this.addToast('⚡ Đã đánh dấu cả lớp: ' + this.OPTSETS[ot][0].label.replace(/^\S+\s/, ''));
+  };
+
+  renderVals() {
+    const s = this.state, R = React.createElement;
+    const sch = this.state.schedule;
+    const curAct = sch.find(a => a.id === s.current) || sch[0];
+    const sel = sch.find(a => a.id === s.selId) || curAct;
+
+    const icons = {
+      arrival: this.ic([R('circle',{cx:12,cy:12,r:5,key:1}),R('line',{x1:12,y1:1,x2:12,y2:3,key:2}),R('line',{x1:12,y1:21,x2:12,y2:23,key:3}),R('line',{x1:4.2,y1:4.2,x2:5.6,y2:5.6,key:4}),R('line',{x1:18.4,y1:18.4,x2:19.8,y2:19.8,key:5}),R('line',{x1:1,y1:12,x2:3,y2:12,key:6}),R('line',{x1:21,y1:12,x2:23,y2:12,key:7}),R('line',{x1:4.2,y1:19.8,x2:5.6,y2:18.4,key:8}),R('line',{x1:18.4,y1:5.6,x2:19.8,y2:4.2,key:9})], 19),
+      meal: this.ic([R('path',{d:'M18 8h1a4 4 0 0 1 0 8h-1',key:1}),R('path',{d:'M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z',key:2}),R('line',{x1:6,y1:1,x2:6,y2:4,key:3}),R('line',{x1:10,y1:1,x2:10,y2:4,key:4}),R('line',{x1:14,y1:1,x2:14,y2:4,key:5})], 19),
+      study: this.ic([R('path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20',key:1}),R('path',{d:'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',key:2})], 19),
+      play: this.ic([R('circle',{cx:12,cy:12,r:10,key:1}),R('path',{d:'M12 2a10 10 0 0 0 0 20M2 12h20',key:2})], 19),
+      nap: this.ic([R('path',{d:'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z',key:1})], 19),
+    };
+    const bigIcon = { arrival: '🌞', meal: '🍽️', study: '✏️', play: '⚽', nap: '🌙' };
+
+    const totalActs = sch.length;
+    const doneCount = sch.filter(a => a.m < curAct.m).length;
+
+    const timeline = sch.map((a, i) => {
+      const isCur = a.id === s.current;
+      const isSel = a.id === s.selId;
+      const done = a.m < curAct.m;
+      const pal = this.PAL[a.type];
+      const dot = done ? '#A7C9B6' : (isCur ? '#005A36' : '#D1D5DB');
+      let cardBg = '#fff', cardBorder = '#EEF4F0', scale = '';
+      if (isSel) { cardBg = pal.tint; cardBorder = pal.solid; }
+      if (isCur) { scale = 'transform:scale(1.02);box-shadow:0 0 0 2px ' + pal.solid + ',0 8px 20px -8px rgba(0,90,54,.3);'; }
+      return {
+        time: a.time, title: a.title, current: isCur, done,
+        select: () => this.select(a.id),
+        dot, icon: icons[a.type], icColor: pal.solid, icBg: pal.tint,
+        timeColor: done ? '#9CA3AF' : pal.solid,
+        titleColor: done ? '#9CA3AF' : '#1F2937',
+        cardStyle: 'flex:1;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:14px;border:1.5px solid ' + cardBorder + ';background:' + cardBg + ';cursor:pointer;' + (done ? 'opacity:.62;' : '') + scale,
+        lineStyle: i < sch.length - 1 ? 'position:absolute;top:21px;bottom:-12px;width:2px;background:#E6EEE9;' : 'display:none;',
+      };
+    });
+
+    const ot = this.optType(sel.type);
+    const hasMatrix = !!this.OPTSETS[ot];
+    const selPal = this.PAL[sel.type];
+    let matrix = [], batchLabel = '';
+    if (hasMatrix) {
+      const set = this.OPTSETS[ot];
+      const n = set.length;
+      const gw = this.groupW[ot];
+      batchLabel = 'Tất cả: ' + set[0].label.replace(/^\S+\s/, '');
+      const cur = s.logs[sel.id] || {};
+      matrix = s.students.map(name => {
+        const selKey = cur[name];
+        const selIdx = set.findIndex(o => o.k === selKey);
+        const hiColor = selIdx >= 0 ? set[selIdx].dot : '#005A36';
+        const options = set.map(o => ({
+          k: o.k, label: o.label, pick: () => this.setLog(sel.id, name, o.k),
+          style: 'position:relative;z-index:1;flex:1;height:34px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;font-size:12.5px;white-space:nowrap;padding:0 6px;transition:color .25s;color:' + (o.k === selKey ? '#fff' : '#6B7280') + ';',
+        }));
+        const highlightStyle = selIdx >= 0
+          ? 'position:absolute;top:4px;bottom:4px;left:calc((100% - 8px) * ' + (selIdx / n) + ' + 4px);width:calc((100% - 8px) / ' + n + ');background:' + hiColor + ';border-radius:9px;box-shadow:0 2px 6px -1px rgba(0,0,0,.18);transition:left .28s cubic-bezier(.4,0,.2,1),width .28s,background .28s;'
+          : 'position:absolute;opacity:0;';
+        const note = s.notes[sel.id + '|' + name] || {};
+        const hasNote = !!(note.text || note.photo);
+        const hasPhoto = !!note.photo;
+        return { name, initial: this.ini(name), grad: this.gradFor(name), options, highlightStyle, groupWidth: gw,
+          openNote: () => this.openNote(sel.id, name),
+          hasNote, hasPhoto, photo: note.photo || '', showIcon: !hasPhoto,
+          noteBtnStyle: 'position:relative;flex:none;width:38px;height:38px;border-radius:11px;border:1px solid ' + (hasNote ? '#C7E3D5' : '#E6EEE9') + ';background:' + (hasNote ? '#E6F3ED' : '#fff') + ';color:#005A36;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:background .15s,border-color .15s;' };
+      });
+    }
+
+    const descMap = {
+      arrival: 'Giáo viên đón và điểm danh các bé tại cửa lớp.',
+      meal: 'Chạm để ghi nhanh tình trạng ăn của từng bé · tự lưu.',
+      nap: 'Ghi nhận giấc ngủ trưa của từng bé · tự lưu.',
+      study: 'Đánh giá mức độ tham gia của bé trong tiết học.',
+      play: 'Đánh giá mức độ tham gia của bé trong hoạt động.',
+    };
+
+    const lessons = [
+      { subject: 'Môn: Tạo hình', title: 'Học vẽ hình tròn', note: 'Bé tập cầm bút & tô màu', icon: this.ic([R('path',{d:'M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z',key:1}),R('path',{d:'M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7',key:2})], 92), bg: '#FFEEDF', border: '#FBD9BC', wm: '#F97316', tagColor: '#C2410C' },
+      { subject: 'Môn: Âm nhạc', title: 'Hát "Cháu yêu bà"', note: 'Vận động theo nhịp', icon: this.ic([R('path',{d:'M9 18V5l12-2v13',key:1}),R('circle',{cx:6,cy:18,r:3,key:2}),R('circle',{cx:18,cy:16,r:3,key:3})], 92), bg: '#F1ECFE', border: '#DDD0FB', wm: '#8B5CF6', tagColor: '#7C3AED' },
+      { subject: 'Môn: Làm quen chữ', title: 'Nhóm chữ O · Ô · Ơ', note: 'Nhận mặt & phát âm', icon: this.ic([R('path',{d:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20',key:1}),R('path',{d:'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',key:2})], 92), bg: '#E3EDFD', border: '#C7DBFB', wm: '#2563EB', tagColor: '#1D4ED8' },
+    ];
+
+    const mealTone = {
+      amber: { card: 'background:linear-gradient(160deg,#FEF6E2,#FFFCF5);border:1px solid #F6E3B5;', time: '#B45309' },
+      green: { card: 'background:linear-gradient(160deg,#EAF6EF,#F6FBF8);border:1px solid #C7E3D5;', time: '#0F766E' },
+      blue:  { card: 'background:linear-gradient(160deg,#EAF1FD,#F6F9FE);border:1px solid #C7DBFB;', time: '#1D4ED8' },
+    };
+    const menus = s.menus.map(m => {
+      const t = mealTone[m.tone] || mealTone.green;
+      return { meal: m.meal, time: m.time, icon: m.icon, dishes: m.dishes, timeColor: t.time,
+        cardStyle: t.card + 'border-radius:16px;padding:16px;' };
+    });
+
+    return {
+      dateStr: s.dateStr, currentName: curAct.title, currentTime: curAct.time,
+      timeline, totalActs, doneCount,
+      selTitle: sel.title + ' · ' + sel.time, selDesc: descMap[sel.type], selIcon: bigIcon[sel.type], selColor: selPal.solid, selTint: selPal.tint,
+      hasMatrix, noMatrix: !hasMatrix, matrix, batchLabel, batchAll: this.batchAll,
+      lessons, menus, toasts: s.toasts,
+      noteOpen: s.noteOpen, noteName: s.noteName, noteGrad: s.noteGrad, noteInitial: s.noteInitial, noteAct: s.noteAct,
+      noteDraft: s.noteDraft, draftPhoto: s.draftPhoto || '', draftHasPhoto: !!s.draftPhoto, draftNoPhoto: !s.draftPhoto,
+      openNote: this.openNote, closeNote: this.closeNote, saveNote: this.saveNote, stop: this.stop,
+      setNoteInput: this.setNoteInput, setFileInput: this.setFileInput, pickPhoto: this.pickPhoto, onFile: this.onFile, removePhoto: this.removePhoto,
+      toggleSidebar: this.toggleSidebar, setSb: (el) => { this.sb = el; }, setMainEl: (el) => { this.mainEl = el; },
+    };
+  }
+}
+</script>
+
+
+</body></html>
