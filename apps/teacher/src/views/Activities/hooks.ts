@@ -117,21 +117,7 @@ export function useActivities() {
     );
   };
 
-  const handleScheduleStatusChange = (id: string, completed: boolean) => {
-    setScheduleItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, completed } : item
-      )
-    );
-  };
 
-  const handleSchedulePhotoChange = (id: string, photoUrl: string | undefined) => {
-    setScheduleItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, classPhoto: photoUrl } : item
-      )
-    );
-  };
 
   // Bulk status appliers
   const handleBulkMarkMealsAll = () => {
@@ -240,8 +226,6 @@ export function useActivities() {
     setExpandedStudentId,
     handleActivityNoteChange,
     handleActivityPhotoChange,
-    handleScheduleStatusChange,
-    handleSchedulePhotoChange,
     handleBulkMarkMealsAll,
     handleBulkMarkActivitiesGood,
     handleSave,

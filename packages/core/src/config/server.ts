@@ -35,6 +35,8 @@ export const SERVER = {
   },
   teacher: {
     scanAttendance: '/teacher/attendance/scan',
+    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
+    getSchedule: '/teacher/classes/:classId/schedule',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',
@@ -42,9 +44,5 @@ export const SERVER = {
     getInbox:          '/notifications',
     markAsRead:        '/notifications/:id/read',
     markAllAsRead:     '/notifications/read-all',
-  },
-  teacher: {
-    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
-    getSchedule: '/teacher/classes/:classId/schedule',
   },
 } as const;

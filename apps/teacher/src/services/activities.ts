@@ -5,7 +5,8 @@ import {
   ScheduleItem,
   NapStatus,
   ParticipationStatus,
-  WeeklyScheduleResponse
+  WeeklyScheduleResponse,
+  MealStatus
 } from '@/config/types/activities';
 import { scheduleService } from './schedule/ScheduleService';
 import { AttendanceService } from './attendance';
