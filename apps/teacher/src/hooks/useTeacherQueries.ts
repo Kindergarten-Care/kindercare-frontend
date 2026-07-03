@@ -50,6 +50,13 @@ export const useUpdateSettings = () => {
   });
 };
 
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: { current: string; new: string }) => 
+      profileService.changePassword(data.current, data.new)
+  });
+};
+
 import { mapApiLeaveRequestToDomain } from '@/services/attendance';
 
 // --- LEAVE REQUESTS ---

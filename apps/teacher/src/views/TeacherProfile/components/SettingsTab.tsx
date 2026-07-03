@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Mail, Bell, Calendar, KeyRound } from 'lucide-react';
 import { useTeacherSettings, useUpdateSettings } from '@/hooks/useTeacherQueries';
+import { PasswordModal } from './PasswordModal';
 
 const SettingsList = styled.div`
   display: flex;
@@ -108,6 +109,8 @@ export const SettingsTab: React.FC = () => {
     weeklyReportEnabled: false,
   });
 
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
   // Update local state when API data arrives
   useEffect(() => {
     if (initialSettings) {
@@ -160,8 +163,12 @@ export const SettingsTab: React.FC = () => {
             <SettingDesc>Đổi mật khẩu tài khoản của bạn</SettingDesc>
           </SettingInfo>
         </SettingLeft>
-        <PasswordButton onClick={() => alert('Chức năng đổi mật khẩu đang phát triển')}>Đổi mật khẩu</PasswordButton>
+        <PasswordButton onClick={() => setIsPasswordModalOpen(true)}>Đổi mật khẩu</PasswordButton>
       </SettingItem>
+
+      {isPasswordModalOpen && (
+        <PasswordModal onClose={() => setIsPasswordModalOpen(false)} />
+      )}
     </SettingsList>
   );
 };
