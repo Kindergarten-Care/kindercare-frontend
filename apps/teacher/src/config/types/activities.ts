@@ -36,3 +36,20 @@ export interface ScheduleItem {
   completed: boolean;
   classPhoto?: string;
 }
+
+export interface WeeklyScheduleDetail {
+  id: string;
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  startTime: string; // "HH:mm:ss"
+  endTime: string;   // "HH:mm:ss"
+  activityName: string;
+  details?: string;
+  location?: string;
+  activityType: 'pickup' | 'meal' | 'study' | 'nap' | 'play' | 'dropoff' | 'other';
+}
+
+export interface WeeklyScheduleResponse {
+  monthTheme: string;
+  weekTheme: string;
+  details: WeeklyScheduleDetail[];
+}

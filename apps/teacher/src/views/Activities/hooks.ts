@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, ScheduleItem } from '@/config/types/activities';
+import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, WeeklyScheduleResponse } from '@/config/types/activities';
 import { ActivitiesService } from '@/services/activities';
 
 export function useActivities() {
@@ -26,23 +26,32 @@ export function useActivities() {
   // Records State
   const [mealRecords, setMealRecords] = useState<StudentMealRecord[]>([]);
   const [activityRecords, setActivityRecords] = useState<StudentActivityRecord[]>([]);
-  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
+  
+  // Weekly Schedule State
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklyScheduleResponse | null>(null);
+
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  const formatDate = (d: Date) => {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
+        const dateStr = formatDate(currentDate);
         const [menuData, mealsData, activitiesData, scheduleData] = await Promise.all([
-          ActivitiesService.getMenuOfTheDay('1', 'today'),
-          ActivitiesService.getStudentMealRecords('1', 'today'),
-          ActivitiesService.getStudentActivityRecords('1', 'today'),
-          ActivitiesService.getDailySchedule('1', 'today')
+          ActivitiesService.getMenuOfTheDay('1', dateStr),
+          ActivitiesService.getStudentMealRecords('1', dateStr),
+          ActivitiesService.getStudentActivityRecords('1', dateStr),
+          ActivitiesService.getWeeklySchedule('1', dateStr)
         ]);
         setMenu(menuData);
         setEditedMenu(menuData);
         setMealRecords(mealsData);
         setActivityRecords(activitiesData);
-        setScheduleItems(scheduleData);
+        setWeeklySchedule(scheduleData);
       } catch (error) {
         console.error('Error fetching activities data:', error);
       } finally {
@@ -50,7 +59,7 @@ export function useActivities() {
       }
     }
     loadData();
-  }, []);
+  }, [currentDate]);
 
   const handleMealStatusChange = (studentId: string, meal: 'breakfast' | 'lunch' | 'afternoonSnack', status: MealStatus) => {
     setMealRecords(prev =>
@@ -149,7 +158,8 @@ export function useActivities() {
   const handleSaveMenu = async () => {
     try {
       setSaving(true);
-      await ActivitiesService.updateMenuOfTheDay('1', 'today', editedMenu);
+      const dateStr = formatDate(currentDate);
+      await ActivitiesService.updateMenuOfTheDay('1', dateStr, editedMenu);
       setMenu(editedMenu);
       setIsMenuEditing(false);
       return true;
@@ -165,18 +175,13 @@ export function useActivities() {
   const handleSave = async () => {
     try {
       setSaving(true);
+      const dateStr = formatDate(currentDate);
 
       // Nhóm chính (bắt buộc thành công): Lưu trạng thái Ăn + Ngủ
       await Promise.all([
-        ActivitiesService.updateStudentMealRecords('1', 'today', mealRecords),
-        ActivitiesService.updateStudentActivityRecords('1', 'today', activityRecords)
+        ActivitiesService.updateStudentMealRecords('1', dateStr, mealRecords),
+        ActivitiesService.updateStudentActivityRecords('1', dateStr, activityRecords)
       ]);
-
-      try {
-        await ActivitiesService.updateDailySchedule('1', 'today', scheduleItems);
-      } catch (e) {
-        console.warn('Lỗi lưu lịch trình (không ảnh hưởng):', e);
-      }
 
       alert('Đã lưu thành công trạng thái Ăn/Ngủ của các bé!');
     } catch (error) {
@@ -213,11 +218,15 @@ export function useActivities() {
     setMenu,
     editedMenu,
     setEditedMenu,
+    
+    // Date Navigator States
+    currentDate,
+    setCurrentDate,
 
     // Records
     mealRecords,
     activityRecords,
-    scheduleItems,
+    weeklySchedule,
     filteredMeals,
     filteredActivities,
 

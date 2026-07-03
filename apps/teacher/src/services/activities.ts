@@ -1,4 +1,12 @@
-import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, ScheduleItem } from '@/config/types/activities';
+import { 
+  StudentMealRecord, 
+  StudentActivityRecord, 
+  MenuOfTheDay,
+  ScheduleItem,
+  NapStatus,
+  ParticipationStatus,
+  WeeklyScheduleResponse
+} from '@/config/types/activities';
 import { scheduleService } from './schedule/ScheduleService';
 import { AttendanceService } from './attendance';
 import { apiClient } from '@kindercare/core';
@@ -26,6 +34,8 @@ let mockMenuState: MenuOfTheDay = {
   afternoonSnackMenu: 'Sữa tươi tiệt trùng và bánh bông lan trứng muối mềm.'
 };
 
+const menuByDate: Record<string, MenuOfTheDay> = {};
+
 export class ActivitiesService {
   /**
    * Fetch the general menu of the day.
@@ -37,22 +47,21 @@ export class ActivitiesService {
         const now = new Date();
         realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       }
+      
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const response = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
-      const data = response.data?.data || [];
-      
-      const menu: MenuOfTheDay = { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
-      data.forEach((item: any) => {
-        if (item.mealType === 'Breakfast') menu.breakfastMenu = item.dishName;
-        if (item.mealType === 'Lunch') menu.lunchMenu = item.dishName;
-        if (item.mealType === 'Snack') menu.afternoonSnackMenu = item.dishName;
-      });
-
-      return menu;
-    } catch (error) {
-      console.error('Error fetching menu API:', error);
+      const res = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
+      if (res.data?.data) {
+        return {
+          breakfastMenu: res.data.data.breakfastMenu || '',
+          lunchMenu: res.data.data.lunchMenu || '',
+          afternoonSnackMenu: res.data.data.afternoonSnackMenu || ''
+        };
+      }
+      return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
+    } catch (error: any) {
+      console.warn('Backend API not ready yet (Menu):', error?.message || 'Unknown error');
       return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
     }
   }
@@ -266,6 +275,31 @@ export class ActivitiesService {
     } catch (e) {
       console.error('Error updating activities:', e);
       return false;
+    }
+  }
+
+  /**
+   * Fetch the weekly schedule for a class from real API.
+   */
+  public static async getWeeklySchedule(classId: string, date: string): Promise<WeeklyScheduleResponse | null> {
+    try {
+      let realDate = date;
+      if (date === 'today') {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      const res = await apiClient.get(`/teacher/classes/${classId}/schedule/weekly?date=${dateSeconds}`);
+      if (res.data?.data) {
+        return res.data.data;
+      }
+      return null;
+    } catch (e: any) {
+      console.warn('Backend API not ready yet (Weekly Schedule):', e?.message || 'Unknown error');
+      return null;
     }
   }
 
