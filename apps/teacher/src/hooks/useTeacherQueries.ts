@@ -65,7 +65,8 @@ export const useUploadAvatar = () => {
 
 export const useUpdateAvatar = () => {
   return useMutation({
-    mutationFn: (avatarUrl: string) => profileService.updateAvatar(avatarUrl)
+    mutationFn: (data: { avatarUrl: string; fullName: string }) => 
+      profileService.updateAvatar(data.avatarUrl, data.fullName)
   });
 };
 

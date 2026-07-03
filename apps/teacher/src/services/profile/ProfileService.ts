@@ -85,7 +85,9 @@ class ProfileService {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (!res.data.success) throw new Error(res.data.message);
-      return res.data.data; // trả về chuỗi URL ảnh
+      
+      // Backend trả về: { url: imageUrl, folder: folderPath }
+      return res.data.data.url;
     } catch (error: any) {
       console.warn('API uploadAvatar failed (mocking fallback):', error);
       // Giả lập trả về url Object URL cho local preview
@@ -93,14 +95,17 @@ class ProfileService {
     }
   }
 
-  async updateAvatar(avatarUrl: string): Promise<boolean> {
+  async updateAvatar(avatarUrl: string, fullName: string): Promise<boolean> {
     try {
-      const payload = { avatarUrl };
+      const payload = { avatarUrl, fullName };
       const { data: res } = await apiClient.put<ApiResponse<any>>('/teacher/profile', payload);
       if (!res.success) throw new Error(res.message);
       return true;
     } catch (error: any) {
       console.warn('API updateAvatar failed (mocking fallback):', error);
+      if (error?.response?.data?.message) {
+         throw new Error(error.response.data.message);
+      }
       return true;
     }
   }

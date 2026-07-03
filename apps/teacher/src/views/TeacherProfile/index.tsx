@@ -48,12 +48,13 @@ export const TeacherProfileView: React.FC<TeacherProfileViewProps> = ({ user }) 
     uploadAvatarMutation.mutate(file, {
       onSuccess: (url) => {
         // Sau khi upload thành công, cập nhật URL vào Profile
-        updateAvatarMutation.mutate(url, {
+        // Cần truyền cả fullName vì Backend yêu cầu trường này
+        updateAvatarMutation.mutate({ avatarUrl: url, fullName: user?.fullName || 'Lê Huy' }, {
           onSuccess: () => {
             setLocalAvatar(url);
           },
-          onError: () => {
-            alert('Có lỗi xảy ra khi lưu Avatar mới.');
+          onError: (err: any) => {
+            alert(err?.message || 'Có lỗi xảy ra khi lưu Avatar mới.');
           }
         });
       },
