@@ -64,30 +64,39 @@ export function AttendanceCard({ attendance, studentFullName, stats, dailyActivi
           </S.OvMood>
         </S.OvHeaderRow>
         <S.OvBody style={{ flex: 'unset' }}>
-          <S.OvTitle>Hôm nay bé có một ngày thật tuyệt!</S.OvTitle>
-          <S.OvDesc>Bé ăn ngoan, ngủ đủ giấc và tham gia tích cực các hoạt động cùng lớp.</S.OvDesc>
-          <S.OvStatPills>
-            <S.OvStatPill>
-              <Svg size={14} sw={1.8}>
-                <path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11" />
-                <path d="M16 3c-1.4 0-2.5 2-2.5 4.5S14.6 12 16 12v9" />
-              </Svg>
-              {eatText}
-            </S.OvStatPill>
-            <S.OvStatPill>
-              <Svg size={14} sw={1.8}>
-                <path d="M3 18v-5a3 3 0 0 1 3-3h7a4 4 0 0 1 4 4v4M3 18h18" />
-              </Svg>
-              {napText}
-            </S.OvStatPill>
-            <S.OvStatPill>
-              <Svg size={14} sw={1.8}>
-                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                <path d="m9 12 2 2 4-4" />
-              </Svg>
-              {hygieneText}
-            </S.OvStatPill>
-          </S.OvStatPills>
+          {attendance?.status === 'Excused' ? (
+            <>
+              <S.OvTitle>Hôm nay bé vắng học</S.OvTitle>
+              <S.OvDesc>Bé nghỉ học có phép, đơn xin nghỉ đã được duyệt.</S.OvDesc>
+            </>
+          ) : (
+            <>
+              <S.OvTitle>Hôm nay bé có một ngày thật tuyệt!</S.OvTitle>
+              <S.OvDesc>Bé ăn ngoan, ngủ đủ giấc và tham gia tích cực các hoạt động cùng lớp.</S.OvDesc>
+              <S.OvStatPills>
+                <S.OvStatPill>
+                  <Svg size={14} sw={1.8}>
+                    <path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11" />
+                    <path d="M16 3c-1.4 0-2.5 2-2.5 4.5S14.6 12 16 12v9" />
+                  </Svg>
+                  {eatText}
+                </S.OvStatPill>
+                <S.OvStatPill>
+                  <Svg size={14} sw={1.8}>
+                    <path d="M3 18v-5a3 3 0 0 1 3-3h7a4 4 0 0 1 4 4v4M3 18h18" />
+                  </Svg>
+                  {napText}
+                </S.OvStatPill>
+                <S.OvStatPill>
+                  <Svg size={14} sw={1.8}>
+                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </Svg>
+                  {hygieneText}
+                </S.OvStatPill>
+              </S.OvStatPills>
+            </>
+          )}
         </S.OvBody>
       </S.OverviewCard>
 

@@ -14,7 +14,7 @@ import { useRequestBadge } from './useRequestBadge';
 import {
   IconHome, IconDiary, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard, IconReceipt,
-  IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
+  IconChevronLeft, IconChevronRight,
   IconChevronDown, IconRequest,
 } from '@/assets/icons/dashboard';
 
@@ -26,29 +26,21 @@ interface ParentSidebarProps {
 const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) => {
   const pathname = usePathname();
   const locale = useLocale();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { children: kids, activeStudent, setActiveStudent } = useStudent();
   const { parentProfile } = useParent();
   const pendingRequestCount = useRequestBadge();
 
   const [csOpen, setCsOpen] = useState<boolean>(false);
-  const [showSettings, setShowSettings] = useState<boolean>(false);
   const csRef = useRef<HTMLDivElement>(null);
-  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent): void => {
       if (csRef.current && !csRef.current.contains(e.target as Node)) setCsOpen(false);
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setShowSettings(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  const handleLogout = async (e: React.MouseEvent): Promise<void> => {
-    e.stopPropagation();
-    await logout();
-  };
 
   const activeChild = activeStudent ? {
     id: activeStudent.studentId,
@@ -179,9 +171,9 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.SideProfile $collapsed={collapsed}>
         <S.ParentAv>
           {parentProfile?.avatarUrl ? (
-            <img 
-              src={parentProfile.avatarUrl} 
-              alt={parentProfile.fullName} 
+            <img
+              src={parentProfile.avatarUrl}
+              alt={parentProfile.fullName}
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
             />
           ) : (
@@ -192,21 +184,6 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
           <strong>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</strong>
           <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
         </S.ParentInfo>
-
-        {!collapsed && (
-          <S.DropdownContainer ref={settingsRef}>
-            <S.SettingsBtn onClick={e => { e.stopPropagation(); setShowSettings(s => !s); }}>
-              <IconSettings size={16} />
-            </S.SettingsBtn>
-            {showSettings && (
-              <S.DropdownMenu>
-                <S.DropdownItem onClick={handleLogout}>
-                  <IconLogout size={15} /> Đăng xuất
-                </S.DropdownItem>
-              </S.DropdownMenu>
-            )}
-          </S.DropdownContainer>
-        )}
         {collapsed && <S.Tooltip>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</S.Tooltip>}
       </S.SideProfile>
     </S.SidebarContainer>

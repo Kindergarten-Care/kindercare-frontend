@@ -8,6 +8,11 @@ const rise = keyframes`
   to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 export const SidebarWrapper = styled.div`
   position: sticky;
   top: 0;
@@ -433,59 +438,6 @@ export const ParentInfo = styled.div<{ $hidden: boolean }>`
   span { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 `;
 
-export const DropdownContainer = styled.div`
-  position: relative;
-  margin-left: auto;
-`;
-
-export const SettingsBtn = styled.button`
-  width: 26px;
-  height: 26px;
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  cursor: pointer;
-  color: #ffffff;
-
-  &:hover { background: rgba(255, 255, 255, 0.1); }
-`;
-
-export const DropdownMenu = styled.div`
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  padding: 4px;
-  min-width: 140px;
-  z-index: 100;
-  animation: ${rise} 0.15s ease;
-`;
-
-export const DropdownItem = styled.div`
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #dc2626;
-  cursor: pointer;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.15s;
-
-  &:hover { background: #fee2e2; }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
 
 const scaleIn = keyframes`
   from { opacity: 0; transform: scale(0.96); }

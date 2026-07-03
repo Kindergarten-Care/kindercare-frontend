@@ -4,6 +4,7 @@ import React from 'react';
 import { LanguageSwitcher } from '@kindercare/ui';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
+import AccountMenu from './AccountMenu';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
 import { useDashboardLayout } from './hooks/useDashboardLayout';
@@ -83,17 +84,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </S.SettingsWrapper>
 
               <S.AvatarWrap>
-                <S.Avatar>
-                  {parentProfile?.avatarUrl ? (
-                    <img
-                      src={parentProfile.avatarUrl}
-                      alt={parentProfile.fullName}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
-                    />
-                  ) : (
-                    rel.avatar
-                  )}
-                </S.Avatar>
+                <AccountMenu
+                  locale={locale}
+                  name={parentProfile?.fullName || 'Phụ huynh'}
+                  email={parentProfile?.email}
+                  avatar={
+                    <S.Avatar>
+                      {parentProfile?.avatarUrl ? (
+                        <img
+                          src={parentProfile.avatarUrl}
+                          alt={parentProfile.fullName}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+                        />
+                      ) : (
+                        rel.avatar
+                      )}
+                    </S.Avatar>
+                  }
+                />
                 <S.AvatarOnline />
               </S.AvatarWrap>
             </S.Actions>
