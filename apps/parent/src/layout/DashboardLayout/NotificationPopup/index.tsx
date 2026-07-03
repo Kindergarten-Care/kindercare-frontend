@@ -1,155 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
-import { useDispatch, useSelector } from 'react-redux';
-import { notificationService, type NotificationDto } from '@kindercare/core';
-import {
-  fetchNotifications,
-  markOneRead,
-  markAllRead,
-  selectNotifications,
-  selectNotifLoading,
-  selectUnreadCount,
-} from '@/store/slices/notificationSlice';
-import type { AppDispatch } from '@/store';
-import * as S from './styles';
+import { fetchNotifications } from '@/store/slices/notificationSlice';
+import { useNotificationActions } from './hooks/useNotificationActions';
+import { NOTIF_TABS } from './utils/notificationHelpers';
+import { NotificationItem } from './components/NotificationItem';
 import { IconClose } from '@/assets/icons/dashboard';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function relativeTime(ts: number, isVi: boolean): string {
-  const diff = Math.floor(Date.now() / 1000) - ts;
-  if (diff < 60)    return isVi ? 'Vừa xong' : 'Just now';
-  if (diff < 3600)  return isVi ? `${Math.floor(diff / 60)} phút trước` : `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return isVi ? `${Math.floor(diff / 3600)} giờ trước` : `${Math.floor(diff / 3600)}h ago`;
-  return isVi ? `${Math.floor(diff / 86400)} ngày trước` : `${Math.floor(diff / 86400)}d ago`;
-}
-
-const TYPE_LABEL: Record<string, string> = {
-  ATTENDANCE:    'Điểm danh',
-  LEAVE_REQUEST: 'Đơn nghỉ',
-  HEALTH_ALERT:  'Sức khỏe',
-};
-
-const getIcon = (type: string) => {
-  switch (type) {
-    case 'ATTENDANCE':
-      return (
-        <S.IconWrapper $type="ATTENDANCE">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-            <path d="m9 14 2 2 4-4" />
-          </svg>
-        </S.IconWrapper>
-      );
-    case 'LEAVE_REQUEST':
-      return (
-        <S.IconWrapper $type="LEAVE_REQUEST">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-            <path d="M10 9H8" />
-            <path d="M16 13H8" />
-            <path d="M16 17H8" />
-          </svg>
-        </S.IconWrapper>
-      );
-    case 'HEALTH_ALERT':
-      return (
-        <S.IconWrapper $type="HEALTH_ALERT">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v8" />
-            <path d="M8 12h8" />
-          </svg>
-        </S.IconWrapper>
-      );
-    default:
-      return (
-        <S.IconWrapper $type="DEFAULT">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-        </S.IconWrapper>
-      );
-  }
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
+import * as S from './styles';
 
 interface NotificationPopupProps {
-  isOpen:  boolean;
+  isOpen: boolean;
   onClose: () => void;
 }
 
 const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }) => {
   const locale = useLocale();
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const items   = useSelector(selectNotifications);
-  const loading = useSelector(selectNotifLoading);
-  const unread  = useSelector(selectUnreadCount);
+  const isVi = locale !== 'en';
 
-  const [shouldRender, setShouldRender] = React.useState(isOpen);
-  const [isClosing, setIsClosing]       = React.useState(false);
+  const {
+    items,
+    filteredItems,
+    loading,
+    unread,
+    activeTab,
+    setActiveTab,
+    handleMarkOne,
+    handleMarkAll,
+    handleDeleteOne,
+    handleDeleteAll,
+    dispatch,
+  } = useNotificationActions();
 
-  React.useEffect(() => {
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
       setIsClosing(false);
-      if (items.length === 0) dispatch(fetchNotifications());
+      if (items.length === 0) {
+        dispatch(fetchNotifications());
+      }
     } else if (shouldRender) {
       setIsClosing(true);
-      const t = setTimeout(() => { setShouldRender(false); setIsClosing(false); }, 300);
+      const t = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 300);
       return () => clearTimeout(t);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, shouldRender, dispatch]);
+  }, [isOpen, shouldRender, items.length, dispatch]);
 
   if (!shouldRender) return null;
 
-  const isVi = locale !== 'en';
-
-  const handleMarkOne = (item: NotificationDto) => {
-    if (item.isRead === 0) {
-      dispatch(markOneRead(item.notifId));
-      notificationService.markAsRead(item.notifId).catch(() => dispatch(fetchNotifications()));
-    }
-
-    switch (item.type) {
-      case 'ATTENDANCE':
-        router.push('/diary');
-        break;
-      case 'LEAVE_REQUEST': {
-        const requestId = item.dataPayload?.requestId;
-        router.push(requestId ? `/request/leave-${requestId}` : '/request');
-        break;
-      }
-      case 'HEALTH_ALERT':
-        router.push('/diary');
-        break;
-    }
+  const handleItemClick = (item: any) => {
+    handleMarkOne(item);
     onClose();
-  };
-
-  const handleMarkAll = () => {
-    dispatch(markAllRead());
-    notificationService.markAllAsRead().catch(() => dispatch(fetchNotifications()));
   };
 
   return (
     <S.Overlay onClick={onClose} $isClosing={isClosing}>
-      <S.ModalContainer onClick={e => e.stopPropagation()} $isClosing={isClosing}>
-
+      <S.ModalContainer onClick={(e) => e.stopPropagation()} $isClosing={isClosing}>
         {/* Header */}
         <S.HeadRow>
           <S.TitleWrap>
             <S.Title>{isVi ? 'Thông báo' : 'Notifications'}</S.Title>
-            {unread > 0 && <S.Badge>{unread} {isVi ? 'chưa đọc' : 'unread'}</S.Badge>}
+            {unread > 0 && (
+              <S.Badge>
+                {unread} {isVi ? 'chưa đọc' : 'unread'}
+              </S.Badge>
+            )}
           </S.TitleWrap>
           <S.HeadActions>
             {unread > 0 && (
@@ -163,10 +84,34 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
           </S.HeadActions>
         </S.HeadRow>
 
+        {/* Filter Tabs */}
+        <S.TabsContainer>
+          {NOTIF_TABS.map((tab) => (
+            <S.TabButton
+              key={tab.id}
+              $active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {isVi ? tab.labelVi : tab.labelEn}
+            </S.TabButton>
+          ))}
+        </S.TabsContainer>
+
+        {/* Action Bar with Delete All */}
+        {items.length > 0 && (
+          <S.ActionBar>
+            <S.DeleteAllBtn onClick={handleDeleteAll}>
+              {isVi ? 'Xóa tất cả thông báo' : 'Delete all notifications'}
+            </S.DeleteAllBtn>
+          </S.ActionBar>
+        )}
+
         {/* Content */}
         {loading && items.length === 0 ? (
           <S.NotiList>
-            {[...Array(4)].map((_, i) => <S.SkeletonItem key={i} />)}
+            {[...Array(4)].map((_, i) => (
+              <S.SkeletonItem key={i} />
+            ))}
           </S.NotiList>
         ) : items.length === 0 ? (
           <S.EmptyWrap>
@@ -185,13 +130,17 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
                 </g>
                 <defs>
                   <radialGradient id="r0" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(80 80) rotate(90) scale(64)">
-                    <stop stopColor="#E6F3ED" /><stop offset="1" stopColor="#E6F3ED" stopOpacity="0" />
+                    <stop stopColor="#E6F3ED" />
+                    <stop offset="1" stopColor="#E6F3ED" stopOpacity="0" />
                   </radialGradient>
                   <radialGradient id="r1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(80 80) rotate(90) scale(48)">
-                    <stop stopColor="#D1E2D8" /><stop offset="1" stopColor="#D1E2D8" stopOpacity="0" />
+                    <stop stopColor="#D1E2D8" />
+                    <stop offset="1" stopColor="#D1E2D8" stopOpacity="0" />
                   </radialGradient>
                   <linearGradient id="bg" x1="60" y1="42" x2="100" y2="102" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#006C41" /><stop offset="0.6" stopColor="#005A36" /><stop offset="1" stopColor="#004428" />
+                    <stop stopColor="#006C41" />
+                    <stop offset="0.6" stopColor="#005A36" />
+                    <stop offset="1" stopColor="#004428" />
                   </linearGradient>
                   <filter id="bs" x="46" y="30" width="68" height="92" filterUnits="userSpaceOnUse">
                     <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#002D1B" floodOpacity="0.15" />
@@ -206,34 +155,28 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }
                 : 'We will notify you here when there are new announcements, activities, or learning updates for your child.'}
             </S.EmptyDesc>
           </S.EmptyWrap>
+        ) : filteredItems.length === 0 ? (
+          <S.EmptyWrap style={{ padding: '80px 24px' }}>
+            <span style={{ fontSize: '36px', marginBottom: '16px', display: 'block' }}>📬</span>
+            <S.EmptyTitle>{isVi ? 'Không có thông báo' : 'No notifications'}</S.EmptyTitle>
+            <S.EmptyDesc>
+              {isVi
+                ? 'Không tìm thấy thông báo nào trong phân loại này.'
+                : 'There are no notifications in this category yet.'}
+            </S.EmptyDesc>
+          </S.EmptyWrap>
         ) : (
           <S.NotiList>
-            {items.map((item, i) => (
-              <S.NotiItem
+            {filteredItems.map((item, i) => (
+              <NotificationItem
                 key={`${item.notifId}-${i}`}
-                $unread={item.isRead === 0}
-                $critical={item.isCritical === 1}
-                onClick={() => handleMarkOne(item)}
-              >
-                <S.IconContainer>
-                  {getIcon(item.type)}
-                  {item.isRead === 0 && <S.UnreadDot />}
-                </S.IconContainer>
-                <S.NotiMeta>
-                  <S.NotiHeader>
-                    <S.NotiTitle $critical={item.isCritical === 1}>{item.title}</S.NotiTitle>
-                    {item.type in TYPE_LABEL && (
-                      <S.TypeTag $type={item.type}>{TYPE_LABEL[item.type]}</S.TypeTag>
-                    )}
-                  </S.NotiHeader>
-                  <S.NotiMsg>{item.message}</S.NotiMsg>
-                  <S.NotiTime>{relativeTime(item.createdAt, isVi)}</S.NotiTime>
-                </S.NotiMeta>
-              </S.NotiItem>
+                item={item}
+                onClick={() => handleItemClick(item)}
+                onDelete={() => handleDeleteOne(item.notifId)}
+              />
             ))}
           </S.NotiList>
         )}
-
       </S.ModalContainer>
     </S.Overlay>
   );

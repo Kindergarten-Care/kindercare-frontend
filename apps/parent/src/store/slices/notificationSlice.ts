@@ -22,6 +22,21 @@ export const fetchNotifications = createAsyncThunk(
   () => notificationService.getInbox(),
 );
 
+export const deleteNotification = createAsyncThunk(
+  'notifications/delete',
+  async (notifId: number) => {
+    await notificationService.deleteNotification(notifId);
+    return notifId;
+  }
+);
+
+export const deleteAllNotifications = createAsyncThunk(
+  'notifications/deleteAll',
+  async () => {
+    await notificationService.deleteAllNotifications();
+  }
+);
+
 // ─── Slice ────────────────────────────────────────────────────────────────────
 
 const notificationSlice = createSlice({
@@ -55,6 +70,12 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error   = action.error.message ?? 'Lỗi tải thông báo';
+      })
+      .addCase(deleteNotification.fulfilled, (state, action) => {
+        state.items = state.items.filter(n => n.notifId !== action.payload);
+      })
+      .addCase(deleteAllNotifications.fulfilled, state => {
+        state.items = [];
       });
   },
 });

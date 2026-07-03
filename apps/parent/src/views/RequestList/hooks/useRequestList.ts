@@ -4,8 +4,9 @@ import { useAuth } from '@kindercare/core';
 import { toast } from '@kindercare/ui';
 import { leaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { medicationRequestService } from '@/services/MedicationRequest/MedicationRequestService';
+import { proxyRequestService } from '@/services/ProxyRequest/ProxyRequestService';
 import { RequestItem } from '../types';
-import { mapLeavesToRequestItems, mapMedicationsToRequestItems, filterRequests, calculateRequestStats } from '../utils';
+import { mapLeavesToRequestItems, mapMedicationsToRequestItems, mapProxiesToRequestItems, filterRequests, calculateRequestStats } from '../utils';
 
 /**
  * Custom React hook that encapsulates all state, side effects, filtering,
@@ -23,11 +24,12 @@ export const useRequestList = () => {
   const { activeStudent } = useStudent();
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'leave' | 'medication'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'leave' | 'medication' | 'proxy'>('all');
   const [activeStatusFilter, setActiveStatusFilter] = useState<'all' | 'pending' | 'approved_completed' | 'rejected' | 'cancelled'>('all');
 
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
   const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
+  const [isProxyPopupOpen, setIsProxyPopupOpen] = useState<boolean>(false);
   const [isSelectPopupOpen, setIsSelectPopupOpen] = useState<boolean>(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
 
@@ -35,15 +37,17 @@ export const useRequestList = () => {
     if (!activeStudent?.studentId) return;
     setLoading(true);
     try {
-      const [leaves, medications] = await Promise.all([
+      const [leaves, medications, proxies] = await Promise.all([
         leaveRequestService.getLeaveRequests(activeStudent.studentId),
         medicationRequestService.getMedicationRequests(activeStudent.studentId),
+        proxyRequestService.getProxyRequests(activeStudent.studentId),
       ]);
 
       const mappedLeaves = mapLeavesToRequestItems(leaves);
       const mappedMedications = mapMedicationsToRequestItems(medications);
+      const mappedProxies = mapProxiesToRequestItems(proxies);
 
-      const combined = [...mappedLeaves, ...mappedMedications].sort((a, b) => b.rawDate - a.rawDate);
+      const combined = [...mappedLeaves, ...mappedMedications, ...mappedProxies].sort((a, b) => b.rawDate - a.rawDate);
       setRequests(combined);
     } catch (err: any) {
       console.error(err);
@@ -87,6 +91,9 @@ export const useRequestList = () => {
       } else if (requestToCancel.startsWith('medicine-')) {
         const medRequestId = requestToCancel.replace('medicine-', '');
         await medicationRequestService.cancelMedicationRequest(medRequestId);
+      } else if (requestToCancel.startsWith('proxy-')) {
+        const authorizationId = requestToCancel.replace('proxy-', '');
+        await proxyRequestService.cancelProxyRequest(authorizationId);
       }
       await fetchRequests();
       toast.success('Hủy đơn thành công!');
@@ -116,6 +123,8 @@ export const useRequestList = () => {
     setIsLeavePopupOpen,
     isMedicationPopupOpen,
     setIsMedicationPopupOpen,
+    isProxyPopupOpen,
+    setIsProxyPopupOpen,
     isSelectPopupOpen,
     setIsSelectPopupOpen,
     selectedRequest,

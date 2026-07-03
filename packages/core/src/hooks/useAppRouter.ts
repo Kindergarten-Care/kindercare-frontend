@@ -1,7 +1,7 @@
 'use client';
 
 /** All micro-frontend apps in the monorepo. */
-export type AppKey = 'landing' | 'parent' | 'teacher' | 'principal' | 'admin' | 'portal';
+export type AppKey = 'landing' | 'parent' | 'teacher' | 'principal' | 'portal';
 
 export interface AppRouterOptions {
   /** Current locale string (e.g. 'vi', 'en'). Defaults to 'vi'. */
@@ -20,7 +20,6 @@ function resolveBase(app: AppKey): string {
     parent:    process.env.NEXT_PUBLIC_PARENT_APP_URL    ?? 'http://localhost:3000',
     teacher:   process.env.NEXT_PUBLIC_TEACHER_APP_URL   ?? 'http://localhost:3001',
     principal: process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL ?? 'http://localhost:3002',
-    admin:     process.env.NEXT_PUBLIC_ADMIN_APP_URL     ?? 'http://localhost:3003',
     portal:    process.env.NEXT_PUBLIC_PORTAL_APP_URL    ?? 'http://localhost:3005',
   };
   return bases[app];
@@ -42,7 +41,7 @@ function resolveBase(app: AppKey): string {
  * @example
  * // Custom path for any app
  * const { buildUrl } = useAppRouter({ locale });
- * buildUrl('admin', '/dashboard/students')
+ * buildUrl('principal', '/dashboard/students')
  */
 export function useAppRouter(options?: AppRouterOptions) {
   const { locale = 'vi', defaultLocale = 'vi' } = options ?? {};
@@ -68,7 +67,6 @@ export function useAppRouter(options?: AppRouterOptions) {
     parentDashboard:    buildUrl('parent',    '/dashboard'),
     teacherLogin:       buildUrl('teacher',   '/login'),
     principalDashboard: buildUrl('principal', '/'),
-    adminDashboard:     buildUrl('admin',     '/'),
     portalLogin:        buildUrl('portal',    '/login'),
     landing:            buildUrl('landing',   '/'),
   } as const;
@@ -79,7 +77,6 @@ export function useAppRouter(options?: AppRouterOptions) {
     parentDashboard:    () => navigate(urls.parentDashboard),
     teacherLogin:       () => navigate(urls.teacherLogin),
     principalDashboard: () => navigate(urls.principalDashboard),
-    adminDashboard:     () => navigate(urls.adminDashboard),
     portalLogin:        () => navigate(urls.portalLogin),
     landing:            () => navigate(urls.landing),
     custom: (app: AppKey, path: string) => navigate(buildUrl(app, path)),

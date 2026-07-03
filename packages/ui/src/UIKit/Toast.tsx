@@ -201,6 +201,7 @@ export interface KindercareToastProps {
   variant?: 'success' | 'danger' | 'warning' | 'info';
   title?: string;
   message: React.ReactNode;
+  icon?: React.ReactNode;
 }
 
 const ToastCard = styled.div`
@@ -233,9 +234,14 @@ const MessageText = styled.span`
 export const KindercareToast: React.FC<KindercareToastProps> = ({
   variant = 'success',
   title,
-  message
+  message,
+  icon,
 }) => {
   const getIcon = () => {
+    if (icon) {
+      return icon;
+    }
+
     switch (variant) {
       case 'success': return <SuccessIcon />;
       case 'danger': return <DangerIcon />;

@@ -1,144 +1,38 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from '@/i18n/routing';
+import React from 'react';
 import { LanguageSwitcher } from '@kindercare/ui';
-import { useAuth } from '@kindercare/core';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParent } from '@/contexts/ParentContext';
-import { useStudent } from '@/contexts/StudentContext';
-import { useSidebar } from '@/contexts/SidebarContext';
-import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
-import type { AppDispatch } from '@/store';
-import { initPushNotification, type NotificationDto } from '@kindercare/core';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import * as S from './styles';
 import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
-
-let _localNotifId = 0;
+import { useDashboardLayout } from './hooks/useDashboardLayout';
+import { useNotificationSocket } from '@/hooks/useNotificationSocket';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-function getGreeting(locale: 'vi' | 'en' = 'vi'): string {
-  const h = new Date().getHours();
-  if (locale === 'en') {
-    if (h < 12) return 'Good morning';
-    if (h < 18) return 'Good afternoon';
-    return 'Good evening';
-  }
-  if (h < 12) return 'Chào buổi sáng';
-  if (h < 18) return 'Chào buổi chiều';
-  return 'Chào buổi tối';
-}
-
-type RelationshipInfo = { label: string; avatar: string };
-
-function resolveRelationship(raw: string | undefined, locale: 'vi' | 'en'): RelationshipInfo {
-  const r = (raw ?? '').trim().toLowerCase();
-
-  const map: Array<{ keys: string[]; vi: string; en: string; avatar: string }> = [
-    { keys: ['bố', 'ba', 'cha', 'father', 'dad', 'papa'],      vi: 'ba',   en: 'Dad',      avatar: '👨' },
-    { keys: ['mẹ', 'má', 'me', 'mother', 'mom', 'mama'],       vi: 'mẹ',   en: 'Mom',      avatar: '👩' },
-    { keys: ['ông', 'grandfather', 'grandpa', 'opa'],           vi: 'ông',  en: 'Grandpa',  avatar: '👴' },
-    { keys: ['bà', 'grandmother', 'grandma', 'oma'],            vi: 'bà',   en: 'Grandma',  avatar: '👵' },
-    { keys: ['anh'],                                            vi: 'anh',  en: 'Brother',  avatar: '👦' },
-    { keys: ['chị'],                                            vi: 'chị',  en: 'Sister',   avatar: '👧' },
-    { keys: ['chú', 'uncle'],                                   vi: 'chú',  en: 'Uncle',    avatar: '👨' },
-    { keys: ['cô', 'dì', 'thím', 'aunt'],                      vi: 'cô',   en: 'Aunt',     avatar: '👩' },
-    { keys: ['cậu'],                                            vi: 'cậu',  en: 'Uncle',    avatar: '👨' },
-    { keys: ['bác'],                                            vi: 'bác',  en: 'Uncle',    avatar: '👴' },
-  ];
-
-  const match = map.find(entry => entry.keys.includes(r));
-  if (match) return { label: locale === 'en' ? match.en : match.vi, avatar: match.avatar };
-  return { label: '', avatar: '👤' };
-}
-
-function getFormattedDate(locale: 'vi' | 'en' = 'vi'): string {
-  return new Date().toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { collapsed, toggleCollapsed: handleToggle } = useSidebar();
-  const [isNotifOpen, setIsNotifOpen] = useState<boolean>(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const settingsRef = useRef<HTMLDivElement>(null);
-  const locale = useLocale() as 'vi' | 'en';
-  const router = useRouter();
-  const pathname = usePathname();
-  const { user } = useAuth();
-  const { parentProfile } = useParent();
-  const { activeStudent } = useStudent();
-  const dispatch = useDispatch<AppDispatch>();
-  const unreadCount = useSelector(selectUnreadCount);
+  const {
+    collapsed,
+    handleToggle,
+    isNotifOpen,
+    setIsNotifOpen,
+    isSettingsOpen,
+    setIsSettingsOpen,
+    settingsRef,
+    locale,
+    parentProfile,
+    unreadCount,
+    greetingText,
+    formattedDate,
+    handleLocaleChange,
+    rel,
+  } = useDashboardLayout();
 
-  // Init FCM only after login — user must be present
-  useEffect(() => { if (user) initPushNotification(); }, [user]);
-
-  // Load inbox on mount
-  useEffect(() => { dispatch(fetchNotifications()); }, [dispatch]);
-
-  // Refresh inbox when a foreground FCM push arrives + prepend the new item
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const payload = (e as CustomEvent).detail;
-      const notif: NotificationDto = {
-        notifId:     --_localNotifId,
-        userId:      0,
-        title:       payload.notification?.title ?? '',
-        message:     payload.notification?.body  ?? '',
-        type:        payload.data?.type           ?? 'OTHER',
-        isRead:      0,
-        isCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
-        dataPayload: payload.data ?? {},
-        createdAt:   Math.floor(Date.now() / 1000),
-        updatedAt:   Math.floor(Date.now() / 1000),
-      };
-      dispatch(prependItem(notif));
-    };
-    window.addEventListener('kc:push:message', handler);
-    return () => window.removeEventListener('kc:push:message', handler);
-  }, [dispatch]);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setIsSettingsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleLocaleChange = useCallback((nextLocale: 'vi' | 'en') => {
-    if (nextLocale === locale) return;
-    router.replace(pathname, { locale: nextLocale });
-  }, [locale, pathname, router]);
-
-  const rawRelationship = activeStudent?.relationship ?? user?.relationship ?? user?.children?.[0]?.relationship;
-  const rel = useMemo(() => resolveRelationship(rawRelationship, locale), [rawRelationship, locale]);
-
-  const greetingText = useMemo(() => {
-    const greeting = getGreeting(locale);
-    if (!user) return `${greeting} 👋`;
-    const fullName = parentProfile?.fullName || user.fullName || user.username || '';
-    const shortName = fullName.trim().split(/\s+/).slice(-2).join(' ');
-    const displayName = rel.label ? `${rel.label} ${shortName}` : shortName;
-    return `${greeting}, ${displayName} 👋`;
-  }, [locale, user, parentProfile, rel]);
-
-  const formattedDate = useMemo(() => getFormattedDate(locale), [locale]);
+  // Subscribe to live Socket.IO notifications
+  useNotificationSocket();
 
   return (
     <S.DashboardWrapper $collapsed={collapsed}>
@@ -165,7 +59,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </S.IconBtn>
 
               <S.SettingsWrapper ref={settingsRef}>
-                <S.IconBtn title="Cài đặt" onClick={() => setIsSettingsOpen(prev => !prev)}>
+                <S.IconBtn title="Cài đặt" onClick={() => setIsSettingsOpen((prev) => !prev)}>
                   <IconSettings size={18} />
                 </S.IconBtn>
                 {isSettingsOpen && (
@@ -191,9 +85,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <S.AvatarWrap>
                 <S.Avatar>
                   {parentProfile?.avatarUrl ? (
-                    <img 
-                      src={parentProfile.avatarUrl} 
-                      alt={parentProfile.fullName} 
+                    <img
+                      src={parentProfile.avatarUrl}
+                      alt={parentProfile.fullName}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
                     />
                   ) : (
@@ -208,7 +102,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         <S.PageArea>{children}</S.PageArea>
       </S.MainContent>
-      
+
       <NotificationPopup isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
     </S.DashboardWrapper>
   );

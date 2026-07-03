@@ -1,7 +1,7 @@
 export interface RequestItem {
   id: string;
   requestId: number;
-  type: 'leave' | 'medication';
+  type: 'leave' | 'medication' | 'proxy';
   title: string;
   detail: string;
   reason?: string;
@@ -16,6 +16,9 @@ export interface RequestItem {
   rawDate: number;
   evidenceUrl?: string | null;
   teacherNote?: string | null;
+  proxyPhone?: string | null;
+  proxyIDCard?: string | null;
+  proxyPhotoUrl?: string | null;
   medicines?: {
     name: string;
     dosage: string;
