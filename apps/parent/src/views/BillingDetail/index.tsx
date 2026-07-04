@@ -31,13 +31,21 @@ export function BillingDetail() {
   const locale = useLocale();
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
-  const { invoice, loading, error, payingMomo, payWithMomo } = useBillingDetail(invoiceId);
+  const { invoice, loading, error, payingMomo, payWithMomo, payingVnpay, payWithVnpay } = useBillingDetail(invoiceId);
 
   const handlePayMomo = async (): Promise<void> => {
     try {
       await payWithMomo();
     } catch (err: any) {
       kcToast.error(err?.message || 'Không tạo được đơn thanh toán MoMo');
+    }
+  };
+
+  const handlePayVnpay = async (): Promise<void> => {
+    try {
+      await payWithVnpay();
+    } catch (err: any) {
+      kcToast.error(err?.message || 'Không tạo được đơn thanh toán VNPay');
     }
   };
 
@@ -132,8 +140,11 @@ export function BillingDetail() {
 
         {canPay && (
           <S.PayActions>
-            <S.Btn $variant="brand" onClick={handlePayMomo} disabled={payingMomo}>
+            <S.Btn $variant="brand" onClick={handlePayMomo} disabled={payingMomo || payingVnpay}>
               <IconCreditCard size={17} /> {payingMomo ? 'Đang chuyển tới MoMo...' : 'Thanh toán qua MoMo'}
+            </S.Btn>
+            <S.Btn $variant="ghost" onClick={handlePayVnpay} disabled={payingMomo || payingVnpay}>
+              <IconCreditCard size={17} /> {payingVnpay ? 'Đang chuyển tới VNPay...' : 'Thanh toán qua VNPay'}
             </S.Btn>
           </S.PayActions>
         )}
@@ -170,7 +181,7 @@ export function BillingDetail() {
 
       {canPay && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#9ca3af' }}>
-          <IconShieldInfo size={14} /> Sau khi thanh toán qua MoMo, trang sẽ tự xác nhận lại trạng thái hóa đơn.
+          <IconShieldInfo size={14} /> Sau khi thanh toán qua MoMo hoặc VNPay, trang sẽ tự xác nhận lại trạng thái hóa đơn.
         </div>
       )}
     </S.PageWrap>

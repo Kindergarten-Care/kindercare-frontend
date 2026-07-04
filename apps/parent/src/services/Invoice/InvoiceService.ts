@@ -8,6 +8,7 @@ import {
   PayInvoiceDto,
   PayInvoiceResult,
   PayMomoResult,
+  PayVnpayResult,
 } from '@/config/types/invoice';
 import { InvoiceMapper } from './InvoiceMapper';
 
@@ -43,6 +44,13 @@ class InvoiceService {
   async payInvoiceMomo(invoiceId: number | string): Promise<PayMomoResult> {
     const url = SERVER.parent.payInvoiceMomo.replace(':invoiceId', invoiceId.toString());
     const { data: res } = await apiClient.post<ApiResponse<PayMomoResult>>(url);
+    if (!res.success) throw new Error(res.message);
+    return res.data;
+  }
+
+  async payInvoiceVnpay(invoiceId: number | string): Promise<PayVnpayResult> {
+    const url = SERVER.parent.payInvoiceVnpay.replace(':invoiceId', invoiceId.toString());
+    const { data: res } = await apiClient.post<ApiResponse<PayVnpayResult>>(url);
     if (!res.success) throw new Error(res.message);
     return res.data;
   }

@@ -9,6 +9,7 @@ export function useBillingDetail(invoiceId: number | string | undefined) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payingMomo, setPayingMomo] = useState(false);
+  const [payingVnpay, setPayingVnpay] = useState(false);
 
   const fetchDetail = useCallback(() => {
     if (!invoiceId) return;
@@ -42,12 +43,28 @@ export function useBillingDetail(invoiceId: number | string | undefined) {
     }
   }, [invoiceId]);
 
+  const payWithVnpay = useCallback(async (): Promise<void> => {
+    if (!invoiceId) return;
+    setPayingVnpay(true);
+    try {
+      const { payUrl, txnRef } = await invoiceService.payInvoiceVnpay(invoiceId);
+      sessionStorage.setItem('momo_pending_invoice', String(invoiceId));
+      sessionStorage.setItem('vnpay_pending_txn', txnRef);
+      window.location.href = payUrl;
+    } catch (err) {
+      setPayingVnpay(false);
+      throw err;
+    }
+  }, [invoiceId]);
+
   return {
     invoice,
     loading,
     error,
     payingMomo,
     payWithMomo,
+    payingVnpay,
+    payWithVnpay,
     refetch: fetchDetail,
   };
 }
