@@ -26,6 +26,8 @@ function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     fromDate: raw.fromDate,
     toDate: raw.toDate,
     parentPhone: raw.parentPhone || undefined,
+    isMealFeeDeducted: raw.isMealFeeDeducted,
+    parentNotes: raw.parentNotes,
     createdAt: raw.createdAt || undefined,
     className: raw.className || undefined,
     studentAvatar: raw.studentAvatar || undefined,

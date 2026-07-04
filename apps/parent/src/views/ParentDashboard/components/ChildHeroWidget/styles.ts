@@ -1,6 +1,27 @@
-'use client';
+import styled, { keyframes, css } from 'styled-components';
 
-import styled from 'styled-components';
+const pulse = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+`;
+
+type AttendanceStatusType = 'not_started' | 'studying' | 'checked_out' | 'excused' | 'absent' | 'holiday';
+
+const STATUS_THEME: Record<AttendanceStatusType, { bg: string; text: string; dot: string }> = {
+  not_started: { bg: '#f3f4f6', text: '#4b5563', dot: '#9ca3af' },
+  studying:    { bg: 'var(--brand-tint)', text: 'var(--brand)', dot: '#10b981' },
+  checked_out: { bg: '#eff6ff', text: '#1d4ed8', dot: '#3b82f6' },
+  excused:     { bg: '#fffbeb', text: '#b45309', dot: '#f59e0b' },
+  absent:      { bg: '#fef2f2', text: '#b91c1c', dot: '#ef4444' },
+  holiday:     { bg: '#f1f5f9', text: '#475569', dot: '#64748b' },
+};
 
 export const HeroContainer = styled.div`
   display: flex;
@@ -56,20 +77,22 @@ export const Av = styled.div<{ $gradient: string }>`
   box-shadow: 0 10px 24px -8px rgba(0, 90, 54, 0.5);
 `;
 
-export const StatusRing = styled.div`
+export const StatusRing = styled.div<{ $status?: AttendanceStatusType }>`
   position: absolute;
   bottom: 2px;
   right: 2px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #16a34a;
+  background: ${p => STATUS_THEME[p.$status || 'not_started'].dot};
   border: 3px solid #fff;
   display: grid;
   place-items: center;
+  transition: background 0.3s ease;
+  ${p => p.$status === 'studying' ? css`animation: ${pulse} 2s infinite;` : css`animation: none;`}
 `;
 
-export const PulseDot = styled.div`
+export const PulseDot = styled.div<{ $status?: AttendanceStatusType }>`
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -120,18 +143,19 @@ export const Tags = styled.div`
 
 export const Tag = styled.span<{ $type: 'green' | 'blue' | 'neutral' | 'yellow' }>``;
 
-export const CheckinBadge = styled.div`
+export const CheckinBadge = styled.div<{ $status?: AttendanceStatusType }>`
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-top: 4px;
-  background: var(--brand-tint);
-  color: var(--brand);
+  background: ${p => STATUS_THEME[p.$status || 'not_started'].bg};
+  color: ${p => STATUS_THEME[p.$status || 'not_started'].text};
   font-size: 13px;
   font-weight: 600;
   padding: 7px 13px;
   border-radius: 10px;
   width: fit-content;
+  transition: all 0.2s ease;
 `;
 
 export const Right = styled.div`

@@ -262,55 +262,33 @@ export const NotifTime = styled.div`
   margin-top: 2px;
 `;
 
-export const BentoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  width: 100%;
+export const BodyLayout = styled.div`
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
 
   @media (max-width: 1180px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 `;
 
-export const GridCol2Span = styled.div`
-  grid-column: span 2;
-
-  @media (max-width: 720px) {
-    grid-column: auto;
-  }
-`;
-
-export const GridCol1Span = styled.div`
-  grid-column: span 1;
-
-  @media (max-width: 720px) {
-    grid-column: auto;
-  }
-`;
-
-export const GridRow2Span = styled.div`
-  grid-row: span 2;
-
-  @media (max-width: 720px) {
-    grid-row: auto;
-  }
-`;
-
-export const QuickActionsColumn = styled.div`
-  grid-column: span 1;
-  grid-row: span 2;
+export const MainColumn = styled.div`
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 22px;
+`;
 
-  @media (max-width: 720px) {
-    grid-column: auto;
-    grid-row: auto;
+export const RightColumn = styled.div`
+  width: 336px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 1180px) {
+    width: 100%;
   }
 `;
 

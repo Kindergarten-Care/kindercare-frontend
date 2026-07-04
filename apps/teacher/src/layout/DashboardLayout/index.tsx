@@ -4,6 +4,8 @@ import React from 'react';
 import * as S from './styles';
 import { TeacherSidebar } from '../TeacherSidebar';
 import { TopAppBar } from '../TopAppBar';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -17,10 +19,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   roleTitle
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   return (
-    <S.LayoutContainer>
-      <TeacherSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <S.LayoutContainer $isCollapsed={isCollapsed}>
+      <TeacherSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        isCollapsed={isCollapsed}
+        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      />
       
       {isSidebarOpen && (
         <S.SidebarOverlay onClick={() => setIsSidebarOpen(false)} />
@@ -36,6 +44,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {children}
         </S.PageContent>
       </S.MainContent>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
     </S.LayoutContainer>
   );
 };

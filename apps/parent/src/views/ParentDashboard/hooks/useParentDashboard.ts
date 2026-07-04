@@ -1,42 +1,333 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { parentDashboardService } from '@/services/ParentDashboardService';
-import { ParentDashboardModel } from '@/config/types/dashboard';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
-import { formatDateFromBigInt } from '@/utils/Student/Date';
+import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
+import { formatPersonName } from '@/utils/formatName';
+import { attendanceService } from '@/services/Attendance/AttendanceService';
+import { AttendanceDomainModel } from '@/config/types/attendance';
+import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
+import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
+import { assessmentService } from '@/services/Assessment/AssessmentService';
+import { weeklyScheduleService } from '@/services/WeeklySchedule/WeeklyScheduleService';
+import { ActivityType } from '@/config/types/dailySchedule';
+import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
+import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
+import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
+import { AssessmentDomainModel } from '@/config/types/assessment';
+import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
 
-export const getTeacherDisplayName = (teacher: { fullName: string; gender?: string }) => {
-  if (!teacher) return '';
-  const fullName = teacher.fullName || '';
-  if (/^(cô|thầy)\b/i.test(fullName)) {
-    return fullName;
-  }
-  const isMale = (teacher.gender || '').toLowerCase() === 'nam';
-  const prefix = isMale ? 'Thầy' : 'Cô';
-  return `${prefix} ${fullName}`;
+// ─── Domain → Widget mappers ──────────────────────────────────────────────────
+
+const ACTIVITY_META: Record<ActivityType, { icon: string; color: string }> = {
+  pickup:  { icon: '🚌', color: '#16a34a' },
+  meal:    { icon: '🍽️', color: '#d97706' },
+  study:   { icon: '📚', color: '#8b5cf6' },
+  nap:     { icon: '😴', color: '#6b7280' },
+  play:    { icon: '🌳', color: '#059669' },
+  dropoff: { icon: '🏠', color: '#005A36' },
+  other:   { icon: '📌', color: '#6b7280' },
 };
 
+const LESSON_META: Record<string, { icon: string; color: string }> = {
+  math:     { icon: '🔢', color: '#3b82f6' },
+  science:  { icon: '🔬', color: '#10b981' },
+  art:      { icon: '🎨', color: '#ec4899' },
+  music:    { icon: '🎵', color: '#e11d48' },
+  language: { icon: '📖', color: '#d97706' },
+  english:  { icon: '🔤', color: '#2563eb' },
+  craft:    { icon: '✂️', color: '#8b5cf6' },
+  sport:    { icon: '⚽', color: '#059669' },
+};
+
+const DOW_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+/** Today's activities from the weekly routine timetable, sorted by start time. */
+const weeklyTimetableToTodayItems = (timetable: WeeklyScheduleDomainModel | null): ScheduleItem[] => {
+  if (!timetable?.details?.length) return [];
+  const todayKey = DOW_KEYS[new Date().getDay()];
+
+  return timetable.details
+    .filter(d => d.dayOfWeek === todayKey)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+    .map(d => {
+      const meta = ACTIVITY_META[d.activityType] ?? ACTIVITY_META.other;
+      return {
+        id: String(d.scheduleDetailId),
+        time: d.startTime.slice(0, 5),   // "HH:mm[:ss]" → "HH:mm"
+        endTime: d.endTime.slice(0, 5),
+        title: d.activityName,
+        note: d.details ?? d.location ?? '',
+        icon: meta.icon,
+        color: meta.color,
+        activityType: d.activityType ?? 'other',
+      };
+    });
+};
+
+const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
+  lessons.map(lesson => {
+    const meta = LESSON_META[lesson.iconType] ?? { icon: '📚', color: '#6b7280' };
+    return {
+      id: String(lesson.lessonLogId),
+      subject: lesson.subjectName,
+      title: lesson.lessonTitle,
+      description: lesson.details,
+      icon: meta.icon,
+      color: meta.color,
+    };
+  });
+
+const albumsToPhotos = (albums: DailyAlbumDomainModel[]): AlbumPhoto[] =>
+  albums.flatMap(album =>
+    album.photos.map(photo => ({
+      id: String(photo.photoId),
+      caption: photo.description ?? album.caption ?? '',
+      time: tsToHHMM(photo.createdAt),
+      color: '#f3f4f6',
+      icon: '📷',
+      photoUrl: photo.photoUrl,
+    }))
+  );
+
+// ─── Attendance calendar helpers ──────────────────────────────────────────────
+
+const DEFAULT_STATS: AttendanceStats = {
+  percentage: 0, present: 0, absent: 0, excused: 0, totalDays: 0,
+};
+
+const calculateAttendanceData = (
+  records: AttendanceDomainModel[],
+  viewYear: number,
+  viewMonth: number,
+): { calendarDays: CalendarDay[]; attendanceStats: AttendanceStats } => {
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  const recordsMap = new Map<number, AttendanceDomainModel>();
+  records.forEach(r => {
+    const d = new Date(Number(r.attendanceDate) * 1000);
+    if (d.getFullYear() === viewYear && d.getMonth() === viewMonth) {
+      recordsMap.set(d.getDate(), r);
+    }
+  });
+
+  const calendarDays: CalendarDay[] = [];
+  let present = 0, absent = 0, excused = 0, totalDays = 0;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayOfWeek = new Date(viewYear, viewMonth, day).getDay();
+    const record = recordsMap.get(day);
+    let status: CalendarDay['status'] = 'none';
+    let checkinTime: string | undefined;
+    let checkoutTime: string | undefined;
+
+    if (record) {
+      const dbStatus = record.status.toLowerCase();
+      if (dbStatus === 'present') {
+        status = 'present'; present++; totalDays++;
+        if (record.checkInTime) {
+          checkinTime = tsToHHMM(record.checkInTime);
+        }
+        if (record.checkOutTime) {
+          checkoutTime = tsToHHMM(record.checkOutTime);
+        }
+      } else if (dbStatus === 'absent') {
+        status = 'absent'; absent++; totalDays++;
+      } else if (dbStatus === 'excused') {
+        status = 'excused'; excused++; totalDays++;
+      } else if (dbStatus === 'holiday') {
+        status = 'holiday';
+      }
+    } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+      status = 'weekend';
+    }
+
+    calendarDays.push({ day, status, checkinTime, checkoutTime });
+  }
+
+  const percentage = totalDays > 0 ? Math.round((present / totalDays) * 100) : 100;
+  return { calendarDays, attendanceStats: { percentage, present, absent, excused, totalDays } };
+};
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
 export function useParentDashboard() {
-  const [data, setData] = useState<ParentDashboardModel | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState<boolean>(false);
-  const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState<boolean>(false);
-  const [isQrPopupOpen, setIsQrPopupOpen] = useState<boolean>(false);
-  const { activeStudent } = useStudent();
+  const { activeStudent, loading: studentLoading } = useStudent();
+
+  const [apiLoading, setApiLoading] = useState(false);
+  const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
+  const [isMedicationPopupOpen, setIsMedicationPopupOpen] = useState(false);
+  const [isProxyPopupOpen, setIsProxyPopupOpen] = useState(false);
+  const [isQrPopupOpen, setIsQrPopupOpen] = useState(false);
+
+  const now = new Date();
+  const [viewYear, setViewYear] = useState(now.getFullYear());
+  const [viewMonth, setViewMonth] = useState(now.getMonth());
+
+  const [allRecords, setAllRecords] = useState<AttendanceDomainModel[]>([]);
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [attendanceStats, setAttendanceStats] = useState<AttendanceStats>(DEFAULT_STATS);
+
+  const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+  const [lessons, setLessons] = useState<DailyLesson[]>([]);
+  const [photos, setPhotos] = useState<AlbumPhoto[]>([]);
+  const [latestAssessment, setLatestAssessment] = useState<AssessmentDomainModel | null>(null);
+
+  const prevMonth = useCallback((): void => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  }, [viewMonth]);
+
+  const nextMonth = useCallback((): void => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  }, [viewMonth]);
+
+  const openLeavePopup      = useCallback(() => setIsLeavePopupOpen(true),       []);
+  const closeLeavePopup     = useCallback(() => setIsLeavePopupOpen(false),      []);
+  const openMedicPopup      = useCallback(() => setIsMedicationPopupOpen(true),  []);
+  const closeMedicPopup     = useCallback(() => setIsMedicationPopupOpen(false), []);
+  const openProxyPopup      = useCallback(() => setIsProxyPopupOpen(true),       []);
+  const closeProxyPopup     = useCallback(() => setIsProxyPopupOpen(false),      []);
+  const openQrPopup         = useCallback(() => setIsQrPopupOpen(true),          []);
+  const closeQrPopup        = useCallback(() => setIsQrPopupOpen(false),         []);
+
+  const fetchDashboardData = useCallback(() => {
+    if (!activeStudent?.studentId) return;
+    const id = activeStudent.studentId;
+    setApiLoading(true);
+
+    Promise.allSettled([
+      attendanceService.getAttendance(id),
+      weeklyScheduleService.getWeeklyTimetable(id),
+      dailyLessonService.getDailyLessons(id),
+      dailyAlbumService.getDailyAlbums(id),
+      assessmentService.getAssessments(id, currentMonthParam()),
+    ])
+      .then(([attendance, timetable, lessons, albums, assessments]) => {
+        if (attendance.status === 'fulfilled') setAllRecords(attendance.value);
+        else console.error('Attendance API failed:', attendance.reason);
+
+        if (timetable.status === 'fulfilled') setSchedule(weeklyTimetableToTodayItems(timetable.value));
+        else console.error('Weekly timetable API failed:', timetable.reason);
+
+        if (lessons.status === 'fulfilled') setLessons(lessonsToItems(lessons.value));
+        else console.error('Daily lessons API failed:', lessons.reason);
+
+        if (albums.status === 'fulfilled') setPhotos(albumsToPhotos(albums.value));
+        else console.error('Daily albums API failed:', albums.reason);
+
+        if (assessments.status === 'fulfilled') setLatestAssessment(assessments.value[0] ?? null);
+        else console.error('Assessments API failed:', assessments.reason);
+      })
+      .finally(() => setApiLoading(false));
+  }, [activeStudent?.studentId]);
 
   useEffect(() => {
-    parentDashboardService
-      .getDashboardData()
-      .then(setData)
-      .catch(err => console.error('Dashboard fetch failed:', err))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-  const leadTeacher = activeStudent && activeStudent.teachers && activeStudent.teachers.length > 0
-    ? activeStudent.teachers[0]
-    : null;
+  useEffect(() => {
+    const handlePushMessage = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const type = payload.data?.type;
+      const title = payload.notification?.title || '';
+      const body = payload.notification?.body || '';
+      if (
+        type === 'ATTENDANCE' ||
+        title.toLowerCase().includes('điểm danh') ||
+        title.toLowerCase().includes('attendance') ||
+        body.toLowerCase().includes('điểm danh') ||
+        body.toLowerCase().includes('attendance')
+      ) {
+        setIsQrPopupOpen(false);
+        fetchDashboardData();
+      }
+    };
+
+    window.addEventListener('kc:push:message', handlePushMessage);
+    return () => {
+      window.removeEventListener('kc:push:message', handlePushMessage);
+    };
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const { calendarDays: days, attendanceStats: stats } = calculateAttendanceData(allRecords, viewYear, viewMonth);
+    setCalendarDays(days);
+    setAttendanceStats(stats);
+  }, [allRecords, viewYear, viewMonth]);
+
+  const leadTeacher = activeStudent?.teachers?.[0] ?? null;
+
+  const getTodayAttendanceStatus = (): {
+    attendanceStatus: ChildHeroInfo['attendanceStatus'];
+    checkinTime: string;
+    checkinSub: string;
+  } => {
+    const today = new Date();
+    const todayRecord = allRecords.find(r => {
+      const d = new Date(Number(r.attendanceDate) * 1000);
+      return (
+        d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear()
+      );
+    });
+
+    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+
+    let attendanceStatus: ChildHeroInfo['attendanceStatus'] = 'not_started';
+    let checkinTime = 'Chưa điểm danh';
+    let checkinSub = 'Chờ điểm danh sáng';
+
+    if (isWeekend) {
+      attendanceStatus = 'holiday';
+      checkinTime = 'Ngày nghỉ';
+      checkinSub = 'Cuối tuần';
+    } else if (todayRecord) {
+      const statusLower = todayRecord.status?.toLowerCase();
+      if (statusLower === 'excused') {
+        attendanceStatus = 'excused';
+        checkinTime = 'Nghỉ học';
+        checkinSub = 'Có phép';
+      } else if (statusLower === 'absent') {
+        attendanceStatus = 'absent';
+        checkinTime = 'Vắng mặt';
+        checkinSub = 'Không phép';
+      } else if (statusLower === 'holiday') {
+        attendanceStatus = 'holiday';
+        checkinTime = 'Ngày nghỉ';
+        checkinSub = 'Lễ / Tết';
+      } else if (statusLower === 'present') {
+        if (todayRecord.checkInTime) {
+          const inTime = tsToHHMM(todayRecord.checkInTime);
+          if (todayRecord.checkOutTime) {
+            const outTime = tsToHHMM(todayRecord.checkOutTime);
+            attendanceStatus = 'checked_out';
+            checkinTime = `Đã ra về · ${outTime}`;
+            const pickupDisplay = formatPersonName(todayRecord.pickedUpBy, todayRecord.pickedUpRelationship, '');
+            checkinSub = pickupDisplay ? `Đón bởi: ${pickupDisplay}` : 'Đã đón bé';
+          } else {
+            attendanceStatus = 'studying';
+            checkinTime = `Đã đến trường · ${inTime}`;
+            const dropoffDisplay = formatPersonName(todayRecord.droppedOffBy, todayRecord.droppedOffRelationship, '');
+            checkinSub = dropoffDisplay ? `Đưa bởi: ${dropoffDisplay}` : 'Đang học';
+          }
+        }
+      }
+    }
+
+    return { attendanceStatus, checkinTime, checkinSub };
+  };
+
+  const todayStatus = getTodayAttendanceStatus();
+
+  const todayCalendarStatus = useMemo(() => {
+    const today = new Date().getDate();
+    return calendarDays.find(d => d.day === today)?.status;
+  }, [calendarDays]);
 
   const childHero = activeStudent
     ? {
@@ -50,27 +341,32 @@ export function useParentDashboard() {
           { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
           { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
         ],
-        checkinTime: 'Đang học',
-        checkinSub: 'Đúng giờ · Cổng A',
+        checkinTime: todayStatus.checkinTime,
+        checkinSub: todayStatus.checkinSub,
+        attendanceStatus: todayStatus.attendanceStatus,
       }
     : null;
 
-  const avatarGradient = activeStudent ? getAvatarGradient(activeStudent.studentId) : '';
-  const avatarInitial = activeStudent ? getInitials(activeStudent.fullName) : '';
-
   return {
-    data,
-    loading,
+    loading: studentLoading || apiLoading,
     activeStudent,
-    isLeavePopupOpen,
-    setIsLeavePopupOpen,
-    isMedicationPopupOpen,
-    setIsMedicationPopupOpen,
-    isQrPopupOpen,
-    setIsQrPopupOpen,
+    schedule,
+    lessons,
+    photos,
+    calendarDays,
+    attendanceStats,
+    latestAssessment,
     childHero,
-    avatarGradient,
-    avatarInitial,
-    leadTeacher,
+    todayCalendarStatus,
+    avatarGradient: activeStudent ? getAvatarGradient(activeStudent.studentId) : '',
+    avatarInitial: activeStudent ? getInitials(activeStudent.fullName) : '',
+    viewYear,
+    viewMonth,
+    prevMonth,
+    nextMonth,
+    isLeavePopupOpen,  openLeavePopup,  closeLeavePopup,
+    isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isProxyPopupOpen, openProxyPopup, closeProxyPopup,
+    isQrPopupOpen,     openQrPopup,     closeQrPopup,
   };
 }

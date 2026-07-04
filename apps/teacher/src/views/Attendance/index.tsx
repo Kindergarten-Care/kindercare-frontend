@@ -3,6 +3,7 @@ import { useTheme } from 'styled-components';
 import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download } from 'lucide-react';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
+import { QrScannerModal } from '../../components/QrScannerModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
 const GRADS = [
@@ -81,6 +82,10 @@ export const AttendanceView: React.FC = () => {
   const [proofOpenId, setProofOpenId] = useState<string | null>(null);
   const [monthOffset, setMonthOffset] = useState<number>(0);
 
+  // QR Scanner State
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+
+  // Quick menu popover states
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [reasonDraft, setReasonDraft] = useState('');
   const [menuStage, setMenuStage] = useState<'options' | 'reason'>('options');
@@ -408,6 +413,9 @@ export const AttendanceView: React.FC = () => {
           <S.HeroSubtitle>Tiến độ điểm danh hôm nay</S.HeroSubtitle>
         </S.HeroLeft>
         <S.HeroRight>
+          <S.QrBtn onClick={() => setIsQrScannerOpen(true)} style={{ background: '#111827', color: '#fff', borderColor: '#111827' }}>
+            <ScanLine size={18} /> Quét mã QR
+          </S.QrBtn>
           <S.LeaveBtn onClick={() => setLeaveDrawerOpen(true)}>
             <Bell size={18} />
             Đơn xin nghỉ
@@ -782,6 +790,16 @@ export const AttendanceView: React.FC = () => {
           <S.ToastMsg key={t.id}>{t.text}</S.ToastMsg>
         ))}
       </S.ToastContainer>
+      {/* QR SCANNER MODAL */}
+      {isQrScannerOpen && (
+        <QrScannerModal 
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={() => {
+            if (classId) fetchAttendance(classId, dateMs); // Refresh data when scan successful
+          }}
+        />
+      )}
+
     </S.PageContainer>
   );
 };

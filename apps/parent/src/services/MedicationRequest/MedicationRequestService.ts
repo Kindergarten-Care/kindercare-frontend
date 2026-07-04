@@ -36,6 +36,24 @@ class MedicationRequestService {
     }
     return MedicationRequestMapper.toDomain(res.data);
   }
+
+  async getMedicationRequests(studentId: number | string): Promise<MedicationRequestDomainModel[]> {
+    const url = SERVER.parent.getMedicationRequests.replace(':studentId', studentId.toString());
+    const { data: res } = await apiClient.get<ApiResponse<MedicationRequestApiDto[]>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return MedicationRequestMapper.toDomainList(res.data);
+  }
+
+  async cancelMedicationRequest(medRequestId: number | string): Promise<MedicationRequestDomainModel[]> {
+    const url = SERVER.parent.cancelMedicationRequest.replace(':medRequestId', medRequestId.toString());
+    const { data: res } = await apiClient.patch<ApiResponse<MedicationRequestApiDto[]>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return MedicationRequestMapper.toDomainList(res.data);
+  }
 }
 
 export const medicationRequestService = new MedicationRequestService();

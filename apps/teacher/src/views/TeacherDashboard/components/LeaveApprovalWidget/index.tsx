@@ -5,18 +5,26 @@ import * as S from './styles';
 import { AttendanceService } from '@/services/attendance';
 import { LeaveRequest } from '@/config/types/attendance';
 
+import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
+
 const formatDate = (timestamp: number | undefined): string => {
   if (!timestamp) return '...';
   const d = new Date(timestamp * 1000);
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}/${month}`;
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
-const getStartOfTodayInSeconds = (): number => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return Math.floor(d.getTime() / 1000);
+const formatCreatedAt = (val: any): string => {
+  if (!val) return '...';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  return `${time} ${day}/${month}/${year}`;
 };
 
 interface LeaveApprovalWidgetProps {
@@ -25,11 +33,19 @@ interface LeaveApprovalWidgetProps {
 }
 
 export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction, onRefresh }) => {
+  const { data, isLoading } = useLeaveRequests('Pending');
+  const updateLeaveRequest = useUpdateLeaveRequest();
+
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
   const [leaveReqDetail, setLeaveReqDetail] = useState<LeaveRequest | null>(null);
   const [isLoadingReqDetail, setIsLoadingReqDetail] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (data) {
+      setRequests(data);
+    }
+  }, [data]);
 
   const handleOpenLeaveRequest = async (r: LeaveRequest) => {
     setSelectedLeaveRequest(r);
@@ -47,37 +63,13 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     }
   };
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const allReqs = await AttendanceService.getAllLeaveRequests();
-      
-      const todayStart = getStartOfTodayInSeconds();
-      // Filter only PENDING requests that have NOT passed yet (toDate >= todayStart)
-      const pending = allReqs.filter(r => {
-        const isPending = r.status === 'PENDING';
-        const hasNotPassed = !r.toDate || r.toDate >= todayStart;
-        return isPending && hasNotPassed;
-      });
-      setRequests(pending);
-    } catch (e) {
-      console.warn('Failed to fetch leave requests:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
   const handleAction = async (id: string, name: string, approve: boolean) => {
     // Set removing flag locally to trigger transition
     setRequests(prev => prev.map(r => r.id === id ? { ...r, removing: true } as any : r));
 
     try {
-      const status = approve ? 'APPROVED' : 'REJECTED';
-      await AttendanceService.processLeaveRequest(id, status);
+      const status = approve ? 'Approved' : 'Rejected';
+      await updateLeaveRequest.mutateAsync({ requestId: id, status });
       
       // Update attendance status in database to sync
       const targetRequest = requests.find(r => r.id === id);
@@ -115,8 +107,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     } catch (e) {
       console.warn('Failed to process leave request:', e);
       onAction('Gặp lỗi khi xử lý đơn nghỉ học.');
-      // Reload actual database list to reset
-      fetchRequests();
+      if (data) setRequests(data); // Revert on failure
     }
   };
 
@@ -137,7 +128,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     return name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <S.WidgetContainer>
         <S.HeaderRow>
@@ -158,54 +149,56 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
   }
 
   return (
-    <S.WidgetContainer>
-      <S.HeaderRow>
-        <S.HeaderIconWrapper>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-        </S.HeaderIconWrapper>
-        <S.WidgetTitle>Đơn chờ duyệt</S.WidgetTitle>
-        <S.CounterBadge>{requests.length}</S.CounterBadge>
-      </S.HeaderRow>
+    <>
+      <S.WidgetContainer>
+        <S.HeaderRow>
+          <S.HeaderIconWrapper>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </S.HeaderIconWrapper>
+          <S.WidgetTitle>Đơn chờ duyệt</S.WidgetTitle>
+          <S.CounterBadge>{requests.length}</S.CounterBadge>
+        </S.HeaderRow>
 
-      <S.RequestList>
-        {requests.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', flex: 1, padding: '30px 10px', textAlign: 'center', color: '#9CA3AF' }}>
-            <span style={{ fontSize: '36px' }}>✅</span>
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>Đã xử lý hết đơn!</span>
-          </div>
-        ) : (
-          requests.map(r => (
-            <S.RequestRow key={r.id} $removing={(r as any).removing}>
-              <S.StudentRow style={{ cursor: 'pointer' }} onClick={() => handleOpenLeaveRequest(r)}>
-                <S.AvatarCircle $background={getGradColor(r.studentName)}>
-                  {getInitial(r.studentName)}
-                </S.AvatarCircle>
-                <S.InfoCol>
-                  <S.ChildName>{r.studentName}</S.ChildName>
-                  <S.RequestDetails>{r.reason} · {formatDate(r.fromDate)} - {formatDate(r.toDate)}</S.RequestDetails>
-                </S.InfoCol>
-              </S.StudentRow>
-              <S.ActionButtons>
-                <S.ApproveButton onClick={() => handleAction(r.id, r.studentName, true)}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Duyệt
-                </S.ApproveButton>
-                <S.RejectButton onClick={() => handleAction(r.id, r.studentName, false)}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </S.RejectButton>
-              </S.ActionButtons>
-            </S.RequestRow>
-          ))
-        )}
-      </S.RequestList>
+        <S.RequestList>
+          {requests.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', flex: 1, padding: '30px 10px', textAlign: 'center', color: '#9CA3AF' }}>
+              <span style={{ fontSize: '36px' }}>✅</span>
+              <span style={{ fontSize: '13px', fontWeight: 600 }}>Đã xử lý hết đơn!</span>
+            </div>
+          ) : (
+            requests.map(r => (
+              <S.RequestRow key={r.id} $removing={(r as any).removing}>
+                <S.StudentRow style={{ cursor: 'pointer' }} onClick={() => handleOpenLeaveRequest(r)}>
+                  <S.AvatarCircle $background={getGradColor(r.studentName)}>
+                    {getInitial(r.studentName)}
+                  </S.AvatarCircle>
+                  <S.InfoCol>
+                    <S.ChildName>{r.studentName}</S.ChildName>
+                    <S.RequestDetails>{r.reason} · {formatDate(r.fromDate)} - {formatDate(r.toDate)}</S.RequestDetails>
+                  </S.InfoCol>
+                </S.StudentRow>
+                <S.ActionButtons>
+                  <S.ApproveButton onClick={() => handleAction(r.id, r.studentName, true)}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Duyệt
+                  </S.ApproveButton>
+                  <S.RejectButton onClick={() => handleAction(r.id, r.studentName, false)}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </S.RejectButton>
+                </S.ActionButtons>
+              </S.RequestRow>
+            ))
+          )}
+        </S.RequestList>
+      </S.WidgetContainer>
 
       {selectedLeaveRequest && (
         <S.ModalOverlay onClick={() => setSelectedLeaveRequest(null)}>
@@ -220,8 +213,35 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
               <>
                 <S.ModalMetaRow>
                   <S.ModalMetaField>
+                    <S.ModalLabel>Lớp học: </S.ModalLabel>
+                    <span style={{ color: '#1F2937', fontWeight: 500 }}>{leaveReqDetail.className || '...'}</span>
+                  </S.ModalMetaField>
+
+                  <S.ModalMetaField>
                     <S.ModalLabel>Phụ huynh: </S.ModalLabel>
                     <span style={{ color: '#1F2937', fontWeight: 500 }}>{leaveReqDetail.parentName} ({leaveReqDetail.relationship})</span>
+                  </S.ModalMetaField>
+                  {leaveReqDetail.parentPhone && (
+                    <S.ModalMetaField>
+                      <S.ModalLabel>Số điện thoại: </S.ModalLabel>
+                      <span style={{ color: '#1F2937', fontWeight: 500 }}>{leaveReqDetail.parentPhone}</span>
+                    </S.ModalMetaField>
+                  )}
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Ngày gửi đơn: </S.ModalLabel>
+                    <span style={{ color: '#1F2937', fontWeight: 500 }}>{formatCreatedAt(leaveReqDetail.createdAt)}</span>
+                  </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
+                    <span style={{ color: '#1F2937', fontWeight: 500 }}>
+                      Từ {formatDate(leaveReqDetail.fromDate)} đến {formatDate(leaveReqDetail.toDate)}
+                    </span>
+                  </S.ModalMetaField>
+                  <S.ModalMetaField>
+                    <S.ModalLabel>Giảm trừ tiền ăn: </S.ModalLabel>
+                    <span style={{ color: leaveReqDetail.isMealFeeDeducted ? '#10B981' : '#EF4444', fontWeight: 700 }}>
+                      {leaveReqDetail.isMealFeeDeducted ? 'Có' : 'Không'}
+                    </span>
                   </S.ModalMetaField>
                   <S.ModalMetaField>
                     <S.ModalLabel>Trạng thái: </S.ModalLabel>
@@ -229,18 +249,21 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
                       {leaveReqDetail.status === 'APPROVED' ? 'Đã duyệt' : (leaveReqDetail.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt')}
                     </S.ModalValue>
                   </S.ModalMetaField>
-                  <S.ModalMetaField>
-                    <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
-                    <span style={{ color: '#1F2937', fontWeight: 500 }}>
-                      Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
-                    </span>
-                  </S.ModalMetaField>
                 </S.ModalMetaRow>
 
-                <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>LÝ DO:</div>
+                <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>LÝ DO XIN NGHỈ:</div>
                 <S.ModalReasonBox>
                   {leaveReqDetail.reason || 'Không ghi rõ lý do'}
                 </S.ModalReasonBox>
+
+                {leaveReqDetail.parentNotes && (
+                  <>
+                    <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '6px', fontWeight: 700 }}>Ý KIẾN / GHI CHÚ PHỤ HUYNH:</div>
+                    <S.ModalReasonBox style={{ minHeight: '60px', background: '#F9FAFB' }}>
+                      {leaveReqDetail.parentNotes}
+                    </S.ModalReasonBox>
+                  </>
+                )}
                 
                 {leaveReqDetail.attachmentUrl && (
                   <div style={{ marginBottom: '20px' }}>
@@ -280,6 +303,6 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
           </S.ModalContent>
         </S.ModalOverlay>
       )}
-    </S.WidgetContainer>
+    </>
   );
 };

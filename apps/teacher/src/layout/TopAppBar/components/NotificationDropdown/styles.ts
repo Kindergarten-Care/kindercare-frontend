@@ -92,7 +92,7 @@ export const NotificationItem = styled.div<{ $isUnread?: boolean }>`
   }
 `;
 
-export const IconContainer = styled.div<{ $type?: 'alert' | 'message' | 'event' }>`
+export const IconContainer = styled.div<{ $type?: 'alert' | 'message' | 'event' | 'default' }>`
   width: 40px;
   height: 40px;
   border-radius: 50%;

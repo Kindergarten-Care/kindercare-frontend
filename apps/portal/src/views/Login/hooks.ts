@@ -93,7 +93,7 @@ export const useLoginState = (): UseLoginStateReturn => {
       }
 
       const token = data.data.token;
-      
+
       // Save session in sessionStorage (expires in 30 minutes, or longer if rememberMe is checked, e.g. 3 days)
       const expireMinutes = rememberMe ? 3 * 24 * 60 : 30;
       setSession(token, role, expireMinutes);

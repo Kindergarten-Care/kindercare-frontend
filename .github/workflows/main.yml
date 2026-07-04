@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [parent, teacher, principal, admin, landing, portal]
+        app: [parent, teacher, principal, landing, portal]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,7 +49,6 @@ jobs:
             NEXT_PUBLIC_PARENT_APP_URL=${{ github.ref_name == 'release/master' && 'https://parent.kindercare.app' || 'https://parent-test.kindercare.app' }}
             NEXT_PUBLIC_TEACHER_APP_URL=${{ github.ref_name == 'release/master' && 'https://teacher.kindercare.app' || 'https://teacher-test.kindercare.app' }}
             NEXT_PUBLIC_PRINCIPAL_APP_URL=${{ github.ref_name == 'release/master' && 'https://principal.kindercare.app' || 'https://principal-test.kindercare.app' }}
-            NEXT_PUBLIC_ADMIN_APP_URL=${{ github.ref_name == 'release/master' && 'https://admin.kindercare.app' || 'https://admin-test.kindercare.app' }}
             NEXT_PUBLIC_PORTAL_APP_URL=${{ github.ref_name == 'release/master' && 'https://portal.kindercare.app' || 'https://portal-test.kindercare.app' }}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}
@@ -69,8 +68,6 @@ jobs:
             port: 3001
           - app: principal
             port: 3002
-          - app: admin
-            port: 3003
           - app: parent
             port: 3004
           - app: portal

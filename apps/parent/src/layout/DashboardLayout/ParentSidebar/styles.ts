@@ -8,6 +8,11 @@ const rise = keyframes`
   to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 export const SidebarWrapper = styled.div`
   position: sticky;
   top: 0;
@@ -22,8 +27,8 @@ export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
   flex-direction: column;
   height: 100%;
   width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: ${p => p.$collapsed ? 'visible' : 'auto'};
+  overflow-x: ${p => p.$collapsed ? 'visible' : 'hidden'};
   padding: ${p => p.$collapsed ? '24px 14px 18px' : '24px 16px 18px'};
   align-items: ${p => p.$collapsed ? 'center' : 'stretch'};
   scrollbar-width: none;
@@ -114,6 +119,36 @@ export const BrandSubText = styled.div`
 `;
 
 /* child switcher */
+export const Tooltip = styled.div`
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  background: #0f172a; /* Slate 900 */
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #0f172a transparent transparent;
+  }
+`;
+
 export const CSwitcher = styled.div<{ $collapsed: boolean }>`
   position: relative;
   margin: 4px 0 10px;
@@ -133,9 +168,15 @@ export const CSTrigger = styled.button<{ $collapsed: boolean }>`
   cursor: pointer;
   font: inherit;
   text-align: left;
+  position: relative;
   transition: background 0.15s, border-color 0.15s;
 
   &:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); }
+
+  &:hover ${Tooltip} {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
 `;
 
 export const CSAv = styled.div<{ $gradient: string }>`
@@ -307,6 +348,11 @@ export const NavItem = styled(Link)<{ $active?: boolean; $collapsed?: boolean }>
     color: #ffffff;
   }
 
+  &:hover ${Tooltip} {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
   ${p => p.$active && !p.$collapsed && `
     &::before {
       content: '';
@@ -362,8 +408,14 @@ export const SideProfile = styled.div<{ $collapsed: boolean }>`
   border-radius: 12px;
   padding: 12px ${p => p.$collapsed ? '0' : '8px'};
   justify-content: ${p => p.$collapsed ? 'center' : 'flex-start'};
+  position: relative;
 
   &:hover { background: rgba(255, 255, 255, 0.08); }
+
+  &:hover ${Tooltip} {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
 `;
 
 export const ParentAv = styled.div`
@@ -386,59 +438,6 @@ export const ParentInfo = styled.div<{ $hidden: boolean }>`
   span { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 `;
 
-export const DropdownContainer = styled.div`
-  position: relative;
-  margin-left: auto;
-`;
-
-export const SettingsBtn = styled.button`
-  width: 26px;
-  height: 26px;
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  cursor: pointer;
-  color: #ffffff;
-
-  &:hover { background: rgba(255, 255, 255, 0.1); }
-`;
-
-export const DropdownMenu = styled.div`
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  padding: 4px;
-  min-width: 140px;
-  z-index: 100;
-  animation: ${rise} 0.15s ease;
-`;
-
-export const DropdownItem = styled.div`
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #dc2626;
-  cursor: pointer;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.15s;
-
-  &:hover { background: #fee2e2; }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
 
 const scaleIn = keyframes`
   from { opacity: 0; transform: scale(0.96); }
