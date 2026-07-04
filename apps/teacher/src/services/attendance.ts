@@ -163,5 +163,39 @@ export class AttendanceService {
     return true;
   }
 
+  /**
+   * Submit quick activities logs (nap, hygiene, etc).
+   */
+  public static async submitQuickActivities(
+    classId: number | string,
+    date: string,
+    activityData: { studentId: string; napStatus?: string; hygieneStatus?: string; teacherNote?: string }[]
+  ): Promise<boolean> {
+    const dateTimestamp = getUtcTimestampInSeconds(date);
+    const data = activityData.map(a => ({
+      studentId: Number(a.studentId),
+      napStatus: a.napStatus,
+      hygieneStatus: a.hygieneStatus,
+      teacherNote: a.teacherNote,
+    }));
 
+    await apiClient.post('/teacher/attendance/activities', {
+      classId: Number(classId),
+      date: dateTimestamp,
+      activityData: data,
+    });
+
+    return true;
+  }
+
+  /**
+   * Scan QR Code for attendance
+   */
+  public static async scanQRAttendance(qrToken: string, classId: number | string): Promise<boolean> {
+    await apiClient.post('/teacher/attendance/scan', {
+      qrToken,
+      classId: Number(classId)
+    });
+    return true;
+  }
 }
