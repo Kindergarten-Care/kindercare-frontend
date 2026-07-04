@@ -46,6 +46,7 @@ export const SERVER = {
     getInvoiceDetail: '/parent/invoices/:invoiceId',
     payInvoice: '/parent/invoices/:invoiceId/pay',
     payInvoiceMomo: '/parent/invoices/:invoiceId/pay-momo',
+    payInvoiceVnpay: '/parent/invoices/:invoiceId/pay-vnpay',
     getExtracurriculars: '/parent/extracurriculars',
     getStudentExtracurriculars: '/parent/children/:studentId/extracurriculars',
     createExtracurricularEnrollment: '/parent/children/:studentId/extracurriculars',

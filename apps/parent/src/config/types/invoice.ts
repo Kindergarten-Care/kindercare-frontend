@@ -92,3 +92,8 @@ export interface PayMomoResult {
   payUrl: string;
   orderId: string;
 }
+
+export interface PayVnpayResult {
+  payUrl: string;
+  txnRef: string;
+}
