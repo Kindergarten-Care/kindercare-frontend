@@ -67,6 +67,17 @@ export const SecTitle = styled.h2`
   color: #1F2937;
 `;
 
+export const SecTag = styled.span`
+  margin-left: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  background: #E3EDFD;
+  white-space: nowrap;
+`;
+
 export const GrowthGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;

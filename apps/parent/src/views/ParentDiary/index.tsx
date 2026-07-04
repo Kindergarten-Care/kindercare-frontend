@@ -42,6 +42,9 @@ export function ParentDiary() {
     );
   }
 
+  const dayOfWeek = selectedDate.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
   const leadTeacher = activeStudent.teachers?.[0] ?? null;
   const fallbackTeacherName = leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Cô Nguyễn Thị Lan';
 
@@ -83,26 +86,36 @@ export function ParentDiary() {
 
         {/* RIGHT — Thông tin ngày */}
         <S.ColRight>
-          <AttendanceCard
-            attendance={selectedAttendance}
-            studentFullName={activeStudent.fullName}
-            stats={stats}
-            dailyActivity={dailyActivity}
-            studentAvatarUrl={activeStudent.avatarUrl}
-          />
+          {isWeekend ? (
+            <S.WeekendCard>
+              <S.WeekendEmoji>🎉</S.WeekendEmoji>
+              <S.WeekendTitle>Hôm nay là cuối tuần rồi!</S.WeekendTitle>
+              <S.WeekendDesc>Bé được nghỉ ở nhà cùng gia đình, không có dữ liệu nhật ký cho ngày này. Chúc bé và cả nhà cuối tuần thật vui vẻ!</S.WeekendDesc>
+            </S.WeekendCard>
+          ) : (
+            <>
+              <AttendanceCard
+                attendance={selectedAttendance}
+                studentFullName={activeStudent.fullName}
+                stats={stats}
+                dailyActivity={dailyActivity}
+                studentAvatarUrl={activeStudent.avatarUrl}
+              />
 
-          <S.TwoCol>
-            <MealsSection menu={dailyMenu} activity={dailyActivity} />
-            <ActivitiesSection activity={dailyActivity} />
-          </S.TwoCol>
+              <S.TwoCol>
+                <MealsSection menu={dailyMenu} activity={dailyActivity} />
+                <ActivitiesSection activity={dailyActivity} />
+              </S.TwoCol>
 
-          <TeacherNoteCard
-            teacherName={teacherNoteName}
-            teacherNote={teacherNoteBody}
-            className={activeStudent.className}
-          />
+              <TeacherNoteCard
+                teacherName={teacherNoteName}
+                teacherNote={teacherNoteBody}
+                className={activeStudent.className}
+              />
 
-          <PhotoGrid photos={photos} onZoomImage={handleZoomImage} />
+              <PhotoGrid photos={photos} onZoomImage={handleZoomImage} />
+            </>
+          )}
         </S.ColRight>
       </S.JournalGrid>
 

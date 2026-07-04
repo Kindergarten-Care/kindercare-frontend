@@ -20,6 +20,7 @@ export const SERVER = {
   parent: {
     getChildren: '/parent/children',
     getProfile:  '/parent/profile',
+    changePassword: '/parent/change-password',
     getHealthRecords: '/parent/children/:studentId/health-records',
     createLeaveRequest: '/parent/leave-requests',
     createMedicationRequest: '/parent/medication-requests',
@@ -42,6 +43,14 @@ export const SERVER = {
     getRelatives: '/parent/children/:studentId/relatives',
     getWeeklyTimetable: '/parent/children/:studentId/weekly-timetable',
     getDailyEvents: '/parent/events/daily',
+    getInvoices: '/parent/children/:studentId/invoices',
+    getInvoiceDetail: '/parent/invoices/:invoiceId',
+    payInvoice: '/parent/invoices/:invoiceId/pay',
+    payInvoiceMomo: '/parent/invoices/:invoiceId/pay-momo',
+    getExtracurriculars: '/parent/extracurriculars',
+    getStudentExtracurriculars: '/parent/children/:studentId/extracurriculars',
+    createExtracurricularEnrollment: '/parent/children/:studentId/extracurriculars',
+    cancelExtracurricularEnrollment: '/parent/children/:studentId/extracurriculars/:enrollmentId/cancel',
   },
   teacher: {
     scanAttendance:      '/teacher/attendance/scan',

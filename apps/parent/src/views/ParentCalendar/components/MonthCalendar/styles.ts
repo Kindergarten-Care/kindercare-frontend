@@ -39,7 +39,7 @@ export const DayCell = styled.button<{ $inMonth?: boolean; $weekend?: boolean; $
   gap: 4px;
   cursor: pointer;
   transition: all .15s;
-  border: 1px solid ${p => p.$selected ? '#005A36' : p.$today ? '#BBDAC8' : '#EEF3F0'};
+  border: 1px solid ${p => p.$selected ? '#005A36' : p.$today ? '#BBDAC8' : '#D9E2DC'};
   background: ${p => p.$selected ? '#E6F3ED' : p.$today ? '#F4F8F5' : p.$weekend ? '#FAFBFA' : '#fff'};
   opacity: ${p => p.$inMonth ? 1 : .45};
 
