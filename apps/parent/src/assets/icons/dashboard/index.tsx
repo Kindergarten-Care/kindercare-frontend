@@ -333,3 +333,12 @@ export const IconShieldInfo: React.FC<IconProps> = ({ size = 20, color = 'curren
     <path d="M12 16v-5M12 8h.01" />
   </svg>
 );
+
+export const IconIdCard: React.FC<IconProps> = ({ size = 20, color = 'currentColor', className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+    <circle cx="8" cy="12" r="2" />
+    <line x1="13" y1="10" x2="18" y2="10" />
+    <line x1="13" y1="14" x2="18" y2="14" />
+  </svg>
+);

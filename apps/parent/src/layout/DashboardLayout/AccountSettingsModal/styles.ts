@@ -384,23 +384,11 @@ export const TextInput = styled.input<{ $plain?: boolean }>`
     border-color: var(--brand, #005a36);
     box-shadow: 0 0 0 3px var(--brand-tint, #e6f3ed);
   }
-`;
 
-export const Select = styled.select`
-  width: 100%;
-  font: inherit;
-  font-size: 14px;
-  padding: 11px 13px 11px 40px;
-  border: 1px solid var(--border, #e6eee9);
-  border-radius: 11px;
-  background: #fff;
-  color: var(--fg, #1f2937);
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &:focus {
-    border-color: var(--brand, #005a36);
-    box-shadow: 0 0 0 3px var(--brand-tint, #e6f3ed);
+  &:disabled {
+    background: #f7faf8;
+    color: var(--muted, #6b7280);
+    cursor: not-allowed;
   }
 `;
 

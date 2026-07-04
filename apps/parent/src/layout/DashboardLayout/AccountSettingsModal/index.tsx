@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@kindercare/core';
 import { kcToast } from '@kindercare/ui';
 import { useParent } from '@/contexts/ParentContext';
+import { useStudent } from '@/contexts/StudentContext';
+import { parentService } from '@/services/Parent/ParentService';
 import {
   IconSettings, IconLogout, IconClose, IconProfile, IconLock, IconBell,
   IconMail, IconPhone, IconBriefcase, IconMapPin, IconCalendar,
-  IconEye, IconEyeOff, IconUpload, IconCheck, IconShieldInfo,
+  IconEye, IconEyeOff, IconUpload, IconCheck, IconShieldInfo, IconIdCard,
 } from '@/assets/icons/dashboard';
+import { resolveRelationship } from '../utils/layoutHelpers';
 import * as S from './styles';
 
 interface AccountSettingsModalProps {
@@ -40,19 +43,54 @@ interface NotifyItem {
   on: boolean;
 }
 
-const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onClose }) => {
-  const { logout } = useAuth();
-  const { parentProfile } = useParent();
-  const [pane, setPane] = useState<PaneKey>('profile');
+function formatDobInput(ts: number | null | undefined): string {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${d.getFullYear()}`;
+}
 
-  // ---- profile form (mock local state — no API wired yet) ----
+function parseDobInput(value: string): number | undefined {
+  const match = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) return undefined;
+  const [, day, month, year] = match;
+  const d = new Date(Number(year), Number(month) - 1, Number(day));
+  return Math.floor(d.getTime() / 1000);
+}
+
+const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onClose }) => {
+  const { user, logout } = useAuth();
+  const { parentProfile, updateProfile } = useParent();
+  const { activeStudent } = useStudent();
+  const [pane, setPane] = useState<PaneKey>('profile');
+  const [saving, setSaving] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const rawRelationship = activeStudent?.relationship ?? user?.relationship ?? user?.children?.[0]?.relationship;
+  const relationshipLabel = resolveRelationship(rawRelationship, 'vi').label || 'Chưa cập nhật';
+
+  // ---- profile form ----
   const [fullName, setFullName] = useState(parentProfile?.fullName || '');
-  const [relationship, setRelationship] = useState('Mẹ');
   const [phoneNumber, setPhoneNumber] = useState(parentProfile?.phoneNumber || '');
   const [email, setEmail] = useState(parentProfile?.email || '');
-  const [dob, setDob] = useState('');
+  const [dob, setDob] = useState(formatDobInput(parentProfile?.dateOfBirth));
   const [job, setJob] = useState(parentProfile?.job || '');
   const [address, setAddress] = useState(parentProfile?.address || '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  // Re-sync form fields whenever the modal opens or the profile data arrives/changes,
+  // since this component stays mounted (hidden) and parentProfile loads asynchronously.
+  useEffect(() => {
+    if (!isOpen || !parentProfile) return;
+    setFullName(parentProfile.fullName || '');
+    setPhoneNumber(parentProfile.phoneNumber || '');
+    setEmail(parentProfile.email || '');
+    setDob(formatDobInput(parentProfile.dateOfBirth));
+    setJob(parentProfile.job || '');
+    setAddress(parentProfile.address || '');
+  }, [isOpen, parentProfile]);
 
   // ---- password form ----
   const [currentPw, setCurrentPw] = useState('');
@@ -61,6 +99,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
 
   // ---- notification prefs (mock) ----
   const [notifyList, setNotifyList] = useState<NotifyItem[]>([
@@ -71,7 +110,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
   ]);
 
   const pwRules = useMemo(() => ({
-    len: newPw.length >= 8,
+    len: newPw.length >= 6,
     upper: /[A-Z]/.test(newPw),
     num: /[0-9]/.test(newPw),
     special: /[^A-Za-z0-9]/.test(newPw),
@@ -90,12 +129,50 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
 
   if (!isOpen) return null;
 
-  const handleSave = (): void => {
-    // TODO: wire to real update-profile API
-    kcToast.success('Đã lưu thay đổi thành công');
+  const displayAvatarUrl = avatarPreview || parentProfile?.avatarUrl;
+
+  const handleAvatarPick = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
-  const handleChangePassword = (): void => {
+  const handleAvatarClear = (): void => {
+    setAvatarFile(null);
+    setAvatarPreview(null);
+  };
+
+  const handleSave = async (): Promise<void> => {
+    if (!fullName.trim() || !phoneNumber.trim() || !email.trim()) {
+      kcToast.warning('Vui lòng điền đầy đủ các trường bắt buộc');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const dobTimestamp = parseDobInput(dob);
+      await updateProfile({
+        fullName: fullName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        email: email.trim(),
+        job: job.trim(),
+        address: address.trim(),
+        ...(dobTimestamp !== undefined ? { dateOfBirth: dobTimestamp } : {}),
+        ...(avatarFile ? { avatar: avatarFile } : {}),
+      });
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      kcToast.success('Đã lưu thay đổi thành công');
+    } catch (err: any) {
+      kcToast.error(err?.message || 'Cập nhật thông tin thất bại');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (): Promise<void> => {
     if (!currentPw || !newPw || !confirmPw) {
       kcToast.warning('Vui lòng điền đầy đủ thông tin');
       return;
@@ -104,15 +181,31 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
       kcToast.error('Mật khẩu xác nhận không khớp');
       return;
     }
-    if (pwScore < 4) {
-      kcToast.warning('Mật khẩu chưa đủ mạnh');
+    if (newPw.length < 6) {
+      kcToast.warning('Mật khẩu mới phải có ít nhất 6 ký tự');
       return;
     }
-    // TODO: wire to real change-password API
-    kcToast.success('Đã đổi mật khẩu thành công');
-    setCurrentPw('');
-    setNewPw('');
-    setConfirmPw('');
+    if (newPw === currentPw) {
+      kcToast.warning('Mật khẩu mới không được trùng mật khẩu hiện tại');
+      return;
+    }
+
+    setChangingPw(true);
+    try {
+      await parentService.changePassword({
+        currentPassword: currentPw,
+        newPassword: newPw,
+        confirmNewPassword: confirmPw,
+      });
+      kcToast.success('Đổi mật khẩu thành công');
+      setCurrentPw('');
+      setNewPw('');
+      setConfirmPw('');
+    } catch (err: any) {
+      kcToast.error(err?.message || 'Đổi mật khẩu thất bại');
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   const handleLogout = async (): Promise<void> => {
@@ -138,8 +231,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
 
           <S.RailUser>
             <S.RailAv>
-              {parentProfile?.avatarUrl ? (
-                <img src={parentProfile.avatarUrl} alt={parentProfile.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {displayAvatarUrl ? (
+                <img src={displayAvatarUrl} alt={parentProfile?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 initials
               )}
@@ -183,22 +276,31 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
               <S.Pane>
                 <S.AvatarEdit>
                   <S.AeAv>
-                    {parentProfile?.avatarUrl ? (
-                      <img src={parentProfile.avatarUrl} alt={parentProfile.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {displayAvatarUrl ? (
+                      <img src={displayAvatarUrl} alt={parentProfile?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       initials
                     )}
                   </S.AeAv>
                   <S.AeBody>
                     <h3>Ảnh đại diện</h3>
-                    <p>JPG, PNG tối đa 2MB. Nên dùng ảnh vuông.</p>
+                    <p>JPG, PNG, WEBP tối đa 5MB. Nên dùng ảnh vuông.</p>
                     <S.AeActions>
-                      <S.Btn $variant="brand" style={{ padding: '8px 15px', fontSize: '12.5px' }} onClick={() => kcToast.info('Tính năng đang được phát triển')}>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        style={{ display: 'none' }}
+                        onChange={handleAvatarPick}
+                      />
+                      <S.Btn $variant="brand" style={{ padding: '8px 15px', fontSize: '12.5px' }} onClick={() => avatarInputRef.current?.click()}>
                         <IconUpload size={15} /> Tải ảnh lên
                       </S.Btn>
-                      <S.Btn $variant="ghost" style={{ padding: '8px 15px', fontSize: '12.5px' }} onClick={() => kcToast.info('Tính năng đang được phát triển')}>
-                        Xóa ảnh
-                      </S.Btn>
+                      {avatarPreview && (
+                        <S.Btn $variant="ghost" style={{ padding: '8px 15px', fontSize: '12.5px' }} onClick={handleAvatarClear}>
+                          Xóa ảnh
+                        </S.Btn>
+                      )}
                     </S.AeActions>
                   </S.AeBody>
                 </S.AvatarEdit>
@@ -216,13 +318,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
                     <S.FieldLabel>Mối quan hệ với bé</S.FieldLabel>
                     <S.InputWrap>
                       <IconProfile size={17} />
-                      <S.Select value={relationship} onChange={e => setRelationship(e.target.value)}>
-                        <option>Mẹ</option>
-                        <option>Bố</option>
-                        <option>Ông</option>
-                        <option>Bà</option>
-                        <option>Người giám hộ</option>
-                      </S.Select>
+                      <S.TextInput value={relationshipLabel} disabled />
                     </S.InputWrap>
                   </S.Field>
                   <S.Field>
@@ -251,6 +347,13 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
                     <S.InputWrap>
                       <IconBriefcase size={17} />
                       <S.TextInput value={job} onChange={e => setJob(e.target.value)} />
+                    </S.InputWrap>
+                  </S.Field>
+                  <S.Field>
+                    <S.FieldLabel>Số CCCD</S.FieldLabel>
+                    <S.InputWrap>
+                      <IconIdCard size={17} />
+                      <S.TextInput value={parentProfile?.idCard || 'Chưa cập nhật'} disabled />
                     </S.InputWrap>
                   </S.Field>
                   <S.Field $full>
@@ -310,7 +413,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
                     </S.Strength>
 
                     <S.ReqList>
-                      <S.ReqItem $ok={pwRules.len}><S.ReqIcon $ok={pwRules.len}><IconCheck size={10} /></S.ReqIcon> Ít nhất 8 ký tự</S.ReqItem>
+                      <S.ReqItem $ok={pwRules.len}><S.ReqIcon $ok={pwRules.len}><IconCheck size={10} /></S.ReqIcon> Ít nhất 6 ký tự</S.ReqItem>
                       <S.ReqItem $ok={pwRules.upper}><S.ReqIcon $ok={pwRules.upper}><IconCheck size={10} /></S.ReqIcon> Có chữ hoa</S.ReqItem>
                       <S.ReqItem $ok={pwRules.num}><S.ReqIcon $ok={pwRules.num}><IconCheck size={10} /></S.ReqIcon> Có chữ số</S.ReqItem>
                       <S.ReqItem $ok={pwRules.special}><S.ReqIcon $ok={pwRules.special}><IconCheck size={10} /></S.ReqIcon> Có ký tự đặc biệt</S.ReqItem>
@@ -345,8 +448,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
                 </S.Hint>
 
                 <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
-                  <S.Btn $variant="brand" onClick={handleChangePassword}>
-                    <IconLock size={16} /> Đổi mật khẩu
+                  <S.Btn $variant="brand" onClick={handleChangePassword} disabled={changingPw}>
+                    <IconLock size={16} /> {changingPw ? 'Đang xử lý...' : 'Đổi mật khẩu'}
                   </S.Btn>
                 </div>
               </S.Pane>
@@ -375,9 +478,9 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
             <S.Foot>
               <S.FootNote><IconShieldInfo size={14} /> Thay đổi được lưu tức thì</S.FootNote>
               <S.FootActions>
-                <S.Btn $variant="ghost" onClick={onClose}>Hủy</S.Btn>
-                <S.Btn $variant="brand" onClick={handleSave}>
-                  <IconCheck size={16} /> Lưu thay đổi
+                <S.Btn $variant="ghost" onClick={onClose} disabled={saving}>Hủy</S.Btn>
+                <S.Btn $variant="brand" onClick={handleSave} disabled={saving}>
+                  <IconCheck size={16} /> {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </S.Btn>
               </S.FootActions>
             </S.Foot>
