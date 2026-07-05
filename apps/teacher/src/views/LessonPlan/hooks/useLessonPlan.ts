@@ -260,9 +260,9 @@ export function useLessonPlan(className: string) {
       year: getCurrentYear(),
       weekStartDate: Math.floor(start.getTime() / 1000),
       weekEndDate: Math.floor(end.getTime() / 1000),
-      weekTheme: livePlan?.weekTheme ?? '',
+      weekTheme: livePlan?.weekTheme ?? null,
       monthTheme: livePlan?.monthTheme ?? null,
-      weeklyGoal: livePlan?.weeklyGoal ?? '',
+      weeklyGoal: livePlan?.weeklyGoal ?? null,
       note: livePlan?.note ?? null,
       items: newItems,
     };
@@ -272,7 +272,20 @@ export function useLessonPlan(className: string) {
       addToast(editItemId ? '✏️ Đã cập nhật tiết học' : '✅ Đã thêm tiết học mới');
       setModalOpen(false);
     } catch (err: any) {
-      addToast(`❌ ${err?.message ?? 'Lỗi lưu'}`);
+      // Log chi tiết để debug
+      const status = err?.response?.status;
+      const respData = err?.response?.data;
+      const serverMsg =
+        respData?.message ||
+        respData?.error ||
+        err?.message ||
+        'Lỗi không xác định';
+      console.error('[LessonPlan save failed]', {
+        status,
+        respData,
+        payload,
+      });
+      addToast(`❌ Lỗi ${status ?? '??'}: ${serverMsg}`);
     }
   }, [draft, editItemId, livePlan, saveMutation, teacherId, classId, yearId, weekOffset, addToast]);
 

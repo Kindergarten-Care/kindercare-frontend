@@ -718,16 +718,6 @@ export const ModalWideHeader = styled.div`
   z-index: 1;
 `;
 
-export const ModalGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 18px;
-`;
-
-export const FieldFull = styled.div`
-  grid-column: 1 / -1;
-`;
-
 export const TextArea = styled.textarea`
   width: 100%;
   min-height: 88px;

@@ -53,7 +53,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
         {/* BODY */}
         <S.ModalBody>
-          {/* ROW 1: Lĩnh vực + Thứ */}
+          {/* ROW 1: Lĩnh vực */}
           <div>
             <S.FieldLabel>Lĩnh vực / môn học</S.FieldLabel>
             <S.SubjectGrid>
@@ -76,18 +76,20 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             </S.SubjectGrid>
           </div>
 
-          <S.ModalGrid>
-            <S.FieldFull>
-              <S.FieldLabel>Tên bài học *</S.FieldLabel>
-              <S.TextInput
-                value={draft.title}
-                onChange={(e) => onUpdateDraft({ title: e.target.value })}
-                placeholder="Ví dụ: Nhận biết hình tròn, hình vuông"
-                disabled={isReadOnly}
-              />
-            </S.FieldFull>
+          {/* Tên bài học */}
+          <div>
+            <S.FieldLabel>Tên bài học *</S.FieldLabel>
+            <S.TextInput
+              value={draft.title}
+              onChange={(e) => onUpdateDraft({ title: e.target.value })}
+              placeholder="Ví dụ: Nhận biết hình tròn, hình vuông"
+              disabled={isReadOnly}
+            />
+          </div>
 
-            <S.TimeField style={{ flex: 1 }}>
+          {/* Giờ bắt đầu + Giờ kết thúc */}
+          <S.TimeRow>
+            <S.TimeField>
               <S.FieldLabel>Giờ bắt đầu</S.FieldLabel>
               <S.TextInput
                 value={draft.startTime ? draft.startTime.slice(0, 5) : draft.time}
@@ -96,8 +98,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                 disabled={isReadOnly}
               />
             </S.TimeField>
-
-            <S.TimeField style={{ flex: 1 }}>
+            <S.TimeField>
               <S.FieldLabel>Giờ kết thúc</S.FieldLabel>
               <S.TextInput
                 value={draft.endTime ? draft.endTime.slice(0, 5) : ''}
@@ -106,66 +107,71 @@ export const LessonModal: React.FC<LessonModalProps> = ({
                 disabled={isReadOnly}
               />
             </S.TimeField>
+          </S.TimeRow>
 
-            <S.FieldFull>
-              <S.FieldLabel>Thứ trong tuần</S.FieldLabel>
-              <S.DayBtnRow>
-                {DAYS.map((day) => (
-                  <S.DayBtn
-                    key={day.key}
-                    type="button"
-                    $active={draft.day === day.key}
-                    onClick={() => !isReadOnly && onPickDay(day.key)}
-                    disabled={isReadOnly}
-                  >
-                    {day.short}
-                  </S.DayBtn>
-                ))}
-              </S.DayBtnRow>
-            </S.FieldFull>
+          {/* Thứ trong tuần */}
+          <div>
+            <S.FieldLabel>Thứ trong tuần</S.FieldLabel>
+            <S.DayBtnRow>
+              {DAYS.map((day) => (
+                <S.DayBtn
+                  key={day.key}
+                  type="button"
+                  $active={draft.day === day.key}
+                  onClick={() => !isReadOnly && onPickDay(day.key)}
+                  disabled={isReadOnly}
+                >
+                  {day.short}
+                </S.DayBtn>
+              ))}
+            </S.DayBtnRow>
+          </div>
 
-            <S.FieldFull>
-              <S.FieldLabel>🎯 Mục tiêu bài học</S.FieldLabel>
-              <S.TextArea
-                value={draft.objective}
-                onChange={(e) => onUpdateDraft({ objective: e.target.value })}
-                placeholder="Bé sẽ đạt được gì sau tiết học này? (kiến thức, kỹ năng, thái độ)"
-                disabled={isReadOnly}
-              />
-            </S.FieldFull>
+          {/* 🎯 Mục tiêu */}
+          <div>
+            <S.FieldLabel>🎯 Mục tiêu bài học</S.FieldLabel>
+            <S.TextArea
+              value={draft.objective}
+              onChange={(e) => onUpdateDraft({ objective: e.target.value })}
+              placeholder="Bé sẽ đạt được gì sau tiết học này? (kiến thức, kỹ năng, thái độ)"
+              disabled={isReadOnly}
+            />
+          </div>
 
-            <S.FieldFull>
-              <S.FieldLabel>📋 Chi tiết hoạt động / Cách tiến hành</S.FieldLabel>
-              <S.TextArea
-                value={draft.activityDetails}
-                onChange={(e) => onUpdateDraft({ activityDetails: e.target.value })}
-                placeholder="Cô hướng dẫn: ... Bé thực hành: ... Trò chơi: ..."
-                disabled={isReadOnly}
-              />
-            </S.FieldFull>
+          {/* 📋 Hoạt động */}
+          <div>
+            <S.FieldLabel>📋 Chi tiết hoạt động / Cách tiến hành</S.FieldLabel>
+            <S.TextArea
+              value={draft.activityDetails}
+              onChange={(e) => onUpdateDraft({ activityDetails: e.target.value })}
+              placeholder="Cô hướng dẫn: ... Bé thực hành: ... Trò chơi: ..."
+              disabled={isReadOnly}
+            />
+          </div>
 
-            <S.FieldFull>
-              <S.FieldLabel>🎒 Đồ dùng / Học liệu cần chuẩn bị</S.FieldLabel>
-              <S.TextArea
-                value={draft.materials}
-                onChange={(e) => onUpdateDraft({ materials: e.target.value })}
-                placeholder="Flashcard, giấy A4, sáp màu, bảng con, ... (mỗi mục 1 dòng)"
-                style={{ minHeight: 64 }}
-                disabled={isReadOnly}
-              />
-            </S.FieldFull>
+          {/* 🎒 Đồ dùng */}
+          <div>
+            <S.FieldLabel>🎒 Đồ dùng / Học liệu cần chuẩn bị</S.FieldLabel>
+            <S.TextArea
+              value={draft.materials}
+              onChange={(e) => onUpdateDraft({ materials: e.target.value })}
+              placeholder="Flashcard, giấy A4, sáp màu, bảng con, ... (mỗi mục 1 dòng)"
+              rows={3}
+              disabled={isReadOnly}
+            />
+          </div>
 
-            <S.FieldFull>
-              <S.FieldLabel>📝 Lưu ý cho giáo viên (tuỳ chọn)</S.FieldLabel>
-              <S.TextArea
-                value={draft.teacherNote}
-                onChange={(e) => onUpdateDraft({ teacherNote: e.target.value })}
-                placeholder="Lưu ý khi dạy: trẻ tăng động, cần chú ý quan sát, ..."
-                style={{ minHeight: 64 }}
-                disabled={isReadOnly}
-              />
-            </S.FieldFull>
-          </S.ModalGrid>
+          {/* 📝 Lưu ý GV */}
+          <div>
+            <S.FieldLabel>📝 Lưu ý cho giáo viên (tuỳ chọn)</S.FieldLabel>
+            <S.TextArea
+              value={draft.teacherNote}
+              onChange={(e) => onUpdateDraft({ teacherNote: e.target.value })}
+              placeholder="Lưu ý khi dạy: trẻ tăng động, cần chú ý quan sát, ..."
+              rows={2}
+              disabled={isReadOnly}
+            />
+          </div>
 
           <S.ModalFooter style={{ marginTop: 4 }}>
             <S.CancelBtn type="button" onClick={onClose}>Huỷ</S.CancelBtn>
