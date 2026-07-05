@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '@kindercare/core';
+import { useAuth, initPushNotification, isPushRegistered } from '@kindercare/core';
 import { kcToast } from '@kindercare/ui';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
@@ -101,12 +101,9 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [changingPw, setChangingPw] = useState(false);
 
-  // ---- notification prefs (mock) ----
+  // ---- notification prefs ----
   const [notifyList, setNotifyList] = useState<NotifyItem[]>([
     { key: 'push', icon: <IconBell size={19} />, title: 'Thông báo đẩy (App)', desc: 'Nhận thông báo ngay trên ứng dụng', on: true },
-    { key: 'email', icon: <IconMail size={19} />, title: 'Email', desc: 'Bản tin & thông báo quan trọng qua email', on: true },
-    { key: 'sms', icon: <IconPhone size={19} />, title: 'Tin nhắn SMS', desc: 'Thông báo khẩn qua tin nhắn', on: false },
-    { key: 'daily', icon: <IconCalendar size={19} />, title: 'Tóm tắt cuối ngày', desc: 'Nhật ký bé gửi lúc 17:00 mỗi ngày', on: true },
   ]);
 
   const pwRules = useMemo(() => ({
@@ -213,8 +210,19 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
     await logout();
   };
 
-  const toggleNotify = (key: string): void => {
+  const toggleNotify = async (key: string): Promise<void> => {
+    const turningOn = !notifyList.find(n => n.key === key)?.on;
     setNotifyList(list => list.map(n => (n.key === key ? { ...n, on: !n.on } : n)));
+
+    if (key === 'push' && turningOn && !isPushRegistered()) {
+      const ok = await initPushNotification({ force: true });
+      if (ok) {
+        kcToast.success('Đã bật thông báo đẩy trên thiết bị này');
+      } else {
+        kcToast.error('Không thể bật thông báo đẩy. Vui lòng cho phép quyền thông báo trên trình duyệt.');
+        setNotifyList(list => list.map(n => (n.key === key ? { ...n, on: false } : n)));
+      }
+    }
   };
 
   return (

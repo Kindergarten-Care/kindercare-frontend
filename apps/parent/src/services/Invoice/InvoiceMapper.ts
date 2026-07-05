@@ -5,6 +5,8 @@ import {
   InvoiceDetailDomainModel,
   InvoiceTransactionApiDto,
   InvoiceTransactionDomainModel,
+  ExtracurricularInvoiceItemApiDto,
+  ExtracurricularInvoiceItemDomainModel,
 } from '@/config/types/invoice';
 
 const toNumber = (value: unknown): number => {
@@ -47,12 +49,24 @@ export class InvoiceMapper {
     };
   }
 
+  static extracurricularItemToDomain(dto: ExtracurricularInvoiceItemApiDto): ExtracurricularInvoiceItemDomainModel {
+    return {
+      enrollmentId: dto.enrollmentId,
+      activityId: dto.activityId,
+      activityName: dto.activityName,
+      monthlyFee: toNumber(dto.monthlyFee),
+      status: dto.status,
+      feeRefunded: dto.feeRefunded,
+    };
+  }
+
   static detailToDomain(dto: InvoiceDetailApiDto): InvoiceDetailDomainModel {
     return {
       ...InvoiceMapper.toDomain(dto),
       studentId: dto.studentId,
       packageId: dto.packageId,
       transactions: (dto.transactions ?? []).map(InvoiceMapper.transactionToDomain),
+      extracurricularItems: dto.extracurricularItems?.map(InvoiceMapper.extracurricularItemToDomain),
     };
   }
 }

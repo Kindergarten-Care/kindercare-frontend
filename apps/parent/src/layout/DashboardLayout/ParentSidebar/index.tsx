@@ -13,7 +13,7 @@ import ChildSelectorDropdown from './ChildSelectorDropdown';
 import { useRequestBadge } from './useRequestBadge';
 import {
   IconHome, IconDiary, IconMenu, IconProfile,
-  IconChart, IconCalendar, IconCreditCard, IconReceipt,
+  IconChart, IconCalendar, IconCreditCard,
   IconChevronLeft, IconChevronRight,
   IconChevronDown, IconRequest, IconWave,
 } from '@/assets/icons/dashboard';
@@ -153,22 +153,17 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
         )}
         {collapsed && <S.Tooltip>Yêu cầu phụ huynh</S.Tooltip>}
       </S.NavItem>
+      <S.NavItem href={`/${locale}/extracurricular`} $active={pathname.includes('/extracurricular')} $collapsed={collapsed}>
+        <S.NavIcon><IconWave size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={collapsed}>Hoạt động ngoại khóa</S.NavSpan>
+        {collapsed && <S.Tooltip>Hoạt động ngoại khóa</S.Tooltip>}
+      </S.NavItem>
 
       <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
       <S.NavItem href={`/${locale}/billing`} $active={pathname.includes('/billing')} $collapsed={collapsed}>
         <S.NavIcon><IconCreditCard size={18} /></S.NavIcon>
         <S.NavSpan $hidden={collapsed}>Học phí & Lệ phí</S.NavSpan>
         {collapsed && <S.Tooltip>Học phí & Lệ phí</S.Tooltip>}
-      </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
-        <S.NavIcon><IconReceipt size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Lịch sử thanh toán</S.NavSpan>
-        {collapsed && <S.Tooltip>Lịch sử thanh toán</S.Tooltip>}
-      </S.NavItem>
-      <S.NavItem href={`/${locale}/extracurricular`} $active={pathname.includes('/extracurricular')} $collapsed={collapsed}>
-        <S.NavIcon><IconWave size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Hoạt động ngoại khóa</S.NavSpan>
-        {collapsed && <S.Tooltip>Hoạt động ngoại khóa</S.Tooltip>}
       </S.NavItem>
 
       {/* Footer */}

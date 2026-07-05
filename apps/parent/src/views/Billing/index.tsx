@@ -2,34 +2,77 @@
 
 import React from 'react';
 import { useLocale } from 'next-intl';
+import { Dropdown } from '@kindercare/ui';
 import * as S from './styles';
-import { useBilling, TypeFilter, StatusFilter } from './hooks/useBilling';
+import { useBilling, TypeFilter, StatusFilter, MonthFilter } from './hooks/useBilling';
 import { formatVND, formatBillingMonth, getDueStatus } from '@/utils/Billing/format';
-import { IconCreditCard, IconReceipt, IconAlert } from '@/assets/icons/dashboard';
+import { IconCreditCard, IconReceipt, IconAlert, IconWave } from '@/assets/icons/dashboard';
+import { InvoiceDomainModel } from '@/config/types/invoice';
 
 const TYPE_TABS: { key: TypeFilter; label: string }[] = [
   { key: 'ALL', label: 'Tất cả' },
   { key: 'TUITION', label: 'Học phí' },
   { key: 'MONTHLY', label: 'Hàng tháng' },
+  { key: 'EXTRACURRICULAR', label: 'Ngoại khóa' },
 ];
 
 const STATUS_TABS: { key: StatusFilter; label: string }[] = [
   { key: 'ALL', label: 'Mọi trạng thái' },
   { key: 'Unpaid', label: 'Chưa thanh toán' },
-  { key: 'Partial', label: 'Đã thanh toán 1 phần' },
   { key: 'Paid', label: 'Đã thanh toán' },
 ];
 
-function statusBadgeVariant(status: string): 'unpaid' | 'partial' | 'paid' {
-  if (status === 'Paid') return 'paid';
-  if (status === 'Partial') return 'partial';
+/** An EXTRACURRICULAR invoice down to 0 means every item on it was cancelled (and refunded, when previously paid). */
+function isCancelledToZero(inv: InvoiceDomainModel): boolean {
+  return inv.invoiceType === 'EXTRACURRICULAR' && inv.totalAmount === 0;
+}
+
+function statusBadgeVariant(inv: InvoiceDomainModel): 'unpaid' | 'partial' | 'paid' | 'cancelled' {
+  if (isCancelledToZero(inv)) return 'cancelled';
+  if (inv.paymentStatus === 'Paid') return 'paid';
+  if (inv.paymentStatus === 'Partial') return 'partial';
   return 'unpaid';
 }
 
-function statusLabel(status: string): string {
-  if (status === 'Paid') return 'Đã thanh toán';
-  if (status === 'Partial') return 'Thanh toán 1 phần';
+function statusLabel(inv: InvoiceDomainModel): string {
+  if (isCancelledToZero(inv)) return inv.paymentStatus === 'Paid' ? 'Đã hủy & hoàn tiền' : 'Đã hủy';
+  if (inv.paymentStatus === 'Paid') return 'Đã thanh toán';
+  if (inv.paymentStatus === 'Partial') return 'Thanh toán 1 phần';
   return 'Chưa thanh toán';
+}
+
+function InvoiceRow({ inv, locale }: { inv: InvoiceDomainModel; locale: string }) {
+  const due = getDueStatus(inv.dueDate, inv.paymentStatus);
+  return (
+    <S.InvoiceCard href={`/${locale}/billing/${inv.invoiceId}`}>
+      <S.InvIcon $type={inv.invoiceType}>
+        {inv.invoiceType === 'TUITION' ? (
+          <IconCreditCard size={20} />
+        ) : inv.invoiceType === 'EXTRACURRICULAR' ? (
+          <IconWave size={20} />
+        ) : (
+          <IconReceipt size={20} />
+        )}
+      </S.InvIcon>
+      <S.InvBody>
+        <S.InvTitle>
+          {inv.invoiceType === 'TUITION'
+            ? `Học phí ${inv.periodRange ?? formatBillingMonth(inv.billingMonth)}`
+            : inv.invoiceType === 'EXTRACURRICULAR'
+            ? `Ngoại khóa ${formatBillingMonth(inv.billingMonth)}`
+            : `Hóa đơn tiền ăn ${formatBillingMonth(inv.billingMonth)}`}
+          <S.Badge $variant={statusBadgeVariant(inv)}>{statusLabel(inv)}</S.Badge>
+        </S.InvTitle>
+        {inv.refundAmount > 0 && (
+          <S.InvRefund>Hoàn tiền ăn tháng trước: -{formatVND(inv.refundAmount)}</S.InvRefund>
+        )}
+      </S.InvBody>
+      <S.InvRight>
+        <S.InvAmount>{formatVND(inv.totalAmount)}</S.InvAmount>
+        {due.label && <S.DueBadge $variant={due.variant === 'none' ? 'ok' : due.variant}>{due.label}</S.DueBadge>}
+      </S.InvRight>
+    </S.InvoiceCard>
+  );
 }
 
 export function Billing() {
@@ -38,12 +81,15 @@ export function Billing() {
     loading,
     error,
     activeStudent,
-    invoices,
+    groupedInvoices,
+    availableMonths,
     summary,
     typeFilter,
     setTypeFilter,
     statusFilter,
     setStatusFilter,
+    monthFilter,
+    setMonthFilter,
   } = useBilling();
 
   return (
@@ -88,54 +134,57 @@ export function Billing() {
       </S.SummaryGrid>
 
       <S.FilterRow>
-        {TYPE_TABS.map(tab => (
-          <S.FilterBtn key={tab.key} $active={typeFilter === tab.key} onClick={() => setTypeFilter(tab.key)}>
-            {tab.label}
-          </S.FilterBtn>
-        ))}
-        <span style={{ width: 1, height: 20, background: '#e6eee9', margin: '0 4px' }} />
-        {STATUS_TABS.map(tab => (
-          <S.FilterBtn key={tab.key} $active={statusFilter === tab.key} onClick={() => setStatusFilter(tab.key)}>
-            {tab.label}
-          </S.FilterBtn>
-        ))}
+        <S.FilterDropdownWrap>
+          <S.FilterLabel>Loại phí</S.FilterLabel>
+          <Dropdown
+            value={typeFilter}
+            onChange={value => setTypeFilter(value as TypeFilter)}
+            options={TYPE_TABS.map(tab => ({ value: tab.key, label: tab.label }))}
+            fullWidth
+          />
+        </S.FilterDropdownWrap>
+        <S.FilterDropdownWrap>
+          <S.FilterLabel>Trạng thái</S.FilterLabel>
+          <Dropdown
+            value={statusFilter}
+            onChange={value => setStatusFilter(value as StatusFilter)}
+            options={STATUS_TABS.map(tab => ({ value: tab.key, label: tab.label }))}
+            fullWidth
+          />
+        </S.FilterDropdownWrap>
+        <S.FilterDropdownWrap>
+          <S.FilterLabel>Thời gian</S.FilterLabel>
+          <Dropdown
+            value={monthFilter}
+            onChange={value => setMonthFilter(value as MonthFilter)}
+            options={[
+              { value: 'ALL', label: 'Mọi tháng' },
+              ...availableMonths.map(month => ({ value: month, label: formatBillingMonth(month) })),
+            ]}
+            fullWidth
+          />
+        </S.FilterDropdownWrap>
       </S.FilterRow>
 
       {loading ? (
         <S.LoadingState>Đang tải danh sách hóa đơn...</S.LoadingState>
       ) : error ? (
         <S.EmptyState>{error}</S.EmptyState>
-      ) : invoices.length === 0 ? (
+      ) : groupedInvoices.length === 0 ? (
         <S.EmptyState>Không có hóa đơn nào phù hợp bộ lọc hiện tại.</S.EmptyState>
       ) : (
-        <S.InvoiceList>
-          {invoices.map(inv => {
-            const due = getDueStatus(inv.dueDate, inv.paymentStatus);
-            return (
-              <S.InvoiceCard key={inv.invoiceId} href={`/${locale}/billing/${inv.invoiceId}`}>
-                <S.InvIcon $type={inv.invoiceType}>
-                  {inv.invoiceType === 'TUITION' ? <IconCreditCard size={20} /> : <IconReceipt size={20} />}
-                </S.InvIcon>
-                <S.InvBody>
-                  <S.InvTitle>
-                    {inv.invoiceType === 'TUITION'
-                      ? `Học phí ${inv.periodRange ?? formatBillingMonth(inv.billingMonth)}`
-                      : `Hóa đơn ${formatBillingMonth(inv.billingMonth)}`}
-                    <S.Badge $variant={statusBadgeVariant(inv.paymentStatus)}>{statusLabel(inv.paymentStatus)}</S.Badge>
-                  </S.InvTitle>
-                  <S.InvMeta>Ngày tạo: {formatBillingMonth(inv.billingMonth)}</S.InvMeta>
-                  {inv.refundAmount > 0 && (
-                    <S.InvRefund>Hoàn tiền ăn tháng trước: -{formatVND(inv.refundAmount)}</S.InvRefund>
-                  )}
-                </S.InvBody>
-                <S.InvRight>
-                  <S.InvAmount>{formatVND(inv.totalAmount)}</S.InvAmount>
-                  {due.label && <S.DueBadge $variant={due.variant === 'none' ? 'ok' : due.variant}>{due.label}</S.DueBadge>}
-                </S.InvRight>
-              </S.InvoiceCard>
-            );
-          })}
-        </S.InvoiceList>
+        <S.MonthGroupList>
+          {groupedInvoices.map(group => (
+            <S.MonthGroup key={group.billingMonth}>
+              <S.MonthGroupTitle>{formatBillingMonth(group.billingMonth)}</S.MonthGroupTitle>
+              <S.InvoiceList>
+                {group.invoices.map(inv => (
+                  <InvoiceRow key={inv.invoiceId} inv={inv} locale={locale} />
+                ))}
+              </S.InvoiceList>
+            </S.MonthGroup>
+          ))}
+        </S.MonthGroupList>
       )}
     </S.PageWrap>
   );
