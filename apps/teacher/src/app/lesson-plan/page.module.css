@@ -1,0 +1,57 @@
+.container {
+  min-height: 100vh;
+  background: #E9F1EC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.card {
+  width: 1000px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(3, 37, 18, 0.08);
+  display: flex;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 220px;
+  background: #005A36;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.small { opacity: 0.9; font-size: 13px }
+
+.main { flex: 1; padding: 18px 22px }
+
+.header {
+  background: #00794A;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.date { opacity: 0.95; font-size: 14px }
+
+.chipsRow { display:flex; gap:12px; margin-bottom:14px }
+.chip { padding:10px 14px; border-radius:10px; font-weight:600 }
+.chipBlue { background:#E3EDFD; color:#1f4c8a }
+.chipYellow { background:#FEF3C7; color:#7a5a00 }
+.chipGreen { background:#E6F3ED; color:#0d6b3a }
+
+.columns { display:flex; gap:16px }
+.col { flex:1; background:#fff; border-radius:8px; border:1px solid #E6EEE9; padding:12px; min-height:260px }
+
+.col h3 { margin-bottom:8px }
