@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'media.kindercare.app',
+      },
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
       },
       {

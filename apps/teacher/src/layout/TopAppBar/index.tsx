@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import * as S from './styles';
 import { NotificationDropdown } from './components/NotificationDropdown';
 import { useRouter } from '@/i18n/routing';
+import { useTeacherProfile } from '@/hooks/useTeacherQueries';
 
 interface TopAppBarProps {
   fullName: string;
@@ -45,6 +46,9 @@ const MenuIcon = ({ size = 20 }: { size?: number }) => (
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { data: profile } = useTeacherProfile();
+
+  const avatarUrl = profile?.avatarUrl;
 
   return (
     <S.HeaderContainer>
@@ -83,7 +87,11 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
             <S.ProfileRole>{roleTitle}</S.ProfileRole>
           </S.ProfileInfo>
           <S.Avatar>
-            {fullName ? fullName.trim().split(' ').pop()?.charAt(0).toUpperCase() : 'H'}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={fullName} />
+            ) : (
+              fullName ? fullName.trim().split(' ').pop()?.charAt(0).toUpperCase() : 'H'
+            )}
           </S.Avatar>
         </S.ProfileSection>
       </S.ActionsSection>

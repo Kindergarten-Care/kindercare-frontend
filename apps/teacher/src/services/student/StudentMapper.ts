@@ -20,7 +20,8 @@ export class StudentMapper {
         phone: p.phone,
         email: p.email,
         relationship: p.relationship,
-        isPrimary: p.isPrimary
+        isPrimary: p.isPrimary,
+        avatarUrl: p.avatarUrl
       })) : [],
     };
   }

@@ -5,6 +5,7 @@ export interface ParentApiDto {
   email: string;
   relationship: string;
   isPrimary: boolean;
+  avatarUrl: string | null;
 }
 
 export interface HealthRecordApiDto {
@@ -31,6 +32,7 @@ export interface ParentDomainModel {
   email: string;
   relationship: string;
   isPrimary: boolean;
+  avatarUrl: string | null;
 }
 
 export interface HealthRecordDomainModel {
@@ -49,3 +51,10 @@ export interface StudentDetailedDomainModel {
   healthRecord: HealthRecordDomainModel | null;
   parents: ParentDomainModel[];
 }
+
+export interface DetailedStudentsApiResponse {
+  classId: number;
+  totalStudents: number;
+  students: StudentDetailedApiDto[];
+}
+

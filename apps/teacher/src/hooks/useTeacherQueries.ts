@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@kindercare/core';
 import { NewsfeedService } from '@/services/newsfeed';
+import { classService } from '@/services/class/ClassService';
+import { mapApiLeaveRequestToDomain } from '@/services/attendance';
+import { profileService } from '@/services/profile/ProfileService';
 
 // --- DASHBOARD STATS ---
 export const useDashboardStats = () => {
@@ -14,7 +17,14 @@ export const useDashboardStats = () => {
   });
 };
 
-import { mapApiLeaveRequestToDomain } from '@/services/attendance';
+export const useTeacherClasses = () => {
+  return useQuery({
+    queryKey: ['teacherClasses'],
+    queryFn: () => classService.getClasses(),
+    staleTime: 5 * 60 * 1000, // 5 minutes — class list changes rarely
+  });
+};
+
 
 // --- LEAVE REQUESTS ---
 export const useLeaveRequests = (status = 'Pending') => {
@@ -168,6 +178,14 @@ export const useCreateNewsfeed = () => {
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
     }
+  });
+};
+
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacherProfile'],
+    queryFn: () => profileService.getProfile(),
+    staleTime: 15 * 60 * 1000, // cache profile details for 15 mins
   });
 };
 

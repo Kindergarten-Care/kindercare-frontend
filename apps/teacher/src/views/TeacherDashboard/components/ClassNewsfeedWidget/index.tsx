@@ -48,22 +48,22 @@ export const ClassNewsfeedWidget: React.FC<ClassNewsfeedWidgetProps> = ({ classI
       ) : (
         <S.FeedList>
           {newsfeeds.map((feed: any) => (
-            <S.FeedItem key={feed.PostID}>
+            <S.FeedItem key={feed.postId}>
               <S.FeedHeader>
-                <S.TeacherAvatar src={feed.TeacherAvatar || 'https://ui-avatars.com/api/?name=' + (feed.TeacherName || 'G')} alt="Teacher" />
+                <S.TeacherAvatar src={feed.teacherAvatar || 'https://ui-avatars.com/api/?name=' + (feed.teacherName || 'G')} alt="Teacher" />
                 <S.HeaderInfo>
-                  <S.TeacherName>{feed.TeacherName || 'Giáo viên'}</S.TeacherName>
-                  <S.PostTime>{formatTime(feed.PostedAt)}</S.PostTime>
+                  <S.TeacherName>{feed.teacherName || 'Giáo viên'}</S.TeacherName>
+                  <S.PostTime>{formatTime(feed.postedAt)}</S.PostTime>
                 </S.HeaderInfo>
               </S.FeedHeader>
               
-              <S.FeedContent>{feed.Content}</S.FeedContent>
+              <S.FeedContent>{feed.content}</S.FeedContent>
               
-              {feed.MediaURL && (
+              {feed.mediaUrl && (
                 <S.FeedImage 
-                  src={feed.MediaURL} 
+                  src={feed.mediaUrl} 
                   alt="Đính kèm" 
-                  onClick={() => setLightboxImage(feed.MediaURL)}
+                  onClick={() => setLightboxImage(feed.mediaUrl)}
                 />
               )}
             </S.FeedItem>

@@ -133,7 +133,7 @@ export const Grid = styled.div`
   }
 `;
 
-export const StudentCard = styled.button`
+export const StudentCard = styled.button<{ $dim?: boolean }>`
   background: #fff;
   border: 1px solid #E6EEE9;
   border-radius: 16px;
@@ -145,6 +145,11 @@ export const StudentCard = styled.button`
   flex-direction: column;
   gap: 13px;
   transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s, border-color 0.25s;
+
+  ${props => props.$dim && `
+    filter: grayscale(0.4);
+    opacity: 0.82;
+  `}
 
   &:hover {
     transform: translateY(-3px) scale(1.01);
@@ -330,6 +335,11 @@ export const ParentCard = styled.div`
   border-radius: 14px;
   box-shadow: 0 4px 18px -4px rgba(0,90,54,0.06);
   padding: 16px;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 export const PrimaryButton = styled.button`
@@ -374,3 +384,224 @@ export const SecondaryButton = styled.button`
     background: #F1F4F1;
   }
 `;
+
+// ADDITIONAL TOOLBAR & WIDGET STYLES FOR REDESIGN
+export const ToolbarRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+`;
+
+export const FilterGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+`;
+
+export const FilterBtn = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid ${props => props.$active ? '#005A36' : '#E6EEE9'};
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 12.5px;
+  background: ${props => props.$active ? '#005A36' : '#fff'};
+  color: ${props => props.$active ? '#fff' : '#6B7280'};
+  transition: all 0.15s;
+  box-shadow: 0 4px 18px -8px rgba(0,90,54,0.08);
+
+  &:hover {
+    border-color: #005A36;
+    color: ${props => props.$active ? '#fff' : '#005A36'};
+  }
+`;
+
+export const SortContainer = styled.div`
+  display: flex;
+  background: #fff;
+  border: 1px solid #E6EEE9;
+  border-radius: 11px;
+  padding: 3px;
+  gap: 3px;
+  box-shadow: 0 4px 18px -8px rgba(0,90,54,0.08);
+`;
+
+export const SortBtn = styled.button<{ $active?: boolean }>`
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: ${props => props.$active ? '700' : '600'};
+  font-size: 12.5px;
+  background: ${props => props.$active ? '#E6F3ED' : 'transparent'};
+  color: ${props => props.$active ? '#005A36' : '#6B7280'};
+  transition: all 0.15s;
+`;
+
+export const ClassSelectContainer = styled.div`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+`;
+
+export const ClassSelect = styled.select`
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 24px;
+  padding: 6px 36px 6px 14px;
+  border-radius: 12px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.15s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  letter-spacing: -0.02em;
+
+  &:hover, &:focus {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  option {
+    background: #005A36;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+  }
+`;
+
+export const ClassSelectArrow = styled.span`
+  position: absolute;
+  right: 14px;
+  top: 52%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0.85;
+`;
+
+
+export const HeatmapGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+`;
+
+export const HeatmapCell = styled.span<{ $kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' }>`
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: scale(1.08);
+    z-index: 2;
+  }
+
+  ${props => {
+    switch (props.$kind) {
+      case 'present':
+        return `background: #005A36; color: #fff; border: 1px solid transparent;`;
+      case 'late':
+        return `background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;`;
+      case 'absent':
+        return `background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5;`;
+      case 'weekend':
+        return `background: #F1F4F1; color: #C7CFCA; border: 1px solid transparent;`;
+      case 'future':
+        return `background: #FAFCFB; color: #D1D5DB; border: 1px solid #EEF4F0;`;
+    }
+  }}
+`;
+
+export const HealthRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+`;
+
+export const HealthCard = styled.div<{ $theme: 'blue' | 'purple' }>`
+  background: ${props => props.$theme === 'blue' ? '#E3EDFD' : '#F1ECFE'};
+  border: 1px solid ${props => props.$theme === 'blue' ? '#C7DBFB' : '#DDD0FB'};
+  border-radius: 13px;
+  padding: 14px;
+`;
+
+export const HealthTitle = styled.div<{ $theme: 'blue' | 'purple' }>`
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${props => props.$theme === 'blue' ? '#1D4ED8' : '#7C3AED'};
+`;
+
+export const HealthVal = styled.div`
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 3px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+`;
+
+export const PrescriptionBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 8px;
+`;
+
+export const PrescriptionItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px;
+  border-radius: 12px;
+  background: #E3EDFD;
+  border: 1px solid #C7DBFB;
+`;
+
+export const ToastContainer = styled.div`
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const ToastItem = styled.div`
+  background: #1F2937;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+  animation: ${fadein} 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+

@@ -1,84 +1,165 @@
 import React from 'react';
 import * as S from './styles';
-import { LayoutDashboard, Users, CheckSquare, Calendar, Heart, User, LogOut } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  CheckSquare, 
+  Calendar, 
+  Users,
+  BookOpen,
+  Heart,
+  Star,
+  LogOut,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTeacherClasses, useTeacherProfile } from '@/hooks/useTeacherQueries';
+import type { TeacherClassDomainModel } from '@/config/types/class';
 
 interface TeacherSidebarProps {
   isOpen?: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
 }
 
-export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ isOpen, onClose }) => {
+export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({ 
+  isOpen, 
+  isCollapsed, 
+  onClose,
+  onToggleCollapse 
+}) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { data: profile } = useTeacherProfile();
   
+  const avatarUrl = profile?.avatarUrl;
+  
+  // Load classes using react query — returns TeacherClassDomainModel[]
+  const { data: classes } = useTeacherClasses();
+  
+  // Default to first class if available — displayName and classInitial are pre-computed by ClassMapper
+  const activeClass: TeacherClassDomainModel | null = classes && classes.length > 0 ? classes[0] : null;
+  const studentCount  = activeClass?.studentCount  ?? 0;
+  const displayClassName = activeClass?.displayName  ?? 'Lớp Mầm 1';
+  const classInitial     = activeClass?.classInitial ?? 'M1';
+
   const isDashboardActive = pathname === '/';
   const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
   const isActivitiesActive = pathname === '/activities';
-  const isProfileActive = pathname === '/profile';
+
+  // Extract user initials
+  const getInitials = (name?: string) => {
+    if (!name) return 'GV';
+    const parts = name.trim().split(' ');
+    return parts[parts.length - 1].charAt(0).toUpperCase();
+  };
+
+  // Helper to handle placeholder features
+  const handleFeatureNotImplemented = (featureName: string) => {
+    alert(`Tính năng "${featureName}" đang được phát triển.`);
+  };
 
   return (
-    <S.SidebarContainer $isOpen={isOpen}>
-      <S.LogoContainer>
-        <S.LogoBlock>K</S.LogoBlock>
-        <S.LogoText>KinderCare</S.LogoText>
-        {onClose && (
-          <S.CloseButton onClick={onClose} aria-label="Close sidebar">
-            ✕
-          </S.CloseButton>
-        )}
+    <S.SidebarContainer $isOpen={isOpen} $isCollapsed={isCollapsed}>
+      {/* COLLAPSE BUTTON */}
+      {onToggleCollapse && (
+        <S.CollapseBtn $isCollapsed={isCollapsed} onClick={onToggleCollapse} title="Thu gọn">
+          <ChevronLeft size={16} strokeWidth={2.4} />
+        </S.CollapseBtn>
+      )}
+
+      {/* LOGO */}
+      <S.LogoContainer $isCollapsed={isCollapsed}>
+        <S.LogoBlock>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#005A36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+        </S.LogoBlock>
+        <S.FullOnly $isCollapsed={isCollapsed}>
+          <S.LogoTitle>KINDER CARE</S.LogoTitle>
+          <S.LogoSub>QUẢN LÝ GIÁO VIÊN</S.LogoSub>
+        </S.FullOnly>
       </S.LogoContainer>
 
-      <S.NavList>
-        <S.NavItem $active={isDashboardActive} onClick={() => router.push('/')}>
-          <S.IconWrapper>
-            <LayoutDashboard size={23} />
-          </S.IconWrapper>
-          <S.Label>Bảng điều khiển</S.Label>
+      {/* CLASS SELECTOR */}
+      <S.ProfileCard $isCollapsed={isCollapsed} onClick={() => router.push('/students')}>
+        <S.ProfileAvatar>{classInitial}</S.ProfileAvatar>
+        <S.FullOnly $isCollapsed={isCollapsed}>
+          <S.ProfileName>{displayClassName}</S.ProfileName>
+          <S.ProfileDesc>{studentCount} học sinh</S.ProfileDesc>
+        </S.FullOnly>
+        {!isCollapsed && (
+          <ChevronRight size={16} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+        )}
+      </S.ProfileCard>
+
+      {/* NAVIGATION */}
+      <S.NavSection>
+        <S.SectTitle $isCollapsed={isCollapsed}>HÔM NAY</S.SectTitle>
+        <S.NavItem $active={isDashboardActive} $isCollapsed={isCollapsed} onClick={() => router.push('/')}>
+          {isDashboardActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><LayoutDashboard size={20} strokeWidth={1.9} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Tổng quan</S.NavLabel>
         </S.NavItem>
-        <S.NavItem $active={isStudentsActive} onClick={() => router.push('/students')}>
-          <S.IconWrapper>
-            <Users size={23} />
-          </S.IconWrapper>
-          <S.Label>Danh sách lớp</S.Label>
+        <S.NavItem $active={isAttendanceActive} $isCollapsed={isCollapsed} onClick={() => router.push('/attendance')}>
+          {isAttendanceActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><CheckSquare size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Điểm danh</S.NavLabel>
         </S.NavItem>
-        <S.NavItem $active={isAttendanceActive} onClick={() => router.push('/attendance')}>
-          <S.IconWrapper>
-            <CheckSquare size={23} />
-          </S.IconWrapper>
-          <S.Label>Điểm danh</S.Label>
+        <S.NavItem $active={isActivitiesActive} $isCollapsed={isCollapsed} onClick={() => router.push('/activities')}>
+          {isActivitiesActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><Calendar size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Thực đơn & Lịch học</S.NavLabel>
         </S.NavItem>
-        <S.NavItem $active={isActivitiesActive} onClick={() => router.push('/activities')}>
-          <S.IconWrapper>
-            <Calendar size={23} />
-          </S.IconWrapper>
-          <S.Label>Hoạt động</S.Label>
+
+        <S.SectTitle $isCollapsed={isCollapsed}>LỚP & HỌC TẬP</S.SectTitle>
+        <S.NavItem $active={isStudentsActive} $isCollapsed={isCollapsed} onClick={() => router.push('/students')}>
+          {isStudentsActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><Users size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Danh sách lớp</S.NavLabel>
+          <S.NavBadge $isCollapsed={isCollapsed}>{studentCount}</S.NavBadge>
         </S.NavItem>
-        <S.NavItem onClick={() => router.push('/')}>
-          <S.IconWrapper>
-            <Heart size={23} />
-          </S.IconWrapper>
-          <S.Label>Y tế &amp; Dinh dưỡng</S.Label>
+
+        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Soạn giáo án')}>
+          <S.NavIcon><BookOpen size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Soạn giáo án</S.NavLabel>
         </S.NavItem>
-      </S.NavList>
-      
-      <S.BottomNav>
-        <S.NavItem $active={isProfileActive} onClick={() => router.push('/profile')}>
-          <S.IconWrapper>
-            <User size={23} />
-          </S.IconWrapper>
-          <S.Label>Hồ sơ</S.Label>
+
+        <S.SectTitle $isCollapsed={isCollapsed}>CHĂM SÓC</S.SectTitle>
+        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Y tế & Sức khỏe')}>
+          <S.NavIcon><Heart size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Y tế & Sức khỏe</S.NavLabel>
         </S.NavItem>
-        <S.NavItem onClick={logout}>
-          <S.IconWrapper>
-            <LogOut size={23} />
-          </S.IconWrapper>
-          <S.Label>Đăng xuất</S.Label>
+        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Phiếu bé ngoan')}>
+          <S.NavIcon style={{ color: '#FBBF24' }}><Star size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Phiếu bé ngoan</S.NavLabel>
+          <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
-      </S.BottomNav>
+      </S.NavSection>
+
+      {/* USER BAR */}
+      <S.UserBar $isCollapsed={isCollapsed}>
+        <S.UserAvatar onClick={() => router.push('/profile')} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={profile?.fullName || user?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            getInitials(profile?.fullName || user?.fullName)
+          )}
+        </S.UserAvatar>
+        <S.FullOnly $isCollapsed={isCollapsed}>
+          <S.UserName>{profile?.fullName || user?.fullName || 'Giáo viên'}</S.UserName>
+          <S.UserRole>{user?.roleName === 'Teacher' ? 'Giáo viên' : (user?.roleName || 'Giáo viên')}</S.UserRole>
+        </S.FullOnly>
+        <S.SettingsBtn onClick={logout} title="Đăng xuất" style={{ display: isCollapsed ? 'none' : 'flex' }}>
+          <LogOut size={15} strokeWidth={1.9} />
+        </S.SettingsBtn>
+      </S.UserBar>
+
     </S.SidebarContainer>
   );
 };

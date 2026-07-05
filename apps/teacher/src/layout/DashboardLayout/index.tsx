@@ -17,10 +17,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   roleTitle
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   return (
-    <S.LayoutContainer>
-      <TeacherSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+    <S.LayoutContainer $isCollapsed={isCollapsed}>
+      <TeacherSidebar 
+        isOpen={isSidebarOpen} 
+        isCollapsed={isCollapsed}
+        onClose={() => setIsSidebarOpen(false)} 
+        onToggleCollapse={() => setIsCollapsed(c => !c)}
+      />
       
       {isSidebarOpen && (
         <S.SidebarOverlay onClick={() => setIsSidebarOpen(false)} />
@@ -39,4 +45,3 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </S.LayoutContainer>
   );
 };
-
