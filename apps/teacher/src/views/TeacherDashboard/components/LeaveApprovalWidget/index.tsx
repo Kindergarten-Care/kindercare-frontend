@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { AttendanceService } from '@/services/attendance';
+import { LeaveRequestService } from '@/services/leave-requests';
 import { LeaveRequest } from '@/config/types/attendance';
 
 import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
@@ -52,7 +53,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     setLeaveReqDetail(null);
     setIsLoadingReqDetail(true);
     try {
-      const detail = await AttendanceService.getLeaveRequestDetail(r.id);
+      const detail = await LeaveRequestService.getLeaveRequestDetail(r.id);
       if (detail) {
         setLeaveReqDetail(detail);
       }

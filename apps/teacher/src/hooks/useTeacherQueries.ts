@@ -70,7 +70,7 @@ export const useUpdateAvatar = () => {
   });
 };
 
-import { mapApiLeaveRequestToDomain } from '@/services/attendance';
+import { mapApiLeaveRequestToDomain } from '@/services/leave-requests';
 
 // --- LEAVE REQUESTS ---
 export const useLeaveRequests = (status = 'Pending') => {
