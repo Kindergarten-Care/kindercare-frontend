@@ -46,6 +46,7 @@ export const Tile = styled.div`
   align-items: center;
   gap: 12px;
   padding: 13px 16px;
+  min-width: 0;
   & + & { border-top: 1px solid #EEF4F0; }
 `;
 
@@ -68,12 +69,14 @@ export const TileName = styled.div`
   font-size: 13.5px;
   font-weight: 700;
   color: #1F2937;
+  overflow-wrap: break-word;
 `;
 
 export const TileDesc = styled.div`
   font-size: 12px;
   color: var(--muted, #6B7280);
   margin-top: 2px;
+  overflow-wrap: break-word;
   b { color: #1F2937; font-weight: 600; }
 `;
 
