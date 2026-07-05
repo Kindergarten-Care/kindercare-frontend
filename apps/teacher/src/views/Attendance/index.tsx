@@ -3,6 +3,7 @@ import { useTheme } from 'styled-components';
 import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download } from 'lucide-react';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
+import { LeaveRequestService } from '../../services/leave-requests';
 import { QrScannerModal } from '../../components/QrScannerModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
@@ -108,7 +109,7 @@ export const AttendanceView: React.FC = () => {
 
   const fetchLeaves = async () => {
     try {
-      const leavesData = await AttendanceService.getAllLeaveRequests();
+      const leavesData = await LeaveRequestService.getAllLeaveRequests();
       setAllLeaves(leavesData);
     } catch (error) {
       console.error('Failed to fetch leave requests:', error);
@@ -171,7 +172,7 @@ export const AttendanceView: React.FC = () => {
 
   const handleProcessLeaveRequest = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      await AttendanceService.processLeaveRequest(requestId, status);
+      await LeaveRequestService.processLeaveRequest(requestId, status);
       
       const targetStudent = students.find(s => s.leaveRequestId === requestId);
       if (targetStudent) {
@@ -239,7 +240,7 @@ export const AttendanceView: React.FC = () => {
       if (targetStudent && targetStudent.leaveRequestId && newDomainStatus !== 'PRESENT') {
         const syncActionStatus = newDomainStatus === 'PERMISSION_ABSENCE' ? 'APPROVED' : 'REJECTED';
         try {
-          await AttendanceService.processLeaveRequest(targetStudent.leaveRequestId, syncActionStatus);
+          await LeaveRequestService.processLeaveRequest(targetStudent.leaveRequestId, syncActionStatus);
           newLeaveReqStatus = syncActionStatus;
           setAllLeaves(prev => prev.map(l => l.id === targetStudent.leaveRequestId ? { ...l, status: syncActionStatus } : l));
         } catch (e) {

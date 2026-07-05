@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="9c4dc5a2-391a-4af4-b88b-f7dfb136cdc4"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("32dc568c-aaad-4170-b7f4-7cffc090156d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6247bd21-7e6a-4d15-97d5-39b241d91f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bfb32292-751f-4c67-a3cc-2abc7a9003e2") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("44ae3e1c-f4b9-4542-8de9-cfe285b286e5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("32d34c80-6391-4a7f-9a34-694abb6b83e6") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6b8f56ee-5972-4aee-b239-4a8773d5b895") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("18e58c25-24e3-4cb0-a521-83d62cbc7d48") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("32dc568c-aaad-4170-b7f4-7cffc090156d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6247bd21-7e6a-4d15-97d5-39b241d91f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("bfb32292-751f-4c67-a3cc-2abc7a9003e2") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("44ae3e1c-f4b9-4542-8de9-cfe285b286e5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("32d34c80-6391-4a7f-9a34-694abb6b83e6") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6b8f56ee-5972-4aee-b239-4a8773d5b895") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("18e58c25-24e3-4cb0-a521-83d62cbc7d48") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("32dc568c-aaad-4170-b7f4-7cffc090156d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6247bd21-7e6a-4d15-97d5-39b241d91f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("bfb32292-751f-4c67-a3cc-2abc7a9003e2") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("44ae3e1c-f4b9-4542-8de9-cfe285b286e5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("32d34c80-6391-4a7f-9a34-694abb6b83e6") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6b8f56ee-5972-4aee-b239-4a8773d5b895") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("18e58c25-24e3-4cb0-a521-83d62cbc7d48") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("32dc568c-aaad-4170-b7f4-7cffc090156d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("6247bd21-7e6a-4d15-97d5-39b241d91f25") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("bfb32292-751f-4c67-a3cc-2abc7a9003e2") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("44ae3e1c-f4b9-4542-8de9-cfe285b286e5") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("32d34c80-6391-4a7f-9a34-694abb6b83e6") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("6b8f56ee-5972-4aee-b239-4a8773d5b895") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("18e58c25-24e3-4cb0-a521-83d62cbc7d48") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c024524d-d9c9-4182-a132-b8f71ae34532") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b5539f36-2933-4d95-ad9e-b86504fc06b7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e84529fb-3142-44ea-bee3-c1d74c470d86") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3e9a9dae-fad2-49cb-afcd-4915967da7e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c024524d-d9c9-4182-a132-b8f71ae34532") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b5539f36-2933-4d95-ad9e-b86504fc06b7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("e84529fb-3142-44ea-bee3-c1d74c470d86") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("3e9a9dae-fad2-49cb-afcd-4915967da7e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c024524d-d9c9-4182-a132-b8f71ae34532") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b5539f36-2933-4d95-ad9e-b86504fc06b7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("e84529fb-3142-44ea-bee3-c1d74c470d86") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("3e9a9dae-fad2-49cb-afcd-4915967da7e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c024524d-d9c9-4182-a132-b8f71ae34532") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b5539f36-2933-4d95-ad9e-b86504fc06b7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("e84529fb-3142-44ea-bee3-c1d74c470d86") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("3e9a9dae-fad2-49cb-afcd-4915967da7e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("c024524d-d9c9-4182-a132-b8f71ae34532") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("b5539f36-2933-4d95-ad9e-b86504fc06b7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("e84529fb-3142-44ea-bee3-c1d74c470d86") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("3e9a9dae-fad2-49cb-afcd-4915967da7e5") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:#E9F1EC;color:#1F2937;-webkit-font-smoothing:antialiased;}
+.display{font-family:'Plus Jakarta Sans','Inter',sans-serif;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#cfe0d6;border-radius:8px;}
+.kc-nav{transition:background .15s,color .15s;}
+.kc-nav:hover{background:rgba(255,255,255,.1);}
+.kc-nav.kc-active:hover{background:#fff;}
+.kc-row{transition:background .15s;}
+.kc-row:hover{background:#F6FAF7 !important;}
+.kc-card{transition:transform .2s cubic-bezier(.4,0,.2,1),box-shadow .2s;}
+.kc-card:hover{transform:translateY(-3px);box-shadow:0 18px 48px -12px rgba(0,90,54,.16),0 6px 16px -6px rgba(0,0,0,.05) !important;}
+.kc-sb{width:262px;}
+.kc-main{margin-left:262px;}
+body.kc-collapsed .kc-label,body.kc-collapsed .kc-sect,body.kc-collapsed .kc-fullonly,body.kc-collapsed .kc-badge{display:none !important;}
+body.kc-collapsed .kc-navitem{justify-content:center !important;padding-left:0 !important;padding-right:0 !important;}
+body.kc-collapsed .kc-logo,body.kc-collapsed .kc-profile,body.kc-collapsed .kc-userbar{justify-content:center !important;padding-left:8px !important;padding-right:8px !important;}
+body.kc-collapsed .kc-active-bar{display:none !important;}
+.kc-collapse-btn{transition:transform .2s;}
+body.kc-collapsed .kc-collapse-btn{transform:rotate(180deg);}
+@keyframes kc-toastin{from{opacity:0;transform:translateY(20px) scale(.92);}to{opacity:1;transform:none;}}
+@keyframes kc-pop{from{opacity:0;transform:scale(.94) translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes kc-drawerin{from{transform:translateX(100%);}to{transform:translateX(0);}}
+@keyframes kc-backdrop{from{opacity:0;}to{opacity:1;}}
+@keyframes kc-grow{from{transform:scaleY(0);}to{transform:scaleY(1);}}
+@keyframes kc-laser{0%{top:8%;opacity:0;}15%{opacity:.9;}85%{opacity:.9;}100%{top:88%;opacity:0;}}
+@keyframes kc-corner{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes kc-flash{0%{opacity:0;}25%{opacity:1;}100%{opacity:0;}}
+@keyframes kc-ripple{0%{transform:scale(.6);opacity:.55;}100%{transform:scale(2.4);opacity:0;}}
+@keyframes kc-overlay{from{opacity:0;}to{opacity:1;}}
+@keyframes kc-modalin{from{opacity:0;transform:translateY(16px) scale(.96);}to{opacity:1;transform:none;}}
+@keyframes kc-slidedown{from{opacity:0;transform:translateY(-16px) scale(.98);}to{opacity:1;transform:none;}}
+@keyframes kc-bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+@media(max-width:1140px){.kc-top{grid-template-columns:1fr !important;}.kc-modalbody{grid-template-columns:1fr !important;}}
+@media(max-width:720px){.kc-listhead,.kc-listrow{grid-template-columns:1.8fr 1fr 1.2fr !important;}.kc-hidecol{display:none !important;}.kc-stats{grid-template-columns:repeat(2,1fr) !important;}.kc-sidebar{display:none !important;}.kc-main{margin-left:0 !important;}}
+</style>
+</helmet>
+
+<!-- SIDEBAR -->
+<aside class="kc-sb kc-sidebar" ref="{{ setSb }}" style="position:fixed;left:0;top:0;bottom:0;z-index:40;display:flex;flex-direction:column;padding:18px 0 14px;background:#005A36;overflow:visible;">
+  <button onclick="{{ toggleSidebar }}" class="kc-collapse-btn" title="Thu gọn" style="position:absolute;right:-13px;top:64px;width:26px;height:26px;border-radius:50%;border:1px solid #E6EEE9;background:#fff;color:#005A36;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px -4px rgba(0,0,0,.25);z-index:5;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+
+  <div class="kc-logo" style="display:flex;align-items:center;gap:11px;margin:0 14px 14px;padding:11px 12px;border-radius:15px;background:rgba(255,255,255,.1);">
+    <span style="flex:none;width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#005A36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg></span>
+    <div class="kc-fullonly" style="line-height:1.15;"><div class="display" style="font-weight:800;font-size:13.5px;color:#fff;letter-spacing:.02em;">KINDER CARE</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.12em;color:#9FD3BA;margin-top:2px;">QUẢN LÝ GIÁO VIÊN</div></div>
+  </div>
+
+  <button class="kc-profile" style="display:flex;align-items:center;gap:11px;margin:0 14px 14px;padding:9px 11px;border-radius:15px;background:#fff;border:none;cursor:pointer;text-align:left;">
+    <span style="flex:none;width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#34D399,#005A36);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;" class="display">M1</span>
+    <div class="kc-fullonly" style="flex:1;min-width:0;"><div class="display" style="font-weight:700;font-size:13.5px;color:#1F2937;">Lớp Mầm 1</div><div style="font-size:11.5px;color:#9CA3AF;">42 học sinh</div></div>
+    <svg class="kc-fullonly" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </button>
+
+  <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding:0 14px;">
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:10px 12px 7px;">HÔM NAY</div>
+    <a href="KinderCare Dashboard v4.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span><span class="kc-label">Tổng quan</span>
+    </a>
+    <a href="#" class="kc-navitem kc-nav kc-active" style="position:relative;display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:700;font-size:13.5px;color:#005A36;background:#fff;">
+      <span class="kc-active-bar" style="position:absolute;left:-14px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:#FBBF24;"></span>
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 20 6"></polyline><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"></path></svg></span><span class="kc-label">Điểm danh</span>
+    </a>
+    <a href="KinderCare Schedule.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span><span class="kc-label">Thực đơn &amp; Lịch học</span>
+    </a>
+
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:14px 12px 7px;">LỚP &amp; HỌC TẬP</div>
+    <a href="KinderCare Class Redesign v2.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="3"></circle><path d="M22 19v-2a4 4 0 0 0-3-3.87"></path></svg></span><span class="kc-label">Danh sách lớp</span><span class="kc-badge" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#005A36;background:#fff;padding:1px 8px;border-radius:999px;">20</span>
+    </a>
+    <a href="KinderCare Lesson Plan.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M9 7h6"></path><path d="M9 11h4"></path></svg></span><span class="kc-label">Soạn giáo án</span>
+    </a>
+
+    <div class="kc-sect" style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#7FB89E;padding:14px 12px 7px;">CHĂM SÓC</div>
+    <a href="KinderCare Health.dc.html" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"></path><path d="M11 2v2M5 2v2"></path><path d="M5 4v6a6 6 0 0 0 12 0"></path><circle cx="20" cy="10" r="2"></circle></svg></span><span class="kc-label">Y tế &amp; Sức khỏe</span>
+    </a>
+    <a href="#" class="kc-navitem kc-nav" style="display:flex;align-items:center;gap:13px;height:44px;margin-bottom:3px;padding:0 14px;border-radius:13px;text-decoration:none;font-weight:600;font-size:13.5px;color:#D7EEE2;">
+      <span style="flex:none;display:flex;width:20px;height:20px;color:#FBBF24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span><span class="kc-label">Phiếu bé ngoan</span>
+    </a>
+  </nav>
+
+  <div class="kc-userbar" style="display:flex;align-items:center;gap:11px;margin:8px 14px 0;padding:10px 11px;border-radius:15px;background:rgba(255,255,255,.1);">
+    <span style="flex:none;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FB923C,#F97316);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;" class="display">H</span>
+    <div class="kc-fullonly" style="flex:1;min-width:0;"><div class="display" style="font-weight:700;font-size:13px;color:#fff;">Thầy Lê Quang Huy</div><div style="font-size:11px;color:#9FD3BA;">Giáo viên</div></div>
+    <a href="KinderCare Profile Bento.dc.html" class="kc-fullonly" style="flex:none;width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;" style-hover="background:rgba(255,255,255,.26);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="kc-main" ref="{{ setMainEl }}" style="min-height:100vh;padding:24px 32px 44px;display:flex;flex-direction:column;gap:18px;">
+
+  <!-- HERO -->
+  <section style="position:relative;overflow:hidden;border-radius:24px;background:linear-gradient(120deg,#005A36 0%,#00794A 60%,#0A8A57 100%);box-shadow:0 18px 44px -18px rgba(0,90,54,.5);padding:28px 32px;">
+    <div style="position:absolute;inset:0;background:radial-gradient(420px 280px at 90% 130%,rgba(255,255,255,.12),transparent 60%);"></div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div style="min-width:240px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:#A7E0C6;text-transform:uppercase;">Lớp Mầm 1 · Điểm danh</div>
+        <div class="display" style="font-size:27px;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-.02em;margin-top:6px;text-transform:capitalize;">{{ dateLabel }}</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:baseline;gap:6px;"><span class="display" style="font-size:30px;font-weight:800;color:#fff;line-height:1;">{{ rate }}%</span><span style="font-size:12.5px;color:#CDEBDC;font-weight:600;">chuyên cần</span></div>
+          <span style="width:1px;height:30px;background:rgba(255,255,255,.25);"></span>
+          <div style="font-size:13.5px;color:#E2F3EA;font-weight:600;">{{ cPresent }}/{{ total }} bé có mặt</div>
+        </div>
+        <div style="height:8px;border-radius:999px;background:rgba(255,255,255,.2);margin-top:14px;max-width:360px;overflow:hidden;"><span style="display:block;height:100%;width:{{ rate }}%;background:#FBBF24;border-radius:999px;transition:width .5s ease;"></span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;flex:none;">
+        <button onclick="{{ openScanner }}" class="display" style="display:flex;align-items:center;justify-content:center;gap:9px;height:48px;padding:0 22px;border-radius:14px;border:none;background:#fff;color:#005A36;font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.4);transition:transform .15s;" style-hover="transform:scale(1.03);" style-active="transform:scale(.97);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><line x1="14" y1="14" x2="14" y2="14.01"></line><line x1="21" y1="14" x2="21" y2="14.01"></line><line x1="14" y1="21" x2="21" y2="21"></line><line x1="18" y1="14" x2="18" y2="18"></line></svg>Quét QR điểm danh</button>
+        <div style="display:flex;gap:10px;">
+          <button onclick="{{ openLeaves }}" style="position:relative;display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:13px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s;" style-hover="background:rgba(255,255,255,.22);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>Đơn xin nghỉ<sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}"><span style="display:flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#FBBF24;color:#7A4E00;font-size:11px;font-weight:800;">{{ pendingLeaves }}</span></sc-if></button>
+          <button onclick="{{ exportCSV }}" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 16px;border-radius:13px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s;" style-hover="background:rgba(255,255,255,.22);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Xuất</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI ROW -->
+  <div class="kc-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+    <div class="kc-card" style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:18px;display:flex;align-items:center;gap:14px;">
+      <span style="flex:none;width:48px;height:48px;border-radius:14px;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg></span>
+      <div><div style="font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Sĩ số lớp</div><div class="display" style="font-size:27px;font-weight:800;color:#1F2937;line-height:1.05;font-variant-numeric:tabular-nums;">{{ total }}</div></div>
+    </div>
+    <div class="kc-card" style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:18px;display:flex;align-items:center;gap:14px;">
+      <span style="flex:none;width:48px;height:48px;border-radius:14px;background:#005A36;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <div><div style="font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Có mặt</div><div class="display" style="font-size:27px;font-weight:800;color:#005A36;line-height:1.05;font-variant-numeric:tabular-nums;">{{ cPresent }}</div></div>
+    </div>
+    <div class="kc-card" style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:18px;display:flex;align-items:center;gap:14px;">
+      <span style="flex:none;width:48px;height:48px;border-radius:14px;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></span>
+      <div><div style="font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Vắng có phép</div><div class="display" style="font-size:27px;font-weight:800;color:#4B5563;line-height:1.05;font-variant-numeric:tabular-nums;">{{ cExcused }}</div></div>
+    </div>
+    <div class="kc-card" style="background:#fff;border:1px solid #FCA5A5;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:18px;display:flex;align-items:center;gap:14px;">
+      <span style="flex:none;width:48px;height:48px;border-radius:14px;background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+      <div><div style="font-size:12px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Vắng không phép</div><div class="display" style="font-size:27px;font-weight:800;color:#DC2626;line-height:1.05;font-variant-numeric:tabular-nums;">{{ cUnexcused }}</div></div>
+    </div>
+  </div>
+
+  <!-- CHART + CALENDAR -->
+  <div class="kc-top" style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start;">
+    <section class="kc-card" style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:22px;">
+      <div class="display" style="font-weight:700;font-size:16px;margin-bottom:18px;">Tỷ lệ chuyên cần</div>
+      <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;">
+        <div style="position:relative;flex:none;width:150px;height:150px;border-radius:50%;background:{{ donut }};display:flex;align-items:center;justify-content:center;">
+          <div style="width:104px;height:104px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 2px 6px rgba(0,90,54,.05);">
+            <span class="display" style="font-size:32px;font-weight:800;color:#005A36;letter-spacing:-.02em;line-height:1;">{{ rate }}%</span>
+            <span style="font-size:10.5px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;">Hôm nay</span>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:11px;">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:11px;height:11px;border-radius:3px;background:{{ l.color }};"></span>
+              <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">{{ l.label }}</span>
+              <span class="display" style="font-size:16px;font-weight:800;color:{{ l.color }};font-variant-numeric:tabular-nums;">{{ l.value }}</span>
+              <span style="font-size:12px;color:#9CA3AF;width:42px;text-align:right;">{{ l.pct }}%</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="margin-top:22px;border-top:1px solid #EEF4F0;padding-top:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><span class="display" style="font-weight:700;font-size:14px;">Xu hướng tuần này</span><span style="font-size:12px;color:#9CA3AF;">% có mặt theo ngày</span></div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;height:110px;">
+          <sc-for list="{{ week }}" as="w" hint-placeholder-count="6">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;">
+              <span class="display" style="font-size:11px;font-weight:700;color:{{ w.txtColor }};font-variant-numeric:tabular-nums;">{{ w.pct }}</span>
+              <div style="width:100%;max-width:34px;height:{{ w.h }}px;border-radius:8px 8px 4px 4px;background:{{ w.bar }};transform-origin:bottom;animation:kc-grow .5s cubic-bezier(.4,0,.2,1);"></div>
+              <span style="font-size:11px;font-weight:600;color:{{ w.dowColor }};">{{ w.dow }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section class="kc-card" style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <span class="display" style="font-weight:700;font-size:16px;">{{ monthLabel }}</span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="{{ prevMonth }}" style="width:32px;height:32px;border-radius:9px;border:1px solid #E6EEE9;background:#fff;color:#6B7280;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#F1F4F1;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+          <button onclick="{{ nextMonth }}" style="width:32px;height:32px;border-radius:9px;border:1px solid #E6EEE9;background:#fff;color:#6B7280;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#F1F4F1;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px;">
+        <sc-for list="{{ dows }}" as="d" hint-placeholder-count="7"><span style="text-align:center;font-size:11px;font-weight:700;color:#9CA3AF;">{{ d }}</span></sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;">
+        <sc-for list="{{ calendar }}" as="c" hint-placeholder-count="35">
+          <span title="{{ c.title }}" style="{{ c.style }}">{{ c.day }}<sc-if value="{{ c.hasDot }}" hint-placeholder-val="{{ false }}"><span style="{{ c.dotStyle }}"></span></sc-if></span>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:11px;margin-top:16px;padding-top:14px;border-top:1px solid #EEF4F0;font-size:11px;font-weight:600;color:#9CA3AF;">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#005A36;"></span>Đầy đủ</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#D97706;"></span>Có vắng</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:#DC2626;"></span>Vắng nhiều</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:3px;background:#005A36;"></span>Hôm nay</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- STUDENT LIST -->
+  <section style="background:#fff;border:1px solid #E6EEE9;border-radius:16px;box-shadow:0 4px 18px -4px rgba(0,90,54,.06);padding:8px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px 12px;">
+      <span class="display" style="font-weight:700;font-size:16px;">Danh sách bé</span>
+      <div style="display:flex;background:#F1F4F1;border:1px solid #E6EEE9;border-radius:11px;padding:3px;gap:3px;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4"><button onclick="{{ f.select }}" style="{{ f.style }}">{{ f.label }} <span style="opacity:.7;">{{ f.count }}</span></button></sc-for>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;border-radius:11px;background:#F8FBF9;border:1px solid #E6EEE9;min-width:200px;">
+        <span style="flex:none;display:flex;width:17px;height:17px;color:#9CA3AF;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+        <input value="{{ query }}" onchange="{{ onQuery }}" placeholder="Tìm bé…" style="flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:13.5px;color:#1F2937;">
+      </div>
+    </div>
+    <div class="kc-listhead" style="display:grid;grid-template-columns:2.2fr 1fr 1.2fr 2fr;gap:12px;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;border-bottom:1px solid #EEF4F0;">
+      <span>Học sinh</span><span>Giờ đến</span><span>Trạng thái</span><span class="kc-hidecol">Ghi chú</span>
+    </div>
+    <div style="display:flex;flex-direction:column;">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+        <div class="kc-row kc-listrow" style="display:grid;grid-template-columns:2.2fr 1fr 1.2fr 2fr;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid #F3F6F4;">
+          <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+            <span style="position:relative;flex:none;width:38px;height:38px;border-radius:50%;background:{{ r.grad }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;{{ r.dim }}" class="display">{{ r.initial }}
+              <span style="position:absolute;right:-2px;bottom:-2px;width:15px;height:15px;border-radius:50%;background:{{ r.statusDot }};box-shadow:0 0 0 2.5px #fff;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">{{ r.statusMini }}</span>
+            </span>
+            <div style="min-width:0;"><div style="font-weight:600;font-size:13.5px;color:#1F2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.name }}</div><div style="font-size:11px;color:#9CA3AF;font-variant-numeric:tabular-nums;">{{ r.code }}</div></div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:{{ r.timeColor }};font-variant-numeric:tabular-nums;">{{ r.timeText }}</span>
+          <span><button onclick="{{ r.cycle }}" style="{{ r.badgeStyle }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.statusDot }};"></span>{{ r.statusLabel }}</button></span>
+          <span class="kc-hidecol" style="font-size:13px;color:#6B7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.noteText }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+
+<!-- QR SCANNER MODAL -->
+<sc-if value="{{ scannerOpen }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ closeScanner }}" style="position:fixed;inset:0;z-index:9200;background:rgba(15,30,22,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;animation:kc-overlay .2s ease;">
+    <div onclick="{{ stop }}" style="width:min(860px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:22px;box-shadow:0 32px 80px -20px rgba(0,0,0,.4);animation:kc-modalin .25s cubic-bezier(.2,.8,.3,1);">
+      <div style="display:flex;align-items:center;gap:13px;padding:20px 24px;border-bottom:1px solid #EEF4F0;">
+        <span style="flex:none;width:42px;height:42px;border-radius:12px;background:#005A36;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><rect x="7" y="7" width="10" height="10" rx="1"></rect></svg></span>
+        <div style="flex:1;"><div class="display" style="font-size:18px;font-weight:800;letter-spacing:-.01em;">Điểm danh bằng QR</div><div style="font-size:13px;color:#9CA3AF;font-weight:500;">Camera lớp Mầm 1 · ghi nhận tức thì</div></div>
+        <span style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:#E6F3ED;border:1px solid #C7E3D5;font-size:13px;font-weight:800;color:#005A36;"><span style="width:8px;height:8px;border-radius:50%;background:#005A36;box-shadow:0 0 0 3px rgba(0,90,54,.16);"></span>{{ cPresent }}/{{ total }}</span>
+        <button onclick="{{ closeScanner }}" style="flex:none;width:40px;height:40px;border-radius:12px;border:1px solid #E6EEE9;background:#fff;color:#6B7280;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#F6FAF7;color:#DC2626;">✕</button>
+      </div>
+      <div class="kc-modalbody" style="display:grid;grid-template-columns:340px 1fr;gap:22px;padding:24px;">
+        <div style="display:flex;flex-direction:column;gap:13px;">
+          <div style="position:relative;width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:radial-gradient(120% 120% at 30% 20%,#cfe8f5 0%,#dfe7fb 45%,#dcf3e6 100%);border:1.5px solid #C7E3D5;">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.06) 0 14px,rgba(0,0,0,.03) 14px 28px);"></div>
+            <div style="position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:rgba(17,24,39,.55);backdrop-filter:blur(4px);color:#fff;font-size:11px;font-weight:700;"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;animation:kc-corner 1.2s infinite;"></span>LIVE</div>
+            <span style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-top:3px solid #005A36;border-right:3px solid #005A36;border-radius:0 5px 0 0;animation:kc-corner 1.6s infinite;"></span>
+            <span style="position:absolute;top:16px;left:16px;width:32px;height:32px;border-top:3px solid #005A36;border-left:3px solid #005A36;border-radius:5px 0 0 0;animation:kc-corner 1.6s infinite .15s;"></span>
+            <span style="position:absolute;bottom:16px;left:16px;width:32px;height:32px;border-bottom:3px solid #005A36;border-left:3px solid #005A36;border-radius:0 0 0 5px;animation:kc-corner 1.6s infinite .3s;"></span>
+            <span style="position:absolute;bottom:16px;right:16px;width:32px;height:32px;border-bottom:3px solid #005A36;border-right:3px solid #005A36;border-radius:0 0 5px 0;animation:kc-corner 1.6s infinite .45s;"></span>
+            <span style="position:absolute;left:16px;right:16px;height:2.5px;background:linear-gradient(90deg,transparent,#10B981,transparent);box-shadow:0 0 14px 2px rgba(16,185,129,.7);animation:kc-laser 2.6s cubic-bezier(.5,0,.5,1) infinite;"></span>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#0f5132;"><span style="font-size:38px;opacity:.8;">▣</span><span style="font-size:12px;font-weight:700;background:rgba(255,255,255,.6);padding:4px 12px;border-radius:999px;">Đưa mã QR vào khung</span></div>
+            <sc-if value="{{ scanFlash }}" hint-placeholder-val="{{ false }}"><div style="{{ flashStyle }}"></div></sc-if>
+          </div>
+          <button onclick="{{ onScan }}" class="display" style="display:flex;align-items:center;justify-content:center;gap:9px;height:50px;border-radius:14px;border:none;background:linear-gradient(135deg,#00794A,#005A36);color:#fff;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 8px 18px -6px rgba(0,90,54,.4);transition:transform .15s;" style-hover="transform:scale(1.02);" style-active="transform:scale(.98);">▣ Mô phỏng quét</button>
+          <button onclick="{{ onManual }}" style="height:42px;border-radius:12px;border:1px solid #E6EEE9;background:#F6FAF7;color:#374151;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer;transition:background .15s;" style-hover="background:#E6F3ED;">📝 Điểm danh thủ công</button>
+        </div>
+        <div style="display:flex;flex-direction:column;min-height:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="display" style="font-weight:700;font-size:15px;">Vừa điểm danh</div>
+            <span style="font-size:12px;font-weight:700;color:#005A36;background:#E6F3ED;padding:4px 11px;border-radius:999px;">{{ feedCount }} bé</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;max-height:360px;overflow:auto;padding-right:6px;">
+            <sc-for list="{{ liveFeed }}" as="it" hint-placeholder-count="2">
+              <div style="{{ it.style }}">
+                <span style="flex:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;background:{{ it.grad }};" class="display">{{ it.initial }}</span>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span class="display" style="font-weight:800;font-size:14.5px;color:#1F2937;">{{ it.name }}</span><span style="font-size:11px;font-weight:700;color:#005A36;background:#fff;border:1px solid #C7E3D5;padding:2px 8px;border-radius:999px;">✓ {{ it.time }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:14px;border:1.5px dashed #C7DBCF;color:#9CA3AF;"><span style="position:relative;flex:none;width:14px;height:14px;"><span style="position:absolute;inset:0;border-radius:50%;background:#005A36;"></span><span style="position:absolute;inset:0;border-radius:50%;background:#005A36;animation:kc-ripple 1.8s ease-out infinite;"></span></span><span style="font-size:13px;font-weight:600;">{{ scanHint }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- LEAVE DRAWER -->
+<sc-if value="{{ leaveOpen }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ closeLeaves }}" style="position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.3);animation:kc-backdrop .25s ease;"></div>
+  <aside onclick="{{ stop }}" style="position:fixed;top:0;right:0;bottom:0;z-index:91;width:480px;max-width:100%;background:#fff;border-left:1px solid #E6EEE9;box-shadow:-24px 0 64px -24px rgba(0,90,54,.22);display:flex;flex-direction:column;animation:kc-drawerin .32s cubic-bezier(.32,.72,0,1);">
+    <div style="flex:none;padding:22px 24px 16px;border-bottom:1px solid #EEF4F0;display:flex;align-items:center;gap:13px;">
+      <span style="flex:none;width:42px;height:42px;border-radius:12px;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></span>
+      <div style="flex:1;"><div class="display" style="font-size:18px;font-weight:700;">Đơn xin nghỉ phép</div><div style="font-size:13px;color:#6B7280;margin-top:1px;">{{ pendingLeaves }} đơn chờ duyệt · {{ totalLeaves }} tổng</div></div>
+      <button onclick="{{ closeLeaves }}" style="flex:none;width:36px;height:36px;border-radius:10px;border:none;background:#F1F4F1;color:#6B7280;font-size:17px;cursor:pointer;" style-hover="background:#E6EEE9;">✕</button>
+    </div>
+    <div style="flex:1;overflow:auto;padding:18px 24px 28px;display:flex;flex-direction:column;gap:14px;">
+      <sc-for list="{{ leaves }}" as="l" hint-placeholder-count="3">
+        <div style="{{ l.cardStyle }}">
+          <div style="display:flex;align-items:flex-start;gap:13px;">
+            <span style="flex:none;width:46px;height:46px;border-radius:50%;background:{{ l.grad }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;" class="display">{{ l.childInitial }}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span class="display" style="font-weight:700;font-size:15px;">{{ l.childName }}</span><span style="{{ l.statusPill }}">{{ l.statusText }}</span></div>
+              <div style="font-size:12.5px;color:#9CA3AF;margin-top:2px;">{{ l.code }} · Gửi {{ l.submitted }}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;margin-top:13px;">
+            <div style="display:flex;align-items:center;gap:11px;padding:8px 6px;">
+              <span style="flex:none;width:30px;height:30px;border-radius:9px;background:#E3EDFD;color:#2563EB;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
+              <span style="flex:1;font-size:12px;color:#9CA3AF;font-weight:500;">Thời gian nghỉ</span>
+              <span style="font-size:13px;font-weight:600;color:#1F2937;text-align:right;">{{ l.dateRange }}</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:8px 6px;">
+              <span style="flex:none;width:30px;height:30px;border-radius:9px;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+              <span style="flex:none;font-size:12px;color:#9CA3AF;font-weight:500;padding-top:6px;">Lý do</span>
+              <span style="flex:1;font-size:13px;font-weight:600;color:#1F2937;text-align:right;line-height:1.45;">{{ l.reason }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;padding:8px 6px;">
+              <span style="flex:none;width:30px;height:30px;border-radius:9px;background:#E6F3ED;color:#005A36;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></span>
+              <span style="flex:1;font-size:12px;color:#9CA3AF;font-weight:500;">Người gửi</span>
+              <span style="font-size:13px;font-weight:600;color:#1F2937;text-align:right;">{{ l.parentName }} · {{ l.parentRel }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;padding:8px 6px;">
+              <span style="flex:none;width:30px;height:30px;border-radius:9px;background:#E6F3ED;color:#005A36;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+              <span style="flex:1;font-size:12px;color:#9CA3AF;font-weight:500;">SĐT liên hệ</span>
+              <span style="font-size:13px;font-weight:600;color:#1F2937;font-variant-numeric:tabular-nums;">{{ l.parentPhone }}</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9CA3AF;margin-bottom:7px;">Ảnh minh chứng</div>
+            <button onclick="{{ l.viewProof }}" style="{{ l.proofStyle }}">
+              <span style="position:relative;z-index:1;display:flex;align-items:center;gap:8px;color:#fff;font-size:12.5px;font-weight:700;background:rgba(15,23,42,.4);backdrop-filter:blur(2px);padding:6px 12px;border-radius:9px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>{{ l.proofLabel }}</span>
+            </button>
+          </div>
+          <sc-if value="{{ l.pending }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:9px;margin-top:13px;">
+              <button onclick="{{ l.approve }}" class="display" style="flex:1;height:42px;border-radius:11px;border:none;background:#005A36;color:#fff;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .15s,background .15s;" style-hover="transform:scale(1.02);background:#004428;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Duyệt</button>
+              <button onclick="{{ l.reject }}" style="flex:1;height:42px;border-radius:11px;border:1px solid #FCA5A5;background:#fff;color:#DC2626;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .15s,background .15s;" style-hover="transform:scale(1.02);background:#FEE2E2;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Từ chối</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </aside>
+</sc-if>
+
+<!-- LIGHTBOX -->
+<sc-if value="{{ proofOpen }}" hint-placeholder-val="{{ false }}">
+  <div onclick="{{ closeProof }}" style="position:fixed;inset:0;z-index:9600;background:rgba(15,23,42,.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:32px;animation:kc-backdrop .2s ease;">
+    <div onclick="{{ stop }}" style="max-width:520px;width:100%;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(15,23,42,.4);animation:kc-pop .22s ease;">
+      <div style="height:380px;background:{{ proofBg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;position:relative;">
+        <span style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 18px,rgba(0,0,0,.03) 18px 36px);"></span>
+        <span style="position:relative;font-size:60px;">📄</span>
+        <span style="position:relative;font-size:15px;font-weight:700;">{{ proofTitle }}</span>
+        <span style="position:relative;font-size:13px;opacity:.85;">Ảnh minh chứng do phụ huynh đính kèm</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;">
+        <span style="font-size:13px;color:#6B7280;">{{ proofCaption }}</span>
+        <button onclick="{{ closeProof }}" style="height:40px;padding:0 18px;border-radius:11px;border:none;background:#005A36;color:#fff;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;">Đóng</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- TOASTS -->
+<div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div class="display" style="display:flex;align-items:center;gap:10px;padding:13px 20px;border-radius:13px;background:#005A36;color:#fff;font-size:13.5px;font-weight:600;box-shadow:0 18px 48px -12px rgba(0,90,54,.4);animation:kc-pop .28s cubic-bezier(.2,.8,.3,1);max-width:380px;">{{ t.text }}</div>
+  </sc-for>
+</div>
+
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:960}}">
+class Component extends DCLogic {
+  nid = 100;
+  grads = ['linear-gradient(135deg,#00794A,#005A36)','linear-gradient(135deg,#3B82F6,#2563EB)','linear-gradient(135deg,#A78BFA,#8B5CF6)','linear-gradient(135deg,#FB923C,#F97316)','linear-gradient(135deg,#34D399,#059669)','linear-gradient(135deg,#F472B6,#DB2777)'];
+  proofBgs = ['linear-gradient(135deg,#64748B,#334155)','linear-gradient(135deg,#0EA5E9,#0369A1)','linear-gradient(135deg,#14B8A6,#0F766E)'];
+  gradFor = (n) => { let h = 0; for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0; return this.grads[h % this.grads.length]; };
+  ini = (n) => { const p = n.trim().split(' '); return p[p.length - 1][0].toUpperCase(); };
+
+  ST = {
+    present:   { label: 'Có mặt',          c: '#005A36', bg: '#E6F3ED', bd: '#C7E3D5', dot: '#005A36', mini: '✓', dim: false },
+    excused:   { label: 'Vắng có phép',    c: '#4B5563', bg: '#F1F4F1', bd: '#E6EEE9', dot: '#9CA3AF', mini: '·', dim: true },
+    unexcused: { label: 'Vắng không phép', c: '#DC2626', bg: '#FEE2E2', bd: '#FCA5A5', dot: '#DC2626', mini: '✕', dim: true },
+  };
+
+  state = {
+    query: '', filter: 'all', monthOffset: 0,
+    leaveOpen: false, proofOpen: null,
+    scannerOpen: false, scanFlash: false, liveFeed: [],
+    toasts: [],
+    students: ['Nguyễn Minh Khôi','Trần Khánh Linh','Lê An Nhiên','Phạm Gia Huy','Vũ Bảo Trâm','Đặng Hoàng Long','Bùi Ngọc Diệp','Hồ Tường Vy','Đỗ Đăng Khoa','Ngô Mỹ Anh','Dương Quốc Bảo','Lý Hà My','Phan Nhật Nam','Võ Yến Nhi','Đinh Trí Dũng','Trương Khánh Vân','Mai Gia Bảo','Cao Bảo Long','Lâm Thảo My','Hà Hải Anh']
+      .map((name, i) => {
+        let status = 'present', time = '', note = '';
+        if (i < 15) { status = 'present'; time = '07:' + String(15 + i).padStart(2, '0'); }
+        else if (i < 18) { status = 'excused'; note = ['Bị ốm, có đơn của phụ huynh','Gia đình có việc riêng','Đi khám sức khỏe định kỳ'][i - 15]; }
+        else { status = 'unexcused'; note = 'Chưa liên lạc được phụ huynh'; }
+        return { id: 's' + i, name, status, time, note, code: 'MN1-' + String(i + 1).padStart(2, '0') };
+      }),
+    leaves: [
+      { id: 'l1', childName: 'Mai Gia Bảo', code: 'MN1-17', parentName: 'Phạm Thị Hồng', parentRel: 'Mẹ', parentPhone: '0905 171 456', reason: 'Bé bị sốt siêu vi, bác sĩ dặn nghỉ theo dõi tại nhà.', dateRange: '26/06 → 27/06', submitted: '07:05 hôm nay', status: 'pending', proof: 'Giấy khám bệnh' },
+      { id: 'l2', childName: 'Lâm Thảo My', code: 'MN1-19', parentName: 'Trần Thị Lan', parentRel: 'Mẹ', parentPhone: '0912 198 321', reason: 'Gia đình về quê ngoại dự đám giỗ.', dateRange: '26/06 (cả ngày)', submitted: '06:48 hôm nay', status: 'pending', proof: 'Ảnh đơn viết tay' },
+      { id: 'l3', childName: 'Hà Hải Anh', code: 'MN1-20', parentName: 'Nguyễn Văn Hùng', parentRel: 'Ba', parentPhone: '0935 206 789', reason: 'Bé đi tiêm vắc-xin định kỳ tại trạm y tế phường.', dateRange: '26/06 (buổi sáng)', submitted: 'Hôm qua, 19:30', status: 'pending', proof: 'Sổ tiêm chủng' },
+      { id: 'l4', childName: 'Vũ Bảo Trâm', code: 'MN1-05', parentName: 'Vũ Thị Mai', parentRel: 'Mẹ', parentPhone: '0978 052 134', reason: 'Bé bị ho, đã khỏi và đi học lại.', dateRange: '24/06 (cả ngày)', submitted: '23/06, 20:10', status: 'approved', proof: 'Toa thuốc' },
+    ],
+  };
+
+  componentDidMount() {
+    const d = new Date();
+    let ds = d.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    this.dateLabel = ds.charAt(0).toUpperCase() + ds.slice(1);
+    this.forceUpdate();
+    this._key = (e) => { if (e.key === 'Escape') { if (this.state.proofOpen) this.closeProof(); else if (this.state.scannerOpen) this.closeScanner(); else if (this.state.leaveOpen) this.closeLeaves(); } };
+    document.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { document.removeEventListener('keydown', this._key); }
+
+  toggleSidebar = (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    this._collapsed = !this._collapsed;
+    if (typeof document !== 'undefined') document.body.classList.toggle('kc-collapsed', this._collapsed);
+    if (this.sb) this.sb.style.width = this._collapsed ? '88px' : '262px';
+    if (this.mainEl) this.mainEl.style.marginLeft = this._collapsed ? '88px' : '262px';
+  };
+
+  now() { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+  addToast = (text) => {
+    const id = 't' + (this.nid++);
+    this.setState(s => ({ toasts: [...s.toasts, { id, text }] }));
+    setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(t => t.id !== id) })), 2600);
+  };
+  stop = (e) => e.stopPropagation();
+  onQuery = (e) => this.setState({ query: e.target.value });
+  setFilter = (f) => this.setState({ filter: f });
+
+  ensureAudio() { if (!this._actx) { try { this._actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return this._actx; }
+  playTing() {
+    const ctx = this.ensureAudio(); if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime;
+    [880, 1318.5].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f; const st = t + i * 0.085; g.gain.setValueAtTime(0, st); g.gain.linearRampToValueAtTime(0.16, st + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, st + 0.32); o.connect(g).connect(ctx.destination); o.start(st); o.stop(st + 0.34); });
+  }
+
+  openScanner = () => this.setState({ scannerOpen: true });
+  closeScanner = () => this.setState({ scannerOpen: false });
+
+  handleScan = () => {
+    const next = this.state.students.find(x => x.status !== 'present');
+    if (!next) { this.addToast('🎉 Cả lớp đã có mặt đầy đủ!'); return; }
+    const time = this.now();
+    this.playTing();
+    const id = 'lf' + (this.nid++);
+    this.setState(s => ({
+      students: s.students.map(x => x.id === next.id ? { ...x, status: 'present', time, note: '' } : x),
+      liveFeed: [{ id, name: next.name, time, grad: this.gradFor(next.name), initial: this.ini(next.name), fresh: true }, ...s.liveFeed],
+      scanFlash: true,
+    }));
+    this.addToast('✅ ' + next.name + ' đã điểm danh lúc ' + time);
+    setTimeout(() => this.setState({ scanFlash: false }), 650);
+  };
+  onManual = () => { this.closeScanner(); this.addToast('📝 Chạm vào trạng thái của bé trong danh sách để đổi thủ công'); };
+
+  cycle = (id, e) => {
+    if (e) e.stopPropagation();
+    const order = ['present', 'excused', 'unexcused'];
+    this.setState(s => ({ students: s.students.map(x => {
+      if (x.id !== id) return x;
+      const next = order[(order.indexOf(x.status) + 1) % order.length];
+      let time = x.time, note = x.note;
+      if (next === 'present') { time = this.now(); note = ''; }
+      else if (next === 'excused') { note = x.note || 'Gia đình xin phép'; }
+      else { note = 'Chưa liên lạc được phụ huynh'; }
+      return { ...x, status: next, time, note };
+    }) }));
+  };
+
+  openLeaves = () => this.setState({ leaveOpen: true });
+  closeLeaves = () => this.setState({ leaveOpen: false });
+  approve = (id) => { const l = this.state.leaves.find(x => x.id === id); this.setState(s => ({ leaves: s.leaves.map(x => x.id === id ? { ...x, status: 'approved' } : x) })); if (l) this.addToast('✅ Đã duyệt đơn nghỉ của ' + l.childName); };
+  reject = (id) => { const l = this.state.leaves.find(x => x.id === id); this.setState(s => ({ leaves: s.leaves.map(x => x.id === id ? { ...x, status: 'rejected' } : x) })); if (l) this.addToast('↩︎ Đã từ chối đơn của ' + l.childName); };
+
+  openProof = (id) => this.setState({ proofOpen: id });
+  closeProof = () => this.setState({ proofOpen: null });
+
+  prevMonth = () => this.setState(s => ({ monthOffset: s.monthOffset - 1 }));
+  nextMonth = () => this.setState(s => ({ monthOffset: s.monthOffset + 1 }));
+
+  exportCSV = () => {
+    const rows = [['Mã HS','Học sinh','Trạng thái','Giờ đến','Ghi chú']];
+    this.state.students.forEach(s => rows.push([s.code, s.name, this.ST[s.status].label, s.time || '', s.note || '']));
+    const csv = '\ufeff' + rows.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'diem-danh-mam1.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    this.addToast('📄 Đã xuất báo cáo điểm danh');
+  };
+
+  buildCalendar(year, month) {
+    const first = new Date(year, month, 1);
+    let startDow = (first.getDay() + 6) % 7;
+    const days = new Date(year, month + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const cells = [];
+    for (let i = 0; i < startDow; i++) cells.push(null);
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(year, month, d);
+      const dow = (date.getDay() + 6) % 7;
+      const weekend = dow >= 5;
+      const isToday = date.getTime() === today.getTime();
+      const isFuture = date.getTime() > today.getTime();
+      let kind = 'none';
+      if (!weekend && !isFuture) { const r = (d * 13 + month * 7) % 100; if (r < 8) kind = 'high'; else if (r < 26) kind = 'some'; else kind = 'full'; }
+      cells.push({ d, weekend, isToday, isFuture, kind });
+    }
+    return cells;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const q = s.query.trim().toLowerCase();
+
+    const cPresent = s.students.filter(x => x.status === 'present').length;
+    const cExcused = s.students.filter(x => x.status === 'excused').length;
+    const cUnexcused = s.students.filter(x => x.status === 'unexcused').length;
+    const total = s.students.length;
+    const rate = Math.round(cPresent / total * 100);
+
+    const a1 = cPresent / total * 360, a2 = a1 + cExcused / total * 360;
+    const donut = 'conic-gradient(#005A36 0deg ' + a1 + 'deg,#C7CDC9 ' + a1 + 'deg ' + a2 + 'deg,#DC2626 ' + a2 + 'deg 360deg)';
+
+    const legend = [
+      { label: 'Có mặt', value: cPresent, pct: Math.round(cPresent / total * 100), color: '#005A36' },
+      { label: 'Vắng có phép', value: cExcused, pct: Math.round(cExcused / total * 100), color: '#9CA3AF' },
+      { label: 'Vắng không phép', value: cUnexcused, pct: Math.round(cUnexcused / total * 100), color: '#DC2626' },
+    ];
+
+    const weekRaw = [['T2', 95], ['T3', 90], ['T4', 100], ['T5', 85], ['T6', rate], ['T7', 0]];
+    const week = weekRaw.map((w, i) => {
+      const isToday = i === 4; const isOff = w[1] === 0;
+      return { dow: w[0], pct: isOff ? '–' : w[1] + '%', h: isOff ? 6 : Math.max(10, w[1] / 100 * 88),
+        bar: isOff ? '#EEF4F0' : (isToday ? 'linear-gradient(180deg,#00794A,#005A36)' : '#A7C9B6'),
+        txtColor: isToday ? '#005A36' : '#9CA3AF', dowColor: isToday ? '#005A36' : '#9CA3AF' };
+    });
+
+    const filterDefs = [
+      { k: 'all', label: 'Tất cả', count: total },
+      { k: 'present', label: 'Có mặt', count: cPresent },
+      { k: 'excused', label: 'Có phép', count: cExcused },
+      { k: 'unexcused', label: 'Không phép', count: cUnexcused },
+    ];
+    const filters = filterDefs.map(f => ({ k: f.k, label: f.label, count: f.count, select: () => this.setFilter(f.k),
+      style: 'display:flex;align-items:center;gap:5px;height:34px;padding:0 13px;border-radius:9px;border:none;cursor:pointer;font-family:inherit;font-weight:' + (s.filter === f.k ? '700' : '600') + ';font-size:12.5px;white-space:nowrap;background:' + (s.filter === f.k ? '#fff' : 'transparent') + ';color:' + (s.filter === f.k ? '#005A36' : '#6B7280') + ';' + (s.filter === f.k ? 'box-shadow:0 2px 8px rgba(0,90,54,.1);' : '') }));
+
+    let list = s.students;
+    if (s.filter !== 'all') list = list.filter(x => x.status === s.filter);
+    if (q) list = list.filter(x => x.name.toLowerCase().includes(q));
+    const rows = list.map(x => {
+      const st = this.ST[x.status];
+      const present = x.status === 'present';
+      return { id: x.id, name: x.name, code: x.code, initial: this.ini(x.name), grad: this.gradFor(x.name),
+        dim: st.dim ? 'filter:grayscale(.5);opacity:.7;' : '',
+        statusDot: st.dot, statusMini: st.mini, statusLabel: st.label,
+        timeText: present ? x.time : '—', timeColor: present ? '#374151' : '#C7CFCA', noteText: x.note || '—',
+        cycle: (e) => this.cycle(x.id, e),
+        badgeStyle: 'display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;color:' + st.c + ';background:' + st.bg + ';border:1px solid ' + st.bd + ';transition:all .25s;',
+      };
+    });
+
+    const base = new Date(2026, 5, 1);
+    const cy = base.getFullYear(), cm = base.getMonth() + s.monthOffset;
+    const calDate = new Date(cy, cm, 1);
+    const cells = this.buildCalendar(calDate.getFullYear(), calDate.getMonth());
+    const calKindColor = { full: '#005A36', some: '#D97706', high: '#DC2626' };
+    const calendar = cells.map((c) => {
+      if (!c) return { day: '', style: 'aspect-ratio:1;', hasDot: false };
+      let bg = '#fff', col = c.weekend ? '#C7CFCA' : '#374151', bd = 'transparent';
+      if (c.isToday) { bg = '#005A36'; col = '#fff'; } else if (c.isFuture) { col = '#D1D5DB'; }
+      const hasDot = !c.isToday && (c.kind !== 'none');
+      return { day: c.d, title: c.d + '/' + (calDate.getMonth() + 1), hasDot,
+        style: 'position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:' + (c.isToday ? '800' : '600') + ';border-radius:9px;background:' + bg + ';color:' + col + ';border:1px solid ' + bd + ';font-variant-numeric:tabular-nums;',
+        dotStyle: 'position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:' + (calKindColor[c.kind] || '#005A36') + ';' };
+    });
+    const monthLabel = 'Tháng ' + (calDate.getMonth() + 1) + ' / ' + calDate.getFullYear();
+
+    const pendingLeaves = s.leaves.filter(l => l.status === 'pending').length;
+    const stPill = {
+      pending:  'font-size:10.5px;font-weight:700;color:#B45309;background:#FEF3C7;padding:2px 9px;border-radius:7px;',
+      approved: 'font-size:10.5px;font-weight:700;color:#005A36;background:#E6F3ED;padding:2px 9px;border-radius:7px;',
+      rejected: 'font-size:10.5px;font-weight:700;color:#DC2626;background:#FEE2E2;padding:2px 9px;border-radius:7px;',
+    };
+    const stTxt = { pending: 'Chờ duyệt', approved: '✓ Đã duyệt', rejected: '✕ Từ chối' };
+    const leaves = s.leaves.map((l, i) => ({
+      id: l.id, childName: l.childName, code: l.code, childInitial: this.ini(l.childName), grad: this.gradFor(l.childName),
+      parentName: l.parentName, parentRel: l.parentRel, parentPhone: l.parentPhone, reason: l.reason, dateRange: l.dateRange, submitted: l.submitted,
+      statusPill: stPill[l.status], statusText: stTxt[l.status], pending: l.status === 'pending',
+      proofLabel: l.proof, viewProof: () => this.openProof(l.id),
+      proofStyle: 'position:relative;width:100%;height:96px;border-radius:12px;border:none;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;background:' + this.proofBgs[i % this.proofBgs.length] + ';',
+      approve: () => this.approve(l.id), reject: () => this.reject(l.id),
+      cardStyle: 'border:1px solid ' + (l.status === 'pending' ? '#FDE68A' : '#E6EEE9') + ';background:' + (l.status === 'pending' ? '#FFFBEB' : '#FAFBFA') + ';border-radius:16px;padding:16px;',
+    }));
+
+    const pf = s.proofOpen ? s.leaves.find(l => l.id === s.proofOpen) : null;
+
+    const liveFeed = s.liveFeed.map(it => ({ id: it.id, name: it.name, time: it.time, grad: it.grad, initial: it.initial,
+      style: 'display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;border:1.5px solid #C7E3D5;background:#F6FAF7;' + (it.fresh ? 'animation:kc-slidedown .45s cubic-bezier(.2,.7,.3,1);' : '') }));
+    const flashStyle = 'position:absolute;inset:0;border-radius:16px;pointer-events:none;border:4px solid #005A36;box-shadow:inset 0 0 34px rgba(0,90,54,.45);animation:kc-flash .6s ease;';
+
+    return {
+      dateLabel: this.dateLabel || 'Hôm nay',
+      total, cPresent, cExcused, cUnexcused, rate, donut, legend, week,
+      filters, rows, query: s.query, onQuery: this.onQuery,
+      dows: ['T2','T3','T4','T5','T6','T7','CN'], calendar, monthLabel, prevMonth: this.prevMonth, nextMonth: this.nextMonth,
+      pendingLeaves, totalLeaves: s.leaves.length, hasPending: pendingLeaves > 0,
+      openLeaves: this.openLeaves, closeLeaves: this.closeLeaves, leaveOpen: s.leaveOpen, leaves,
+      proofOpen: !!pf,
+      proofBg: pf ? this.proofBgs[s.leaves.indexOf(pf) % this.proofBgs.length] : '#334155',
+      proofTitle: pf ? pf.proof : '', proofCaption: pf ? (pf.childName + ' · ' + pf.dateRange) : '',
+      closeProof: this.closeProof,
+      scannerOpen: s.scannerOpen, openScanner: this.openScanner, closeScanner: this.closeScanner,
+      onScan: this.handleScan, onManual: this.onManual, scanFlash: s.scanFlash, flashStyle,
+      liveFeed, feedCount: s.liveFeed.length, scanHint: cUnexcused + cExcused > 0 ? 'Đang chờ lượt quét tiếp theo…' : 'Tất cả đã điểm danh 🎉',
+      toggleSidebar: this.toggleSidebar, setSb: (el) => { this.sb = el; }, setMainEl: (el) => { this.mainEl = el; },
+      exportCSV: this.exportCSV, stop: this.stop, toasts: s.toasts,
+    };
+  }
+}
+</script>
+
+
+</body></html>
