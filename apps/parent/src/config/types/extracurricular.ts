@@ -1,4 +1,4 @@
-export type EnrollmentStatus = 'Pending' | 'Active' | 'Cancelled';
+export type EnrollmentStatus = 'Pending' | 'Active' | 'Cancelled' | 'Expired';
 
 export interface ExtracurricularActivityApiDto {
   activityId: number;
@@ -46,4 +46,5 @@ export interface CreateEnrollmentResult {
 export interface CancelEnrollmentResult {
   enrollmentId: number;
   status: EnrollmentStatus;
+  feeRefunded: boolean;
 }

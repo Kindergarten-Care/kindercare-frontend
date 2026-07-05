@@ -54,11 +54,12 @@ export function useExtracurricular() {
 
   const cancelEnrollment = useCallback(
     async (enrollmentId: number) => {
-      if (!activeStudent?.studentId) return;
+      if (!activeStudent?.studentId) return null;
       setCancellingId(enrollmentId);
       try {
-        await extracurricularService.cancelEnrollment(activeStudent.studentId, enrollmentId);
+        const result = await extracurricularService.cancelEnrollment(activeStudent.studentId, enrollmentId);
         fetchData();
+        return result;
       } finally {
         setCancellingId(null);
       }
@@ -73,7 +74,7 @@ export function useExtracurricular() {
 
   const currentMonthEnrollments = enrollments.filter(e => e.registeredMonth === currentMonth);
   const enrolledActivityIds = new Set(
-    currentMonthEnrollments.filter(e => e.status !== 'Cancelled').map(e => e.activityId)
+    currentMonthEnrollments.filter(e => e.status === 'Pending' || e.status === 'Active').map(e => e.activityId)
   );
 
   return {

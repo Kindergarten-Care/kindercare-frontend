@@ -1,4 +1,6 @@
-export type InvoiceType = 'TUITION' | 'MONTHLY';
+import { EnrollmentStatus } from './extracurricular';
+
+export type InvoiceType = 'TUITION' | 'MONTHLY' | 'EXTRACURRICULAR';
 export type PaymentStatus = 'Unpaid' | 'Partial' | 'Paid';
 export type TransactionStatus = 'Success' | 'Pending' | 'Failed';
 
@@ -54,16 +56,36 @@ export interface InvoiceTransactionDomainModel {
   status: TransactionStatus;
 }
 
+export interface ExtracurricularInvoiceItemApiDto {
+  enrollmentId: number;
+  activityId: number;
+  activityName: string;
+  monthlyFee: number;
+  status: EnrollmentStatus;
+  feeRefunded: boolean;
+}
+
+export interface ExtracurricularInvoiceItemDomainModel {
+  enrollmentId: number;
+  activityId: number;
+  activityName: string;
+  monthlyFee: number;
+  status: EnrollmentStatus;
+  feeRefunded: boolean;
+}
+
 export interface InvoiceDetailApiDto extends InvoiceApiDto {
   studentId: number;
   packageId: number | null;
   transactions: InvoiceTransactionApiDto[];
+  extracurricularItems?: ExtracurricularInvoiceItemApiDto[];
 }
 
 export interface InvoiceDetailDomainModel extends InvoiceDomainModel {
   studentId: number;
   packageId: number | null;
   transactions: InvoiceTransactionDomainModel[];
+  extracurricularItems?: ExtracurricularInvoiceItemDomainModel[];
 }
 
 export interface InvoiceListQuery {

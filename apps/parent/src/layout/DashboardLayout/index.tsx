@@ -73,12 +73,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       <S.DropdownLabel>{locale === 'vi' ? 'Ngôn ngữ' : 'Language'}</S.DropdownLabel>
                       <LanguageSwitcher currentLocale={locale} onLocaleChange={handleLocaleChange} />
                     </S.DropdownItem>
-                    <S.DropdownItem>
-                      <S.DropdownLabel>{locale === 'vi' ? 'Giao diện tối' : 'Dark Mode'}</S.DropdownLabel>
-                      <S.ToggleSwitch title={locale === 'vi' ? 'Chưa hỗ trợ' : 'Not supported yet'}>
-                        <S.ToggleSlider />
-                      </S.ToggleSwitch>
-                    </S.DropdownItem>
                   </S.SettingsDropdown>
                 )}
               </S.SettingsWrapper>

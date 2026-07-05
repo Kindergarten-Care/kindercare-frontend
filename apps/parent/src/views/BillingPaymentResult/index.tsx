@@ -5,13 +5,23 @@ import { useRouter } from '@/i18n/routing';
 import * as S from './styles';
 import { invoiceService } from '@/services/Invoice/InvoiceService';
 import { InvoiceDetailDomainModel } from '@/config/types/invoice';
-import { formatVND } from '@/utils/Billing/format';
+import { formatVND, formatBillingMonth, formatUnixDateTime } from '@/utils/Billing/format';
 import { IconCheck, IconClose, IconSchedule } from '@/assets/icons/dashboard';
 
 const MAX_POLL_ATTEMPTS = 5;
 const POLL_INTERVAL_MS = 2000;
 
 type ResultState = 'checking' | 'success' | 'failed' | 'pending';
+
+function invoiceTitle(invoice: InvoiceDetailDomainModel): string {
+  if (invoice.invoiceType === 'TUITION') {
+    return `Học phí ${invoice.periodRange ?? formatBillingMonth(invoice.billingMonth)}`;
+  }
+  if (invoice.invoiceType === 'EXTRACURRICULAR') {
+    return `Ngoại khóa ${formatBillingMonth(invoice.billingMonth)}`;
+  }
+  return `Hóa đơn tiền ăn ${formatBillingMonth(invoice.billingMonth)}`;
+}
 
 export function BillingPaymentResult() {
   const router = useRouter();
@@ -86,9 +96,10 @@ export function BillingPaymentResult() {
   }
 
   if (state === 'success') {
+    const lastTx = invoice?.transactions[0];
     return (
       <S.PageWrap>
-        <S.Card>
+        <S.Card $wide={!!invoice}>
           <S.Icon $variant="success">
             <IconCheck size={30} />
           </S.Icon>
@@ -96,6 +107,28 @@ export function BillingPaymentResult() {
           <S.Desc>
             {invoice ? `Đã ghi nhận thanh toán ${formatVND(invoice.totalAmount)}.` : 'Hóa đơn của bạn đã được ghi nhận thanh toán đầy đủ.'}
           </S.Desc>
+
+          {invoice && (
+            <S.InfoPanel>
+              <S.InfoRow>
+                <S.InfoLabel>Hóa đơn</S.InfoLabel>
+                <S.InfoValue>{invoiceTitle(invoice)}</S.InfoValue>
+              </S.InfoRow>
+              {lastTx?.transactionCode && (
+                <S.InfoRow>
+                  <S.InfoLabel>Mã giao dịch</S.InfoLabel>
+                  <S.InfoValue>{lastTx.transactionCode}</S.InfoValue>
+                </S.InfoRow>
+              )}
+              {lastTx && (
+                <S.InfoRow>
+                  <S.InfoLabel>Thời gian thanh toán</S.InfoLabel>
+                  <S.InfoValue>{formatUnixDateTime(lastTx.transactionDate)}</S.InfoValue>
+                </S.InfoRow>
+              )}
+            </S.InfoPanel>
+          )}
+
           <S.Actions>
             <S.Btn $variant="brand" onClick={goToInvoice}>Xem hóa đơn</S.Btn>
           </S.Actions>
