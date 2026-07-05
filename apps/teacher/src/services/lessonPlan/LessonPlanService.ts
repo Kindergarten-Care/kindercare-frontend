@@ -28,8 +28,9 @@ class LessonPlanService {
     classId?: number;
   }): Promise<LessonPlanDomainModel[]> {
     try {
+      // Proxy strip '/teacher/api' prefix → BE nhận '/lesson-plans'
       const res = await apiClient.get<ApiResponse<LessonPlanApiDto[]>>(
-        '/teacher/lesson-plans',
+        '/lesson-plans',
         { params }
       );
       if (!res.data?.success) {
@@ -47,7 +48,7 @@ class LessonPlanService {
   async getLessonPlanById(id: number | string): Promise<LessonPlanDomainModel> {
     try {
       const res = await apiClient.get<ApiResponse<LessonPlanApiDto>>(
-        `/teacher/lesson-plans/${id}`
+        `/lesson-plans/${id}`
       );
       if (!res.data?.success) {
         throw new Error(res.data?.message || 'Lesson plan not found');
@@ -65,8 +66,9 @@ class LessonPlanService {
 
   /** Tạo mới hoặc cập nhật (upsert) giáo án */
   async upsertLessonPlan(input: LessonPlanUpsertInput): Promise<LessonPlanDomainModel> {
+    // Proxy strip '/teacher/api' prefix → BE nhận '/lesson-plans'
     const res = await apiClient.post<ApiResponse<LessonPlanApiDto>>(
-      '/teacher/lesson-plans',
+      '/lesson-plans',
       input
     );
     if (!res.data?.success) {
@@ -78,7 +80,7 @@ class LessonPlanService {
   /** Gửi duyệt (Draft/RevisionRequested → Submitted) */
   async submitForApproval(id: number | string, note?: string): Promise<LessonPlanDomainModel> {
     const res = await apiClient.post<ApiResponse<LessonPlanApiDto>>(
-      `/teacher/lesson-plans/${id}/submit`,
+      `/lesson-plans/${id}/submit`,
       { note }
     );
     if (!res.data?.success) {
@@ -90,7 +92,7 @@ class LessonPlanService {
   /** Rút lại (Submitted → Draft) để sửa */
   async withdrawSubmission(id: number | string): Promise<LessonPlanDomainModel> {
     const res = await apiClient.post<ApiResponse<LessonPlanApiDto>>(
-      `/teacher/lesson-plans/${id}/withdraw`,
+      `/lesson-plans/${id}/withdraw`,
       {}
     );
     if (!res.data?.success) {
@@ -106,7 +108,7 @@ class LessonPlanService {
     isCompleted: boolean
   ): Promise<LessonPlanItemApiDto> {
     const res = await apiClient.patch<ApiResponse<LessonPlanItemApiDto>>(
-      `/teacher/lesson-plans/${planId}/items/${itemId}/complete`,
+      `/lesson-plans/${planId}/items/${itemId}/complete`,
       { isCompleted }
     );
     if (!res.data?.success) {
