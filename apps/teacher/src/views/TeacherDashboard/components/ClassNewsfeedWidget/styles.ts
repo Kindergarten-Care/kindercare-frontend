@@ -154,15 +154,42 @@ export const LightboxImage = styled.img`
 
 export const LightboxCloseBtn = styled.button`
   position: absolute;
-  top: -40px;
-  right: 0;
-  background: transparent;
+  top: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.5);
   color: #fff;
   border: none;
-  font-size: 32px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 16px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
   
   &:hover {
-    color: #F87171;
+    background: rgba(0,0,0,0.8);
+    transform: scale(1.1);
+  }
+`;
+
+export const DeleteBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: auto;
+
+  &:hover {
+    color: #EF4444;
+    background: #FEE2E2;
   }
 `;

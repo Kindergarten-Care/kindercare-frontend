@@ -408,6 +408,40 @@ export const LbDownload = styled.button`
   &:hover { background: #004428; }
 `;
 
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  color: var(--muted);
+  text-align: center;
+`;
+
+export const EmptyIcon = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--brand-tint, #eaf7f0);
+  color: var(--brand, #005a36);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+`;
+
+export const EmptyTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+`;
+
+export const EmptySub = styled.div`
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+`;
+
 export const ModalCloseBtn = styled.button`
   width: 36px;
   height: 36px;

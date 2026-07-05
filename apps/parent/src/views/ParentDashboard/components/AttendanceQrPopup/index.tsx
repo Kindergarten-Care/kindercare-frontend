@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as S from './styles';
-import { IconClose, IconDownload } from '@/assets/icons/dashboard';
+import { IconClose } from '@/assets/icons/dashboard';
 import { QrGenerator } from './QrGenerator';
+import { qrTokenService } from '@/services/QrToken/QrTokenService';
 
 interface AttendanceQrPopupProps {
   isOpen: boolean;
@@ -36,57 +37,64 @@ const IconRefresh: React.FC<{ size?: number }> = ({ size = 13 }) => (
 );
 
 const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, student }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(60);
   const [qrToken, setQrToken] = useState<string>('');
+  const [timeLeft, setTimeLeft] = useState<number>(60);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Generate dynamic QR token
-  const generateNewToken = () => {
-    const timestamp = Math.floor(Date.now() / 1000);
-    setQrToken(`kindercare:checkin:studentId=${student.studentId}:time=${timestamp}`);
-    setTimeLeft(60);
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   };
+
+  const fetchToken = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    stopTimer();
+    try {
+      const res = await qrTokenService.getQrToken(student.studentId);
+      setQrToken(res.token);
+      const ttl = res.ttl ?? 60;
+      setTimeLeft(ttl);
+
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            stopTimer();
+            fetchToken();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Không thể lấy mã QR');
+    } finally {
+      setLoading(false);
+    }
+  }, [student.studentId]);
 
   useEffect(() => {
     if (isOpen) {
-      generateNewToken();
+      fetchToken();
+    } else {
+      stopTimer();
+      setQrToken('');
+      setError(null);
     }
-  }, [isOpen, student.studentId]);
-
-  // Countdown timer for security auto-refresh
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Trigger refresh
-          setRefreshing(true);
-          setTimeout(() => setRefreshing(false), 500);
-          generateNewToken();
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isOpen]);
+    return () => stopTimer();
+  }, [isOpen, fetchToken]);
 
   if (!isOpen) return null;
 
   const handleManualRefresh = () => {
-    if (refreshing) return;
+    if (refreshing || loading) return;
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      generateNewToken();
-    }, 600);
-  };
-
-  const handleDownload = () => {
-    // Premium simulated download
-    alert(`Tải mã QR điểm danh của bé ${student.fullName} thành công!`);
+    fetchToken().finally(() => setRefreshing(false));
   };
 
   const studentCode = `KC-${student.studentId.toString().padStart(4, '0')}`;
@@ -109,17 +117,28 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
         <S.ContentBody>
           <S.QrOuterContainer>
             <S.ScannerArea>
-              {/* Laser line effect */}
-              <S.LaserLine />
-              <QrGenerator value={qrToken} size={200} />
+              {loading && !qrToken ? (
+                <div style={{ width: 300, height: 300, display: 'grid', placeItems: 'center', color: 'var(--muted)' }}>
+                  Đang tải mã QR...
+                </div>
+              ) : error && !qrToken ? (
+                <div style={{ width: 300, height: 300, display: 'grid', placeItems: 'center', color: '#ef4444', fontSize: 13, textAlign: 'center', padding: '0 16px' }}>
+                  {error}
+                </div>
+              ) : (
+                <QrGenerator value={qrToken} size={300} />
+              )}
             </S.ScannerArea>
           </S.QrOuterContainer>
 
           <S.RefreshTimerRow>
-            <S.RefreshIconWrap $refreshing={refreshing} onClick={handleManualRefresh} title="Làm mới mã QR">
+            <S.RefreshIconWrap $refreshing={refreshing || loading} onClick={handleManualRefresh} title="Làm mới mã QR">
               <IconRefresh size={14} />
             </S.RefreshIconWrap>
-            <span>Tự động cập nhật sau <strong>{timeLeft}s</strong></span>
+            {error
+              ? <span style={{ color: '#ef4444', fontSize: 12 }}>{error} — <strong style={{ cursor: 'pointer' }} onClick={handleManualRefresh}>Thử lại</strong></span>
+              : <span>Tự động cập nhật sau <strong>{timeLeft}s</strong></span>
+            }
           </S.RefreshTimerRow>
 
           <S.InfoCard>
@@ -141,12 +160,6 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
             </S.InfoRow>
           </S.InfoCard>
         </S.ContentBody>
-
-        <S.Footer>
-          <S.DownloadBtn onClick={handleDownload}>
-            <IconDownload size={16} /> Tải mã QR
-          </S.DownloadBtn>
-        </S.Footer>
       </S.ModalContainer>
     </S.Overlay>
   );

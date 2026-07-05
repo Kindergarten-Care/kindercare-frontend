@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ReduxProvider } from '@/store/ReduxProvider';
 import type { Metadata } from 'next';
 import { Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
 import QueryProvider from '@/providers/QueryProvider';
@@ -74,17 +75,19 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>
-        <QueryProvider>
-          <NextIntlClientProvider messages={messages}>
-            <StyledComponentsRegistry>
-              <AuthProvider>
-                <SocketProvider>
-                  {children}
-                </SocketProvider>
-              </AuthProvider>
-            </StyledComponentsRegistry>
-          </NextIntlClientProvider>
-        </QueryProvider>
+        <ReduxProvider>
+          <QueryProvider>
+            <NextIntlClientProvider messages={messages}>
+              <StyledComponentsRegistry>
+                <AuthProvider>
+                  <SocketProvider>
+                    {children}
+                  </SocketProvider>
+                </AuthProvider>
+              </StyledComponentsRegistry>
+            </NextIntlClientProvider>
+          </QueryProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

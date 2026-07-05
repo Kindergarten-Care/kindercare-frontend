@@ -51,6 +51,21 @@ export const AvgBadge = styled.span`
   letter-spacing: 0.02em;
 `;
 
+export const MonthTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 3px 9px;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+`;
+
 export const DetailLink = styled.button`
   background: none;
   border: none;
@@ -180,4 +195,47 @@ export const ProgressFill = styled.div<{ $pct: number; $color: string }>`
   border-radius: 3px;
   background: ${p => p.$color};
   width: ${p => p.$pct}%;
+`;
+
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  text-align: center;
+`;
+
+export const EmptyIcon = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--brand-tint, #eaf7f0);
+  color: var(--brand, #005a36);
+  display: grid;
+  place-items: center;
+`;
+
+export const EmptyTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+`;
+
+export const EmptySub = styled.div`
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+`;
+
+export const TeacherComment = styled.p`
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+  line-height: 1.5;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-alt, #f8f9fa);
+  border-left: 3px solid var(--brand, #005a36);
+  border-radius: 0 6px 6px 0;
 `;

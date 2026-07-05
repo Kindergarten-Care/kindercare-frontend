@@ -1,670 +1,729 @@
-'use client';
-
 import styled, { keyframes } from 'styled-components';
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-export const ActivitiesPageContainer = styled.div`
-  animation: ${fadeIn} 0.5s ease-out;
+export const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
+  margin: -24px; /* Phủ kín layout */
+  padding: 24px 40px 44px;
+  min-height: calc(100vh - 80px); /* Chiều cao trừ đi header */
+  background: #eff6f1;
+  font-family: 'Inter', system-ui, sans-serif;
 `;
 
-export const HeaderActionsSection = styled.div`
+export const TopHeader = styled.div`
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
   gap: 16px;
+  flex-wrap: wrap;
+`;
 
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    flex-direction: column;
-    align-items: stretch;
+export const HeaderSubtitle = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #9ca3af;
+`;
+
+export const Title = styled.div`
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-top: 4px;
+  color: #1f2937;
+`;
+
+export const CurrentStatusBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid #e6eee9;
+  border-radius: 11px;
+  padding: 9px 16px;
+  box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06);
+`;
+
+export const DotPulse = styled.span`
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #005a36;
+  box-shadow: 0 0 0 3px rgba(0, 90, 54, 0.15);
+`;
+
+export const StatusText = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+
+  strong {
+    color: #005a36;
+    font-weight: 700;
   }
 `;
 
-export const DateHeader = styled.div`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${props => props.theme.colors.muted};
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
+export const SplitContainer = styled.div`
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 18px;
+  align-items: start;
 
-export const ActionsGroup = styled.div`
-  display: flex;
-  gap: 12px;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    flex-direction: column;
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-export const SaveBtn = styled.button`
+// --- LEFT COLUMN: TIMELINE ---
+
+export const TimelineColumn = styled.div`
+  position: sticky;
+  top: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid #e6eee9;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  padding: 20px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  
+  /* Tùy chỉnh thanh cuộn cho mượt mà */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cfe0d6;
+    border-radius: 6px;
+  }
+`;
+
+export const TimelineHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
+  justify-content: space-between;
+  margin-bottom: 16px;
+`;
+
+export const TimelineTitle = styled.span`
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+`;
+
+export const TimelineProgress = styled.span`
+  font-size: 11px;
   font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  background: ${props => props.theme.colors.greenMid};
-  color: white;
-  border: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9ca3af;
+`;
+
+export const TimelineList = styled.div`
+  position: relative;
+`;
+
+export const TimelineItemWrapper = styled.div`
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 12px;
+`;
+
+export const TimelineDotCol = styled.div`
+  flex: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 14px;
+`;
+
+export const DotNode = styled.span<{ $bg: string; $isCur?: boolean }>`
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: ${props => props.$bg};
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const VerticalLine = styled.span`
+  position: absolute;
+  top: 21px;
+  bottom: -12px;
+  width: 2px;
+  background: #e6eee9;
+`;
+
+export const TimelineCard = styled.button<{ $bg: string; $borderColor: string; $isDone?: boolean; $isCur?: boolean }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1.5px solid ${props => props.$borderColor};
+  background: ${props => props.$bg};
   cursor: pointer;
-  transition: all 0.2s ease;
+  opacity: ${props => props.$isDone ? 0.62 : 1};
+  transition: all 0.25s;
+  text-align: left;
+  outline: none;
+
+  ${props => props.$isCur && `
+    transform: scale(1.02);
+    box-shadow: 0 0 0 2px ${props.$borderColor}, 0 8px 20px -8px rgba(0,90,54,.3);
+  `}
 
   &:hover {
-    background: ${props => props.theme.colors.green};
-    transform: translateY(-1px);
-    box-shadow: ${props => props.theme.shadows.soft};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background: #f6faf7;
   }
 `;
 
-// Tab bar styles
-export const TabBar = styled.div`
+export const TimelineIconBox = styled.span<{ $color: string; $bg: string }>`
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   display: flex;
-  border-bottom: 2px solid ${props => props.theme.colors.border};
-  gap: 32px;
-  margin-bottom: 8px;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.$color};
+  background: ${props => props.$bg};
 `;
 
-export const TabButton = styled.button<{ $active: boolean }>`
+export const TimelineCardContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const TimelineTimeText = styled.div<{ $color: string }>`
+  font-size: 13px;
+  font-weight: 700;
+  color: ${props => props.$color};
+  font-variant-numeric: tabular-nums;
+`;
+
+export const TimelineNameText = styled.div<{ $color: string }>`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: ${props => props.$color};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const TimelineDoneIcon = styled.span`
+  flex: none;
+  color: #005a36;
+  display: flex;
+`;
+
+export const TimelineLiveBadge = styled.span`
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #005a36;
+  padding: 3px 8px;
+  border-radius: 7px;
+`;
+
+
+// --- RIGHT COLUMN: LOGGING & MATRIX ---
+
+export const RightCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+`;
+
+export const SectionCard = styled.section`
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid #e6eee9;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  padding: 22px;
+`;
+
+export const MatrixHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+`;
+
+export const MatrixIconBox = styled.span<{ $color: string; $bg: string }>`
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.$color};
+  background: ${props => props.$bg};
+  font-size: 22px;
+`;
+
+export const MatrixTitleArea = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const MatrixTitle = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #1f2937;
+`;
+
+export const MatrixDesc = styled.div`
+  font-size: 13px;
+  color: #6b7280;
+`;
+
+export const BatchBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #00794a, #005a36);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -6px rgba(0, 90, 54, 0.45);
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: scale(1.03);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
+export const slidePanel = keyframes`
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+`;
+
+export const MatrixList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: ${slidePanel} 0.3s ease;
+`;
+
+export const MatrixRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 12px;
+  border-radius: 13px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f6faf7 !important;
+  }
+`;
+
+export const AvatarNode = styled.span<{ $bg: string; $imgUrl?: string }>`
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: ${props => props.$imgUrl ? `url('${props.$imgUrl}') center/cover no-repeat` : props.$bg};
+  color: ${props => props.$imgUrl ? 'transparent' : '#fff'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+`;
+
+export const StudentNameNode = styled.span`
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const EditNoteBtn = styled.button<{ $active?: boolean }>`
   background: none;
   border: none;
-  padding: 12px 4px 16px 4px;
-  font-size: 0.9375rem;
-  font-weight: 700;
   cursor: pointer;
-  color: ${props => (props.$active ? props.theme.colors.greenMid : props.theme.colors.muted)};
-  position: relative;
+  color: ${({ $active }) => $active ? '#f59e0b' : '#9ca3af'};
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: ${props => props.theme.colors.greenMid};
-    transform: scaleX(${props => (props.$active ? 1 : 0)});
-    transition: transform 0.2s ease;
-    border-radius: 99px;
-  }
+  margin-left: 8px;
 
   &:hover {
-    color: ${props => props.theme.colors.greenMid};
+    color: #f59e0b;
+    background: #fef3c7;
   }
 `;
 
-// Menu Config Board Section
-export const MenuSection = styled.div`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.lg};
-  box-shadow: ${props => props.theme.shadows.soft};
-  border: 1px solid ${props => props.theme.colors.border};
+export const NoteAccordion = styled.div<{ $expanded: boolean }>`
+  display: grid;
+  grid-template-rows: ${({ $expanded }) => $expanded ? '1fr' : '0fr'};
+  transition: grid-template-rows 0.3s ease;
   overflow: hidden;
+  background: #f9fafb;
+  border-radius: 0 0 12px 12px;
+`;
+
+export const AccordionContent = styled.div`
+  min-height: 0;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+
+  /* This extra wrapper handles the padding animation gracefully */
+  > div {
+    padding: 16px 0;
+    border-top: 1px dashed #e5e7eb;
+    display: flex;
+    gap: 16px;
+  }
+`;
+
+export const NoteTextarea = styled.textarea`
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #f59e0b;
+  }
+`;
+
+export const PhotoUploadBox = styled.label`
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: #fef3c7;
+  }
+
+  input {
+    display: none;
+  }
+`;
+
+export const PhotoPreview = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
+export const OptionsGroup = styled.div<{ $width?: string }>`
+  flex: none;
+  position: relative;
+  display: flex;
+  background: #f1f4f1;
+  border: 1px solid #e6eee9;
+  border-radius: 12px;
+  padding: 4px;
+  width: ${props => props.$width}px;
+`;
+
+export const OptionBtn = styled.button<{ $active: boolean }>`
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-align: center;
+
+  ${props => props.$active && `
+    color: #1f2937;
+  `}
+  
+  &:hover {
+    color: #1f2937;
+  }
+`;
+
+export const ActiveHighlight = styled.span<{ $index: number; $total: number; $color: string }>`
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: calc(4px + ${props => (props.$index / props.$total) * 100}%);
+  width: calc(100% / ${props => props.$total} - 8px);
+  background: #fff;
+  border-radius: 9px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  border: 1px solid #e5e7eb;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  opacity: ${props => props.$index >= 0 ? 1 : 0};
+`;
+
+export const EmptyMatrixCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #f4f8f5;
+  border: 1px dashed #c7dbcf;
+  animation: ${slidePanel} 0.3s ease;
+`;
+
+export const EmptyMatrixTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+`;
+
+export const EmptyMatrixDesc = styled.div`
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+`;
+
+// --- LESSON LOG SECTION ---
+
+export const LessonHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+`;
+
+export const LessonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const LessonCard = styled.div<{ $bg: string; $borderColor: string }>`
+  position: relative;
+  overflow: hidden;
+  background: ${props => props.$bg};
+  border: 1px solid ${props => props.$borderColor};
+  border-radius: 16px;
+  padding: 18px;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+`;
+
+export const LessonWatermark = styled.span<{ $color: string }>`
+  position: absolute;
+  right: -12px;
+  top: -12px;
+  color: ${props => props.$color};
+  opacity: 0.5;
+`;
+
+export const LessonSubject = styled.div<{ $color: string }>`
+  position: relative;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: ${props => props.$color};
+`;
+
+export const LessonTitle = styled.div`
+  position: relative;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 4px;
+  line-height: 1.3;
+`;
+
+export const LessonNote = styled.div`
+  position: relative;
+  font-size: 12.5px;
+  color: #6b7280;
+  margin-top: 4px;
+`;
+
+// --- TOAST NOTIFICATIONS ---
+
+export const toastin = keyframes`
+  0% { transform: translateY(100%) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+`;
+
+export const ToastContainer = styled.div`
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  pointer-events: none;
+`;
+
+export const ToastMsg = styled.div`
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  animation: ${toastin} 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+// --- MENU SECTION ---
+
+export const MenuSection = styled.div`
+  margin-bottom: 24px;
+  background: #fdfbf7;
+  border: 1px solid #f0ead6;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px -2px rgba(217, 119, 6, 0.05);
 `;
 
 export const MenuHeader = styled.div`
-  padding: 16px 24px;
-  background: #fcfdfe;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  cursor: pointer;
+  justify-content: space-between;
+  margin-bottom: 14px;
 `;
 
-export const MenuTitle = styled.h3`
-  font-size: 1rem;
+export const MenuTitle = styled.div`
+  font-size: 15px;
   font-weight: 700;
-  color: ${props => props.theme.colors.fg};
-  margin: 0;
+  color: #92400e;
   display: flex;
   align-items: center;
   gap: 8px;
 `;
 
-export const MenuToggleButton = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.colors.greenMid};
-  font-size: 0.875rem;
+export const EditMenuBtn = styled.button`
+  background: #fff;
+  border: 1px solid #d97706;
+  color: #d97706;
   font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  outline: none;
+  transition: all 0.2s;
 
   &:hover {
-    text-decoration: underline;
+    background: #fef3c7;
   }
-`;
-
-export const MenuContent = styled.div<{ $isOpen: boolean }>`
-  display: ${props => (props.$isOpen ? 'block' : 'none')};
-  padding: 24px;
-  background: #fafcf9;
 `;
 
 export const MenuGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 12px;
 
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
-export const MenuCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: ${props => props.theme.colors.surface};
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.radius.md};
-  padding: 16px;
+export const MenuMealBox = styled.div`
+  background: #fff;
+  border: 1px dashed #fcd34d;
+  border-radius: 10px;
+  padding: 10px 12px;
 `;
 
-export const MenuLabel = styled.span`
-  font-size: 0.75rem;
+export const MenuMealLabel = styled.div`
+  font-size: 11px;
   font-weight: 700;
+  color: #b45309;
   text-transform: uppercase;
-  color: ${props => props.theme.colors.greenMid};
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  margin-bottom: 4px;
 `;
 
-export const MenuText = styled.p`
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: ${props => props.theme.colors.fg};
-  margin: 0;
-  white-space: pre-wrap;
-  min-height: 48px;
+export const MenuMealText = styled.div`
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.4;
 `;
 
-export const MenuTextarea = styled.textarea`
+export const MenuInput = styled.textarea`
   width: 100%;
-  min-height: 72px;
-  padding: 8px 12px;
-  font-size: 0.875rem;
-  border-radius: ${props => props.theme.radius.sm};
-  border: 1px solid ${props => props.theme.colors.border};
-  outline: none;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #1f2937;
   resize: vertical;
-  background: ${props => props.theme.colors.bg};
-  transition: all 0.2s ease;
+  min-height: 60px;
+  background: #fffbeb;
 
   &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
-    background: ${props => props.theme.colors.surface};
-  }
-`;
-
-// Filter & Quick Actions Bar
-export const WorkspaceControlsRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.md};
-  padding: 16px 24px;
-  box-shadow: ${props => props.theme.shadows.soft};
-  border: 1px solid ${props => props.theme.colors.border};
-`;
-
-export const SearchInputWrapper = styled.div`
-  position: relative;
-  max-width: 320px;
-  width: 100%;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    max-width: 100%;
-  }
-
-  svg {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: ${props => props.theme.colors.muted};
-  }
-`;
-
-export const SearchField = styled.input`
-  width: 100%;
-  padding: 10px 14px 10px 42px;
-  font-size: 0.875rem;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px solid ${props => props.theme.colors.border};
-  outline: none;
-  background: ${props => props.theme.colors.bg};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
-    background: ${props => props.theme.colors.surface};
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-  }
-`;
-
-export const QuickActionsRow = styled.div`
-  display: flex;
-  gap: 12px;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    width: 100%;
-    flex-direction: column;
-  }
-`;
-
-export const QuickFillBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  background: ${props => props.theme.colors.bg};
-  color: ${props => props.theme.colors.fg};
-  border: 1px solid ${props => props.theme.colors.border};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${props => props.theme.colors.border};
-  }
-`;
-
-// Student Intake Workspace Grid/Table
-export const GridContainer = styled.div`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.lg};
-  box-shadow: ${props => props.theme.shadows.soft};
-  overflow: hidden;
-  border: 1px solid ${props => props.theme.colors.border};
-`;
-
-export const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-`;
-
-export const TableHead = styled.thead`
-  background: ${props => props.theme.colors.bg};
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-`;
-
-export const Th = styled.th`
-  padding: 18px 24px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${props => props.theme.colors.muted};
-`;
-
-export const TBody = styled.tbody`
-  tr:last-child {
-    border-bottom: none;
-  }
-`;
-
-export const Tr = styled.tr`
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.colors.bg};
-  }
-`;
-
-export const Td = styled.td`
-  padding: 16px 24px;
-  font-size: 0.875rem;
-  vertical-align: middle;
-`;
-
-export const StudentProfileCell = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-export const StudentAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: ${props => props.theme.colors.bg};
-  border: 1px solid ${props => props.theme.colors.border};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const StudentMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-export const StudentName = styled.span`
-  font-weight: 700;
-  color: ${props => props.theme.colors.fg};
-  font-size: 0.9375rem;
-`;
-
-export const StudentIdBadge = styled.span`
-  font-size: 0.75rem;
-  color: ${props => props.theme.colors.muted};
-  font-weight: 600;
-`;
-
-// Meal Intake Selectors
-export const MealButtonGroup = styled.div`
-  display: flex;
-  gap: 6px;
-  background: #f0f4ef;
-  padding: 4px;
-  border-radius: ${props => props.theme.radius.md};
-  width: fit-content;
-`;
-
-export const MealToggleBtn = styled.button<{ $active: boolean; $status: 'ALL' | 'HALF' | 'NONE' }>`
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: ${props => props.theme.radius.sm};
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: transparent;
-  color: ${props => props.theme.colors.muted};
-
-  ${props => props.$active && props.$status === 'ALL' && `
-    background: ${props.theme.colors.greenMid};
-    color: white;
-  `}
-
-  ${props => props.$active && props.$status === 'HALF' && `
-    background: ${props.theme.colors.amber};
-    color: white;
-  `}
-
-  ${props => props.$active && props.$status === 'NONE' && `
-    background: #ef4444;
-    color: white;
-  `}
-
-  &:hover {
-    ${props => !props.$active && `
-      background: rgba(14, 121, 60, 0.08);
-      color: ${props.theme.colors.greenMid};
-    `}
-  }
-`;
-
-export const DropdownSelect = styled.select`
-  width: 100%;
-  max-width: 150px;
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px solid ${props => props.theme.colors.border};
-  outline: none;
-  background: ${props => props.theme.colors.surface};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-  }
-`;
-
-export const NoteInput = styled.input`
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 0.875rem;
-  border-radius: ${props => props.theme.radius.sm};
-  border: 1px solid ${props => props.theme.colors.border};
-  outline: none;
-  background: ${props => props.theme.colors.bg};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${props => props.theme.colors.greenMid};
-    background: ${props => props.theme.colors.surface};
-  }
-`;
-
-export const PhotoUploadWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-export const PhotoThumbnail = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: ${props => props.theme.radius.sm};
-  border: 1px solid ${props => props.theme.colors.border};
-  background: ${props => props.theme.colors.bg};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const AddPhotoBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px dashed ${props => props.theme.colors.border};
-  background: none;
-  color: ${props => props.theme.colors.muted};
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.colors.greenMid};
-    color: ${props => props.theme.colors.greenMid};
-    background: rgba(34, 197, 94, 0.05);
-  }
-`;
-
-export const TimelineContainer = styled.div`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.radius.lg};
-  box-shadow: ${props => props.theme.shadows.soft};
-  border: 1px solid ${props => props.theme.colors.border};
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: relative;
-`;
-
-export const TimelineItem = styled.div`
-  display: flex;
-  gap: 24px;
-  position: relative;
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 20px;
-    top: 40px;
-    bottom: -24px;
-    width: 2px;
-    background: ${props => props.theme.colors.border};
-  }
-`;
-
-export const TimelineDot = styled.div<{ $completed: boolean }>`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: ${props => props.$completed ? props.theme.colors.greenLight : props.theme.colors.bg};
-  border: 2px solid ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.border};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.muted};
-  font-weight: bold;
-  z-index: 2;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-`;
-
-export const TimelineBody = styled.div`
-  flex: 1;
-  background: #fafcf9;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.radius.md};
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #f6fbf2;
-    box-shadow: ${props => props.theme.shadows.soft};
-  }
-`;
-
-export const TimelineLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-export const TimelineTime = styled.span`
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: ${props => props.theme.colors.greenMid};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-export const TimelineTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 700;
-  color: ${props => props.theme.colors.fg};
-  margin: 0;
-`;
-
-export const TimelineRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-`;
-
-export const ClassPhotoUpload = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
-`;
-
-export const ClassPhotoPreview = styled.div`
-  width: 120px;
-  height: 70px;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px solid ${props => props.theme.colors.border};
-  overflow: hidden;
-  position: relative;
-  background: ${props => props.theme.colors.bg};
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const ClassPhotoPlaceholder = styled.div`
-  width: 120px;
-  height: 70px;
-  border-radius: ${props => props.theme.radius.md};
-  border: 1px dashed ${props => props.theme.colors.border};
-  background: ${props => props.theme.colors.bg};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-size: 0.6875rem;
-  color: ${props => props.theme.colors.muted};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.colors.greenMid};
-    color: ${props => props.theme.colors.greenMid};
-    background: rgba(34, 197, 94, 0.02);
-  }
-`;
-
-export const TimelineCheckBtn = styled.button<{ $completed: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  border-radius: ${props => props.theme.radius.md};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid ${props => props.$completed ? props.theme.colors.greenMid : props.theme.colors.border};
-  background: ${props => props.$completed ? props.theme.colors.greenLight : 'white'};
-  color: ${props => props.$completed ? props.theme.colors.greenDark : props.theme.colors.fg};
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: ${props => props.theme.shadows.soft};
+    outline: none;
+    border-color: #f59e0b;
+    background: #fff;
   }
 `;

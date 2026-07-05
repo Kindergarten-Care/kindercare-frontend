@@ -117,19 +117,6 @@ export const CloseBtn = styled.button`
   }
 `;
 
-export const ContentArea = styled.div`
-  flex: 1;
-  padding: 40px 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-`;
-
 export const SvgWrapper = styled.div`
   width: 140px;
   height: 140px;
@@ -160,25 +147,136 @@ export const EmptyDesc = styled.p`
   max-width: 280px;
 `;
 
-export const ConfirmBtn = styled.button`
+export const HeadActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const MarkAllBtn = styled.button`
   font: inherit;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: #ffffff;
-  background: var(--brand);
+  color: var(--brand);
+  background: var(--brand-tint);
   border: none;
-  padding: 10px 32px;
-  border-radius: 12px;
+  padding: 5px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-  box-shadow: 0 4px 12px -2px rgba(0, 90, 54, 0.2);
+  transition: background 0.15s;
+
+  &:hover { background: #c6e6d8; }
+`;
+
+export const DeleteAllBtn = styled.button`
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+  background: #fef2f2;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #fee2e2; }
+`;
+
+export const ActionBar = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-soft);
+`;
+
+export const NotiList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+`;
+
+export const EmptyWrap = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+  text-align: center;
+`;
+
+const shimmer = keyframes`
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+`;
+
+export const SkeletonItem = styled.div`
+  height: 88px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
+  background-size: 800px 100%;
+  animation: ${shimmer} 1.4s infinite linear;
+`;
+
+export const TabsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  background: #fafafa;
+  overflow-x: auto;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+`;
+
+export const TabButton = styled.button<{ $active: boolean }>`
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${p => p.$active ? 'var(--brand)' : 'var(--muted)'};
+  background: ${p => p.$active ? 'var(--brand-tint)' : '#ffffff'};
+  border: 1px solid ${p => p.$active ? 'rgba(0, 90, 54, 0.15)' : 'var(--border-soft)'};
+  padding: 6px 16px;
+  border-radius: 99px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: ${p => p.$active ? '0 2px 6px -1px rgba(0, 90, 54, 0.08)' : 'none'};
 
   &:hover {
-    background: var(--brand-hover);
-    box-shadow: 0 6px 16px -2px rgba(0, 90, 54, 0.28);
+    background: ${p => p.$active ? 'var(--brand-tint)' : '#f1f5f9'};
+    color: ${p => p.$active ? 'var(--brand)' : 'var(--fg)'};
+    border-color: ${p => p.$active ? 'rgba(0, 90, 54, 0.25)' : '#cbd5e1'};
   }
-
+  
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 `;

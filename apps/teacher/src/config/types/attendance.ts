@@ -8,6 +8,10 @@ export interface Student {
   arrivalTime: string; // e.g. "07:45" or "--:--"
   healthNote: string;
   eatingStatus?: string;
+  sleepingStatus?: string;
+  hygieneStatus?: string;
+  teacherNote?: string;
+  photoUrl?: string;
   hasActiveLeaveRequest: boolean;
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;
@@ -29,8 +33,9 @@ export interface LeaveRequest {
   fromDate?: number;
   toDate?: number;
   parentPhone?: string;
-  isMealFeeDeducted?: number;
+  isMealFeeDeducted?: number | boolean;
   parentNotes?: string;
   createdAt?: number;
   className?: string;
+  studentAvatar?: string;
 }

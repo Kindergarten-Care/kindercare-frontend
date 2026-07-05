@@ -44,8 +44,8 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
             avatarInitial
           )}
         </S.Av>
-        <S.StatusRing>
-          <S.PulseDot />
+        <S.StatusRing $status={data.attendanceStatus}>
+          <S.PulseDot $status={data.attendanceStatus} />
         </S.StatusRing>
       </S.AvWrap>
 
@@ -57,9 +57,9 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
           {data.academicYear && <S.Chip><IconCalendar size={13} /> {data.academicYear}</S.Chip>}
           <S.Chip><IconPin size={13} /> {data.branch}</S.Chip>
         </S.MetaRow>
-        <S.CheckinBadge>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block', flexShrink: 0 }} />
-          Đã đến trường · {data.checkinTime}
+        <S.CheckinBadge $status={data.attendanceStatus}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor', display: 'inline-block', flexShrink: 0 }} />
+          {data.checkinTime} · {data.checkinSub}
         </S.CheckinBadge>
       </S.Info>
 

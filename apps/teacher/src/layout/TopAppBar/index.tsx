@@ -1,33 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as S from './styles';
-import { NotificationDropdown } from './components/NotificationDropdown';
+import { NotificationPopup } from './components/NotificationPopup';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
+import type { AppDispatch } from '@/store';
 import { useRouter } from '@/i18n/routing';
+import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useTeacherProfile } from '@/hooks/useTeacherQueries';
-
-interface TopAppBarProps {
-  fullName: string;
-  roleTitle: string;
-}
-
-const SearchIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"></circle>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-  </svg>
-);
-
-const NotificationBellIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-  </svg>
-);
-
-const ChatBubbleIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-  </svg>
-);
 
 interface TopAppBarProps {
   fullName: string;
@@ -35,65 +15,116 @@ interface TopAppBarProps {
   onMenuClick?: () => void;
 }
 
-const MenuIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="4" y1="12" x2="20" y2="12"></line>
-    <line x1="4" y1="6" x2="20" y2="6"></line>
-    <line x1="4" y1="18" x2="20" y2="18"></line>
-  </svg>
-);
-
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const { data: profile } = useTeacherProfile();
-
+  
   const avatarUrl = profile?.avatarUrl;
+  
+  const dispatch = useDispatch<AppDispatch>();
+  const unreadCount = useSelector(selectUnreadCount);
+
+  // Lấy inbox khi mount
+  useEffect(() => {
+    dispatch(fetchNotifications());
+  }, [dispatch]);
+
+  // Lắng nghe Push FCM Foreground
+  useEffect(() => {
+    let counter = 0;
+    const handler = (e: Event) => {
+      const payload = (e as CustomEvent).detail;
+      const notif = {
+        notifId:     --counter,
+        userId:      0,
+        title:       payload.notification?.title ?? '',
+        message:     payload.notification?.body  ?? '',
+        type:        payload.data?.type           ?? 'OTHER',
+        isRead:      0 as 0 | 1,
+        isCritical:  Number(payload.data?.isCritical ?? 0) as 0 | 1,
+        dataPayload: payload.data  ?? {},
+        createdAt:   Math.floor(Date.now() / 1000),
+        updatedAt:   Math.floor(Date.now() / 1000),
+      };
+      // Ngăn prepend nếu payload trống
+      if (notif.title || notif.message) {
+        dispatch(prependItem(notif as any));
+        
+        toast.info(notif.title || 'Bạn có thông báo mới!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    };
+    window.addEventListener('kc:push:message', handler);
+    return () => window.removeEventListener('kc:push:message', handler);
+  }, [dispatch]);
+
+  // Helper to get first name
+  const getFirstName = (name: string) => {
+    if (!name) return 'Giáo viên';
+    const parts = name.trim().split(' ');
+    return parts[parts.length - 1];
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'GV';
+    return getFirstName(name).charAt(0).toUpperCase();
+  };
 
   return (
     <S.HeaderContainer>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+      {/* Search Input / Left Area */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flex: 1, minWidth: 0 }}>
         {onMenuClick && (
           <S.MenuButton onClick={onMenuClick} aria-label="Open sidebar">
-            <MenuIcon size={22} />
+            <Menu size={22} />
           </S.MenuButton>
         )}
         
         <S.SearchWrapper>
-          <SearchIcon size={18} />
-          <S.SearchInput type="text" placeholder="Tìm kiếm hồ sơ..." />
+          <Search size={19} color="#9CA3AF" strokeWidth={2.2} />
+          <S.SearchInput type="text" placeholder="Tìm bé, hoạt động hoặc danh mục…" />
         </S.SearchWrapper>
       </div>
 
+      <div style={{ flex: 1 }}></div>
       
+      {/* Actions / Right Area */}
       <S.ActionsSection>
+        
+        {/* Notification Bell */}
         <S.NotificationWrapper>
           <S.ActionButton aria-label="Notifications" onClick={() => setIsNotifOpen(!isNotifOpen)}>
-            <NotificationBellIcon size={20} />
-            <S.NotificationBadge />
+            <Bell size={20} strokeWidth={2} />
+            {unreadCount > 0 && <S.NotificationBadge>{unreadCount}</S.NotificationBadge>}
           </S.ActionButton>
-          {isNotifOpen && <NotificationDropdown onClose={() => setIsNotifOpen(false)} />}
+          <NotificationPopup isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
         </S.NotificationWrapper>
 
-        <S.ActionButton aria-label="Messages">
-          <ChatBubbleIcon size={20} />
-        </S.ActionButton>
-
-        <S.VerticalDivider />
-
-        <S.ProfileSection onClick={() => router.push('/profile')}>
-          <S.ProfileInfo>
-            <S.ProfileName>{fullName}</S.ProfileName>
-            <S.ProfileRole>{roleTitle}</S.ProfileRole>
-          </S.ProfileInfo>
-          <S.Avatar>
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={fullName} />
-            ) : (
-              fullName ? fullName.trim().split(' ').pop()?.charAt(0).toUpperCase() : 'H'
-            )}
-          </S.Avatar>
-        </S.ProfileSection>
+        {/* Profile Card */}
+        <div style={{ position: 'relative' }}>
+          <S.ProfileSection onClick={() => router.push('/profile')}>
+            <S.ProfileInfo>
+              Chào buổi sáng,<br />
+              <S.ProfileName>Thầy {getFirstName(fullName)}</S.ProfileName>
+            </S.ProfileInfo>
+            <S.Avatar style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                getInitials(fullName)
+              )}
+            </S.Avatar>
+            <ChevronDown size={14} color="#9CA3AF" strokeWidth={2.4} />
+          </S.ProfileSection>
+        </div>
       </S.ActionsSection>
     </S.HeaderContainer>
   );
