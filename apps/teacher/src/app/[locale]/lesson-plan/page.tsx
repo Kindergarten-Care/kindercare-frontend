@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LessonPlanLayout } from '@/views/LessonPlan/components/LessonPlanLayout';
 import { LessonPlanView } from '@/views/LessonPlan';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 
 export default function LessonPlanPage() {
   const { user, isLoading } = useAuth();
@@ -17,8 +17,11 @@ export default function LessonPlanPage() {
   }
 
   return (
-    <LessonPlanLayout>
+    <DashboardLayout
+      fullName={user.fullName || user.username}
+      roleTitle={user.roleName || 'Giáo viên chủ nhiệm'}
+    >
       <LessonPlanView />
-    </LessonPlanLayout>
+    </DashboardLayout>
   );
 }
