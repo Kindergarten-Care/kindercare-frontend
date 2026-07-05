@@ -82,6 +82,7 @@ export function Billing() {
     error,
     activeStudent,
     groupedInvoices,
+    hasAnyInvoices,
     availableMonths,
     summary,
     typeFilter,
@@ -171,7 +172,11 @@ export function Billing() {
       ) : error ? (
         <S.EmptyState>{error}</S.EmptyState>
       ) : groupedInvoices.length === 0 ? (
-        <S.EmptyState>Không có hóa đơn nào phù hợp bộ lọc hiện tại.</S.EmptyState>
+        <S.EmptyState>
+          {hasAnyInvoices
+            ? 'Không có hóa đơn nào phù hợp bộ lọc hiện tại.'
+            : 'Hiện tại chưa có lịch sử hóa đơn.'}
+        </S.EmptyState>
       ) : (
         <S.MonthGroupList>
           {groupedInvoices.map(group => (

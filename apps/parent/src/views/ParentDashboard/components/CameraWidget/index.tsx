@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { IconCamera, IconPlay } from '@/assets/icons/dashboard';
 
@@ -13,6 +14,7 @@ const CameraWidget: React.FC<CameraWidgetProps> = ({
   className = 'Lớp Hoa Hướng Dương',
   teacher = 'Cô Phạm Thị Hương',
 }) => {
+  const t = useTranslations('Dashboard');
   const [time, setTime] = useState<string>('');
 
   useEffect(() => {
@@ -27,25 +29,25 @@ const CameraWidget: React.FC<CameraWidgetProps> = ({
   return (
     <S.Card>
       <S.CardHead>
-        <S.CardTitle><IconCamera size={16} /> Camera lớp học</S.CardTitle>
+        <S.CardTitle><IconCamera size={16} /> {t('camera.title')}</S.CardTitle>
       </S.CardHead>
 
-      <S.CamFeed onClick={() => alert('Đang kết nối camera...')}>
+      <S.CamFeed onClick={() => alert(t('camera.connectingAlert'))}>
         <S.CamGrain />
         <S.CamLive>
           <S.LiveDot />
-          TRỰC TIẾP
+          {t('camera.liveTag')}
         </S.CamLive>
         {time && <S.CamTime>{time}</S.CamTime>}
         <S.CamPlay className="play">
           <IconPlay size={22} color="var(--brand)" />
         </S.CamPlay>
-        <S.CamLabel>CAM 01 — {className}</S.CamLabel>
+        <S.CamLabel>{t('camera.camLabel', { className })}</S.CamLabel>
       </S.CamFeed>
 
       <S.CamFoot>
         <S.OnlineDot />
-        Đang trực tuyến · {teacher} phụ trách
+        {t('camera.onlineFooter', { teacher })}
       </S.CamFoot>
     </S.Card>
   );

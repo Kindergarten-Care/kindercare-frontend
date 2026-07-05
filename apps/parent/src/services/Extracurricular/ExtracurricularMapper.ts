@@ -33,6 +33,8 @@ export class ExtracurricularMapper {
       registeredMonth: dto.registeredMonth,
       status: dto.status,
       createdAt: dto.createdAt,
+      feeRefunded: dto.feeRefunded,
+      activatedAt: dto.activatedAt,
     };
   }
 

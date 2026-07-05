@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { LanguageSwitcher } from '@kindercare/ui';
 import ParentSidebar from './ParentSidebar';
 import NotificationPopup from './NotificationPopup';
 import AccountMenu from './AccountMenu';
+import BottomNavBar from './BottomNavBar';
 import * as S from './styles';
-import { IconSearch, IconBell, IconSettings } from '@/assets/icons/dashboard';
+import { IconBell, IconSettings } from '@/assets/icons/dashboard';
 import { useDashboardLayout } from './hooks/useDashboardLayout';
 import { useNotificationSocket } from '@/hooks/useNotificationSocket';
 
@@ -32,12 +33,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     rel,
   } = useDashboardLayout();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Subscribe to live Socket.IO notifications
   useNotificationSocket();
 
   return (
     <S.DashboardWrapper $collapsed={collapsed}>
-      <ParentSidebar collapsed={collapsed} onToggle={handleToggle} />
+      <ParentSidebar
+        collapsed={collapsed}
+        onToggle={handleToggle}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
 
       <S.MainContent>
         <S.HeaderBand>
@@ -49,11 +57,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </S.Greet>
 
             <S.Actions>
-              <S.SearchBar>
-                <IconSearch size={16} color="#9ca3af" />
-                <input placeholder="Tìm kiếm..." />
-              </S.SearchBar>
-
               <S.IconBtn title="Thông báo" onClick={() => setIsNotifOpen(true)}>
                 <IconBell size={18} />
                 {unreadCount > 0 && <S.NotifDot>{unreadCount > 99 ? '99+' : unreadCount}</S.NotifDot>}
@@ -106,6 +109,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </S.MainContent>
 
       <NotificationPopup isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      <BottomNavBar onOpenMenu={() => setMobileMenuOpen(true)} />
     </S.DashboardWrapper>
   );
 };

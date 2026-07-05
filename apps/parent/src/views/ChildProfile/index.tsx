@@ -8,13 +8,13 @@ import { formatDateFromBigInt } from '@/utils/Student/Date';
 import { kcToast } from '@kindercare/ui';
 import {
   IconCake, IconGender, IconIdCard, IconEnroll, IconStatusCheck, IconClassCap,
-  IconJob, IconPhoneCall, IconMail, IconMapPin, IconFamily,
+  IconJob, IconPhoneCall, IconMail, IconMapPin, IconFamily, IconTeacher,
 } from './icons';
 import { IconChat } from '@/assets/icons/dashboard';
 
 export function ChildProfile() {
   const {
-    loading, activeStudent, relatives, teacherDisplayName,
+    loading, activeStudent, relatives, teacherDisplayName, leadTeacher,
     age, avatarInitial, dobFormatted, admissionFormatted,
   } = useChildProfile();
 
@@ -49,119 +49,172 @@ export function ChildProfile() {
         </S.HeaderActions>
       </S.PageHeader>
 
-      {/* Child profile — full-width horizontal banner */}
-      <S.Section>
-        <S.SecHead>
-          <S.SecIcon><IconFamily size={18} /></S.SecIcon>
-          <S.SecTitle>Thông tin của bé</S.SecTitle>
-        </S.SecHead>
-        <S.ChildBanner>
-          <S.ChildIdentity>
-            <S.ChildAvatar $gradient={getAvatarGradient(activeStudent.studentId)}>
-              {activeStudent.avatarUrl ? (
-                <img src={activeStudent.avatarUrl} alt={activeStudent.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-              ) : (
-                avatarInitial
-              )}
-            </S.ChildAvatar>
-            <div>
-              <S.ChildName>{activeStudent.fullName}</S.ChildName>
-              <S.ChildTags>
-                <S.CTag $variant="class"><IconClassCap size={13} /> {activeStudent.className}</S.CTag>
-                <S.CTag $variant="status"><S.StatusDot /> {activeStudent.enrollmentStatus || 'Đang theo học'}</S.CTag>
-              </S.ChildTags>
-            </div>
-          </S.ChildIdentity>
+      <S.ProfileGrid>
+        <S.ColLeft>
+          {/* Child profile */}
+          <S.Section>
+            <S.SecHead>
+              <S.SecIcon><IconFamily size={18} /></S.SecIcon>
+              <S.SecTitle>Thông tin của bé</S.SecTitle>
+            </S.SecHead>
+            <S.ChildBanner>
+              <S.ChildIdentity>
+                <S.ChildAvatar $gradient={getAvatarGradient(activeStudent.studentId)}>
+                  {activeStudent.avatarUrl ? (
+                    <img src={activeStudent.avatarUrl} alt={activeStudent.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                  ) : (
+                    avatarInitial
+                  )}
+                </S.ChildAvatar>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <S.ChildName>{activeStudent.fullName}</S.ChildName>
+                  <S.ChildTags>
+                    <S.CTag $variant="class"><IconClassCap size={13} /> {activeStudent.className}</S.CTag>
+                    <S.CTag $variant="status"><S.StatusDot /> {activeStudent.enrollmentStatus || 'Đang theo học'}</S.CTag>
+                  </S.ChildTags>
+                </div>
+              </S.ChildIdentity>
 
-          <S.InfoDivider />
+              <S.InfoDivider />
 
-          <S.InfoGrid>
-            {childInfoRows.map(row => (
-              <S.InfoRow key={row.k} $c={row.c} $tint={row.tint}>
-                <S.InfoIcon>{row.icon}</S.InfoIcon>
-                <S.InfoMain>
-                  <S.InfoKey>{row.k}</S.InfoKey>
-                  <S.InfoValue>{row.v}</S.InfoValue>
-                </S.InfoMain>
-              </S.InfoRow>
-            ))}
-          </S.InfoGrid>
-        </S.ChildBanner>
-      </S.Section>
+              <S.InfoGrid>
+                {childInfoRows.map(row => (
+                  <S.InfoRow key={row.k} $c={row.c} $tint={row.tint}>
+                    <S.InfoIcon>{row.icon}</S.InfoIcon>
+                    <S.InfoMain>
+                      <S.InfoKey>{row.k}</S.InfoKey>
+                      <S.InfoValue>{row.v}</S.InfoValue>
+                    </S.InfoMain>
+                  </S.InfoRow>
+                ))}
+              </S.InfoGrid>
+            </S.ChildBanner>
+          </S.Section>
 
-      {/* Family — one card per relative returned by the API */}
-      <S.Section>
-        <S.SecHead>
-          <S.SecIcon $bg="#F1ECFE" $fg="#8B5CF6"><IconFamily size={18} /></S.SecIcon>
-          <S.SecTitle>Người thân trong gia đình</S.SecTitle>
-          <S.SecSub>{relatives.length} thành viên</S.SecSub>
-        </S.SecHead>
+          {/* Family — one card per relative returned by the API */}
+          <S.Section>
+            <S.SecHead>
+              <S.SecIcon $bg="#F1ECFE" $fg="#8B5CF6"><IconFamily size={18} /></S.SecIcon>
+              <S.SecTitle>Người thân trong gia đình</S.SecTitle>
+              <S.SecSub>{relatives.length} thành viên</S.SecSub>
+            </S.SecHead>
 
-        {relatives.length === 0 ? (
-          <S.Card>
-            <S.EmptyState>Chưa có thông tin người thân.</S.EmptyState>
-          </S.Card>
-        ) : (
-          <S.FamilyGrid>
-            {relatives.map(p => {
-              const c = p.isPrimary ? '#2563EB' : '#DB2777';
-              const tint = p.isPrimary ? '#E3EDFD' : '#FCE7F2';
-              const gradient = getAvatarGradient(p.parentId);
-              const initials = getInitials(p.fullName);
+            {relatives.length === 0 ? (
+              <S.Card>
+                <S.EmptyState>Chưa có thông tin người thân.</S.EmptyState>
+              </S.Card>
+            ) : (
+              <S.FamilyGrid>
+                {relatives.map(p => {
+                  const c = p.isPrimary ? '#2563EB' : '#DB2777';
+                  const tint = p.isPrimary ? '#E3EDFD' : '#FCE7F2';
+                  const gradient = getAvatarGradient(p.parentId);
+                  const initials = getInitials(p.fullName);
 
-              return (
-                <S.RelCard key={p.parentId} $c={c}>
-                  <S.RelHead $tint={tint}>
-                    <S.RelAvatar $gradient={gradient}>
-                      {p.avatarUrl ? (
-                        <img src={p.avatarUrl} alt={p.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
-                      ) : (
-                        initials
-                      )}
-                    </S.RelAvatar>
-                    <S.RelId>
-                      <S.RelRole>{p.relationship}</S.RelRole>
-                      <S.RelName>{p.fullName}</S.RelName>
-                      <S.RelJob><IconJob size={13} /> {p.job || 'Chưa cập nhật'}</S.RelJob>
-                    </S.RelId>
-                    {p.isPrimary === 1 && <S.RelPrimary>Liên hệ chính</S.RelPrimary>}
-                  </S.RelHead>
-                  <S.RelBody>
-                    <S.RelItem>
-                      <S.RelItemIcon><IconCake size={17} /></S.RelItemIcon>
-                      <S.RelItemMain>
-                        <S.RelItemKey>Ngày sinh</S.RelItemKey>
-                        <S.RelItemValue>{formatDateFromBigInt(p.dateOfBirth)}</S.RelItemValue>
-                      </S.RelItemMain>
-                    </S.RelItem>
-                    <S.RelItem>
-                      <S.RelItemIcon><IconPhoneCall size={17} /></S.RelItemIcon>
-                      <S.RelItemMain>
-                        <S.RelItemKey>Số điện thoại</S.RelItemKey>
-                        <S.RelItemValue>{p.phoneNumber || '--'}</S.RelItemValue>
-                      </S.RelItemMain>
-                    </S.RelItem>
-                    <S.RelItem>
-                      <S.RelItemIcon><IconMail size={17} /></S.RelItemIcon>
-                      <S.RelItemMain>
-                        <S.RelItemKey>Email</S.RelItemKey>
-                        <S.RelItemValue>{p.email || '--'}</S.RelItemValue>
-                      </S.RelItemMain>
-                    </S.RelItem>
-                    <S.RelItem>
-                      <S.RelItemIcon><IconMapPin size={17} /></S.RelItemIcon>
-                      <S.RelItemMain>
-                        <S.RelItemKey>Địa chỉ</S.RelItemKey>
-                        <S.RelItemValue>{p.address || 'Chưa cập nhật'}</S.RelItemValue>
-                      </S.RelItemMain>
-                    </S.RelItem>
-                  </S.RelBody>
-                </S.RelCard>
-              );
-            })}
-          </S.FamilyGrid>
-        )}
-      </S.Section>
+                  return (
+                    <S.RelCard key={p.parentId} $c={c}>
+                      <S.RelHead $tint={tint}>
+                        <S.RelAvatar $gradient={gradient}>
+                          {p.avatarUrl ? (
+                            <img src={p.avatarUrl} alt={p.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
+                          ) : (
+                            initials
+                          )}
+                        </S.RelAvatar>
+                        <S.RelId>
+                          <S.RelRole>{p.relationship}</S.RelRole>
+                          <S.RelName>{p.fullName}</S.RelName>
+                          <S.RelJob><IconJob size={13} /> {p.job || 'Chưa cập nhật'}</S.RelJob>
+                        </S.RelId>
+                        {p.isPrimary === 1 && <S.RelPrimary>Liên hệ chính</S.RelPrimary>}
+                      </S.RelHead>
+                      <S.RelBody>
+                        <S.RelItem>
+                          <S.RelItemIcon><IconCake size={17} /></S.RelItemIcon>
+                          <S.RelItemMain>
+                            <S.RelItemKey>Ngày sinh</S.RelItemKey>
+                            <S.RelItemValue>{formatDateFromBigInt(p.dateOfBirth)}</S.RelItemValue>
+                          </S.RelItemMain>
+                        </S.RelItem>
+                        <S.RelItem>
+                          <S.RelItemIcon><IconPhoneCall size={17} /></S.RelItemIcon>
+                          <S.RelItemMain>
+                            <S.RelItemKey>Số điện thoại</S.RelItemKey>
+                            <S.RelItemValue>{p.phoneNumber || '--'}</S.RelItemValue>
+                          </S.RelItemMain>
+                        </S.RelItem>
+                        <S.RelItem>
+                          <S.RelItemIcon><IconMail size={17} /></S.RelItemIcon>
+                          <S.RelItemMain>
+                            <S.RelItemKey>Email</S.RelItemKey>
+                            <S.RelItemValue>{p.email || '--'}</S.RelItemValue>
+                          </S.RelItemMain>
+                        </S.RelItem>
+                        <S.RelItem>
+                          <S.RelItemIcon><IconMapPin size={17} /></S.RelItemIcon>
+                          <S.RelItemMain>
+                            <S.RelItemKey>Địa chỉ</S.RelItemKey>
+                            <S.RelItemValue>{p.address || 'Chưa cập nhật'}</S.RelItemValue>
+                          </S.RelItemMain>
+                        </S.RelItem>
+                      </S.RelBody>
+                    </S.RelCard>
+                  );
+                })}
+              </S.FamilyGrid>
+            )}
+          </S.Section>
+        </S.ColLeft>
+
+        <S.ColRight>
+          {/* Teacher — homeroom teacher contact card */}
+          {leadTeacher && (
+            <S.Section>
+              <S.SecHead>
+                <S.SecIcon $bg="#E3EDFD" $fg="#2563EB"><IconTeacher size={18} /></S.SecIcon>
+                <S.SecTitle>Giáo viên chủ nhiệm</S.SecTitle>
+              </S.SecHead>
+
+              <S.RelCard $c="#2563EB">
+                <S.RelHead $tint="#E3EDFD">
+                  <S.RelAvatar $gradient={getAvatarGradient(leadTeacher.teacherId)}>
+                    {getInitials(leadTeacher.fullName)}
+                  </S.RelAvatar>
+                  <S.RelId>
+                    <S.RelRole>{leadTeacher.roleInClass || 'Giáo viên'}</S.RelRole>
+                    <S.RelName>{leadTeacher.fullName}</S.RelName>
+                    <S.RelJob><IconClassCap size={13} /> {activeStudent.className}</S.RelJob>
+                  </S.RelId>
+                </S.RelHead>
+                <S.RelBody>
+                  <S.RelItem>
+                    <S.RelItemIcon><IconPhoneCall size={17} /></S.RelItemIcon>
+                    <S.RelItemMain>
+                      <S.RelItemKey>Số điện thoại</S.RelItemKey>
+                      <S.RelItemValue>{leadTeacher.phoneNumber || '--'}</S.RelItemValue>
+                    </S.RelItemMain>
+                  </S.RelItem>
+                  <S.RelItem>
+                    <S.RelItemIcon><IconMail size={17} /></S.RelItemIcon>
+                    <S.RelItemMain>
+                      <S.RelItemKey>Email</S.RelItemKey>
+                      <S.RelItemValue>{leadTeacher.email || '--'}</S.RelItemValue>
+                    </S.RelItemMain>
+                  </S.RelItem>
+                </S.RelBody>
+                <S.RelActions>
+                  <S.RelActionBtn $variant="call" href={leadTeacher.phoneNumber ? `tel:${leadTeacher.phoneNumber}` : undefined}>
+                    <IconPhoneCall size={15} /> Gọi
+                  </S.RelActionBtn>
+                  <S.RelActionBtn $variant="mail" href={leadTeacher.email ? `mailto:${leadTeacher.email}` : undefined}>
+                    <IconMail size={15} /> Nhắn tin Email
+                  </S.RelActionBtn>
+                </S.RelActions>
+              </S.RelCard>
+            </S.Section>
+          )}
+        </S.ColRight>
+      </S.ProfileGrid>
     </S.PageWrap>
   );
 }

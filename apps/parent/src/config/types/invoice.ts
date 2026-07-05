@@ -63,6 +63,7 @@ export interface ExtracurricularInvoiceItemApiDto {
   monthlyFee: number;
   status: EnrollmentStatus;
   feeRefunded: boolean;
+  activatedAt: number | null;
 }
 
 export interface ExtracurricularInvoiceItemDomainModel {
@@ -72,6 +73,7 @@ export interface ExtracurricularInvoiceItemDomainModel {
   monthlyFee: number;
   status: EnrollmentStatus;
   feeRefunded: boolean;
+  activatedAt: number | null;
 }
 
 export interface InvoiceDetailApiDto extends InvoiceApiDto {

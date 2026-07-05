@@ -8,6 +8,9 @@ export const Card = styled.div`
   border-radius: var(--radius);
   padding: 20px 22px;
   box-shadow: var(--shadow);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 export const CardHead = styled.div`

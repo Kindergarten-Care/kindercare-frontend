@@ -57,6 +57,7 @@ export class InvoiceMapper {
       monthlyFee: toNumber(dto.monthlyFee),
       status: dto.status,
       feeRefunded: dto.feeRefunded,
+      activatedAt: dto.activatedAt,
     };
   }
 

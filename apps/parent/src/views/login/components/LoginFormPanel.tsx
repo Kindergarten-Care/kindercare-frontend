@@ -63,7 +63,7 @@ export default function LoginFormPanel(): React.ReactElement {
       <HeaderRow>
         <TeacherPathText>
           {t('teacherLoginLink')}
-          <a href="#">{t('teacherLogin')}</a>
+          <a href={process.env.NEXT_PUBLIC_PORTAL_APP_URL}>{t('teacherLogin')}</a>
         </TeacherPathText>
         <LanguageSwitcher
           currentLocale={locale as 'vi' | 'en'}

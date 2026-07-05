@@ -19,6 +19,8 @@ export interface RequestItem {
   proxyPhone?: string | null;
   proxyIDCard?: string | null;
   proxyPhotoUrl?: string | null;
+  authorizationDate?: string;
+  proxyAuthType?: 'checkin' | 'checkout' | 'both';
   medicines?: {
     name: string;
     dosage: string;

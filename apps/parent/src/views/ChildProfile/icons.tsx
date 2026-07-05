@@ -81,3 +81,11 @@ export const IconFamily: React.FC<IconProps> = ({ size = 18, color = 'currentCol
     <path d="M3 19c0-2.6 2.2-4 5-4s5 1.4 5 4M13 19c.2-2.4 2.3-4 4.5-4 2.3 0 4 1.4 4.2 4" />
   </svg>
 );
+
+export const IconTeacher: React.FC<IconProps> = ({ size = 18, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3 2 8l10 5 10-5-10-5z" />
+    <path d="M6 10.5V15c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" />
+    <path d="M22 8v6" />
+  </svg>
+);

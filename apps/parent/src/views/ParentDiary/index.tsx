@@ -111,6 +111,7 @@ export function ParentDiary() {
                 teacherName={teacherNoteName}
                 teacherNote={teacherNoteBody}
                 className={activeStudent.className}
+                teacherGender={leadTeacher?.gender}
               />
 
               <PhotoGrid photos={photos} onZoomImage={handleZoomImage} />

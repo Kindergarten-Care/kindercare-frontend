@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from '@kindercare/ui';
 import { useStudent } from '@/contexts/StudentContext';
 import { proxyRequestService } from '@/services/ProxyRequest/ProxyRequestService';
@@ -10,6 +11,7 @@ interface UseProxyRequestPopupProps {
 }
 
 export const useProxyRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseProxyRequestPopupProps) => {
+  const t = useTranslations('Dashboard');
   const { activeStudent } = useStudent();
   const [authorizationDate, setAuthorizationDate] = useState<string>('');
   const [type, setType] = useState<'checkin' | 'checkout' | 'both'>('checkout');
@@ -27,7 +29,7 @@ export const useProxyRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UsePr
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('Kích thước ảnh không vượt quá 5MB');
+        toast.error(t('proxy.errFileTooLarge'));
         return;
       }
       setAttachedFile(file);
@@ -48,11 +50,11 @@ export const useProxyRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UsePr
     if (!activeStudent?.studentId) return;
 
     if (!authorizationDate) {
-      toast.error('Vui lòng chọn ngày ủy quyền');
+      toast.error(t('proxy.errDateRequired'));
       return;
     }
     if (!proxyName.trim()) {
-      toast.error('Vui lòng nhập họ tên người được ủy quyền');
+      toast.error(t('proxy.errNameRequired'));
       return;
     }
 
@@ -73,7 +75,7 @@ export const useProxyRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UsePr
         attachedFile
       );
 
-      toast.success('Đăng ký ủy quyền đưa đón thành công!');
+      toast.success(t('proxy.successMsg'));
       
       // Reset state
       setAuthorizationDate('');
@@ -88,7 +90,7 @@ export const useProxyRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UsePr
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || 'Có lỗi xảy ra khi tạo đơn ủy quyền');
+      toast.error(err.message || t('proxy.errSubmitFailed'));
     } finally {
       setIsSubmitting(false);
     }

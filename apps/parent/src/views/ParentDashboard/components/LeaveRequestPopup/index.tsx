@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from './styles';
 import { IconClose, IconCheck, IconAbsence, IconChevronLeft, IconChevronRight } from '@/assets/icons/dashboard';
 import { useLeaveRequestPopup } from './useLeaveRequestPopup';
@@ -13,19 +15,14 @@ interface LeaveRequestPopupProps {
   onSubmitSuccess?: () => void;
 }
 
-const REASONS = [
-  'Bé bị ốm',
-  'Việc gia đình',
-  'Khám sức khỏe',
-  'Đi du lịch',
-  'Lý do khác'
-];
-
-const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-const MONTHS = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-];
+// `value` is sent to the API as-is and must stay stable across locales; only the label is translated.
+export const REASONS = [
+  { value: 'Bé bị ốm', labelKey: 'leave.reasonSick' },
+  { value: 'Việc gia đình', labelKey: 'leave.reasonFamily' },
+  { value: 'Khám sức khỏe', labelKey: 'leave.reasonCheckup' },
+  { value: 'Đi du lịch', labelKey: 'leave.reasonTravel' },
+  { value: 'Lý do khác', labelKey: 'leave.reasonOther' },
+] as const;
 
 const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
   isOpen,
@@ -34,6 +31,8 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
   className,
   onSubmitSuccess
 }) => {
+  const t = useTranslations('Dashboard');
+  const format = useFormatter();
   const {
     isLongLeave,
     setIsLongLeave,
@@ -64,20 +63,22 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
     todayStr,
   } = useLeaveRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
-  if (!isOpen) return null;
+  const monthLabel = format.dateTime(new Date(viewYear, viewMonth, 1), { month: 'long' });
+  const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
+    format.dateTime(new Date(Date.UTC(2024, 0, i + 1)), { weekday: 'short' })
+  );
 
   return (
-    <S.Overlay onClick={onClose}>
-      <S.ModalContainer onClick={(e) => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="520px">
         <S.HeadRow>
           <S.IconBox>
             <IconAbsence size={22} color="#16a34a" />
           </S.IconBox>
           <S.TitleWrap>
-            <S.Title>Báo nghỉ học</S.Title>
-            <S.Subtitle>Đơn xin nghỉ cho bé {studentName} · Lớp {className}</S.Subtitle>
+            <S.Title>{t('hero.reportAbsence')}</S.Title>
+            <S.Subtitle>{t('leave.subtitle', { name: studentName, className })}</S.Subtitle>
           </S.TitleWrap>
-          <S.CloseBtn onClick={onClose} aria-label="Đóng popup">
+          <S.CloseBtn onClick={onClose} aria-label={t('closePopup')}>
             <IconClose size={16} />
           </S.CloseBtn>
         </S.HeadRow>
@@ -86,9 +87,9 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
           {/* Long Leave Toggle */}
           <S.FormGroup>
             <S.LabelRow>
-              <S.FieldLabel>Thời gian nghỉ</S.FieldLabel>
+              <S.FieldLabel>{t('leave.durationLabel')}</S.FieldLabel>
               <S.ToggleContainer>
-                Nghỉ dài ngày
+                {t('leave.multiDayToggle')}
                 <S.ToggleInput
                   type="checkbox"
                   checked={isLongLeave}
@@ -101,7 +102,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
             {isLongLeave ? (
               <S.DateGrid>
                 <div>
-                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Từ ngày</span>
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.fromDate')}</span>
                   <S.StyledInput
                     type="date"
                     min={todayStr}
@@ -110,7 +111,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   />
                 </div>
                 <div>
-                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Đến ngày</span>
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.toDate')}</span>
                   <S.StyledInput
                     type="date"
                     min={startDate || todayStr}
@@ -121,7 +122,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
               </S.DateGrid>
             ) : (
               <div>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Ngày nghỉ</span>
+                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.singleDayLabel')}</span>
                 <S.StyledInput
                   type="date"
                   min={todayStr}
@@ -134,7 +135,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
             {/* Interactive Mini Calendar */}
             <S.MiniCalWrapper>
               <S.MiniCalHeader>
-                <S.MiniCalTitle>{MONTHS[viewMonth]}, {viewYear}</S.MiniCalTitle>
+                <S.MiniCalTitle>{monthLabel}, {viewYear}</S.MiniCalTitle>
                 <S.MiniCalNavs>
                   <S.MiniCalNavBtn type="button" onClick={prevMonth}>
                     <IconChevronLeft size={13} />
@@ -146,7 +147,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
               </S.MiniCalHeader>
 
               <S.MiniCalGrid>
-                {WEEKDAYS.map((d) => (
+                {weekdayLabels.map((d) => (
                   <S.MiniCalWeekday key={d}>{d}</S.MiniCalWeekday>
                 ))}
 
@@ -188,16 +189,16 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
 
           {/* Quick Reasons */}
           <S.FormGroup>
-            <S.FieldLabel>Lý do nghỉ</S.FieldLabel>
+            <S.FieldLabel>{t('leave.reasonLabel')}</S.FieldLabel>
             <S.ChipGrid>
               {REASONS.map((reason) => (
                 <S.ReasonChip
-                  key={reason}
+                  key={reason.value}
                   type="button"
-                  $active={selectedReason === reason}
-                  onClick={() => setSelectedReason(reason)}
+                  $active={selectedReason === reason.value}
+                  onClick={() => setSelectedReason(reason.value)}
                 >
-                  {reason}
+                  {t(reason.labelKey)}
                 </S.ReasonChip>
               ))}
             </S.ChipGrid>
@@ -205,12 +206,12 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
 
           {/* Note Input */}
           <S.FormGroup>
-            <S.FieldLabel>Ghi chú cho giáo viên (tùy chọn)</S.FieldLabel>
+            <S.FieldLabel>{t('leave.noteLabel')}</S.FieldLabel>
             <S.StyledTextarea
               placeholder={
-                selectedReason === 'Bé bị ốm'
-                  ? 'Ví dụ: Bé hơi sốt nhẹ, gia đình cho bé nghỉ theo dõi tại nhà...'
-                  : 'Ghi chú thêm chi tiết lý do nghỉ học cho giáo viên biết...'
+                selectedReason === REASONS[0].value
+                  ? t('leave.notePlaceholderSick')
+                  : t('leave.notePlaceholderGeneric')
               }
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -219,14 +220,14 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
 
           {/* Document Attachment */}
           <S.FormGroup>
-            <S.FieldLabel>Đính kèm minh chứng nếu có (Hình ảnh, Giấy khám bệnh...)</S.FieldLabel>
-            
+            <S.FieldLabel>{t('leave.attachmentLabel')}</S.FieldLabel>
+
             {attachedFile ? (
               <S.AttachedFileBar>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '8px' }}>
-                  📄 {attachedFile.name} ({(attachedFile.size / 1024).toFixed(1)} KB)
+                  {t('leave.attachedFileInfo', { fileName: attachedFile.name, sizeKb: (attachedFile.size / 1024).toFixed(1) })}
                 </span>
-                <S.RemoveFileBtn type="button" onClick={handleRemoveFile} title="Xóa tệp đính kèm">
+                <S.RemoveFileBtn type="button" onClick={handleRemoveFile} title={t('leave.removeAttachment')}>
                   <IconClose size={14} color="#dc2626" />
                 </S.RemoveFileBtn>
               </S.AttachedFileBar>
@@ -234,8 +235,8 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
               <S.AttachmentArea onClick={handleTriggerUpload}>
                 <S.AttachmentLabel>
                   <span style={{ fontSize: '20px' }}>📁</span>
-                  <span>Nhấn để chọn hoặc kéo thả tệp tin đính kèm</span>
-                  <span>Hỗ trợ ảnh chụp đơn thuốc, giấy khám bệnh...</span>
+                  <span>{t('leave.uploadPrompt')}</span>
+                  <span>{t('leave.uploadHint')}</span>
                 </S.AttachmentLabel>
                 <S.HiddenFileInput
                   type="file"
@@ -250,15 +251,14 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
 
         <S.Footer>
           <S.CancelBtn type="button" onClick={onClose} disabled={isSubmitting}>
-            Hủy
+            {t('cancel')}
           </S.CancelBtn>
           <S.SubmitBtn type="button" onClick={handleSubmit} disabled={isSubmitting}>
             <IconCheck size={16} color="#ffffff" />
-            {isSubmitting ? 'Đang gửi...' : 'Gửi đơn'}
+            {isSubmitting ? t('submitting') : t('leave.submit')}
           </S.SubmitBtn>
         </S.Footer>
-      </S.ModalContainer>
-    </S.Overlay>
+    </ResponsiveModal>
   );
 };
 

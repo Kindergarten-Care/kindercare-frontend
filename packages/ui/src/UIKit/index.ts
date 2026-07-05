@@ -9,6 +9,8 @@ export { DatePicker } from './DatePicker';
 export type { DatePickerProps } from './DatePicker';
 export { Responsive } from './Responsive';
 export type { ResponsiveProps } from './Responsive';
+export { ResponsiveModal } from './ResponsiveModal';
+export type { ResponsiveModalProps } from './ResponsiveModal';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export type { LanguageSwitcherProps } from './LanguageSwitcher';
 export * from './Toast';

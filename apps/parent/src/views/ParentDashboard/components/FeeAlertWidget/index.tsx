@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { FeeInfo } from '@/config/types/dashboard';
 import { IconCreditCard, IconClose } from '@/assets/icons/dashboard';
@@ -10,6 +11,7 @@ interface FeeAlertWidgetProps {
 }
 
 const FeeAlertWidget: React.FC<FeeAlertWidgetProps> = ({ fee }) => {
+  const t = useTranslations('Dashboard');
   const [dismissed, setDismissed] = useState<boolean>(false);
 
   if (dismissed) return null;
@@ -23,18 +25,18 @@ const FeeAlertWidget: React.FC<FeeAlertWidgetProps> = ({ fee }) => {
       <S.Body>
         <S.Title>{fee.title}</S.Title>
         <S.Sub>
-          Hạn {fee.deadline} ·{' '}
+          {t('feeAlert.deadlinePrefix', { deadline: fee.deadline })}{' '}
           <strong style={{ color: isUrgent ? '#dc2626' : '#92400e' }}>
-            còn {fee.daysLeft} ngày
+            {t('feeAlert.daysLeft', { days: fee.daysLeft })}
           </strong>
         </S.Sub>
       </S.Body>
       <S.AmtBlock>
-        <S.Amt>{fee.amount.toLocaleString('vi-VN')} đ</S.Amt>
-        <S.AmtSub>CẦN THANH TOÁN</S.AmtSub>
+        <S.Amt>{fee.amount.toLocaleString('vi-VN')} {t('feeAlert.currencySuffix')}</S.Amt>
+        <S.AmtSub>{t('feeAlert.needsPaymentBadge')}</S.AmtSub>
       </S.AmtBlock>
-      <S.PayBtn onClick={() => alert('Chuyển hướng thanh toán...')}>
-        Đóng ngay →
+      <S.PayBtn onClick={() => alert(t('feeAlert.redirectingAlert'))}>
+        {t('feeAlert.payNowArrow')}
       </S.PayBtn>
       <S.CloseBtn onClick={() => setDismissed(true)}><IconClose size={14} /></S.CloseBtn>
     </S.FeeCard>

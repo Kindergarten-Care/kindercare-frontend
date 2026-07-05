@@ -77,7 +77,7 @@ export function useParentDiary(selectedDate: Date) {
 
     Promise.allSettled([
       dailyScheduleService.getDailySchedule(activeStudent.studentId, dateTimestamp),
-      dailyAlbumService.getDailyAlbums(activeStudent.studentId),
+      dailyAlbumService.getDailyAlbums(activeStudent.studentId, dateTimestamp),
       attendanceService.getAttendance(activeStudent.studentId),
       dailyLessonService.getDailyLessons(activeStudent.studentId),
       newsfeedService.getNewsfeeds(activeStudent.studentId),

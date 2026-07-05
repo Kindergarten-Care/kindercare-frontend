@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Billing } from '@/views/Billing';
 import type { Metadata } from 'next';
 
@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function BillingPage(): React.ReactElement {
-  return <Billing />;
+  return (
+    <Suspense>
+      <Billing />
+    </Suspense>
+  );
 }

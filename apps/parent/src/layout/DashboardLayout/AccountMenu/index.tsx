@@ -32,6 +32,16 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ avatar, name, email, dropUp, 
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
   const handleLogout = async (e: React.MouseEvent): Promise<void> => {
     e.stopPropagation();
     setOpen(false);
@@ -42,9 +52,11 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ avatar, name, email, dropUp, 
 
   return (
     <S.MenuContainer ref={containerRef}>
-      <div onClick={e => { e.stopPropagation(); setOpen(o => !o); }} style={{ cursor: 'pointer' }}>
+      <S.AvatarTrigger onClick={e => { e.stopPropagation(); setOpen(o => !o); }}>
         {avatar}
-      </div>
+      </S.AvatarTrigger>
+
+      {open && <S.MenuBackdrop onClick={() => setOpen(false)} />}
 
       {open && (
         <S.MenuPanel $dropUp={dropUp}>

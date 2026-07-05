@@ -12,8 +12,33 @@ const fadeInUp = keyframes`
   to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
+const slideUp = keyframes`
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+`;
+
 export const MenuContainer = styled.div`
   position: relative;
+`;
+
+export const AvatarTrigger = styled.div`
+  cursor: pointer;
+
+  @media (max-width: 767px) {
+    pointer-events: none;
+  }
+`;
+
+export const MenuBackdrop = styled.div`
+  display: none;
+
+  @media (max-width: 767px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 32, 28, 0.5);
+    z-index: 998;
+  }
 `;
 
 export const MenuPanel = styled.div<{ $dropUp?: boolean }>`
@@ -21,6 +46,7 @@ export const MenuPanel = styled.div<{ $dropUp?: boolean }>`
   ${p => (p.$dropUp ? 'bottom: calc(100% + 10px);' : 'top: calc(100% + 10px);')}
   right: 0;
   width: 268px;
+  max-width: calc(100vw - 24px);
   background: #ffffff;
   border: 1px solid var(--border, #e6eee9);
   border-radius: 16px;
@@ -30,6 +56,19 @@ export const MenuPanel = styled.div<{ $dropUp?: boolean }>`
   padding: 8px;
   z-index: 999;
   animation: ${p => (p.$dropUp ? fadeInUp : fadeIn)} 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 767px) {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 8px 8px calc(16px + env(safe-area-inset-bottom, 0px));
+    animation: ${slideUp} 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 `;
 
 export const ProfileBlock = styled.div`
@@ -76,7 +115,7 @@ export const MenuList = styled.div`
   gap: 2px;
 `;
 
-export const MenuItem = styled.button<{ $danger?: boolean }>`
+export const MenuItem = styled.button<{ $danger?: boolean; $hideOnMobile?: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -103,6 +142,12 @@ export const MenuItem = styled.button<{ $danger?: boolean }>`
 
     &:hover { background: none; }
   }
+
+  ${p => p.$hideOnMobile && `
+    @media (max-width: 767px) {
+      display: none;
+    }
+  `}
 `;
 
 export const MenuDivider = styled.div`

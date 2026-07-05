@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth, initPushNotification, isPushRegistered } from '@kindercare/core';
-import { kcToast } from '@kindercare/ui';
+import { kcToast, ResponsiveModal } from '@kindercare/ui';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
 import { parentService } from '@/services/Parent/ParentService';
@@ -124,8 +124,6 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
     .join('')
     .toUpperCase();
 
-  if (!isOpen) return null;
-
   const displayAvatarUrl = avatarPreview || parentProfile?.avatarUrl;
 
   const handleAvatarPick = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -226,7 +224,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
   };
 
   return (
-    <S.Backdrop onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="920px" desktopAlign="top">
       <S.Panel>
         <S.Rail>
           <S.RailHead>
@@ -264,8 +262,8 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
           </S.RailNav>
 
           <S.RailFoot>
-            <S.RailLogout onClick={handleLogout}>
-              <IconLogout size={18} /> Đăng xuất
+            <S.RailLogout onClick={handleLogout} title="Đăng xuất">
+              <IconLogout size={18} /> <span>Đăng xuất</span>
             </S.RailLogout>
           </S.RailFoot>
         </S.Rail>
@@ -495,7 +493,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
           )}
         </S.Main>
       </S.Panel>
-    </S.Backdrop>
+    </ResponsiveModal>
   );
 };
 

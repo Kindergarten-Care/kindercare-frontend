@@ -2,45 +2,24 @@
 
 import styled, { keyframes } from 'styled-components';
 
-const popIn = keyframes`
-  from { opacity: 0; transform: translateY(14px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-`;
-
 const fade = keyframes`
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 `;
 
-export const Backdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(17, 32, 28, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 20px;
-  overflow-y: auto;
-`;
-
 export const Panel = styled.div`
-  width: 920px;
-  max-width: 100%;
-  background: #ffffff;
-  border-radius: 22px;
-  box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  animation: ${popIn} 0.24s cubic-bezier(0.22, 1, 0.36, 1);
   display: grid;
   grid-template-columns: 250px 1fr;
   min-height: 600px;
+  max-height: inherit;
+  overflow: hidden;
+  min-width: 0;
 
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
-    min-height: 0;
-    border-radius: 0;
+  @media (max-width: 767px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    height: 85vh;
+    max-height: 85vh;
   }
 `;
 
@@ -53,8 +32,13 @@ export const Rail = styled.aside`
   display: flex;
   flex-direction: column;
 
-  @media (max-width: 720px) {
-    flex-direction: column;
+  @media (max-width: 767px) {
+    padding: 12px 14px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
   }
 `;
 
@@ -63,6 +47,10 @@ export const RailHead = styled.div`
   align-items: center;
   gap: 11px;
   padding: 0 8px 22px;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
 `;
 
 export const RailMark = styled.div`
@@ -100,6 +88,10 @@ export const RailUser = styled.div`
   border-radius: 14px;
   padding: 13px;
   margin-bottom: 20px;
+
+  @media (max-width: 767px) {
+    display: none;
+  }
 `;
 
 export const RailAv = styled.div`
@@ -140,9 +132,15 @@ export const RailNav = styled.nav`
   flex-direction: column;
   gap: 4px;
 
-  @media (max-width: 720px) {
+  @media (max-width: 767px) {
+    flex: 1;
     flex-direction: row;
+    gap: 6px;
     overflow-x: auto;
+    min-width: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 `;
 
@@ -171,14 +169,27 @@ export const RailItem = styled.button<{ $active?: boolean }>`
   }
 
   svg { flex-shrink: 0; }
+
+  @media (max-width: 767px) {
+    flex-shrink: 0;
+    width: auto;
+    padding: 9px 14px;
+    font-size: 13px;
+    background: ${p => (p.$active ? 'var(--brand, #005a36)' : '#eef4f0')};
+  }
 `;
 
 export const RailFoot = styled.div`
   margin-top: auto;
   padding-top: 16px;
 
-  @media (max-width: 720px) {
-    display: none;
+  @media (max-width: 767px) {
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: 10px;
+    margin-left: 4px;
+    border-left: 1px solid var(--border, #e6eee9);
+    flex-shrink: 0;
   }
 `;
 
@@ -197,10 +208,19 @@ export const RailLogout = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 
   &:hover {
     background: var(--red-tint, #fee2e2);
     border-color: var(--red-border, #fca5a5);
+  }
+
+  @media (max-width: 767px) {
+    width: auto;
+    padding: 10px;
+    gap: 0;
+
+    span { display: none; }
   }
 `;
 
@@ -210,6 +230,7 @@ export const Main = styled.div`
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 `;
 
 export const Top = styled.div`
@@ -329,11 +350,11 @@ export const SectionTitle = styled.div`
 
 export const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px 18px;
 
   @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -341,6 +362,7 @@ export const Field = styled.div<{ $full?: boolean }>`
   display: flex;
   flex-direction: column;
   grid-column: ${p => (p.$full ? '1 / -1' : 'auto')};
+  min-width: 0;
 `;
 
 export const FieldLabel = styled.label`
@@ -538,6 +560,10 @@ export const Foot = styled.div`
   padding: 16px 26px;
   border-top: 1px solid #eef4f0;
   background: #fbfdfc;
+
+  @media (max-width: 640px) {
+    padding: 14px 16px;
+  }
 `;
 
 export const FootNote = styled.span`
@@ -546,12 +572,23 @@ export const FootNote = styled.span`
   display: flex;
   align-items: center;
   gap: 7px;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 `;
 
 export const FootActions = styled.div`
   margin-left: auto;
   display: flex;
   gap: 10px;
+
+  @media (max-width: 640px) {
+    margin-left: 0;
+    width: 100%;
+
+    & > * { flex: 1; }
+  }
 `;
 
 export const Btn = styled.button<{ $variant?: 'brand' | 'ghost' }>`
@@ -564,6 +601,7 @@ export const Btn = styled.button<{ $variant?: 'brand' | 'ghost' }>`
   align-items: center;
   justify-content: center;
   gap: 8px;
+  white-space: nowrap;
   transition: transform 0.12s, box-shadow 0.15s, background 0.15s;
   font-size: 13.5px;
   padding: 11px 20px;

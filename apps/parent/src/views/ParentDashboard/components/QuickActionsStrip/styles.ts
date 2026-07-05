@@ -3,23 +3,29 @@
 import styled from 'styled-components';
 
 export const Bar = styled.div`
+  container-type: inline-size;
+  container-name: quick-actions-strip;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 
-  @media (max-width: 580px) {
+  @container quick-actions-strip (max-width: 520px) {
     grid-template-columns: repeat(2, 1fr);
   }
 `;
 
 export const Btn = styled.button<{ $variant?: 'danger' | 'warn' | 'green' | 'default' }>`
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   background: var(--surface, #fff);
   border: 1px solid var(--border, #eaefea);
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 10px;
   cursor: pointer;
   box-shadow: var(--shadow);
   position: relative;
@@ -27,6 +33,7 @@ export const Btn = styled.button<{ $variant?: 'danger' | 'warn' | 'green' | 'def
   font: inherit;
   text-align: left;
   min-width: 0;
+  width: 100%;
 
   &:hover {
     transform: translateY(-2px);
@@ -53,7 +60,10 @@ export const BtnLabel = styled.span`
   font-size: 12px;
   font-weight: 600;
   color: var(--fg, #1f2937);
-  line-height: 1.2;
+  line-height: 1.3;
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: break-word;
 `;
 
 export const BtnBadge = styled.span`

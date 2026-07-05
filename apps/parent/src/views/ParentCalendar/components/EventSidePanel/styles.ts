@@ -6,6 +6,7 @@ export const Column = styled.div`
   display: flex;
   flex-direction: column;
   gap: 22px;
+  min-width: 0;
 `;
 
 export const Card = styled.div`
@@ -14,6 +15,12 @@ export const Card = styled.div`
   border-radius: 16px;
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   padding: 18px;
+  overflow: hidden;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
 `;
 
 export const CardHead = styled.div`
@@ -69,6 +76,7 @@ export const EventItemHead = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 `;
 
 export const EventItemIcon = styled.span<{ $c: string }>`
@@ -82,6 +90,11 @@ export const EventItemTitle = styled.div`
   font-weight: 700;
   color: #1F2937;
   line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 export const EventItemBadge = styled.span<{ $c: string }>`
@@ -92,6 +105,7 @@ export const EventItemBadge = styled.span<{ $c: string }>`
   text-transform: uppercase;
   color: ${p => p.$c};
   white-space: nowrap;
+  flex-shrink: 0;
 `;
 
 export const EventItemMeta = styled.div`
@@ -137,6 +151,7 @@ export const UpcomingRow = styled.button<{ $active?: boolean }>`
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-width: 0;
   padding: 9px 10px;
   border-radius: 12px;
   border: 1px solid ${p => p.$active ? '#BBDAC8' : 'transparent'};
@@ -176,6 +191,7 @@ export const UpcomingMonth = styled.span`
 `;
 
 export const UpcomingInfo = styled.div`
+  flex: 1;
   min-width: 0;
 `;
 

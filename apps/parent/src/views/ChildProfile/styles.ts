@@ -7,6 +7,7 @@ import styled from 'styled-components';
 export const PageWrap = styled.div`
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 export const PageHeader = styled.div`
@@ -75,6 +76,24 @@ export const BtnBrand = styled.button`
   &:active { transform: scale(0.97); }
 `;
 
+// ─── Two-column layout ──────────────────────────────────────────────────────────
+
+export const ProfileGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+  @media (max-width: 980px) { grid-template-columns: minmax(0, 1fr); }
+`;
+
+export const ColLeft = styled.div`
+  min-width: 0;
+`;
+
+export const ColRight = styled.div`
+  min-width: 0;
+`;
+
 // ─── Sections (stacked vertically) ─────────────────────────────────────────────
 
 export const Section = styled.div`
@@ -130,6 +149,7 @@ export const ChildBanner = styled(Card)`
   padding: 24px 28px;
   position: relative;
   overflow: hidden;
+  min-width: 0;
   background: linear-gradient(100deg, #EBF6F0 0%, #FFFFFF 46%);
 
   &::before {
@@ -153,7 +173,7 @@ export const ChildIdentity = styled.div`
   display: flex;
   align-items: center;
   gap: 18px;
-  flex-shrink: 0;
+  min-width: 0;
   position: relative;
 
   @media (max-width: 860px) { width: 100%; }
@@ -182,7 +202,15 @@ export const ChildName = styled.div`
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #1F2937;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (max-width: 480px) {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
 `;
 
 export const ChildTags = styled.div`
@@ -280,7 +308,7 @@ export const InfoValue = styled.div`
 
 export const FamilyGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 380px));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 18px;
 `;
 
@@ -425,4 +453,32 @@ export const EmptyState = styled.div`
   text-align: center;
   color: #6B7280;
   font-size: 14px;
+`;
+
+export const RelActions = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 4px 22px 22px;
+`;
+
+export const RelActionBtn = styled.a<{ $variant?: 'call' | 'mail' }>`
+  flex: 1;
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  border-radius: 11px;
+  padding: 11px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: transform .12s, opacity .15s;
+  color: #fff;
+  background: ${p => (p.$variant === 'mail' ? '#2563EB' : 'var(--brand, #005A36)')};
+
+  &:hover { opacity: 0.9; }
+  &:active { transform: scale(0.97); }
 `;

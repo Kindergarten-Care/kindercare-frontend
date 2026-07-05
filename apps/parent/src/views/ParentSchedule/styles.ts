@@ -5,6 +5,7 @@ import styled from 'styled-components';
 export const PageWrap = styled.div`
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 // ─── Week picker bar ────────────────────────────────────────────────────────
@@ -44,7 +45,12 @@ export const WeekNavBtn = styled.button`
 `;
 
 export const WeekCurrent = styled.div`
-  min-width: 210px;
+  flex: 1 1 210px;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+  }
 `;
 
 export const WeekPickLabel = styled.div`

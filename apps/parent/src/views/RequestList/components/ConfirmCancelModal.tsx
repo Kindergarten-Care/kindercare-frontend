@@ -1,4 +1,5 @@
 import React from 'react';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from '../styles';
 
 interface ConfirmCancelModalProps {
@@ -12,11 +13,9 @@ export const ConfirmCancelModal: React.FC<ConfirmCancelModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <S.ModalOverlay onClick={onClose}>
-      <S.ModalContent onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="400px">
+      <div style={{ padding: 28 }}>
         <S.ModalHeader>
           <S.ModalTitle>Hủy yêu cầu</S.ModalTitle>
           <S.CloseBtn onClick={onClose}>✕</S.CloseBtn>
@@ -32,7 +31,7 @@ export const ConfirmCancelModal: React.FC<ConfirmCancelModalProps> = ({
             ✕ Xác nhận hủy
           </S.BtnCancelDetail>
         </div>
-      </S.ModalContent>
-    </S.ModalOverlay>
+      </div>
+    </ResponsiveModal>
   );
 };

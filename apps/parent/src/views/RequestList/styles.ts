@@ -16,6 +16,10 @@ export const PageContainer = styled.div`
     padding: 18px 18px 96px;
     gap: 20px;
   }
+
+  @media (max-width: 768px) {
+    padding: 16px 0 96px;
+  }
 `;
 
 export const HeaderRow = styled.div`
@@ -256,6 +260,11 @@ export const FilterTabs = styled.div`
   padding: 4px;
   border-radius: 12px;
   width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 `;
 
 export const TabBtn = styled.button<{ $active: boolean; $isMedication?: boolean }>`
@@ -275,6 +284,8 @@ export const TabBtn = styled.button<{ $active: boolean; $isMedication?: boolean 
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
   box-shadow: ${p => p.$active ? '0 1px 3px rgba(0,0,0,0.05)' : 'none'};
   transition: all 0.15s ease;
 
@@ -584,41 +595,6 @@ export const DropdownWrapper = styled.div`
   }
 `;
 
-export const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: overlayFadeIn 0.2s ease-out;
-
-  @keyframes overlayFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-`;
-
-export const ModalContent = styled.div`
-  background: var(--surface, #fff);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 520px;
-  padding: 28px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes modalSlideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-`;
-
 export const ModalHeader = styled.div`
   display: flex;
   align-items: center;
@@ -653,11 +629,11 @@ export const CloseBtn = styled.button`
 
 export const SelectionGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
 
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 360px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -671,6 +647,7 @@ export const SelectionCard = styled.button`
   align-items: center;
   text-align: center;
   cursor: pointer;
+  min-width: 0;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   outline: none;
@@ -684,6 +661,10 @@ export const SelectionCard = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+
+  @media (max-width: 480px) {
+    padding: 18px 10px;
   }
 `;
 
