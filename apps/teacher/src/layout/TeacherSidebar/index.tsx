@@ -50,6 +50,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
   const isScheduleActive = pathname === '/schedule';
+  const isLessonPlanActive = pathname === '/lesson-plan';
   const isProfileActive = pathname === '/profile';
 
   // Extract user initials
@@ -126,7 +127,8 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           <S.NavBadge $isCollapsed={isCollapsed}>{studentCount}</S.NavBadge>
         </S.NavItem>
 
-        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Soạn giáo án')}>
+        <S.NavItem $active={isLessonPlanActive} $isCollapsed={isCollapsed} onClick={() => router.push('/lesson-plan')}>
+          {isLessonPlanActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><BookOpen size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Soạn giáo án</S.NavLabel>
         </S.NavItem>

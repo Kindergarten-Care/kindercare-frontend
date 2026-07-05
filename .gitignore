@@ -58,3 +58,7 @@ fetch-swagger.js
 
 KinderCare*.html
 *.sql
+
+# Runtime logs
+logs/
+*.log

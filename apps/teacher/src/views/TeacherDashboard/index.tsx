@@ -22,6 +22,7 @@ import { initPushNotification } from '@kindercare/core';
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
 const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
@@ -50,6 +51,7 @@ const getWeekNumber = (d: Date) => {
 };
 
 export const TeacherDashboardView: React.FC = () => {
+  const router = useRouter();
   const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
 
   const [activeClassId, setActiveClassId] = useState<number | null>(null);
@@ -540,6 +542,8 @@ export const TeacherDashboardView: React.FC = () => {
             setRequestListType('leave');
           } else if (feature === 'Y tế & Sức khỏe') {
             setRequestListType('medical');
+          } else if (feature === 'Soạn giáo án') {
+            router.push('/lesson-plan');
           } else {
             addToast(`Đang mở: ${feature}`);
           }
