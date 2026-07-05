@@ -13,7 +13,9 @@ import CameraWidget from './components/CameraWidget';
 import DailyLessonWidget from './components/DailyLessonWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
 import GrowthWidget from './components/GrowthWidget';
+import UrgentNoticeBanner from './components/UrgentNoticeBanner';
 import { useParentDashboard } from './hooks/useParentDashboard';
+import { useRouter } from '@/i18n/routing';
 
 const LeaveRequestPopup      = dynamic(() => import('./components/LeaveRequestPopup'),      { ssr: false });
 const MedicationRequestPopup = dynamic(() => import('./components/MedicationRequestPopup'), { ssr: false });
@@ -21,6 +23,7 @@ const ProxyRequestPopup      = dynamic(() => import('./components/ProxyRequestPo
 const AttendanceQrPopup      = dynamic(() => import('./components/AttendanceQrPopup'),      { ssr: false });
 
 export function ParentDashboard(): React.ReactElement {
+  const router = useRouter();
   const {
     loading,
     activeStudent,
@@ -30,6 +33,7 @@ export function ParentDashboard(): React.ReactElement {
     calendarDays,
     attendanceStats,
     latestAssessment,
+    urgentNotices,
     childHero,
     todayCalendarStatus,
     avatarGradient,
@@ -54,6 +58,8 @@ export function ParentDashboard(): React.ReactElement {
 
   return (
     <S.DashboardContainer>
+      {urgentNotices.length > 0 && <UrgentNoticeBanner notices={urgentNotices} />}
+
       <ChildHeroWidget
         data={childHero}
         avatarGradient={avatarGradient}
@@ -71,7 +77,7 @@ export function ParentDashboard(): React.ReactElement {
               <QuickActionsStrip
                 onAbsence={openLeavePopup}
                 onMedication={openMedicPopup}
-                onFee={() => alert('Đóng học phí')}
+                onFee={() => router.push('/billing')}
                 onDiary={() => alert('Nhật ký')}
                 onPickup={openProxyPopup}
               />

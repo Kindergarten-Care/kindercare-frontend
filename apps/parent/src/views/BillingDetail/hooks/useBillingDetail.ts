@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { invoiceService } from '@/services/Invoice/InvoiceService';
+import { extracurricularService } from '@/services/Extracurricular/ExtracurricularService';
 import { InvoiceDetailDomainModel } from '@/config/types/invoice';
 
 export function useBillingDetail(invoiceId: number | string | undefined) {
@@ -10,6 +11,7 @@ export function useBillingDetail(invoiceId: number | string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [payingMomo, setPayingMomo] = useState(false);
   const [payingVnpay, setPayingVnpay] = useState(false);
+  const [cancellingItemId, setCancellingItemId] = useState<number | null>(null);
 
   const fetchDetail = useCallback(() => {
     if (!invoiceId) return;
@@ -57,6 +59,21 @@ export function useBillingDetail(invoiceId: number | string | undefined) {
     }
   }, [invoiceId]);
 
+  const cancelExtracurricularItem = useCallback(
+    async (enrollmentId: number) => {
+      if (!invoice) return null;
+      setCancellingItemId(enrollmentId);
+      try {
+        const result = await extracurricularService.cancelEnrollment(invoice.studentId, enrollmentId);
+        fetchDetail();
+        return result;
+      } finally {
+        setCancellingItemId(null);
+      }
+    },
+    [invoice, fetchDetail]
+  );
+
   return {
     invoice,
     loading,
@@ -65,6 +82,8 @@ export function useBillingDetail(invoiceId: number | string | undefined) {
     payWithMomo,
     payingVnpay,
     payWithVnpay,
+    cancellingItemId,
+    cancelExtracurricularItem,
     refetch: fetchDetail,
   };
 }

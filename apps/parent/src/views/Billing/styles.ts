@@ -79,28 +79,44 @@ export const SummaryValue = styled.div`
 export const FilterRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 14px;
   margin-bottom: 18px;
 `;
 
-export const FilterBtn = styled.button<{ $active?: boolean }>`
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid ${p => (p.$active ? 'var(--brand, #005a36)' : 'var(--border, #e6eee9)')};
-  background: ${p => (p.$active ? 'var(--brand, #005a36)' : '#fff')};
-  color: ${p => (p.$active ? '#fff' : '#374151')};
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+export const FilterDropdownWrap = styled.div`
+  min-width: 210px;
+`;
 
-  &:hover {
-    border-color: var(--brand, #005a36);
-  }
+export const FilterLabel = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 6px;
 `;
 
 /* invoice list */
+
+export const MonthGroupList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+`;
+
+export const MonthGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const MonthGroupTitle = styled.h3`
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding-left: 2px;
+`;
 
 export const InvoiceList = styled.div`
   display: flex;
@@ -127,15 +143,18 @@ export const InvoiceCard = styled.a`
   }
 `;
 
-export const InvIcon = styled.span<{ $type: 'TUITION' | 'MONTHLY' }>`
+export const InvIcon = styled.span<{ $type: 'TUITION' | 'MONTHLY' | 'EXTRACURRICULAR' }>`
   width: 46px;
   height: 46px;
   border-radius: 13px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  background: ${p => (p.$type === 'TUITION' ? '#e3edfd' : '#f1ecfe')};
-  color: ${p => (p.$type === 'TUITION' ? '#2563eb' : '#8b5cf6')};
+  ${p => {
+    if (p.$type === 'TUITION') return 'background:#e3edfd;color:#2563eb;';
+    if (p.$type === 'EXTRACURRICULAR') return 'background:#fef3c7;color:#d97706;';
+    return 'background:#f1ecfe;color:#8b5cf6;';
+  }}
 `;
 
 export const InvBody = styled.div`
@@ -180,7 +199,7 @@ export const InvAmount = styled.div`
   color: #1f2937;
 `;
 
-export const Badge = styled.span<{ $variant: 'unpaid' | 'partial' | 'paid' }>`
+export const Badge = styled.span<{ $variant: 'unpaid' | 'partial' | 'paid' | 'cancelled' }>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -194,6 +213,8 @@ export const Badge = styled.span<{ $variant: 'unpaid' | 'partial' | 'paid' }>`
         return 'background:#dcfce7;color:#16803d;';
       case 'partial':
         return 'background:#fef3c7;color:#92400e;';
+      case 'cancelled':
+        return 'background:#f3f4f6;color:#6b7280;';
       default:
         return 'background:#fee2e2;color:#dc2626;';
     }

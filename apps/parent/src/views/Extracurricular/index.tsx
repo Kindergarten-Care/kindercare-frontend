@@ -11,15 +11,17 @@ import { getPendingDeadline } from '@/utils/Billing/extracurricular';
 import { IconWave, IconClose } from '@/assets/icons/dashboard';
 import { EnrollmentStatus } from '@/config/types/extracurricular';
 
-function statusBadgeVariant(status: EnrollmentStatus): 'pending' | 'active' | 'cancelled' {
+function statusBadgeVariant(status: EnrollmentStatus): 'pending' | 'active' | 'cancelled' | 'expired' {
   if (status === 'Active') return 'active';
   if (status === 'Cancelled') return 'cancelled';
+  if (status === 'Expired') return 'expired';
   return 'pending';
 }
 
 function statusLabel(status: EnrollmentStatus): string {
   if (status === 'Active') return 'Đang tham gia';
   if (status === 'Cancelled') return 'Đã hủy';
+  if (status === 'Expired') return 'Đã hết hạn';
   return 'Chờ thanh toán';
 }
 
@@ -54,8 +56,12 @@ export function Extracurricular() {
 
   const handleCancel = async (enrollmentId: number): Promise<void> => {
     try {
-      await cancelEnrollment(enrollmentId);
-      kcToast.success('Đã hủy đăng ký. Hoạt động sẽ không được gia hạn từ tháng sau.');
+      const result = await cancelEnrollment(enrollmentId);
+      if (result?.feeRefunded) {
+        kcToast.success('Đã hủy, phí đã được hoàn.');
+      } else {
+        kcToast.success('Đã hủy, không hoàn phí (đã quá 48 giờ kể từ lúc thanh toán).');
+      }
     } catch (err: any) {
       kcToast.error(err?.message || 'Hủy đăng ký thất bại');
     } finally {
@@ -100,7 +106,7 @@ export function Extracurricular() {
                     <S.EnrollMeta>{formatVND(en.monthlyFee)}/tháng</S.EnrollMeta>
                     {deadline && <S.EnrollDeadline $expired={deadline.expired}>{deadline.label}</S.EnrollDeadline>}
                   </S.EnrollBody>
-                  {en.status !== 'Cancelled' && (
+                  {en.status !== 'Cancelled' && en.status !== 'Expired' && (
                     <S.EnrollActions>
                       {confirmCancelId === en.enrollmentId ? (
                         <div style={{ display: 'flex', gap: 6 }}>

@@ -184,7 +184,7 @@ export const EnrollDeadline = styled.div<{ $expired?: boolean }>`
   color: ${p => (p.$expired ? '#dc2626' : '#d97706')};
 `;
 
-export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' }>`
+export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' | 'expired' }>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -198,6 +198,8 @@ export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' 
         return 'background:#dcfce7;color:#16803d;';
       case 'cancelled':
         return 'background:#f3f4f6;color:#6b7280;';
+      case 'expired':
+        return 'background:#fee2e2;color:#dc2626;';
       default:
         return 'background:#fef3c7;color:#92400e;';
     }

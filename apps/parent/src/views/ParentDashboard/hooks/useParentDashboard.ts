@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo } from '@/config/types/dashboard';
+import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo, UrgentNotice } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
@@ -12,12 +12,15 @@ import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
 import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
 import { assessmentService } from '@/services/Assessment/AssessmentService';
 import { weeklyScheduleService } from '@/services/WeeklySchedule/WeeklyScheduleService';
+import { invoiceService } from '@/services/Invoice/InvoiceService';
 import { ActivityType } from '@/config/types/dailySchedule';
 import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AssessmentDomainModel } from '@/config/types/assessment';
+import { InvoiceDomainModel } from '@/config/types/invoice';
 import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
+import { formatVND, formatBillingMonth, getDueStatus } from '@/utils/Billing/format';
 
 // ─── Domain → Widget mappers ──────────────────────────────────────────────────
 
@@ -79,6 +82,23 @@ const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
       color: meta.color,
     };
   });
+
+/** Invoices with an upcoming or overdue due date, turned into dashboard urgent notices. */
+const invoicesToUrgentNotices = (invoices: InvoiceDomainModel[]): UrgentNotice[] =>
+  invoices
+    .map(inv => ({ inv, due: getDueStatus(inv.dueDate, inv.paymentStatus) }))
+    .filter(({ due }) => due.variant === 'soon' || due.variant === 'overdue')
+    .sort((a, b) => (a.inv.dueDate ?? 0) - (b.inv.dueDate ?? 0))
+    .map(({ inv, due }) => ({
+      id: `invoice-${inv.invoiceId}`,
+      severity: due.variant === 'overdue' ? 'urgent' : 'important',
+      title: `Học phí ${formatBillingMonth(inv.billingMonth)} — ${formatVND(inv.totalAmount)}`,
+      detail: due.variant === 'overdue'
+        ? `${due.label}. Vui lòng thanh toán sớm để tránh gián đoạn dịch vụ.`
+        : `${due.label}. Vui lòng thanh toán trước hạn.`,
+      date: due.label,
+      icon: '💰',
+    }));
 
 const albumsToPhotos = (albums: DailyAlbumDomainModel[]): AlbumPhoto[] =>
   albums.flatMap(album =>
@@ -174,6 +194,7 @@ export function useParentDashboard() {
   const [lessons, setLessons] = useState<DailyLesson[]>([]);
   const [photos, setPhotos] = useState<AlbumPhoto[]>([]);
   const [latestAssessment, setLatestAssessment] = useState<AssessmentDomainModel | null>(null);
+  const [urgentNotices, setUrgentNotices] = useState<UrgentNotice[]>([]);
 
   const prevMonth = useCallback((): void => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
@@ -205,8 +226,9 @@ export function useParentDashboard() {
       dailyLessonService.getDailyLessons(id),
       dailyAlbumService.getDailyAlbums(id),
       assessmentService.getAssessments(id, currentMonthParam()),
+      invoiceService.getInvoices(id),
     ])
-      .then(([attendance, timetable, lessons, albums, assessments]) => {
+      .then(([attendance, timetable, lessons, albums, assessments, invoices]) => {
         if (attendance.status === 'fulfilled') setAllRecords(attendance.value);
         else console.error('Attendance API failed:', attendance.reason);
 
@@ -221,6 +243,9 @@ export function useParentDashboard() {
 
         if (assessments.status === 'fulfilled') setLatestAssessment(assessments.value[0] ?? null);
         else console.error('Assessments API failed:', assessments.reason);
+
+        if (invoices.status === 'fulfilled') setUrgentNotices(invoicesToUrgentNotices(invoices.value));
+        else console.error('Invoices API failed:', invoices.reason);
       })
       .finally(() => setApiLoading(false));
   }, [activeStudent?.studentId]);
@@ -356,6 +381,7 @@ export function useParentDashboard() {
     calendarDays,
     attendanceStats,
     latestAssessment,
+    urgentNotices,
     childHero,
     todayCalendarStatus,
     avatarGradient: activeStudent ? getAvatarGradient(activeStudent.studentId) : '',
