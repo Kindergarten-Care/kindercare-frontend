@@ -257,6 +257,7 @@ export const SettingsBtn = styled.button`
   border: none;
   cursor: pointer;
   transition: background 0.15s;
+  margin-left: auto;
 
   &:hover {
     background: rgba(255,255,255,.26);

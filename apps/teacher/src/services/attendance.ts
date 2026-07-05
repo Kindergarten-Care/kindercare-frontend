@@ -86,6 +86,8 @@ function mapApiStudentToDomain(raw: any): Student {
 export class AttendanceService {
   /**
    * Fetch all classes assigned to the logged-in teacher.
+   * @deprecated Use `classService.getClasses()` (from `@/services/class/ClassService`) instead.
+   * This method remains here for backward compatibility with Attendance views.
    */
   public static async getTeacherClasses(): Promise<TeacherClass[]> {
     const res = await apiClient.get('/teacher/classes');

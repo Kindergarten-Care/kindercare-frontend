@@ -4,10 +4,10 @@ import { NotificationPopup } from './components/NotificationPopup';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
-import type { NotificationDto } from '@kindercare/core';
 import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useTeacherProfile } from '@/hooks/useTeacherQueries';
 
 interface TopAppBarProps {
   fullName: string;
@@ -18,6 +18,10 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMenuClick }) => {
   const router = useRouter();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { data: profile } = useTeacherProfile();
+  
+  const avatarUrl = profile?.avatarUrl;
+  
   const dispatch = useDispatch<AppDispatch>();
   const unreadCount = useSelector(selectUnreadCount);
 
@@ -111,13 +115,16 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
               Chào buổi sáng,<br />
               <S.ProfileName>Thầy {getFirstName(fullName)}</S.ProfileName>
             </S.ProfileInfo>
-            <S.Avatar>
-              {getInitials(fullName)}
+            <S.Avatar style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                getInitials(fullName)
+              )}
             </S.Avatar>
             <ChevronDown size={14} color="#9CA3AF" strokeWidth={2.4} />
           </S.ProfileSection>
         </div>
-
       </S.ActionsSection>
     </S.HeaderContainer>
   );

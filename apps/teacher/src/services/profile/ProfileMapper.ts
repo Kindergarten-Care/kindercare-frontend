@@ -1,6 +1,19 @@
-import { WorkHistoryApiDto, WorkHistoryDomainModel, SettingsApiDto, SettingsDomainModel } from '@/config/types/profile';
+import { 
+  TeacherProfileApiDto, 
+  TeacherProfileDomainModel, 
+  WorkHistoryApiDto, 
+  WorkHistoryDomainModel, 
+  SettingsApiDto, 
+  SettingsDomainModel 
+} from '@/config/types/profile';
 
 export class ProfileMapper {
+  static toDomain(dto: TeacherProfileApiDto): TeacherProfileDomainModel {
+    return {
+      ...dto,
+    };
+  }
+
   static toWorkHistoryDomain(dto: WorkHistoryApiDto): WorkHistoryDomainModel {
     return {
       historyId: dto.historyId,
