@@ -272,19 +272,16 @@ export function useLessonPlan(className: string) {
       addToast(editItemId ? '✏️ Đã cập nhật tiết học' : '✅ Đã thêm tiết học mới');
       setModalOpen(false);
     } catch (err: any) {
-      // Log chi tiết để debug
       const status = err?.response?.status;
-      const respData = err?.response?.data;
-      const serverMsg =
-        respData?.message ||
-        respData?.error ||
-        err?.message ||
-        'Lỗi không xác định';
-      console.error('[LessonPlan save failed]', {
-        status,
-        respData,
-        payload,
-      });
+      const rawData = err?.response?.data;
+      // BE có thể trả về JSON string hoặc object
+      let serverMsg = 'Lỗi không xác định';
+      if (typeof rawData === 'string') {
+        try { serverMsg = JSON.parse(rawData); } catch { serverMsg = rawData; }
+      } else if (rawData && typeof rawData === 'object') {
+        serverMsg = rawData.message || rawData.error || JSON.stringify(rawData);
+      }
+      console.error('[LessonPlan save failed]', { status, rawData, payload });
       addToast(`❌ Lỗi ${status ?? '??'}: ${serverMsg}`);
     }
   }, [draft, editItemId, livePlan, saveMutation, teacherId, classId, yearId, weekOffset, addToast]);
