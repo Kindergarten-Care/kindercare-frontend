@@ -1,4 +1,5 @@
 import React from 'react';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from '../styles';
 import { IconMedicine, IconRequest, IconProfile } from '@/assets/icons/dashboard';
 
@@ -17,11 +18,9 @@ export const SelectRequestTypeModal: React.FC<SelectRequestTypeModalProps> = ({
   onSelectMedication,
   onSelectProxy,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <S.ModalOverlay onClick={onClose}>
-      <S.ModalContent onClick={e => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="560px">
+      <div style={{ padding: 28 }}>
         <S.ModalHeader>
           <S.ModalTitle>Tạo yêu cầu mới</S.ModalTitle>
           <S.CloseBtn onClick={onClose}>✕</S.CloseBtn>
@@ -47,11 +46,11 @@ export const SelectRequestTypeModal: React.FC<SelectRequestTypeModalProps> = ({
             <S.CardIconCircle $bg="#e2f8f0" $color="#0f766e">
               <IconProfile size={24} />
             </S.CardIconCircle>
-            <S.SelectionCardTitle>Ủy quyền đón hộ</S.SelectionCardTitle>
+            <S.SelectionCardTitle>Đăng ký ủy quyền đưa đón hộ</S.SelectionCardTitle>
             <S.SelectionCardSub>Ủy quyền cho người thân đón hoặc đưa bé</S.SelectionCardSub>
           </S.SelectionCard>
         </S.SelectionGrid>
-      </S.ModalContent>
-    </S.ModalOverlay>
+      </div>
+    </ResponsiveModal>
   );
 };

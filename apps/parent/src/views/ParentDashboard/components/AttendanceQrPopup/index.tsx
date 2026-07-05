@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from './styles';
 import { IconClose } from '@/assets/icons/dashboard';
 import { QrGenerator } from './QrGenerator';
@@ -37,6 +39,7 @@ const IconRefresh: React.FC<{ size?: number }> = ({ size = 13 }) => (
 );
 
 const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, student }) => {
+  const t = useTranslations('Dashboard');
   const [qrToken, setQrToken] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [loading, setLoading] = useState<boolean>(false);
@@ -72,7 +75,7 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
         });
       }, 1000);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Không thể lấy mã QR');
+      setError(e instanceof Error ? e.message : t('qrPopup.fetchError'));
     } finally {
       setLoading(false);
     }
@@ -100,16 +103,15 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
   const studentCode = `KC-${student.studentId.toString().padStart(4, '0')}`;
 
   return (
-    <S.Overlay onClick={onClose}>
-      <S.ModalContainer onClick={(e) => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="420px">
         <S.HeadRow>
           <S.TitleWrap>
             <S.IconBox>
               <IconQrCode size={18} color="var(--brand)" />
             </S.IconBox>
-            <S.Title>Mã điểm danh học sinh</S.Title>
+            <S.Title>{t('qrPopup.title')}</S.Title>
           </S.TitleWrap>
-          <S.CloseBtn onClick={onClose} aria-label="Đóng popup">
+          <S.CloseBtn onClick={onClose} aria-label={t('closePopup')}>
             <IconClose size={14} />
           </S.CloseBtn>
         </S.HeadRow>
@@ -119,7 +121,7 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
             <S.ScannerArea>
               {loading && !qrToken ? (
                 <div style={{ width: 300, height: 300, display: 'grid', placeItems: 'center', color: 'var(--muted)' }}>
-                  Đang tải mã QR...
+                  {t('qrPopup.loadingQr')}
                 </div>
               ) : error && !qrToken ? (
                 <div style={{ width: 300, height: 300, display: 'grid', placeItems: 'center', color: '#ef4444', fontSize: 13, textAlign: 'center', padding: '0 16px' }}>
@@ -132,36 +134,35 @@ const AttendanceQrPopup: React.FC<AttendanceQrPopupProps> = ({ isOpen, onClose, 
           </S.QrOuterContainer>
 
           <S.RefreshTimerRow>
-            <S.RefreshIconWrap $refreshing={refreshing || loading} onClick={handleManualRefresh} title="Làm mới mã QR">
+            <S.RefreshIconWrap $refreshing={refreshing || loading} onClick={handleManualRefresh} title={t('qrPopup.refreshTitle')}>
               <IconRefresh size={14} />
             </S.RefreshIconWrap>
             {error
-              ? <span style={{ color: '#ef4444', fontSize: 12 }}>{error} — <strong style={{ cursor: 'pointer' }} onClick={handleManualRefresh}>Thử lại</strong></span>
-              : <span>Tự động cập nhật sau <strong>{timeLeft}s</strong></span>
+              ? <span style={{ color: '#ef4444', fontSize: 12 }}>{error} — <strong style={{ cursor: 'pointer' }} onClick={handleManualRefresh}>{t('qrPopup.retry')}</strong></span>
+              : <span>{t.rich('qrPopup.autoRefreshIn', { seconds: timeLeft, strong: chunks => <strong>{chunks}</strong> })}</span>
             }
           </S.RefreshTimerRow>
 
           <S.InfoCard>
             <S.InfoRow>
-              <S.InfoLabel>Mã học sinh</S.InfoLabel>
+              <S.InfoLabel>{t('qrPopup.studentCode')}</S.InfoLabel>
               <S.InfoValue>{studentCode}</S.InfoValue>
             </S.InfoRow>
             <S.InfoRow>
-              <S.InfoLabel>Họ và tên</S.InfoLabel>
+              <S.InfoLabel>{t('qrPopup.fullName')}</S.InfoLabel>
               <S.InfoValue>{student.fullName}</S.InfoValue>
             </S.InfoRow>
             <S.InfoRow>
-              <S.InfoLabel>Lớp học</S.InfoLabel>
+              <S.InfoLabel>{t('qrPopup.className')}</S.InfoLabel>
               <S.InfoValue>{student.className}</S.InfoValue>
             </S.InfoRow>
             <S.InfoRow>
-              <S.InfoLabel>Cơ sở</S.InfoLabel>
+              <S.InfoLabel>{t('qrPopup.campus')}</S.InfoLabel>
               <S.InfoValue>{student.campusName}</S.InfoValue>
             </S.InfoRow>
           </S.InfoCard>
         </S.ContentBody>
-      </S.ModalContainer>
-    </S.Overlay>
+    </ResponsiveModal>
   );
 };
 

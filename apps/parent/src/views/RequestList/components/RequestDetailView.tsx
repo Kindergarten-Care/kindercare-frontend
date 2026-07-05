@@ -264,9 +264,27 @@ export const RequestDetailView: React.FC<RequestDetailViewProps> = ({
 
               <S.DetailInfoTable>
                 <S.DetailInfoRow>
-                  <S.DetailInfoLabel>Họ tên người nhận</S.DetailInfoLabel>
+                  <S.DetailInfoLabel>Ngày ủy quyền</S.DetailInfoLabel>
+                  <S.DetailInfoValue>{request.authorizationDate || 'Không rõ'}</S.DetailInfoValue>
+                </S.DetailInfoRow>
+
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Hình thức ủy quyền</S.DetailInfoLabel>
                   <S.DetailInfoValue>
-                    {request.detail.split('Người nhận: ').pop()?.split(' (')[0] || ''}
+                    {request.proxyAuthType === 'checkin'
+                      ? 'Đưa đi học (Sáng)'
+                      : request.proxyAuthType === 'checkout'
+                      ? 'Đón bé về (Chiều)'
+                      : request.proxyAuthType === 'both'
+                      ? 'Cả hai (Đưa & Đón)'
+                      : 'Không rõ'}
+                  </S.DetailInfoValue>
+                </S.DetailInfoRow>
+
+                <S.DetailInfoRow>
+                  <S.DetailInfoLabel>Họ tên người đón</S.DetailInfoLabel>
+                  <S.DetailInfoValue>
+                    {request.detail.split('Người đón: ').pop()?.split(' (')[0] || ''}
                   </S.DetailInfoValue>
                 </S.DetailInfoRow>
 

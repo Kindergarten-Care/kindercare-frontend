@@ -7,6 +7,7 @@ export const PageWrap = styled.div`
   margin: 0 auto;
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 export const PageHeader = styled.div`
@@ -184,7 +185,7 @@ export const EnrollDeadline = styled.div<{ $expired?: boolean }>`
   color: ${p => (p.$expired ? '#dc2626' : '#d97706')};
 `;
 
-export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' | 'expired' }>`
+export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' | 'cancelled-warn' | 'expired' }>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -198,6 +199,8 @@ export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' 
         return 'background:#dcfce7;color:#16803d;';
       case 'cancelled':
         return 'background:#f3f4f6;color:#6b7280;';
+      case 'cancelled-warn':
+        return 'background:#fef3c7;color:#b45309;';
       case 'expired':
         return 'background:#fee2e2;color:#dc2626;';
       default:
@@ -208,7 +211,10 @@ export const Badge = styled.span<{ $variant: 'pending' | 'active' | 'cancelled' 
 
 export const EnrollActions = styled.div`
   flex-shrink: 0;
-  width: 140px;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `;
 
 export const EmptyState = styled.div`

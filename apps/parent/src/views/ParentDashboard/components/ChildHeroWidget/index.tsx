@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { ChildHeroInfo } from '@/config/types/dashboard';
 import { IconSchool, IconTeacher, IconPin, IconAbsence, IconChat, IconCalendar } from '@/assets/icons/dashboard';
@@ -34,6 +35,7 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
   onMessage,
   onCheckinQr,
 }) => {
+  const t = useTranslations('Dashboard');
   return (
     <S.HeroContainer>
       <S.AvWrap>
@@ -65,10 +67,10 @@ const ChildHeroWidget: React.FC<ChildHeroWidgetProps> = ({
 
       <S.Right>
         <S.BtnAbsence onClick={onAbsence}>
-          <IconAbsence size={15} color="#fff" /> Báo nghỉ học
+          <IconAbsence size={15} color="#fff" /> {t('hero.reportAbsence')}
         </S.BtnAbsence>
         <S.BtnQrCode onClick={onCheckinQr}>
-          <IconQrCode size={15} /> Điểm danh QR
+          <IconQrCode size={15} /> {t('hero.qrCheckin')}
         </S.BtnQrCode>
       </S.Right>
     </S.HeroContainer>

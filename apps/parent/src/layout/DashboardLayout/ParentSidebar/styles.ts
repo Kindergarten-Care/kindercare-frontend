@@ -8,16 +8,67 @@ const rise = keyframes`
   to { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
+const slideIn = keyframes`
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+`;
+
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
 `;
 
-export const SidebarWrapper = styled.div`
+export const SidebarWrapper = styled.div<{ $mobileOpen?: boolean }>`
   position: sticky;
   top: 0;
   height: 100vh;
   z-index: 40;
+
+  @media (max-width: 768px) {
+    display: ${p => (p.$mobileOpen ? 'block' : 'none')};
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    width: 280px;
+    max-width: 82vw;
+    animation: ${slideIn} 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+`;
+
+export const MobileOverlay = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 32, 28, 0.5);
+    z-index: 999;
+    animation: ${fadeIn} 0.2s ease-out;
+  }
+`;
+
+export const MobileCloseBtn = styled.button`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 16px;
+    right: -44px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    color: var(--fg, #1f2937);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 `;
 
 export const SidebarContainer = styled.aside<{ $collapsed: boolean }>`
@@ -62,6 +113,10 @@ export const ToggleBtn = styled.button<{ $collapsed: boolean }>`
 
   &:active {
     transform: scale(0.95);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
   }
 `;
 
@@ -438,43 +493,6 @@ export const ParentInfo = styled.div<{ $hidden: boolean }>`
   span { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
 `;
 
-
-const scaleIn = keyframes`
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-`;
-
-export const CSModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: ${fadeIn} 0.2s ease-out;
-`;
-
-export const CSModalContainer = styled.div`
-  background: #ffffff;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: 
-    0 10px 25px -5px rgba(0, 90, 54, 0.08), 
-    0 20px 48px -10px rgba(15, 23, 42, 0.15);
-  animation: ${scaleIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  border: 1px solid var(--border);
-`;
 
 export const CSModalHeader = styled.div`
   display: flex;

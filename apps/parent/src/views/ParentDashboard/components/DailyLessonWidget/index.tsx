@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { DailyLesson } from '@/config/types/dashboard';
 import { IconBook } from '@/assets/icons/dashboard';
@@ -10,10 +11,11 @@ interface DailyLessonWidgetProps {
 }
 
 const DailyLessonWidget: React.FC<DailyLessonWidgetProps> = ({ lessons }) => {
+  const t = useTranslations('Dashboard');
   return (
     <S.Card>
       <S.CardHead>
-        <S.CardTitle><IconBook size={16} /> Bài học hôm nay</S.CardTitle>
+        <S.CardTitle><IconBook size={16} /> {t('lessons.title')}</S.CardTitle>
       </S.CardHead>
 
       {lessons.length === 0 ? (
@@ -24,8 +26,8 @@ const DailyLessonWidget: React.FC<DailyLessonWidgetProps> = ({ lessons }) => {
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
           </S.EmptyIcon>
-          <S.EmptyTitle>Chưa có bài học hôm nay</S.EmptyTitle>
-          <S.EmptySub>Các hoạt động của bé sẽ được<br />cập nhật sớm nhất</S.EmptySub>
+          <S.EmptyTitle>{t('lessons.emptyTitle')}</S.EmptyTitle>
+          <S.EmptySub dangerouslySetInnerHTML={{ __html: t.raw('emptyActivitiesSub') }} />
         </S.EmptyState>
       ) : (
         <S.LessonList>

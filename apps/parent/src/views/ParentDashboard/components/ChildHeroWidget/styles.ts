@@ -169,6 +169,7 @@ export const Right = styled.div`
   @media (max-width: 640px) {
     width: 100%;
     flex-direction: row;
+    flex-wrap: wrap;
   }
 `;
 
@@ -191,6 +192,12 @@ export const BtnAbsence = styled.button`
   transition: transform 0.12s, background 0.15s;
 
   &:hover { background: var(--brand-hover); transform: scale(1.02); }
+
+  @media (max-width: 640px) {
+    flex: 1 1 140px;
+    min-width: 0;
+    padding: 11px 10px;
+  }
 `;
 
 export const BtnQrCode = styled.button`
@@ -214,5 +221,11 @@ export const BtnQrCode = styled.button`
   &:hover {
     background: var(--brand-tint);
     transform: scale(1.02);
+  }
+
+  @media (max-width: 640px) {
+    flex: 1 1 140px;
+    min-width: 0;
+    padding: 11px 10px;
   }
 `;

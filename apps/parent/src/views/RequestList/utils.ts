@@ -142,7 +142,7 @@ export const mapProxiesToRequestItems = (
   return proxies.map(p => {
     const authDateStr = formatDate(p.authorizationDate);
     const typeLabel = p.type === 'checkin' ? 'đưa bé đi học' : p.type === 'checkout' ? 'đón bé về' : 'đưa đón bé';
-    const detail = `Ủy quyền ${typeLabel} hộ ngày ${authDateStr}. Người nhận: ${p.proxyName} (${p.proxyPhone || 'Không có SĐT'})`;
+    const detail = `Ủy quyền ${typeLabel} hộ ngày ${authDateStr}. Người đón: ${p.proxyName} (${p.proxyPhone || 'Không có SĐT'})`;
     const normalizedStatus = (p.status || 'Pending').toLowerCase() as any;
     const sentTime = p.createdAt ? formatLocaltime(p.createdAt) : authDateStr;
     const rawDate = p.createdAt ? Number(p.createdAt) : Number(p.authorizationDate);
@@ -162,6 +162,8 @@ export const mapProxiesToRequestItems = (
       proxyPhone: p.proxyPhone,
       proxyIDCard: p.proxyIDCard,
       proxyPhotoUrl: p.proxyPhotoUrl,
+      authorizationDate: authDateStr,
+      proxyAuthType: p.type,
     };
   });
 };

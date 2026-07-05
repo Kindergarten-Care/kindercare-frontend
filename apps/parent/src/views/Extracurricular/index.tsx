@@ -8,20 +8,28 @@ import * as S from './styles';
 import { useExtracurricular } from './hooks/useExtracurricular';
 import { formatVND, formatBillingMonth } from '@/utils/Billing/format';
 import { getPendingDeadline } from '@/utils/Billing/extracurricular';
-import { IconWave, IconClose } from '@/assets/icons/dashboard';
-import { EnrollmentStatus } from '@/config/types/extracurricular';
+import { IconWave, IconClose, IconReceipt } from '@/assets/icons/dashboard';
+import { ExtracurricularEnrollmentDomainModel } from '@/config/types/extracurricular';
 
-function statusBadgeVariant(status: EnrollmentStatus): 'pending' | 'active' | 'cancelled' | 'expired' {
-  if (status === 'Active') return 'active';
-  if (status === 'Cancelled') return 'cancelled';
-  if (status === 'Expired') return 'expired';
+function statusBadgeVariant(en: ExtracurricularEnrollmentDomainModel): 'pending' | 'active' | 'cancelled' | 'cancelled-warn' | 'expired' {
+  if (en.status === 'Active') return 'active';
+  if (en.status === 'Expired') return 'expired';
+  if (en.status === 'Cancelled') {
+    const wasEverActivated = !!en.activatedAt;
+    if (!wasEverActivated) return 'cancelled';
+    return en.feeRefunded ? 'cancelled' : 'cancelled-warn';
+  }
   return 'pending';
 }
 
-function statusLabel(status: EnrollmentStatus): string {
-  if (status === 'Active') return 'Đang tham gia';
-  if (status === 'Cancelled') return 'Đã hủy';
-  if (status === 'Expired') return 'Đã hết hạn';
+function statusLabel(en: ExtracurricularEnrollmentDomainModel): string {
+  if (en.status === 'Active') return 'Đang tham gia';
+  if (en.status === 'Expired') return 'Đã hết hạn đăng ký';
+  if (en.status === 'Cancelled') {
+    const wasEverActivated = !!en.activatedAt;
+    if (!wasEverActivated) return 'Đã hủy';
+    return en.feeRefunded ? 'Đã hủy — đã hoàn phí' : 'Đã hủy — không hoàn phí';
+  }
   return 'Chờ thanh toán';
 }
 
@@ -57,7 +65,9 @@ export function Extracurricular() {
   const handleCancel = async (enrollmentId: number): Promise<void> => {
     try {
       const result = await cancelEnrollment(enrollmentId);
-      if (result?.feeRefunded) {
+      if (!result?.activatedAt) {
+        kcToast.success('Đã hủy đăng ký.');
+      } else if (result.feeRefunded) {
         kcToast.success('Đã hủy, phí đã được hoàn.');
       } else {
         kcToast.success('Đã hủy, không hoàn phí (đã quá 48 giờ kể từ lúc thanh toán).');
@@ -101,14 +111,17 @@ export function Extracurricular() {
                   <S.EnrollBody>
                     <S.EnrollName>
                       {en.activityName}
-                      <S.Badge $variant={statusBadgeVariant(en.status)}>{statusLabel(en.status)}</S.Badge>
+                      <S.Badge $variant={statusBadgeVariant(en)}>{statusLabel(en)}</S.Badge>
                     </S.EnrollName>
                     <S.EnrollMeta>{formatVND(en.monthlyFee)}/tháng</S.EnrollMeta>
                     {deadline && <S.EnrollDeadline $expired={deadline.expired}>{deadline.label}</S.EnrollDeadline>}
                   </S.EnrollBody>
-                  {en.status !== 'Cancelled' && en.status !== 'Expired' && (
-                    <S.EnrollActions>
-                      {confirmCancelId === en.enrollmentId ? (
+                  <S.EnrollActions>
+                    <S.Btn $variant="brand" onClick={() => router.push('/billing?type=EXTRACURRICULAR')}>
+                      <IconReceipt size={14} /> Xem hóa đơn
+                    </S.Btn>
+                    {en.status !== 'Cancelled' && en.status !== 'Expired' && (
+                      confirmCancelId === en.enrollmentId ? (
                         <div style={{ display: 'flex', gap: 6 }}>
                           <S.Btn $variant="ghost" onClick={() => setConfirmCancelId(null)}>Không</S.Btn>
                           <S.Btn
@@ -120,12 +133,12 @@ export function Extracurricular() {
                           </S.Btn>
                         </div>
                       ) : (
-                        <S.Btn $variant="ghost" onClick={() => setConfirmCancelId(en.enrollmentId)}>
+                        <S.Btn $variant="danger" onClick={() => setConfirmCancelId(en.enrollmentId)}>
                           <IconClose size={14} /> Hủy đăng ký
                         </S.Btn>
-                      )}
-                    </S.EnrollActions>
-                  )}
+                      )
+                    )}
+                  </S.EnrollActions>
                 </S.EnrollCard>
               );
             })}

@@ -6,7 +6,7 @@ export const ColLeft = styled.div`
   min-width: 0;
   position: sticky;
   top: 24px;
-  @media (max-width: 980px) { position: static; }
+  @media (max-width: 980px) { position: static; order: 2; }
 `;
 
 export const SecHead = styled.div`

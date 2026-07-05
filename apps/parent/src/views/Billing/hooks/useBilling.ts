@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useStudent } from '@/contexts/StudentContext';
 import { invoiceService } from '@/services/Invoice/InvoiceService';
 import { InvoiceDomainModel, InvoiceType, PaymentStatus } from '@/config/types/invoice';
@@ -8,6 +9,13 @@ import { InvoiceDomainModel, InvoiceType, PaymentStatus } from '@/config/types/i
 export type TypeFilter = 'ALL' | InvoiceType;
 export type StatusFilter = 'ALL' | PaymentStatus;
 export type MonthFilter = 'ALL' | string;
+
+const VALID_TYPES: InvoiceType[] = ['TUITION', 'MONTHLY', 'EXTRACURRICULAR'];
+
+function readTypeFromQuery(value: string | null): TypeFilter {
+  if (value && VALID_TYPES.includes(value as InvoiceType)) return value as InvoiceType;
+  return 'ALL';
+}
 
 export interface InvoiceMonthGroup {
   billingMonth: string;
@@ -22,11 +30,12 @@ function monthSortKey(billingMonth: string): string {
 
 export function useBilling() {
   const { activeStudent, loading: studentLoading } = useStudent();
+  const searchParams = useSearchParams();
 
   const [invoices, setInvoices] = useState<InvoiceDomainModel[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(() => readTypeFromQuery(searchParams.get('type')));
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [monthFilter, setMonthFilter] = useState<MonthFilter>('ALL');
 
@@ -90,6 +99,7 @@ export function useBilling() {
     error,
     activeStudent,
     invoices: filteredInvoices,
+    hasAnyInvoices: invoices.length > 0,
     groupedInvoices,
     availableMonths,
     summary,

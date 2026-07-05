@@ -5,6 +5,7 @@ import styled from 'styled-components';
 export const PageWrap = styled.div`
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 // ─── Toolbar (month picker + filters) ───────────────────────────────────────
@@ -49,7 +50,12 @@ export const MonthTitle = styled.div`
   font-weight: 800;
   letter-spacing: -.01em;
   color: #1F2937;
-  min-width: 150px;
+  flex: 1 1 150px;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+  }
 `;
 
 export const TodayBtn = styled.button`

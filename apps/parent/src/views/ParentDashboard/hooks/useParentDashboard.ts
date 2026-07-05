@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo, UrgentNotice } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
@@ -84,7 +85,10 @@ const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
   });
 
 /** Invoices with an upcoming or overdue due date, turned into dashboard urgent notices. */
-const invoicesToUrgentNotices = (invoices: InvoiceDomainModel[]): UrgentNotice[] =>
+const invoicesToUrgentNotices = (
+  invoices: InvoiceDomainModel[],
+  t: ReturnType<typeof useTranslations>
+): UrgentNotice[] =>
   invoices
     .map(inv => ({ inv, due: getDueStatus(inv.dueDate, inv.paymentStatus) }))
     .filter(({ due }) => due.variant === 'soon' || due.variant === 'overdue')
@@ -92,10 +96,10 @@ const invoicesToUrgentNotices = (invoices: InvoiceDomainModel[]): UrgentNotice[]
     .map(({ inv, due }) => ({
       id: `invoice-${inv.invoiceId}`,
       severity: due.variant === 'overdue' ? 'urgent' : 'important',
-      title: `Học phí ${formatBillingMonth(inv.billingMonth)} — ${formatVND(inv.totalAmount)}`,
+      title: t('notices.invoiceTitle', { month: formatBillingMonth(inv.billingMonth), amount: formatVND(inv.totalAmount) }),
       detail: due.variant === 'overdue'
-        ? `${due.label}. Vui lòng thanh toán sớm để tránh gián đoạn dịch vụ.`
-        : `${due.label}. Vui lòng thanh toán trước hạn.`,
+        ? t('notices.overdueDetail', { label: due.label })
+        : t('notices.dueSoonDetail', { label: due.label }),
       date: due.label,
       icon: '💰',
     }));
@@ -175,6 +179,7 @@ const calculateAttendanceData = (
 
 export function useParentDashboard() {
   const { activeStudent, loading: studentLoading } = useStudent();
+  const t = useTranslations('Dashboard');
 
   const [apiLoading, setApiLoading] = useState(false);
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
@@ -244,11 +249,11 @@ export function useParentDashboard() {
         if (assessments.status === 'fulfilled') setLatestAssessment(assessments.value[0] ?? null);
         else console.error('Assessments API failed:', assessments.reason);
 
-        if (invoices.status === 'fulfilled') setUrgentNotices(invoicesToUrgentNotices(invoices.value));
+        if (invoices.status === 'fulfilled') setUrgentNotices(invoicesToUrgentNotices(invoices.value, t));
         else console.error('Invoices API failed:', invoices.reason);
       })
       .finally(() => setApiLoading(false));
-  }, [activeStudent?.studentId]);
+  }, [activeStudent?.studentId, t]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -304,41 +309,41 @@ export function useParentDashboard() {
     const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
     let attendanceStatus: ChildHeroInfo['attendanceStatus'] = 'not_started';
-    let checkinTime = 'Chưa điểm danh';
-    let checkinSub = 'Chờ điểm danh sáng';
+    let checkinTime = t('hero.notCheckedIn');
+    let checkinSub = t('hero.waitingMorningCheckin');
 
     if (isWeekend) {
       attendanceStatus = 'holiday';
-      checkinTime = 'Ngày nghỉ';
-      checkinSub = 'Cuối tuần';
+      checkinTime = t('hero.holiday');
+      checkinSub = t('hero.weekend');
     } else if (todayRecord) {
       const statusLower = todayRecord.status?.toLowerCase();
       if (statusLower === 'excused') {
         attendanceStatus = 'excused';
-        checkinTime = 'Nghỉ học';
-        checkinSub = 'Có phép';
+        checkinTime = t('hero.excusedTitle');
+        checkinSub = t('hero.excusedSub');
       } else if (statusLower === 'absent') {
         attendanceStatus = 'absent';
-        checkinTime = 'Vắng mặt';
-        checkinSub = 'Không phép';
+        checkinTime = t('hero.absentTitle');
+        checkinSub = t('hero.absentSub');
       } else if (statusLower === 'holiday') {
         attendanceStatus = 'holiday';
-        checkinTime = 'Ngày nghỉ';
-        checkinSub = 'Lễ / Tết';
+        checkinTime = t('hero.holiday');
+        checkinSub = t('hero.holidaySub');
       } else if (statusLower === 'present') {
         if (todayRecord.checkInTime) {
           const inTime = tsToHHMM(todayRecord.checkInTime);
           if (todayRecord.checkOutTime) {
             const outTime = tsToHHMM(todayRecord.checkOutTime);
             attendanceStatus = 'checked_out';
-            checkinTime = `Đã ra về · ${outTime}`;
+            checkinTime = t('hero.checkedOut', { time: outTime });
             const pickupDisplay = formatPersonName(todayRecord.pickedUpBy, todayRecord.pickedUpRelationship, '');
-            checkinSub = pickupDisplay ? `Đón bởi: ${pickupDisplay}` : 'Đã đón bé';
+            checkinSub = pickupDisplay ? t('hero.pickedUpBy', { name: pickupDisplay }) : t('hero.pickedUpGeneric');
           } else {
             attendanceStatus = 'studying';
-            checkinTime = `Đã đến trường · ${inTime}`;
+            checkinTime = t('hero.checkedIn', { time: inTime });
             const dropoffDisplay = formatPersonName(todayRecord.droppedOffBy, todayRecord.droppedOffRelationship, '');
-            checkinSub = dropoffDisplay ? `Đưa bởi: ${dropoffDisplay}` : 'Đang học';
+            checkinSub = dropoffDisplay ? t('hero.droppedOffBy', { name: dropoffDisplay }) : t('hero.studyingGeneric');
           }
         }
       }
@@ -358,13 +363,13 @@ export function useParentDashboard() {
     ? {
         name: activeStudent.fullName,
         className: activeStudent.className,
-        teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Chưa phân công',
+        teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : t('hero.teacherUnassigned'),
         academicYear: activeStudent.academicYearName,
         branch: activeStudent.campusName,
         statusTags: [
-          { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
-          { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
-          { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
+          { label: t('hero.dobTag', { date: formatDateFromBigInt(activeStudent.dateOfBirth) }), type: 'neutral' as const },
+          { label: t('hero.admissionTag', { date: formatDateFromBigInt(activeStudent.admissionDate) }), type: 'neutral' as const },
+          { label: activeStudent.allergies ? t('hero.allergyTag', { allergies: activeStudent.allergies }) : t('hero.noAllergies'), type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
         ],
         checkinTime: todayStatus.checkinTime,
         checkinSub: todayStatus.checkinSub,

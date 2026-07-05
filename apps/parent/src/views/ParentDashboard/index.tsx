@@ -2,6 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 
 import AlbumStripWidget from './components/AlbumStripWidget';
@@ -24,6 +25,7 @@ const AttendanceQrPopup      = dynamic(() => import('./components/AttendanceQrPo
 
 export function ParentDashboard(): React.ReactElement {
   const router = useRouter();
+  const t = useTranslations('Dashboard');
   const {
     loading,
     activeStudent,
@@ -51,7 +53,7 @@ export function ParentDashboard(): React.ReactElement {
   if (loading || !activeStudent || !childHero) {
     return (
       <S.DashboardContainer>
-        <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
+        <div style={{ padding: 40, color: 'var(--muted)' }}>{t('loading')}</div>
       </S.DashboardContainer>
     );
   }
@@ -66,7 +68,7 @@ export function ParentDashboard(): React.ReactElement {
         avatarInitial={avatarInitial}
         avatarUrl={activeStudent.avatarUrl}
         onAbsence={openLeavePopup}
-        onMessage={() => alert('Nhắn tin với giáo viên')}
+        onMessage={() => alert(t('alerts.messageTeacher'))}
         onCheckinQr={openQrPopup}
       />
 
@@ -78,7 +80,7 @@ export function ParentDashboard(): React.ReactElement {
                 onAbsence={openLeavePopup}
                 onMedication={openMedicPopup}
                 onFee={() => router.push('/billing')}
-                onDiary={() => alert('Nhật ký')}
+                onDiary={() => alert(t('alerts.diary'))}
                 onPickup={openProxyPopup}
               />
               <DevelopmentalDomainsWidget assessment={latestAssessment} />

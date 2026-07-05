@@ -7,6 +7,7 @@ import styled from 'styled-components';
 export const PageWrap = styled.div`
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 export const JournalGrid = styled.div`
@@ -22,6 +23,8 @@ export const ColRight = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media (max-width: 980px) { order: 1; }
 `;
 
 export const TwoCol = styled.div`

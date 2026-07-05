@@ -57,14 +57,22 @@ function txStatusLabel(status: string): string {
 function itemBadgeVariant(item: ExtracurricularInvoiceItemDomainModel): 'pending' | 'active' | 'cancelled' | 'cancelled-warn' | 'expired' {
   if (item.status === 'Active') return 'active';
   if (item.status === 'Expired') return 'expired';
-  if (item.status === 'Cancelled') return item.feeRefunded ? 'cancelled' : 'cancelled-warn';
+  if (item.status === 'Cancelled') {
+    const wasEverActivated = !!item.activatedAt;
+    if (!wasEverActivated) return 'cancelled';
+    return item.feeRefunded ? 'cancelled' : 'cancelled-warn';
+  }
   return 'pending';
 }
 
 function itemStatusLabel(item: ExtracurricularInvoiceItemDomainModel): string {
   if (item.status === 'Active') return 'Đang tham gia';
-  if (item.status === 'Expired') return 'Đã hết hạn thanh toán';
-  if (item.status === 'Cancelled') return item.feeRefunded ? 'Đã hủy — đã hoàn phí' : 'Đã hủy — không hoàn phí';
+  if (item.status === 'Expired') return 'Đã hết hạn đăng ký';
+  if (item.status === 'Cancelled') {
+    const wasEverActivated = !!item.activatedAt;
+    if (!wasEverActivated) return 'Đã hủy';
+    return item.feeRefunded ? 'Đã hủy — đã hoàn phí' : 'Đã hủy — không hoàn phí';
+  }
   return 'Đang chờ thanh toán';
 }
 
@@ -99,7 +107,9 @@ export function BillingDetail() {
   const handleCancelItem = async (enrollmentId: number): Promise<void> => {
     try {
       const result = await cancelExtracurricularItem(enrollmentId);
-      if (result?.feeRefunded) {
+      if (!result?.activatedAt) {
+        kcToast.success('Đã hủy đăng ký.');
+      } else if (result.feeRefunded) {
         kcToast.success('Đã hủy, phí đã được hoàn.');
       } else {
         kcToast.success('Đã hủy, không hoàn phí (đã quá 48 giờ kể từ lúc thanh toán).');
@@ -174,7 +184,7 @@ export function BillingDetail() {
               {invoice.invoiceType === 'EXTRACURRICULAR' && invoice.extracurricularItems ? (
                 invoice.extracurricularItems.map(item => {
                   const struck = item.status === 'Cancelled' || item.status === 'Expired';
-                  const canCancelItem = item.status === 'Pending' || item.status === 'Active';
+                  const canCancelItem = item.status === 'Pending';
                   return (
                     <S.ItemRow key={item.enrollmentId} $struck={struck}>
                       <S.ItemInfo>

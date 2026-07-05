@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from '../LeaveRequestPopup/styles';
 import { IconClose, IconCheck, IconProfile } from '@/assets/icons/dashboard';
 import { useProxyRequestPopup } from './useProxyRequestPopup';
@@ -42,21 +44,19 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
     handleRemoveFile,
     handleSubmit,
   } = useProxyRequestPopup({ isOpen, onClose, onSubmitSuccess });
-
-  if (!isOpen) return null;
+  const t = useTranslations('Dashboard');
 
   return (
-    <S.Overlay onClick={onClose}>
-      <S.ModalContainer onClick={(e) => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="520px">
         <S.HeadRow>
           <S.IconBox>
             <IconProfile size={22} color="#0d9488" />
           </S.IconBox>
           <S.TitleWrap>
-            <S.Title>Ủy quyền đón hộ</S.Title>
-            <S.Subtitle>Ủy quyền đưa đón bé {studentName} · Lớp {className}</S.Subtitle>
+            <S.Title>{t('proxy.title')}</S.Title>
+            <S.Subtitle>{t('proxy.subtitle', { name: studentName, className })}</S.Subtitle>
           </S.TitleWrap>
-          <S.CloseBtn onClick={onClose} aria-label="Đóng popup">
+          <S.CloseBtn onClick={onClose} aria-label={t('closePopup')}>
             <IconClose size={16} />
           </S.CloseBtn>
         </S.HeadRow>
@@ -64,7 +64,7 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
         <S.ContentForm>
           {/* Authorization Date Selection */}
           <S.FormGroup>
-            <S.FieldLabel>Ngày ủy quyền đưa đón</S.FieldLabel>
+            <S.FieldLabel>{t('proxy.dateLabel')}</S.FieldLabel>
             <S.StyledInput
               type="date"
               min={todayStr}
@@ -75,38 +75,38 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
 
           {/* Authorization Type Selection */}
           <S.FormGroup>
-            <S.FieldLabel>Hình thức ủy quyền</S.FieldLabel>
+            <S.FieldLabel>{t('proxy.typeLabel')}</S.FieldLabel>
             <S.ChipGrid>
               <S.ReasonChip
                 type="button"
                 $active={type === 'checkin'}
                 onClick={() => setType('checkin')}
               >
-                Đưa đi học (Sáng)
+                {t('proxy.typeCheckin')}
               </S.ReasonChip>
               <S.ReasonChip
                 type="button"
                 $active={type === 'checkout'}
                 onClick={() => setType('checkout')}
               >
-                Đón bé về (Chiều)
+                {t('proxy.typeCheckout')}
               </S.ReasonChip>
               <S.ReasonChip
                 type="button"
                 $active={type === 'both'}
                 onClick={() => setType('both')}
               >
-                Cả hai (Đưa & Đón)
+                {t('proxy.typeBoth')}
               </S.ReasonChip>
             </S.ChipGrid>
           </S.FormGroup>
 
           {/* Proxy Name */}
           <S.FormGroup>
-            <S.FieldLabel>Họ tên người được ủy quyền</S.FieldLabel>
+            <S.FieldLabel>{t('proxy.nameLabel')}</S.FieldLabel>
             <S.StyledInput
               type="text"
-              placeholder="Ví dụ: Nguyễn Văn B"
+              placeholder={t('proxy.namePlaceholder')}
               value={proxyName}
               onChange={(e) => setProxyName(e.target.value)}
             />
@@ -115,19 +115,19 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
           {/* Phone & ID Card grid */}
           <S.DateGrid>
             <div>
-              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Số điện thoại</span>
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('proxy.phoneLabel')}</span>
               <S.StyledInput
                 type="tel"
-                placeholder="Ví dụ: 0901234567"
+                placeholder={t('proxy.phonePlaceholder')}
                 value={proxyPhone}
                 onChange={(e) => setProxyPhone(e.target.value)}
               />
             </div>
             <div>
-              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Số CCCD / CMND</span>
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('proxy.idCardLabel')}</span>
               <S.StyledInput
                 type="text"
-                placeholder="Ví dụ: 079123456789"
+                placeholder={t('proxy.idCardPlaceholder')}
                 value={proxyIDCard}
                 onChange={(e) => setProxyIDCard(e.target.value)}
               />
@@ -136,9 +136,9 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
 
           {/* Notes */}
           <S.FormGroup style={{ marginTop: '16px' }}>
-            <S.FieldLabel>Ghi chú thêm cho giáo viên (tùy chọn)</S.FieldLabel>
+            <S.FieldLabel>{t('proxy.noteLabel')}</S.FieldLabel>
             <S.StyledTextarea
-              placeholder="Ví dụ: Là chú ruột của bé, đi xe máy màu đỏ..."
+              placeholder={t('proxy.notePlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -146,13 +146,13 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
 
           {/* Portrait Photo Upload */}
           <S.FormGroup>
-            <S.FieldLabel>Ảnh chân dung người đón hộ (Bắt buộc để giáo viên đối chiếu)</S.FieldLabel>
+            <S.FieldLabel>{t('proxy.photoLabel')}</S.FieldLabel>
             {attachedFile ? (
               <S.AttachedFileBar>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '8px' }}>
-                  📷 {attachedFile.name} ({(attachedFile.size / 1024).toFixed(1)} KB)
+                  {t('proxy.attachedFileInfo', { fileName: attachedFile.name, sizeKb: (attachedFile.size / 1024).toFixed(1) })}
                 </span>
-                <S.RemoveFileBtn type="button" onClick={handleRemoveFile} title="Xóa tệp đính kèm">
+                <S.RemoveFileBtn type="button" onClick={handleRemoveFile} title={t('leave.removeAttachment')}>
                   <IconClose size={14} color="#dc2626" />
                 </S.RemoveFileBtn>
               </S.AttachedFileBar>
@@ -160,8 +160,8 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
               <S.AttachmentArea onClick={handleTriggerUpload}>
                 <S.AttachmentLabel>
                   <span style={{ fontSize: '20px' }}>📷</span>
-                  <span>Nhấn để chọn ảnh chân dung người đón hộ</span>
-                  <span>Chỉ chấp nhận file ảnh (PNG, JPG) dưới 5MB</span>
+                  <span>{t('proxy.uploadPrompt')}</span>
+                  <span>{t('proxy.uploadHint')}</span>
                 </S.AttachmentLabel>
                 <S.HiddenFileInput
                   type="file"
@@ -176,15 +176,14 @@ const ProxyRequestPopup: React.FC<ProxyRequestPopupProps> = ({
 
         <S.Footer>
           <S.CancelBtn type="button" onClick={onClose} disabled={isSubmitting}>
-            Hủy
+            {t('cancel')}
           </S.CancelBtn>
           <S.SubmitBtn type="button" onClick={handleSubmit} disabled={isSubmitting} style={{ backgroundColor: '#0d9488' }}>
             <IconCheck size={16} color="#ffffff" />
-            {isSubmitting ? 'Đang gửi...' : 'Xác nhận ủy quyền'}
+            {isSubmitting ? t('submitting') : t('proxy.submit')}
           </S.SubmitBtn>
         </S.Footer>
-      </S.ModalContainer>
-    </S.Overlay>
+    </ResponsiveModal>
   );
 };
 

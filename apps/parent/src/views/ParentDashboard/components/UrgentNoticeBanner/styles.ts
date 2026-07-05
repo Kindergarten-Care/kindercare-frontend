@@ -131,27 +131,6 @@ export const CloseBtn = styled.button`
   }
 `;
 
-export const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-export const Modal = styled.div`
-  background: #fff;
-  border-radius: 20px;
-  width: min(560px, 94vw);
-  max-height: 88vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 18px 48px -12px rgba(0, 0, 0, 0.2);
-`;
 
 export const ModalHead = styled.div`
   display: flex;
@@ -172,6 +151,8 @@ export const ModalBody = styled.div`
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 `;
 
 export const NoticeRow = styled.div<{ $severity: 'urgent' | 'important' | 'info' }>`

@@ -12,7 +12,10 @@ export const Card = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
+  container-type: inline-size;
+  container-name: domains-card;
 `;
 
 export const CardHead = styled.div`
@@ -26,7 +29,9 @@ export const CardHead = styled.div`
 export const CardTitleContainer = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 `;
 
 export const CardTitle = styled.h3`
@@ -35,6 +40,8 @@ export const CardTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
   color: var(--fg);
 `;
 
@@ -89,20 +96,20 @@ export const DetailLink = styled.button`
 
 export const DomainsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
+  @container domains-card (max-width: 620px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  @media (max-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
+  @container domains-card (max-width: 380px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  @container domains-card (max-width: 240px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -115,6 +122,7 @@ export const DomainCard = styled.div<{ $color: string }>`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   transition: transform 0.16s ease, box-shadow 0.16s ease;
 
@@ -159,6 +167,7 @@ export const DomainLabel = styled.div`
   font-weight: 600;
   color: var(--muted, #6b7280);
   line-height: 1.2;
+  word-break: break-word;
 `;
 
 export const ScoreRow = styled.div`

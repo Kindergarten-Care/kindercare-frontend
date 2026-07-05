@@ -9,6 +9,11 @@ export const Card = styled.div`
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   padding: 18px;
   overflow: hidden;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 export const Grid = styled.div`
