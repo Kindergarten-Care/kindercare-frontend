@@ -28,10 +28,10 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
   const t = useTranslations('Dashboard');
   const { activeStudent } = useStudent();
   const [isLongLeave, setIsLongLeave] = useState<boolean>(false);
-  const [singleDate, setSingleDate] = useState<string>(getLocalDateString(0));
-  const [startDate, setStartDate] = useState<string>(getLocalDateString(0));
-  const [endDate, setEndDate] = useState<string>(getLocalDateString(1));
-  const [selectedReason, setSelectedReason] = useState<string>(DEFAULT_REASON);
+  const [singleDate, setSingleDate] = useState<string>(getLocalDateString(1));
+  const [startDate, setStartDate] = useState<string>(getLocalDateString(1));
+  const [endDate, setEndDate] = useState<string>(getLocalDateString(2));
+  const [selectedReason, setSelectedReason] = useState<string>('Bé bị ốm');
   const [note, setNote] = useState<string>('');
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -85,6 +85,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     const monthStr = String(viewMonth + 1).padStart(2, '0');
     const dayStr = String(dayNum).padStart(2, '0');
     const clickedDateStr = `${viewYear}-${monthStr}-${dayStr}`;
+
+    // Leave requests can only be filed starting tomorrow — reject today or earlier.
+    if (clickedDateStr < getLocalDateString(1)) return;
 
     if (!isLongLeave) {
       setSingleDate(clickedDateStr);
@@ -158,10 +161,10 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
 
       // Reset state & close
       setIsLongLeave(false);
-      setSingleDate(getLocalDateString(0));
-      setStartDate(getLocalDateString(0));
-      setEndDate(getLocalDateString(1));
-      setSelectedReason(DEFAULT_REASON);
+      setSingleDate(getLocalDateString(1));
+      setStartDate(getLocalDateString(1));
+      setEndDate(getLocalDateString(2));
+      setSelectedReason('Bé bị ốm');
       setNote('');
       setAttachedFile(null);
       onSubmitSuccess?.();
@@ -177,8 +180,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
   const firstDow = new Date(viewYear, viewMonth, 1).getDay();
   const prefixBlanks = firstDow === 0 ? 6 : firstDow - 1;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const todayDateObj = new Date();
-  const todayStr = `${todayDateObj.getFullYear()}-${String(todayDateObj.getMonth() + 1).padStart(2, '0')}-${String(todayDateObj.getDate()).padStart(2, '0')}`;
+  const todayStr = getLocalDateString(0);
+  // Leave requests can only be filed starting tomorrow — today is no longer selectable.
+  const minDateStr = getLocalDateString(1);
 
   return {
     isLongLeave,
@@ -209,5 +213,6 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     prefixBlanks,
     daysInMonth,
     todayStr,
+    minDateStr,
   };
 };

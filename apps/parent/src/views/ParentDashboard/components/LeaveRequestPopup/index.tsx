@@ -61,6 +61,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
     prefixBlanks,
     daysInMonth,
     todayStr,
+    minDateStr,
   } = useLeaveRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
   const monthLabel = format.dateTime(new Date(viewYear, viewMonth, 1), { month: 'long' });
@@ -105,7 +106,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.fromDate')}</span>
                   <S.StyledInput
                     type="date"
-                    min={todayStr}
+                    min={minDateStr}
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
@@ -114,7 +115,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.toDate')}</span>
                   <S.StyledInput
                     type="date"
-                    min={startDate || todayStr}
+                    min={startDate || minDateStr}
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
@@ -125,7 +126,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                 <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, display: 'block', marginBottom: '4px' }}>{t('leave.singleDayLabel')}</span>
                 <S.StyledInput
                   type="date"
-                  min={todayStr}
+                  min={minDateStr}
                   value={singleDate}
                   onChange={(e) => setSingleDate(e.target.value)}
                 />
@@ -167,7 +168,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                   const isEnd = isLongLeave && dateStr === endDate;
                   const isBoundary = isStart || isEnd;
                   const isInRange = !!(isLongLeave && startDate && endDate && dateStr > startDate && dateStr < endDate);
-                  const isPast = dateStr < todayStr;
+                  const isDisabled = dateStr < minDateStr;
 
                   return (
                     <S.MiniCalDay
@@ -176,7 +177,7 @@ const LeaveRequestPopup: React.FC<LeaveRequestPopupProps> = ({
                       $selected={isSelected || isBoundary}
                       $inRange={isInRange}
                       $today={isToday}
-                      disabled={isPast}
+                      disabled={isDisabled}
                       onClick={() => handleDayClick(d)}
                     >
                       {d}
