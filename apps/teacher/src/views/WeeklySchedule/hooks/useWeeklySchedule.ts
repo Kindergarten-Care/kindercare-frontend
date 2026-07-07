@@ -37,15 +37,15 @@ const DAYS: { key: SchoolDay; label: string; short: string }[] = [
 const toServerItem = (item: Partial<WeeklyScheduleItem> & {
   startTime: string;
   endTime: string;
-}) => ({
-  dayOfWeek: item.dayOfWeek,
+}): WeeklyScheduleItem => ({
+  dayOfWeek: item.dayOfWeek as DayOfWeek,
   startTime: item.startTime,
   endTime: item.endTime,
-  activityName: item.activityName,
-  activityType: item.activityType,
+  activityName: item.activityName as string,
+  activityType: item.activityType as ActivityType,
   details: item.details || null,
   location: item.location || null,
-  orderIndex: item.orderIndex,
+  orderIndex: item.orderIndex as number,
 });
 
 export const useWeeklySchedule = (className?: string, activeClassId?: number) => {
@@ -195,20 +195,22 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
   }, [templates, selectedWeek]);
 
   // Group items by day for current week
-  const itemsByDay = useMemo(() => {
-    if (!currentTemplate?.items) return {};
-
-    const grouped: Record<SchoolDay, WeeklyScheduleItem[]> = {
+  const itemsByDay = useMemo<Record<SchoolDay, WeeklyScheduleItem[]>>(() => {
+    const empty: Record<SchoolDay, WeeklyScheduleItem[]> = {
       Monday: [],
       Tuesday: [],
       Wednesday: [],
       Thursday: [],
       Friday: [],
     };
+    if (!currentTemplate?.items) return empty;
+
+    const grouped = { ...empty };
 
     for (const item of currentTemplate.items) {
-      if (grouped[item.dayOfWeek]) {
-        grouped[item.dayOfWeek].push(item);
+      const dayKey = item.dayOfWeek as SchoolDay;
+      if (grouped[dayKey]) {
+        grouped[dayKey].push(item);
       }
     }
 
@@ -301,6 +303,11 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
       return;
     }
 
+    if (!editItem.dayOfWeek) {
+      showToast('Vui lòng chọn ngày trong tuần', 'error');
+      return;
+    }
+
     setIsSaving(true);
     try {
       const itemToSave = toServerItem({
@@ -339,7 +346,7 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
         templateId = result.templateId;
       } else {
         // Update existing template with new item
-        const allItems = currentTemplate.items || [];
+        const allItems = currentTemplate?.items || [];
         const serverItems = allItems.map(toServerItem);
         if (editingItemId) {
           // Update existing item
@@ -449,8 +456,9 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
   }, [activeClass?.classId, currentTemplate]);
 
   // Confirm a submit-change request from the modal.
-  const confirmSubmitChange = useCallback(async (payload: { reason: string }) => {
+  const confirmSubmitChange = useCallback(async (payload: { reason: string } | { restoreOriginal: boolean }) => {
     if (!activeClass?.classId || !currentTemplate) return;
+    if (!('reason' in payload)) return;
     setIsSubmittingChange(true);
     try {
       // Pre-snapshot so we have an "original" even if the modal was opened
@@ -480,8 +488,9 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
   }, [activeClass?.classId, currentTemplate, fetchTemplates, showToast]);
 
   // Confirm a withdraw-change request from the modal.
-  const confirmWithdrawChange = useCallback(async (payload: { restoreOriginal: boolean }) => {
+  const confirmWithdrawChange = useCallback(async (payload: { reason: string } | { restoreOriginal: boolean }) => {
     if (!activeClass?.classId || !currentTemplate) return;
+    if (!('restoreOriginal' in payload)) return;
     setIsWithdrawingChange(true);
     try {
       // Use the dedicated change-request withdraw endpoint so the snapshot
@@ -747,6 +756,7 @@ export const useWeeklySchedule = (className?: string, activeClassId?: number) =>
     reminder,
     importHistory,
     historyModalOpen,
+    setHistoryModalOpen,
     isReadOnly,
     canEditDay,
     canEditItem,

@@ -395,12 +395,12 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {preview.sampleRows.map((row, idx) => (
+                    {preview.sampleRows.map((row: any, idx: number) => (
                       <tr key={idx}>
-                        <td>{row.Week || (row as any).weekNumber}</td>
-                        <td>{row.Day || (row as any).dayOfWeek}</td>
-                        <td>{(row as any).startTime || (row as any).StartTime}</td>
-                        <td>{(row as any).activityName || (row as any).ActivityName}</td>
+                        <td>{row.Week || row.weekNumber}</td>
+                        <td>{row.Day || row.dayOfWeek}</td>
+                        <td>{row.startTime || row.StartTime}</td>
+                        <td>{row.activityName || row.ActivityName}</td>
                       </tr>
                     ))}
                   </tbody>
