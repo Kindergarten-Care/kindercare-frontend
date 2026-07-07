@@ -32,6 +32,7 @@ export class ClassMapper {
     return {
       classId:      dto.classId,
       className:    dto.className,
+      yearId:       Number(dto.yearId) || 1,
       displayName:  ClassMapper.buildDisplayName(dto.className),
       classInitial: ClassMapper.buildClassInitial(dto.className),
       studentCount: Number(dto.studentCount) || 0,

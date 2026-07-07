@@ -47,46 +47,28 @@ export const CollapseBtn = styled.button<{ $isCollapsed?: boolean }>`
 
 export const LogoContainer = styled.div<{ $isCollapsed?: boolean }>`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 11px;
-  margin: 0 14px 14px;
-  padding: 11px 12px;
-  border-radius: 15px;
-  background: rgba(255,255,255,.1);
-  justify-content: ${props => props.$isCollapsed ? 'center' : 'flex-start'};
+  justify-content: center;
+  margin: 0 14px 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 `;
 
-export const LogoBlock = styled.span`
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #fff;
+export const LogoBlock = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 `;
 
 export const FullOnly = styled.div<{ $isCollapsed?: boolean }>`
-  display: ${props => props.$isCollapsed ? 'none' : 'block'};
-  line-height: 1.15;
+  display: ${props => props.$isCollapsed ? 'none' : 'flex'};
+  flex-direction: column;
+  align-items: flex-start;
   flex: 1;
-  min-width: 0;
-`;
-
-export const LogoTitle = styled.div`
-  font-weight: 800;
-  font-size: 13.5px;
-  color: #fff;
-  letter-spacing: .02em;
-`;
-
-export const LogoSub = styled.div`
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  color: #9FD3BA;
-  margin-top: 2px;
 `;
 
 export const ProfileCard = styled.button<{ $isCollapsed?: boolean }>`
@@ -94,7 +76,7 @@ export const ProfileCard = styled.button<{ $isCollapsed?: boolean }>`
   align-items: center;
   gap: 11px;
   margin: 0 14px 14px;
-  padding: 9px 11px;
+  padding: 10px 11px;
   border-radius: 15px;
   background: #fff;
   border: none;
@@ -119,13 +101,17 @@ export const ProfileAvatar = styled.span`
 
 export const ProfileName = styled.div`
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 15px;
   color: #1F2937;
+  text-align: left;
+  line-height: 1.3;
 `;
 
 export const ProfileDesc = styled.div`
-  font-size: 11.5px;
+  font-size: 13px;
   color: #9CA3AF;
+  text-align: left;
+  line-height: 1.2;
 `;
 
 export const NavSection = styled.nav`
