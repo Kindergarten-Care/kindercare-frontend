@@ -51,6 +51,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const isAttendanceActive = pathname === '/attendance';
   const isScheduleActive = pathname === '/schedule';
   const isLessonPlanActive = pathname === '/lesson-plan';
+  const isWeeklyScheduleActive = pathname === '/weekly-schedule';
   const isProfileActive = pathname === '/profile';
 
   // Extract user initials
@@ -77,15 +78,12 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
       {/* LOGO */}
       <S.LogoContainer $isCollapsed={isCollapsed}>
         <S.LogoBlock>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#005A36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-          </svg>
+          <img
+            src="https://media.kindercare.app/KinderCare%20Logo/Kindercare_TeacherDashboardLogo.png"
+            alt="KinderCare Logo"
+            style={{ width: '100%', height: 'auto', maxWidth: 200, objectFit: 'contain' }}
+          />
         </S.LogoBlock>
-        <S.FullOnly $isCollapsed={isCollapsed}>
-          <S.LogoTitle>KINDER CARE</S.LogoTitle>
-          <S.LogoSub>QUẢN LÝ GIÁO VIÊN</S.LogoSub>
-        </S.FullOnly>
       </S.LogoContainer>
 
       {/* CLASS SELECTOR */}
@@ -127,10 +125,11 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           <S.NavBadge $isCollapsed={isCollapsed}>{studentCount}</S.NavBadge>
         </S.NavItem>
 
-        <S.NavItem $active={isLessonPlanActive} $isCollapsed={isCollapsed} onClick={() => router.push('/lesson-plan')}>
-          {isLessonPlanActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
-          <S.NavIcon><BookOpen size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Soạn giáo án</S.NavLabel>
+        <S.NavItem $active={isWeeklyScheduleActive} $isCollapsed={isCollapsed} onClick={() => router.push('/weekly-schedule')}>
+          {isWeeklyScheduleActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><Calendar size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Thời khóa biểu</S.NavLabel>
+          <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>CHĂM SÓC</S.SectTitle>

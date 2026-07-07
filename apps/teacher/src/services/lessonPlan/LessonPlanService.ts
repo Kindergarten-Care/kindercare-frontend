@@ -28,6 +28,7 @@ class LessonPlanService {
     classId?: number;
   }): Promise<LessonPlanDomainModel[]> {
     try {
+      // baseURL = '/teacher/api', proxy rewrite thêm '/api/v1' → BE nhận '/teacher/lesson-plans'
       const res = await apiClient.get<ApiResponse<LessonPlanApiDto[]>>(
         '/teacher/lesson-plans',
         { params }
@@ -65,6 +66,7 @@ class LessonPlanService {
 
   /** Tạo mới hoặc cập nhật (upsert) giáo án */
   async upsertLessonPlan(input: LessonPlanUpsertInput): Promise<LessonPlanDomainModel> {
+    // baseURL = '/teacher/api', proxy rewrite thêm '/api/v1' → BE nhận '/teacher/lesson-plans'
     const res = await apiClient.post<ApiResponse<LessonPlanApiDto>>(
       '/teacher/lesson-plans',
       input

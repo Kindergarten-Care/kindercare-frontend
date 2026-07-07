@@ -92,18 +92,18 @@ export const LessonModal: React.FC<LessonModalProps> = ({
             <S.TimeField>
               <S.FieldLabel>Giờ bắt đầu</S.FieldLabel>
               <S.TextInput
+                type="time"
                 value={draft.startTime ? draft.startTime.slice(0, 5) : draft.time}
-                onChange={(e) => onUpdateDraft({ time: e.target.value, startTime: e.target.value + ':00' })}
-                placeholder="08:45"
+                onChange={(e) => onUpdateDraft({ time: e.target.value, startTime: e.target.value ? e.target.value + ':00' : '' })}
                 disabled={isReadOnly}
               />
             </S.TimeField>
             <S.TimeField>
               <S.FieldLabel>Giờ kết thúc</S.FieldLabel>
               <S.TextInput
+                type="time"
                 value={draft.endTime ? draft.endTime.slice(0, 5) : ''}
-                onChange={(e) => onUpdateDraft({ endTime: e.target.value + ':00' })}
-                placeholder="09:15"
+                onChange={(e) => onUpdateDraft({ endTime: e.target.value ? e.target.value + ':00' : '' })}
                 disabled={isReadOnly}
               />
             </S.TimeField>

@@ -272,19 +272,23 @@ export function useLessonPlan(className: string) {
       addToast(editItemId ? '✏️ Đã cập nhật tiết học' : '✅ Đã thêm tiết học mới');
       setModalOpen(false);
     } catch (err: any) {
-      // Log chi tiết để debug
+      // err.response: undefined khi network error (BE offline/proxy fail)
+      // err.response.data: có thể là {} hoặc "" khi proxy trả 404 rỗng
       const status = err?.response?.status;
-      const respData = err?.response?.data;
-      const serverMsg =
-        respData?.message ||
-        respData?.error ||
-        err?.message ||
-        'Lỗi không xác định';
-      console.error('[LessonPlan save failed]', {
-        status,
-        respData,
-        payload,
-      });
+      const rawData = err?.response?.data;
+      // Lấy message từ nhiều nguồn: BE response, Axios message, hoặc network error
+      let serverMsg = 'Lỗi không xác định';
+      if (rawData != null && rawData !== '') {
+        if (typeof rawData === 'string') {
+          try { serverMsg = JSON.parse(rawData); } catch { serverMsg = rawData; }
+        } else {
+          serverMsg = rawData.message || rawData.error || rawData.detail || JSON.stringify(rawData);
+        }
+      } else if (err.message) {
+        // Network error hoặc proxy fail — dùng Axios message
+        serverMsg = err.message.replace(/^Request failed with status code \d+\.\s*/, '');
+      }
+      console.error('[LessonPlan save failed]', { status, rawData, errMsg: err.message, payload });
       addToast(`❌ Lỗi ${status ?? '??'}: ${serverMsg}`);
     }
   }, [draft, editItemId, livePlan, saveMutation, teacherId, classId, yearId, weekOffset, addToast]);
@@ -302,8 +306,8 @@ export function useLessonPlan(className: string) {
         yearId: Number(yearId),
         weekNumber: livePlan.weekNumber,
         year: livePlan.year,
-        weekStartDate: Number(livePlan.weekStartDate),
-        weekEndDate: Number(livePlan.weekEndDate),
+        weekStartDate: Math.floor(start.getTime() / 1000),
+        weekEndDate: Math.floor(end.getTime() / 1000),
         weekTheme: livePlan.weekTheme,
         monthTheme: livePlan.monthTheme,
         weeklyGoal: livePlan.weeklyGoal,
