@@ -82,6 +82,7 @@ export const WeeklyScheduleView: React.FC = () => {
     reminder,
     importHistory,
     historyModalOpen,
+    setHistoryModalOpen,
     isReadOnly,
     canEditDay,
     canEditItem,
@@ -619,8 +620,8 @@ export const WeeklyScheduleView: React.FC = () => {
                 <S.DayColHead>
                   <div>
                     <S.DayName $isToday={isToday}>{day.label}</S.DayName>
-                    {!isToday && (() => {
-                      const date = getDateForDayInWeek(selectedWeekRange?.startDate, selectedWeekRange?.endDate, day.key);
+                    {!isToday && selectedWeekRange?.startDate && (() => {
+                      const date = getDateForDayInWeek(selectedWeekRange.startDate, selectedWeekRange?.endDate, day.key);
                       if (!date) return <S.DayDate>{day.short}</S.DayDate>;
                       const pad = (n: number) => String(n).padStart(2, '0');
                       return <S.DayDate>{`${pad(date.getDate())}/${pad(date.getMonth() + 1)}`}</S.DayDate>;
