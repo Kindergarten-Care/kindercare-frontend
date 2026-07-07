@@ -13,10 +13,10 @@ const SkeletonBase = styled.div`
   border-radius: 8px;
 `;
 
-export const SkeletonText = styled(SkeletonBase)<{ $width?: string; $height?: string; $mb?: number }>`
+export const SkeletonText = styled(SkeletonBase)<{ $width?: string; $height?: string; $mb?: string }>`
   width: ${props => props.$width || '100%'};
   height: ${props => props.$height || '16px'};
-  margin-bottom: ${props => props.$mb ? `${props.$mb}px` : '8px'};
+  margin-bottom: ${props => props.$mb || '8px'};
 `;
 
 export const SkeletonCircle = styled(SkeletonBase)<{ $size?: number }>`
