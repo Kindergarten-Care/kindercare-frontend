@@ -24,6 +24,7 @@ export interface ExtracurricularEnrollmentApiDto {
   createdAt: number;
   feeRefunded: boolean;
   activatedAt: number | null;
+  invoiceId?: number | null;
 }
 
 export interface ExtracurricularEnrollmentDomainModel {
@@ -36,6 +37,7 @@ export interface ExtracurricularEnrollmentDomainModel {
   createdAt: number;
   feeRefunded: boolean;
   activatedAt: number | null;
+  invoiceId?: number | null;
 }
 
 export interface CreateEnrollmentResult {

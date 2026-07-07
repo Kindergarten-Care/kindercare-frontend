@@ -75,6 +75,7 @@ export const PostAvatar = styled.span`
   font-family: var(--font-plus-jakarta, 'Plus Jakarta Sans'), sans-serif;
   font-size: 14px;
   font-weight: 700;
+  overflow: hidden;
 `;
 
 export const PostAuthor = styled.div`

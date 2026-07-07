@@ -74,7 +74,7 @@ export const BottomGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
 
   @container dashboard-main (max-width: 768px) {
     grid-template-columns: 1fr;

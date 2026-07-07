@@ -51,12 +51,6 @@ export function DiaryHeader({
             </S.DateChip>
           )}
         </DatePicker>
-        <S.IconAction title="Tải nhật ký">
-          <Svg size={18}>
-            <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5" />
-            <path d="M5 19h14" />
-          </Svg>
-        </S.IconAction>
       </S.HeaderActions>
     </S.PageHeader>
   );

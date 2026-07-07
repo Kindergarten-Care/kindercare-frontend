@@ -11,6 +11,7 @@ import * as S from './styles';
 import ChildSelectorModal from './ChildSelectorModal';
 import ChildSelectorDropdown from './ChildSelectorDropdown';
 import { useRequestBadge } from './useRequestBadge';
+import { useBillingBadge } from './useBillingBadge';
 import {
   IconHome, IconDiary, IconMenu, IconProfile,
   IconChart, IconCalendar, IconCreditCard,
@@ -33,6 +34,7 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle, mobi
   const { children: kids, activeStudent, setActiveStudent } = useStudent();
   const { parentProfile } = useParent();
   const pendingRequestCount = useRequestBadge();
+  const unpaidCount = useBillingBadge();
 
   const [csOpen, setCsOpen] = useState<boolean>(false);
   const csRef = useRef<HTMLDivElement>(null);
@@ -177,6 +179,12 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle, mobi
       <S.NavItem href={`/${locale}/billing`} $active={pathname.includes('/billing')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconCreditCard size={18} /></S.NavIcon>
         <S.NavSpan $hidden={effectiveCollapsed}>Học phí & Lệ phí</S.NavSpan>
+        {unpaidCount > 0 && !effectiveCollapsed && (
+          <S.NavBadge>{unpaidCount > 99 ? '99+' : unpaidCount}</S.NavBadge>
+        )}
+        {unpaidCount > 0 && effectiveCollapsed && (
+          <S.NavBadge $collapsed>{unpaidCount > 9 ? '9+' : unpaidCount}</S.NavBadge>
+        )}
         {effectiveCollapsed && <S.Tooltip>Học phí & Lệ phí</S.Tooltip>}
       </S.NavItem>
 

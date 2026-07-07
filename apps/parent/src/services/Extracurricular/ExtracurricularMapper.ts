@@ -35,6 +35,7 @@ export class ExtracurricularMapper {
       createdAt: dto.createdAt,
       feeRefunded: dto.feeRefunded,
       activatedAt: dto.activatedAt,
+      invoiceId: dto.invoiceId,
     };
   }
 
