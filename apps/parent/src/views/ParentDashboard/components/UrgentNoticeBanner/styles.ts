@@ -12,17 +12,25 @@ const marquee = keyframes`
   to { transform: translateX(-50%); }
 `;
 
-export const Banner = styled.div`
+export type BannerVariant = 'urgent' | 'important' | 'info';
+
+const variants = {
+  urgent:     { bg: 'linear-gradient(100deg, #e11d2e, #b91c1c)', shadow: '0 12px 28px -12px rgba(220, 38, 38, 0.6)' },
+  important:  { bg: 'linear-gradient(100deg, #f59e0b, #d97706)', shadow: '0 12px 28px -12px rgba(217, 119, 6, 0.55)' },
+  info:       { bg: 'linear-gradient(100deg, #3b82f6, #2563eb)', shadow: '0 12px 28px -12px rgba(37, 99, 235, 0.55)' },
+} as const;
+
+export const Banner = styled.div<{ $variant: BannerVariant }>`
   display: flex;
   align-items: center;
   gap: 13px;
-  background: linear-gradient(100deg, #e11d2e, #b91c1c);
+  background: ${p => variants[p.$variant].bg};
   color: #fff;
   border-radius: 14px;
   padding: 11px 12px 11px 15px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 12px 28px -12px rgba(220, 38, 38, 0.6);
+  box-shadow: ${p => variants[p.$variant].shadow};
   margin-bottom: 0;
 `;
 
@@ -93,10 +101,11 @@ export const Item = styled.span`
   font-weight: 600;
 `;
 
-export const AllBtn = styled.button`
+export const AllBtn = styled.button<{ $variant: BannerVariant }>`
   flex-shrink: 0;
   background: #fff;
-  color: #b91c1c;
+  color: ${p =>
+    p.$variant === 'urgent' ? '#b91c1c' : p.$variant === 'important' ? '#b45309' : '#1d4ed8'};
   border: none;
   font: inherit;
   font-size: 12.5px;

@@ -9,11 +9,10 @@ import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
 import LiveScheduleWidget from './components/LiveScheduleWidget';
-import DevelopmentalDomainsWidget from './components/DevelopmentalDomainsWidget';
+import MiniGrowthWidget from './components/MiniGrowthWidget';
 import CameraWidget from './components/CameraWidget';
-import DailyLessonWidget from './components/DailyLessonWidget';
+import DailyMenuWidget from './components/DailyMenuWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
-import GrowthWidget from './components/GrowthWidget';
 import UrgentNoticeBanner from './components/UrgentNoticeBanner';
 import { useParentDashboard } from './hooks/useParentDashboard';
 import { useRouter } from '@/i18n/routing';
@@ -30,7 +29,6 @@ export function ParentDashboard(): React.ReactElement {
     loading,
     activeStudent,
     schedule,
-    lessons,
     photos,
     calendarDays,
     attendanceStats,
@@ -48,6 +46,8 @@ export function ParentDashboard(): React.ReactElement {
     isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
     isProxyPopupOpen,      openProxyPopup,  closeProxyPopup,
     isQrPopupOpen,        openQrPopup,     closeQrPopup,
+    unpaidCount,
+    dailyMenu,
   } = useParentDashboard();
 
   if (loading || !activeStudent || !childHero) {
@@ -57,6 +57,11 @@ export function ParentDashboard(): React.ReactElement {
       </S.DashboardContainer>
     );
   }
+
+  const handleMonthChange = (direction: 'prev' | 'next'): void => {
+    if (direction === 'prev') prevMonth();
+    else nextMonth();
+  };
 
   return (
     <S.DashboardContainer>
@@ -74,32 +79,28 @@ export function ParentDashboard(): React.ReactElement {
 
       <S.MainGrid>
         <S.LeftColumn>
-          <S.LeftTopGrid>
-            <S.ColumnStack>
-              <QuickActionsStrip
-                onAbsence={openLeavePopup}
-                onMedication={openMedicPopup}
-                onFee={() => router.push('/billing')}
-                onDiary={() => alert(t('alerts.diary'))}
-                onPickup={openProxyPopup}
-              />
-              <DevelopmentalDomainsWidget assessment={latestAssessment} />
-            </S.ColumnStack>
-
-            <GrowthWidget />
-          </S.LeftTopGrid>
+          <QuickActionsStrip
+            onAbsence={openLeavePopup}
+            onMedication={openMedicPopup}
+            onFee={() => router.push('/billing')}
+            onDiary={() => router.push('/diary')}
+            onPickup={openProxyPopup}
+            unpaidCount={unpaidCount}
+          />
 
           <S.BottomGrid>
-            <LiveScheduleWidget
-              schedule={schedule}
-              className={activeStudent.className}
-              todayAttendanceStatus={todayCalendarStatus}
-            />
             <S.ColumnStack>
+              <LiveScheduleWidget
+                schedule={schedule}
+                className={activeStudent.className}
+                todayAttendanceStatus={todayCalendarStatus}
+              />
               <AlbumStripWidget photos={photos} />
-              <DailyLessonWidget lessons={lessons} />
             </S.ColumnStack>
+            <DailyMenuWidget menu={dailyMenu} />
           </S.BottomGrid>
+
+          <MiniGrowthWidget assessment={latestAssessment} />
         </S.LeftColumn>
 
         <S.RightColumn>

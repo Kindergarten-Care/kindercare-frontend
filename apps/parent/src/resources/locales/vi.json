@@ -160,9 +160,9 @@
       "severityUrgent": "Khẩn cấp",
       "severityImportant": "Quan trọng",
       "severityInfo": "Thông báo",
-      "bannerTag": "KHẨN",
+      "bannerTag": "Quan trọng",
       "countLabel": "{count} thông báo",
-      "modalTitle": "Thông báo khẩn",
+      "modalTitle": "Thông báo quan trọng",
       "invoiceTitle": "Học phí {month} — {amount}",
       "overdueDetail": "{label}. Vui lòng thanh toán sớm để tránh gián đoạn dịch vụ.",
       "dueSoonDetail": "{label}. Vui lòng thanh toán trước hạn."

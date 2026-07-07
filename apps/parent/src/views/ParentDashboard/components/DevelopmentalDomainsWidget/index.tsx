@@ -74,6 +74,7 @@ const DOMAIN_NAME_KEYS: Record<string, string> = {
 
 interface DevelopmentalDomainsWidgetProps {
   assessment?: AssessmentDomainModel | null;
+  hideDetailsLink?: boolean;
 }
 
 /** "MM-YYYY" (API format) → "Tháng M/YYYY". */
@@ -83,7 +84,7 @@ const formatAssessmentMonth = (assessmentMonth: string, t: ReturnType<typeof use
   return t('domains.monthLabel', { month, year });
 };
 
-const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment }) => {
+const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment, hideDetailsLink }) => {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('Dashboard');
@@ -133,9 +134,11 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
           <S.AvgBadge>{t('domains.average', { avg: avg.toFixed(1) })}</S.AvgBadge>
           {monthLabel && <S.MonthTag>{monthLabel}</S.MonthTag>}
         </S.CardTitleContainer>
-        <S.DetailLink onClick={() => router.push(`/${locale}/growth`)}>
-          {t('domains.viewDetail')}
-        </S.DetailLink>
+        {!hideDetailsLink && (
+          <S.DetailLink onClick={() => router.push(`/${locale}/growth`)}>
+            {t('domains.viewDetail')}
+          </S.DetailLink>
+        )}
       </S.CardHead>
 
       <S.DomainsGrid>

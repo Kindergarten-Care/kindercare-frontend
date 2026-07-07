@@ -1,6 +1,7 @@
 'use client';
 
 import styled, { keyframes } from 'styled-components';
+import { ResponsiveModal } from '@kindercare/ui';
 
 const rise = keyframes`
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
@@ -225,6 +226,12 @@ export const GalleryHead = styled.div`
   border-bottom: 1px solid #f3f4f6;
 `;
 
+export const StyledResponsiveModal = styled(ResponsiveModal)`
+  @media (min-width: 768px) {
+    max-height: 85vh;
+  }
+`;
+
 export const GalleryHeadInfo = styled.div`
   flex: 1;
   min-width: 0;
@@ -249,6 +256,23 @@ export const GalleryGrid = styled.div`
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `;
 
 export const GalleryPhoto = styled.button<{ $bg: string }>`

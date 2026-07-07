@@ -160,9 +160,9 @@
       "severityUrgent": "Urgent",
       "severityImportant": "Important",
       "severityInfo": "Notice",
-      "bannerTag": "URGENT",
+      "bannerTag": "Important",
       "countLabel": "{count} notices",
-      "modalTitle": "Urgent notices",
+      "modalTitle": "Important notices",
       "invoiceTitle": "Tuition {month} — {amount}",
       "overdueDetail": "{label}. Please pay soon to avoid service disruption.",
       "dueSoonDetail": "{label}. Please pay before the due date."

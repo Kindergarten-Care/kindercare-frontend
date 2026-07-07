@@ -1,4 +1,5 @@
 const PENDING_DEADLINE_SECONDS = 48 * 60 * 60;
+const CANCEL_WINDOW_SECONDS = 48 * 60 * 60;
 
 export interface PendingDeadline {
   expired: boolean;
@@ -21,4 +22,11 @@ export function getPendingDeadline(createdAt: number): PendingDeadline {
     return { expired: false, label: `Thanh toán trong ${hours} giờ ${minutes} phút để giữ đăng ký` };
   }
   return { expired: false, label: `Thanh toán trong ${minutes} phút để giữ đăng ký` };
+}
+
+/** Active enrollments can only be cancelled within 48h of activation (BE refunds the fee inside that window). */
+export function canStillCancelActive(activatedAt: number | null | undefined): boolean {
+  if (typeof activatedAt !== 'number') return true;
+  const now = Math.floor(Date.now() / 1000);
+  return now - activatedAt < CANCEL_WINDOW_SECONDS;
 }

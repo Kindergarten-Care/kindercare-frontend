@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth, initPushNotification, isPushRegistered } from '@kindercare/core';
+import { useAuth } from '@kindercare/core';
 import { kcToast, ResponsiveModal } from '@kindercare/ui';
 import { useParent } from '@/contexts/ParentContext';
 import { useStudent } from '@/contexts/StudentContext';
 import { parentService } from '@/services/Parent/ParentService';
 import {
-  IconSettings, IconLogout, IconClose, IconProfile, IconLock, IconBell,
+  IconSettings, IconLogout, IconClose, IconProfile, IconLock,
   IconMail, IconPhone, IconBriefcase, IconMapPin, IconCalendar,
   IconEye, IconEyeOff, IconUpload, IconCheck, IconShieldInfo, IconIdCard,
 } from '@/assets/icons/dashboard';
@@ -19,12 +19,11 @@ interface AccountSettingsModalProps {
   onClose: () => void;
 }
 
-type PaneKey = 'profile' | 'password' | 'notify';
+type PaneKey = 'profile' | 'password';
 
 const PANES: Record<PaneKey, { title: string; desc: string }> = {
   profile: { title: 'Thông tin cá nhân', desc: 'Cập nhật thông tin liên hệ của bạn' },
   password: { title: 'Đổi mật khẩu', desc: 'Bảo mật tài khoản của bạn' },
-  notify: { title: 'Thông báo', desc: 'Chọn cách bạn muốn nhận tin từ trường' },
 };
 
 const STRENGTH_LEVELS = [
@@ -101,10 +100,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [changingPw, setChangingPw] = useState(false);
 
-  // ---- notification prefs ----
-  const [notifyList, setNotifyList] = useState<NotifyItem[]>([
-    { key: 'push', icon: <IconBell size={19} />, title: 'Thông báo đẩy (App)', desc: 'Nhận thông báo ngay trên ứng dụng', on: true },
-  ]);
+
 
   const pwRules = useMemo(() => ({
     len: newPw.length >= 6,
@@ -208,20 +204,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
     await logout();
   };
 
-  const toggleNotify = async (key: string): Promise<void> => {
-    const turningOn = !notifyList.find(n => n.key === key)?.on;
-    setNotifyList(list => list.map(n => (n.key === key ? { ...n, on: !n.on } : n)));
 
-    if (key === 'push' && turningOn && !isPushRegistered()) {
-      const ok = await initPushNotification({ force: true });
-      if (ok) {
-        kcToast.success('Đã bật thông báo đẩy trên thiết bị này');
-      } else {
-        kcToast.error('Không thể bật thông báo đẩy. Vui lòng cho phép quyền thông báo trên trình duyệt.');
-        setNotifyList(list => list.map(n => (n.key === key ? { ...n, on: false } : n)));
-      }
-    }
-  };
 
   return (
     <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="920px" desktopAlign="top">
@@ -255,9 +238,6 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
             </S.RailItem>
             <S.RailItem $active={pane === 'password'} onClick={() => setPane('password')}>
               <IconLock size={19} /> Đổi mật khẩu
-            </S.RailItem>
-            <S.RailItem $active={pane === 'notify'} onClick={() => setPane('notify')}>
-              <IconBell size={19} /> Thông báo
             </S.RailItem>
           </S.RailNav>
 
@@ -461,24 +441,7 @@ const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ isOpen, onC
               </S.Pane>
             )}
 
-            {pane === 'notify' && (
-              <S.Pane>
-                <S.SectionTitle>Nhận thông báo qua</S.SectionTitle>
-                {notifyList.map((n, i) => (
-                  <S.NotifyRow key={n.key} $bordered={i < notifyList.length - 1}>
-                    <S.NotifyIcon>{n.icon}</S.NotifyIcon>
-                    <S.NotifyBody>
-                      <strong>{n.title}</strong>
-                      <span>{n.desc}</span>
-                    </S.NotifyBody>
-                    <S.NotifyToggle $on={n.on} onClick={() => toggleNotify(n.key)}>
-                      <S.NotifyToggleDot $on={n.on} />
-                    </S.NotifyToggle>
-                  </S.NotifyRow>
-                ))}
-              </S.Pane>
-            )}
-          </S.Scroll>
+           </S.Scroll>
 
           {pane !== 'password' && (
             <S.Foot>

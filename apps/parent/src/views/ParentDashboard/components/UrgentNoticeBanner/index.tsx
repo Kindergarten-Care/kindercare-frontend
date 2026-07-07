@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ResponsiveModal } from '@kindercare/ui';
 import * as S from './styles';
@@ -10,6 +10,12 @@ import { IconAlert, IconClose } from '@/assets/icons/dashboard';
 interface UrgentNoticeBannerProps {
   notices: UrgentNotice[];
 }
+
+const SEVERITY_RANK: Record<UrgentNotice['severity'], number> = {
+  urgent: 3,
+  important: 2,
+  info: 1,
+};
 
 const UrgentNoticeBanner: React.FC<UrgentNoticeBannerProps> = ({ notices }) => {
   const t = useTranslations('Dashboard');
@@ -22,13 +28,21 @@ const UrgentNoticeBanner: React.FC<UrgentNoticeBannerProps> = ({ notices }) => {
     info: t('notices.severityInfo'),
   };
 
+  const variant: S.BannerVariant = useMemo(() => {
+    const top = notices.reduce<UrgentNotice['severity']>(
+      (acc, n) => (SEVERITY_RANK[n.severity] > SEVERITY_RANK[acc] ? n.severity : acc),
+      'info',
+    );
+    return top;
+  }, [notices]);
+
   if (dismissed || notices.length === 0) return null;
 
   const doubled = [...notices, ...notices];
 
   return (
     <>
-      <S.Banner>
+      <S.Banner $variant={variant}>
         <S.Tag>
           <S.PulseDot />
           {t('notices.bannerTag')}
@@ -45,7 +59,7 @@ const UrgentNoticeBanner: React.FC<UrgentNoticeBannerProps> = ({ notices }) => {
           </S.Marquee>
         </S.Track>
 
-        <S.AllBtn onClick={() => setModalOpen(true)}>
+        <S.AllBtn $variant={variant} onClick={() => setModalOpen(true)}>
           {t('notices.countLabel', { count: notices.length })}
         </S.AllBtn>
         <S.CloseBtn onClick={() => setDismissed(true)}>

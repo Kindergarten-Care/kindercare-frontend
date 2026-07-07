@@ -72,7 +72,9 @@ export function useExtracurricular() {
     return `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
   })();
 
-  const currentMonthEnrollments = enrollments.filter(e => e.registeredMonth === currentMonth);
+  const currentMonthEnrollments = enrollments
+    .filter(e => e.registeredMonth === currentMonth)
+    .filter(e => !(e.status === 'Cancelled' && e.feeRefunded));
   const enrolledActivityIds = new Set(
     currentMonthEnrollments.filter(e => e.status === 'Pending' || e.status === 'Active').map(e => e.activityId)
   );

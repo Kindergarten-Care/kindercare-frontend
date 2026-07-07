@@ -6,9 +6,10 @@ import { DiaryPhoto } from '../../hooks/useParentDiary';
 interface PhotoGridProps {
   photos: DiaryPhoto[];
   onZoomImage: (url: string, caption?: string) => void;
+  onViewAll?: () => void;
 }
 
-export function PhotoGrid({ photos, onZoomImage }: PhotoGridProps) {
+export function PhotoGrid({ photos, onZoomImage, onViewAll }: PhotoGridProps) {
   const hasPhotos = photos.length > 0;
 
   return (
@@ -33,7 +34,13 @@ export function PhotoGrid({ photos, onZoomImage }: PhotoGridProps) {
               <S.Photo
                 key={photo.id}
                 style={photo.url ? { cursor: 'zoom-in' } : {}}
-                onClick={() => photo.url && onZoomImage(photo.url, photo.caption)}
+                onClick={() => {
+                  if (isLastItem && hasMorePhotos && onViewAll) {
+                    onViewAll();
+                  } else if (photo.url) {
+                    onZoomImage(photo.url, photo.caption);
+                  }
+                }}
               >
                 {photo.url && <img src={photo.url} alt={photo.caption} />}
                 {!photo.url && (

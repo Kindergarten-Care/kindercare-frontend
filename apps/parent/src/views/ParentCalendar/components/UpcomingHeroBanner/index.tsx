@@ -13,7 +13,10 @@ interface UpcomingHeroBannerProps {
 const UpcomingHeroBanner: React.FC<UpcomingHeroBannerProps> = ({ nextEvent, holidayCount }) => {
   const daysUntil = Math.max(0, daysFromToday(nextEvent.startDate));
   const weeksUntil = Math.floor(daysUntil / 7);
+  const remainingDays = daysUntil % 7;
   const startTime = nextEvent.time?.split(' - ')[0];
+
+  const showWeeks = daysUntil >= 7;
 
   return (
     <S.Banner>
@@ -28,14 +31,25 @@ const UpcomingHeroBanner: React.FC<UpcomingHeroBannerProps> = ({ nextEvent, holi
       </S.BannerInfo>
 
       <S.StatTiles>
-        <S.StatTile>
-          <S.StatValue>{daysUntil}</S.StatValue>
-          <S.StatLabel>{daysUntil === 0 ? 'Hôm nay' : 'Ngày nữa'}</S.StatLabel>
-        </S.StatTile>
-        <S.StatTile>
-          <S.StatValue>{weeksUntil}</S.StatValue>
-          <S.StatLabel>Tuần</S.StatLabel>
-        </S.StatTile>
+        {showWeeks ? (
+          <>
+            <S.StatTile>
+              <S.StatValue>{weeksUntil}</S.StatValue>
+              <S.StatLabel>Tuần</S.StatLabel>
+            </S.StatTile>
+            {remainingDays > 0 && (
+              <S.StatTile>
+                <S.StatValue>{remainingDays}</S.StatValue>
+                <S.StatLabel>Ngày nữa</S.StatLabel>
+              </S.StatTile>
+            )}
+          </>
+        ) : (
+          <S.StatTile>
+            <S.StatValue>{daysUntil}</S.StatValue>
+            <S.StatLabel>{daysUntil === 0 ? 'Hôm nay' : 'Ngày nữa'}</S.StatLabel>
+          </S.StatTile>
+        )}
         <S.StatTile>
           <S.StatValue>{holidayCount}</S.StatValue>
           <S.StatLabel>Ngày lễ</S.StatLabel>

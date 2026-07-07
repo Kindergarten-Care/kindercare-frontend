@@ -46,7 +46,7 @@ export function ChildGrowthHistory() {
       </S.PageHeader>
 
       <S.Section>
-        <DevelopmentalDomainsWidget assessment={currentAssessment} />
+        <DevelopmentalDomainsWidget assessment={currentAssessment} hideDetailsLink={true} />
       </S.Section>
 
       <S.Section>

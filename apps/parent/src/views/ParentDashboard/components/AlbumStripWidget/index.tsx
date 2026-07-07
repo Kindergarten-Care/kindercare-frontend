@@ -59,9 +59,16 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
   const t = useTranslations('Dashboard');
   const [galleryOpen, setGalleryOpen] = useState<boolean>(false);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [zoomSource, setZoomSource] = useState<'grid' | 'gallery' | null>(null);
 
   const openLightbox = (idx: number): void => setLightboxIdx(idx);
-  const closeLightbox = (): void => setLightboxIdx(null);
+  const closeLightbox = (): void => {
+    setLightboxIdx(null);
+    if (zoomSource === 'gallery') {
+      setGalleryOpen(true);
+    }
+    setZoomSource(null);
+  };
 
   const prevPhoto = useCallback((): void => {
     setLightboxIdx(prev => (prev === null ? 0 : (prev - 1 + photos.length) % photos.length));
@@ -118,7 +125,7 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
         ) : (
           <S.Rail>
             {photos.slice(0, 3).map((photo, idx) => (
-              <PhotoTile key={photo.id} photo={photo} onClick={() => openLightbox(idx)} />
+              <PhotoTile key={photo.id} photo={photo} onClick={() => { setZoomSource('grid'); openLightbox(idx); }} />
             ))}
             <S.MoreTile onClick={() => setGalleryOpen(true)}>
               <IconPhoto size={22} color="#6b7280" />
@@ -128,7 +135,7 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
         )}
       </S.Card>
 
-      <ResponsiveModal isOpen={galleryOpen} onClose={() => setGalleryOpen(false)} maxWidth="820px" mobileMaxHeight="88vh">
+      <S.StyledResponsiveModal isOpen={galleryOpen} onClose={() => setGalleryOpen(false)} maxWidth="820px" mobileMaxHeight="88vh">
           <S.GalleryHead>
             <S.GalleryHeadInfo>
               <S.GalleryTitle><IconPhoto size={16} /> {t('album.galleryTitle', { date: new Date().toLocaleDateString('vi-VN') })}</S.GalleryTitle>
@@ -144,7 +151,11 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
                 <S.GalleryPhoto
                   key={photo.id}
                   $bg={photo.color}
-                  onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
+                  onClick={() => {
+                    setGalleryOpen(false);
+                    setZoomSource('gallery');
+                    openLightbox(idx);
+                  }}
                   style={{ padding: 0, overflow: 'hidden' }}
                 >
                   <img
@@ -158,7 +169,11 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
                 <S.GalleryPhoto
                   key={photo.id}
                   $bg={photo.color}
-                  onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
+                  onClick={() => {
+                    setGalleryOpen(false);
+                    setZoomSource('gallery');
+                    openLightbox(idx);
+                  }}
                 >
                   <div style={{ fontSize: 40 }}>{photo.icon}</div>
                   <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
@@ -166,7 +181,7 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
               )
             ))}
           </S.GalleryGrid>
-      </ResponsiveModal>
+      </S.StyledResponsiveModal>
 
       {lightboxIdx !== null && currentPhoto && (
         <S.LightboxOverlay onClick={closeLightbox}>
