@@ -1,49 +1,74 @@
-export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-
-// School days only (Mon-Fri) - for kindergarten weekly schedule
 export type SchoolDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+export type DayOfWeek = SchoolDay | 'Saturday' | 'Sunday';
 
 export type ActivityType = 'pickup' | 'meal' | 'study' | 'nap' | 'play' | 'dropoff' | 'other';
 
-export type WeeklyScheduleStatus = 'Draft' | 'Submitted' | 'UnderReview' | 'Approved' | 'Rejected' | 'RevisionRequested';
-
-export interface WeeklyScheduleItem {
-  itemId?: number;
-  templateId?: number;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
+/**
+ * WeeklyScheduleDetail (WSD) - 1 row in WeeklyScheduleDetails table.
+ * Maps directly to: DayOfWeek, StartTime, EndTime, ActivityName, Details, Location, ActivityType
+ */
+export interface WeeklyScheduleDetail {
+  scheduleDetailId?: number;
+  weeklyScheduleId?: number;
+  dayOfWeek: SchoolDay;
+  startTime: string; // HH:MM or HH:MM:SS
   endTime: string;
   activityName: string;
   activityType: ActivityType;
   details?: string | null;
   location?: string | null;
-  orderIndex?: number;
+}
+
+/**
+ * WeeklySchedule (WS) - 1 row in WeeklySchedules table.
+ */
+export interface WeeklySchedule {
+  weeklyScheduleId?: number;
+  monthlyScheduleId: number;
+  weekOrder: number;
+  weekTheme: string;
+  createdAt?: number;
+  updatedAt?: number;
+  items: WeeklyScheduleDetail[];
+}
+
+/**
+ * MonthlySchedule (MS) - 1 row in MonthlySchedules table.
+ */
+export interface MonthlySchedule {
+  monthlyScheduleId?: number;
+  classId: number;
+  month: number;
+  year: number;
+  monthTheme: string;
   createdAt?: number;
   updatedAt?: number;
 }
 
-export interface WeeklyScheduleTemplate {
-  templateId: number;
-  classId: number;
-  teacherId?: number;
-  yearId: number;
-  month: number;
-  year: number;
-  weekNumber: number;
-  weekTheme?: string | null;
-  weekStartDate?: string | null;
-  weekEndDate?: string | null;
-  status: WeeklyScheduleStatus;
-  submittedAt?: number | null;
-  reviewedById?: number | null;
-  reviewedAt?: number | null;
-  reviewerComment?: string | null;
-  createdAt?: number;
-  updatedAt?: number;
-  itemCount?: number;
-  items?: WeeklyScheduleItem[];
-  hasPendingChangeRequest?: boolean;
-  pendingChangeReason?: string | null;
+export interface WeekInMonth {
+  weekOrder: number;
+  startDate: string; // DD/MM
+  endDate: string; // DD/MM
+  label: string; // "Tuần 1 (01/07 - 05/07)"
+}
+
+export interface MonthlyScheduleResponse {
+  monthlySchedule: MonthlySchedule | null;
+  weeks: WeeklySchedule[];
+  weeksInMonth: WeekInMonth[];
+}
+
+export interface CSVPreviewResult {
+  items: (WeeklyScheduleDetail & { weekOrder: number })[];
+  errors: string[];
+  byWeek: Record<number, (WeeklyScheduleDetail & { weekOrder: number })[]>;
+  totalRows: number;
+}
+
+export interface CSVImportResult {
+  success: number;
+  failed: number;
+  errors: string[];
 }
 
 export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
@@ -57,13 +82,13 @@ export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
 };
 
 export const ACTIVITY_TYPE_COLORS: Record<ActivityType, string> = {
-  pickup: '#3B82F6', // blue
-  meal: '#F59E0B', // amber
-  study: '#10B981', // green
-  nap: '#8B5CF6', // purple
-  play: '#EC4899', // pink
-  dropoff: '#6366F1', // indigo
-  other: '#6B7280', // gray
+  pickup: '#3B82F6',
+  meal: '#F59E0B',
+  study: '#10B981',
+  nap: '#8B5CF6',
+  play: '#EC4899',
+  dropoff: '#6366F1',
+  other: '#6B7280',
 };
 
 export const DAY_LABELS: Record<DayOfWeek, string> = {
@@ -76,20 +101,10 @@ export const DAY_LABELS: Record<DayOfWeek, string> = {
   Sunday: 'Chủ nhật',
 };
 
-export const STATUS_LABELS: Record<WeeklyScheduleStatus, string> = {
-  Draft: 'Nháp',
-  Submitted: 'Chờ duyệt',
-  UnderReview: 'Đang xem',
-  Approved: 'Đã duyệt',
-  Rejected: 'Từ chối',
-  RevisionRequested: 'Cần sửa',
-};
-
-export const STATUS_COLORS: Record<WeeklyScheduleStatus, string> = {
-  Draft: '#6B7280',
-  Submitted: '#F59E0B',
-  UnderReview: '#3B82F6',
-  Approved: '#10B981',
-  Rejected: '#EF4444',
-  RevisionRequested: '#F97316',
-};
+export const SCHOOL_DAYS: { key: SchoolDay; label: string; short: string }[] = [
+  { key: 'Monday', label: 'Thứ 2', short: 'T2' },
+  { key: 'Tuesday', label: 'Thứ 3', short: 'T3' },
+  { key: 'Wednesday', label: 'Thứ 4', short: 'T4' },
+  { key: 'Thursday', label: 'Thứ 5', short: 'T5' },
+  { key: 'Friday', label: 'Thứ 6', short: 'T6' },
+];

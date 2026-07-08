@@ -1,37 +1,33 @@
 'use client';
 
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Copy,
   Download,
-  Edit2,
   Plus,
-  Send,
+  Save,
   Trash2,
-  Undo2,
   Upload,
-  XCircle,
-  Eye,
+  X,
+  FileSpreadsheet,
 } from 'lucide-react';
-import { useWeeklySchedule } from './hooks/useWeeklySchedule';
-import { CSVImportModal } from './components/CSVImportModal';
-import { ImportHistoryModal } from './components/ImportHistoryModal';
+import { useWeeklySchedule, SCHOOL_DAYS } from './hooks/useWeeklySchedule';
 import { ItemModal } from './components/ItemModal';
-import { ChangeRequestModal } from './components/ChangeRequestModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { SkeletonBoardLoader } from '@/components/SkeletonLoader';
 import { useTeacherClasses } from '@/hooks/useTeacherQueries';
 import {
   ACTIVITY_TYPE_LABELS,
   ACTIVITY_TYPE_COLORS,
-  STATUS_COLORS,
-  STATUS_LABELS,
 } from '@/config/types/weeklySchedule';
 import * as S from './styles';
-import type { SchoolDay, ActivityType, WeeklyScheduleStatus, WeeklyScheduleItem } from '@/config/types/weeklySchedule';
+import type { SchoolDay, WeeklyScheduleDetail, ActivityType } from '@/config/types/weeklySchedule';
+
+const MONTH_NAMES = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+];
 
 const ACTIVITY_ICONS: Record<ActivityType, string> = {
   pickup: '👋',
@@ -43,17 +39,26 @@ const ACTIVITY_ICONS: Record<ActivityType, string> = {
   other: '📌',
 };
 
-function statusColor(s: WeeklyScheduleStatus): { fg: string; bg: string } {
-  const c = STATUS_COLORS[s];
-  const bg = c + '1A';
-  return { fg: c, bg };
+interface EditItem {
+  dayOfWeek: SchoolDay;
+  startTime: string;
+  endTime: string;
+  activityName: string;
+  activityType: ActivityType;
+  details: string;
+  location: string;
 }
+
+// CSV template header matches BE columns.
+const CSV_TEMPLATE = 'WeekOrder,DayOfWeek,StartTime,EndTime,ActivityName,ActivityType,Details,Location\n' +
+  '1,Monday,07:30,08:30,Đón bé & Thể dục sáng,pickup,Tập dân vũ,Sân trường\n' +
+  '1,Monday,08:30,09:00,Ăn sáng,meal,Suất sáng,Phòng ăn\n' +
+  '1,Tuesday,07:30,08:30,Đón bé,pickup,,Sân trường\n';
 
 export const WeeklyScheduleView: React.FC = () => {
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses();
   const [activeClassId, setActiveClassId] = useState<number | undefined>(undefined);
 
-  // Initialize activeClassId from first class
   useEffect(() => {
     if (classes && classes.length > 0 && activeClassId === undefined) {
       setActiveClassId(classes[0].classId);
@@ -61,208 +66,114 @@ export const WeeklyScheduleView: React.FC = () => {
   }, [classes, activeClassId]);
 
   const {
-    className,
     classId,
-    templates,
+    className,
     currentMonth,
+    prevMonth,
+    nextMonth,
+    monthTheme,
+    setMonthTheme,
+    monthlySchedule,
+    weeksInMonth,
     selectedWeek,
-    currentTemplate,
+    setSelectedWeek,
+    weekTheme,
+    setWeekTheme,
+    currentWeek,
     itemsByDay,
     isLoading,
     isSaving,
-    modalOpen,
-    editItem,
-    editingItemId,
     toasts,
+    saveMonthlySchedule,
+    saveWeeklySchedule,
+    addItem,
+    removeItem,
     csvPreview,
     csvModalOpen,
+    setCsvModalOpen,
     isImporting,
-    isImportLocked,
-    importLockReason,
-    reminder,
-    importHistory,
-    historyModalOpen,
-    setHistoryModalOpen,
-    isReadOnly,
-    canEditDay,
-    canEditItem,
-    getDayStatus,
-    requiresChangeRequest,
-    hasPendingChange,
-    captureChangeRequestSnapshot,
-    submitChangeModalOpen,
-    setSubmitChangeModalOpen,
-    withdrawChangeModalOpen,
-    setWithdrawChangeModalOpen,
-    isSubmittingChange,
-    isWithdrawingChange,
-    confirmSubmitChange,
-    confirmWithdrawChange,
-    fetchTemplates,
-    setSelectedWeek,
-    prevMonth,
-    nextMonth,
-    openAddItem,
-    openEditItem,
-    closeModal,
-    saveItem,
-    updateEditItem,
-    deleteItem,
-    deleteTemplate,
-    copyWeek,
-    copyDay,
-    searchQuery,
-    setSearchQuery,
-    filterType,
-    setFilterType,
-    submitForApproval,
-    withdrawTemplate,
-    openCsvImport,
-    closeCsvModal,
-    handleCsvPreview,
-    handleCsvImport,
-    downloadTemplate,
-    showToast,
-    DAYS,
-    maxWeeksInMonth,
-    weekDateRanges,
-    selectedWeekRange,
-    getDateForDayInWeek,
-    openHistoryModal,
-    closeHistoryModal,
-  } = useWeeklySchedule(undefined, activeClassId);
+    openCSVPreview,
+    confirmImportCSV,
+    clearCsvPreview,
+    refresh: fetchMonthlySchedule,
+  } = useWeeklySchedule(activeClassId);
 
-  // Fetch on mount
-  useEffect(() => {
-    fetchTemplates();
-  }, [fetchTemplates]);
+  // ── Item modal state (add new activity inline) ──────────────────────────
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<EditItem | null>(null);
+  const [editingDay, setEditingDay] = useState<SchoolDay>('Monday');
 
-  const monthLabel = `Tháng ${currentMonth.month}/${currentMonth.year}`;
-
-  const status = currentTemplate?.status;
-  const sc = status ? statusColor(status) : null;
-  const canSubmit = status === 'Draft' || status === 'RevisionRequested';
-  const canWithdraw = status === 'Submitted';
-
-  // Confirmation dialog state
-  const [confirmDialog, setConfirmDialog] = React.useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    confirmText?: string;
-    variant?: 'danger' | 'primary';
-    onConfirm: () => void;
-  }>({ open: false, title: '', message: '', onConfirm: () => {} });
-
-  const [itemToDelete, setItemToDelete] = React.useState<number | null>(null);
-  const [templateToDelete, setTemplateToDelete] = React.useState<number | null>(null);
-  // Item modal view-only state: forced when opening past/today items,
-  // or when opening future items of an already-Approved template.
-  const [modalViewOnly, setModalViewOnly] = React.useState<boolean>(false);
-  // Whether the modal should show the "change request" hint for future days
-  // when the parent template is currently in Submitted status.
-  const [modalChangeRequestHint, setModalChangeRequestHint] = React.useState<boolean>(false);
-
-  // Compute modal flags for a given day when opening add/edit modal
-  const computeModalFlags = useCallback((dayOfWeek: SchoolDay) => {
-    const status = getDayStatus(dayOfWeek);
-    const isLockedDay = status === 'past' || status === 'today';
-    // Only past/today days are forced view-only. Approved templates still
-    // allow editing future days (with a change-request hint).
-    setModalViewOnly(isLockedDay);
-    // Show the change-request hint whenever the parent template has been
-    // sent/approved AND the user edits a future day.
-    const isPending =
-      currentTemplate?.status === 'Submitted' || currentTemplate?.status === 'Approved';
-    setModalChangeRequestHint(status === 'future' && !!isPending);
-  }, [currentTemplate, getDayStatus]);
-
-  // Local handler: open the add item modal with viewOnly + change-request flags computed
-  const handleOpenAddItem = useCallback((day: SchoolDay) => {
-    computeModalFlags(day);
-    openAddItem(day);
-  }, [computeModalFlags, openAddItem]);
-
-  // Local handler: open the edit item modal with viewOnly + change-request flags computed
-  const handleOpenEditItem = useCallback((item: WeeklyScheduleItem) => {
-    // Items are restricted to Mon-Fri at the UI level even though the wire type is broader
-    const dayOfWeek = item.dayOfWeek as SchoolDay;
-    computeModalFlags(dayOfWeek);
-    // If opening a future-day item on an already-Approved/Submitted template,
-    // capture a snapshot of the live items on the BE so the original schedule
-    // is preserved before the teacher starts editing.
-    if (currentTemplate?.templateId && requiresChangeRequest(dayOfWeek)) {
-      captureChangeRequestSnapshot(
-        currentTemplate.pendingChangeReason || 'Bản lưu tự động khi mở chỉnh sửa'
-      );
-    }
-    openEditItem(item);
-  }, [computeModalFlags, currentTemplate?.templateId, currentTemplate?.pendingChangeReason, captureChangeRequestSnapshot, openEditItem, requiresChangeRequest]);
-
-  // Reset modal flags when closing
-  const handleCloseModal = useCallback(() => {
-    closeModal();
-    setModalViewOnly(false);
-    setModalChangeRequestHint(false);
-  }, [closeModal]);
-
-  // Handlers for confirmation dialogs
-  const handleDeleteClick = (itemId: number) => {
-    setItemToDelete(itemId);
-    setTemplateToDelete(null);
-    setConfirmDialog({
-      open: true,
-      title: 'Xóa hoạt động',
-      message: 'Bạn có chắc muốn xóa hoạt động này không? Hành động này không thể hoàn tác.',
-      confirmText: 'Xóa',
-      variant: 'danger',
-      onConfirm: () => {
-        if (itemToDelete) deleteItem(itemToDelete);
-        setConfirmDialog(prev => ({ ...prev, open: false }));
-        setItemToDelete(null);
-      },
+  const openAddItem = (day: SchoolDay) => {
+    const dayItems = itemsByDay[day] || [];
+    setEditingDay(day);
+    setEditingItem({
+      dayOfWeek: day,
+      startTime: '09:00',
+      endTime: '10:00',
+      activityName: '',
+      activityType: 'study',
+      details: '',
+      location: '',
     });
+    setItemModalOpen(true);
   };
 
-  const handleDeleteTemplateClick = () => {
-    if (!currentTemplate) return;
-    setItemToDelete(null);
-    setTemplateToDelete(currentTemplate.templateId);
-    setConfirmDialog({
-      open: true,
-      title: 'Xóa thời khóa biểu',
-      message: `Bạn có chắc muốn xóa toàn bộ thời khóa biểu "Tuần ${currentTemplate.weekNumber}" không? Hành động này không thể hoàn tác.`,
-      confirmText: 'Xóa toàn bộ',
-      variant: 'danger',
-      onConfirm: () => {
-        if (templateToDelete) deleteTemplate(templateToDelete);
-        setConfirmDialog(prev => ({ ...prev, open: false }));
-        setTemplateToDelete(null);
-      },
+  const handleItemSave = (payload: EditItem) => {
+    addItem(editingDay, {
+      dayOfWeek: payload.dayOfWeek,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      activityName: payload.activityName,
+      activityType: payload.activityType,
+      details: payload.details || null,
+      location: payload.location || null,
     });
+    setItemModalOpen(false);
+    setEditingItem(null);
   };
 
-  const handleWithdrawClick = () => {
-    // Open the new withdraw modal so the teacher can choose to restore the
-    // original schedule or keep the edits.
-    withdrawTemplate();
+  // Adapter: ItemModal expects an EditingItem shape (with orderIndex) where
+  // dayOfWeek is DayOfWeek (Mon-Sun). We narrow back to SchoolDay when saving.
+  // Cast through unknown because ItemModal's onUpdate patch widens dayOfWeek.
+  const itemModalItem = editingItem
+    ? ({ ...editingItem, orderIndex: (itemsByDay[editingDay]?.length || 0) + 1 } as unknown as Parameters<typeof ItemModal>[0]['item'])
+    : null;
+
+  // ── CSV upload state ────────────────────────────────────────────────────
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+
+  const handleCsvSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvFile(file);
+    await openCSVPreview(file);
+    if (csvInputRef.current) csvInputRef.current.value = '';
   };
 
-  // Get current day - only for school days (Mon-Fri)
-  const today = new Date();
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const todayDayName = dayNames[today.getDay()];
-  const isSchoolDay = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(todayDayName);
-  const todayDayOfWeek = isSchoolDay ? todayDayName as SchoolDay : null;
+  const handleConfirmImport = async () => {
+    if (!csvFile) return;
+    await confirmImportCSV(csvFile);
+    setCsvFile(null);
+  };
 
-  // Check if selected week contains today (compare date strings, not Date objects)
-  // selectedWeekRange already provided by the hook
-  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  const startDateStr = selectedWeekRange ? `${selectedWeekRange.startDate.getFullYear()}-${String(selectedWeekRange.startDate.getMonth() + 1).padStart(2, '0')}-${String(selectedWeekRange.startDate.getDate()).padStart(2, '0')}` : '';
-  const endDateStr = selectedWeekRange ? `${selectedWeekRange.endDate.getFullYear()}-${String(selectedWeekRange.endDate.getMonth() + 1).padStart(2, '0')}-${String(selectedWeekRange.endDate.getDate()).padStart(2, '0')}` : '';
-  const isCurrentWeek = !!selectedWeekRange && todayDateStr >= startDateStr && todayDateStr <= endDateStr;
+  const handleCancelPreview = () => {
+    clearCsvPreview();
+    setCsvFile(null);
+  };
 
-  // Only show "HÔM NAY" for today's column in current week
+  const downloadCsvTemplate = () => {
+    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `weekly_schedule_template_${currentMonth.year}_${currentMonth.month}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Confirm dialog state (delete) ────────────────────────────────────────
+  const [confirmDelete, setConfirmDelete] = useState<{ scheduleDetailId: number; day: SchoolDay } | null>(null);
 
   return (
     <S.Container>
@@ -271,531 +182,337 @@ export const WeeklyScheduleView: React.FC = () => {
         <S.HeroBgOverlay />
         <S.HeroContent>
           <S.HeroText>
-            {/* Class Selector */}
-            {classes && classes.length > 1 ? (
-              <S.ClassSelectWrapper>
-                <S.ClassSelect
-                  value={activeClassId || ''}
-                  onChange={(e) => setActiveClassId(Number(e.target.value))}
-                >
-                  {classes.map((cls) => (
-                    <option key={cls.classId} value={cls.classId}>
-                      {cls.displayName}
-                    </option>
-                  ))}
-                </S.ClassSelect>
-                <S.ClassSelectArrow>▼</S.ClassSelectArrow>
-              </S.ClassSelectWrapper>
-            ) : (
-              <S.HeroSubtitle>{className} · Thời khóa biểu</S.HeroSubtitle>
-            )}
-            <S.HeroTitle>Soạn Thời khóa biểu</S.HeroTitle>
+            <S.HeroSubtitle>📅 Thời khóa biểu</S.HeroSubtitle>
+            <S.HeroTitle>{MONTH_NAMES[currentMonth.month - 1]} / {currentMonth.year}</S.HeroTitle>
             <S.HeroStats>
-              <S.HeroWeekLabel>{monthLabel}</S.HeroWeekLabel>
-              {status && sc && (
-                <>
-                  <S.HeroDivider />
-                  <S.StatusBadge $color={sc.fg} $bg={sc.bg}>
-                    <S.StatusDot $color={sc.fg} />
-                    {STATUS_LABELS[status]}
-                  </S.StatusBadge>
-                </>
+              <S.HeroDivider />
+              <S.HeroWeekLabel>{weeksInMonth.length} tuần</S.HeroWeekLabel>
+              <S.HeroDivider />
+              {monthlySchedule ? (
+                <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
+                  <S.StatusDot $color="#10B981" />
+                  Đã tạo
+                </S.StatusBadge>
+              ) : (
+                <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
+                  <S.StatusDot $color="#F59E0B" />
+                  Chưa tạo
+                </S.StatusBadge>
               )}
             </S.HeroStats>
           </S.HeroText>
-
           <S.HeroActions>
-            <S.ImportBtn
+            <button
               type="button"
-              onClick={openCsvImport}
-              disabled={isImportLocked}
-              title={isImportLocked ? importLockReason || 'Import bị khóa' : 'Import CSV'}
-              style={isImportLocked ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+              onClick={prevMonth}
+              style={navBtnStyle}
+              aria-label="Tháng trước"
             >
-              <Upload size={16} />
-              Import CSV {isImportLocked && '🔒'}
-            </S.ImportBtn>
-            <S.SecondaryBtn type="button" onClick={downloadTemplate}>
-              <Download size={16} />
-              Tải mẫu CSV
-            </S.SecondaryBtn>
-            {currentTemplate && (status === 'Draft' || status === 'RevisionRequested') && (
-              <S.SecondaryBtn
-                type="button"
-                onClick={handleDeleteTemplateClick}
-                style={{ color: '#e53e3e', borderColor: '#fed7d7' }}
-              >
-                <Trash2 size={16} />
-                Xóa tuần này
-              </S.SecondaryBtn>
-            )}
-            {currentTemplate && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                background: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                padding: '4px 10px',
-                borderRadius: 8,
-                fontSize: 13,
-              }}>
-                <span style={{ fontSize: 12, opacity: 0.95 }}>→</span>
-                <select
-                  value=""
-                  onChange={(e) => {
-                    const targetWeek = parseInt(e.target.value);
-                    if (targetWeek && confirm(`Sao chép tất cả hoạt động sang Tuần ${targetWeek}?`)) {
-                      copyWeek(selectedWeek, targetWeek);
-                    }
-                  }}
-                  style={{
-                    padding: '4px 4px',
-                    borderRadius: 4,
-                    border: 'none',
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    background: 'transparent',
-                    color: 'white',
-                    fontWeight: 600,
-                  }}
-                >
-                  <option value="" style={{ color: '#2d3748' }}>Sao chép sang...</option>
-                  {Array.from({ length: maxWeeksInMonth }, (_, i) => i + 1)
-                    .filter(w => w !== selectedWeek)
-                    .map(w => (
-                      <option key={w} value={w} style={{ color: '#2d3748' }}>Tuần {w}</option>
-                    ))
-                  }
-                </select>
-              </div>
-            )}
-            {currentTemplate && canSubmit && (
-              <S.PrimaryBtn type="button" onClick={submitForApproval}>
-                <Send size={16} />
-                Gửi duyệt
-              </S.PrimaryBtn>
-            )}
-            {currentTemplate && canWithdraw && (
-              <S.SecondaryBtn type="button" onClick={handleWithdrawClick}>
-                <Undo2 size={16} />
-                Rút lại
-              </S.SecondaryBtn>
-            )}
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={nextMonth}
+              style={navBtnStyle}
+              aria-label="Tháng sau"
+            >
+              <ChevronRight size={18} />
+            </button>
           </S.HeroActions>
         </S.HeroContent>
       </S.HeroSection>
 
-      {/* REMINDER BANNER */}
-      {reminder && reminder.shouldRemind && (
-        <S.ReadOnlyBanner style={{ background: '#FEF3C7', borderColor: '#F59E0B' }}>
-          <span style={{ fontSize: 18 }}>⚠️</span>
-          <span>
-            <strong>Nhắc nhở:</strong> {reminder.message}
-          </span>
-        </S.ReadOnlyBanner>
-      )}
+      {/* TOP FORM: chủ đề tháng + lớp + lưu */}
+      <S.FormCard>
+        <S.FormHeader>
+          <S.FormTitle>
+            <Calendar size={18} /> Thông tin tháng
+          </S.FormTitle>
+          <S.FormSubtitle>
+            Lớp: <strong>{className}</strong> · Niên khóa đang hoạt động
+          </S.FormSubtitle>
+        </S.FormHeader>
 
-      {/* IMPORT LOCKED NOTICE */}
-      {isImportLocked && (
-        <S.ReadOnlyBanner style={{ background: '#FEE2E2', borderColor: '#EF4444' }}>
-          <span style={{ fontSize: 18 }}>🔒</span>
-          <span>
-            <strong>Import bị khóa:</strong> {importLockReason}
-          </span>
-        </S.ReadOnlyBanner>
-      )}
-
-      {/* REVIEWER COMMENT */}
-      {currentTemplate && currentTemplate.reviewerComment && (
-        <S.ReviewNote>
-          <strong>Phản hồi từ Hiệu trưởng:</strong>
-          {currentTemplate.reviewerComment}
-          {currentTemplate.reviewedById && (
-            <> — <em>Đã duyệt</em></>
-          )}
-        </S.ReviewNote>
-      )}
-
-      {/* READ-ONLY BANNER */}
-      {isReadOnly && (
-        <S.ReadOnlyBanner>
-          <Eye size={16} />
-          Thời khóa biểu đang ở trạng thái <strong>{status && STATUS_LABELS[status]}</strong> — bạn chỉ có thể xem.
-          {canWithdraw && (
-            <button
-              type="button"
-              onClick={handleWithdrawClick}
-              style={{
-                marginLeft: 8,
-                color: '#BE123C',
-                fontWeight: 700,
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-              }}
+        <S.FormGrid>
+          <S.FormField>
+            <label>Tháng</label>
+            <select
+              value={currentMonth.month}
+              onChange={(e) =>
+                // We update by calling next/prev via parent; simplest: just dispatch using wrapper.
+                // Here we lift setCurrentMonth via hook? For now: rely on prev/next + select.
+                null
+              }
+              disabled
             >
-              Rút lại để sửa
-            </button>
-          )}
-        </S.ReadOnlyBanner>
-      )}
+              <option value={currentMonth.month}>{MONTH_NAMES[currentMonth.month - 1]}</option>
+            </select>
+            <small>Dùng mũi tên ở trên để đổi tháng</small>
+          </S.FormField>
 
-      {/* DAY-EDIT RULE INFO BANNER (only when template is editable) */}
-      {currentTemplate && !isReadOnly && (
-        <S.ReadOnlyBanner style={{ background: '#F0F9FF', borderColor: '#0EA5E9', color: '#075985' }}>
-          <span style={{ fontSize: 16 }}>ℹ️</span>
-          <span>
-            <strong>Quy tắc chỉnh sửa:</strong> chỉ những ngày <strong>trong tương lai</strong> mới có thể thêm/sửa/xóa hoạt động.
-            Ngày <strong>hôm nay</strong> và <strong>quá khứ</strong> chỉ xem.
-          </span>
-        </S.ReadOnlyBanner>
-      )}
+          <S.FormField>
+            <label>Năm</label>
+            <input type="text" value={currentMonth.year} disabled />
+          </S.FormField>
 
-      {/* PENDING CHANGE REQUEST BANNER */}
-      {currentTemplate && hasPendingChange(currentTemplate.templateId) && (
-        <S.ReadOnlyBanner style={{ background: '#FEF3C7', borderColor: '#F59E0B', color: '#92400E' }}>
-          <span style={{ fontSize: 16 }}>📨</span>
-          <span>
-            <strong>Đã ghi nhận yêu cầu cập nhật</strong> cho thời khóa biểu này. Hiệu trưởng sẽ nhận được thông báo để xử lý.
-          </span>
-        </S.ReadOnlyBanner>
-      )}
+          <S.FormField style={{ gridColumn: 'span 2' }}>
+            <label>Chủ đề tháng *</label>
+            <input
+              type="text"
+              placeholder="VD: Mùa Hè Rực Rỡ & Khám Phá Đại Dương"
+              value={monthTheme}
+              onChange={(e) => setMonthTheme(e.target.value)}
+              maxLength={255}
+            />
+          </S.FormField>
 
-      {/* TOOLBAR */}
-      <S.Toolbar>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-            <S.MonthNav>
-              <S.WeekNavBtn type="button" onClick={prevMonth}>
-                <ChevronLeft size={16} />
-              </S.WeekNavBtn>
-              <S.MonthLabel>{monthLabel}</S.MonthLabel>
-              <S.WeekNavBtn type="button" onClick={nextMonth}>
-                <ChevronRight size={16} />
-              </S.WeekNavBtn>
-            </S.MonthNav>
-
-            {/* Search input */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <input
-                type="text"
-                placeholder="Tìm kiếm hoạt động..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 8,
-                  fontSize: 13,
-                  width: 200,
-                  maxWidth: '100%',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              />
-              {(searchQuery || filterType !== 'all') && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilterType('all');
-                  }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#718096',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
-                >
-                  Xóa lọc
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Activity type filter buttons */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button
+          <S.FormActions>
+            <S.PrimaryButton
               type="button"
-              onClick={() => setFilterType('all')}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 6,
-                border: `1.5px solid ${filterType === 'all' ? '#667eea' : '#e2e8f0'}`,
-                background: filterType === 'all' ? '#667eea' : 'white',
-                color: filterType === 'all' ? 'white' : '#718096',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
+              onClick={saveMonthlySchedule}
+              disabled={isSaving || !monthTheme.trim()}
             >
-              Tất cả
-            </button>
-            {(['study', 'play', 'meal', 'nap'] as ActivityType[]).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setFilterType(filterType === type ? 'all' : type)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: `1.5px solid ${filterType === type ? '#667eea' : '#e2e8f0'}`,
-                  background: filterType === type ? '#667eea' : 'white',
-                  color: filterType === type ? 'white' : '#718096',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                {ACTIVITY_ICONS[type]} {ACTIVITY_TYPE_LABELS[type]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </S.Toolbar>
+              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin tháng'}
+            </S.PrimaryButton>
+          </S.FormActions>
+        </S.FormGrid>
+      </S.FormCard>
 
-      {/* WEEK TABS */}
-      <S.WeekTabs style={{ marginBottom: 16 }}>
-        {Array.from({ length: maxWeeksInMonth }, (_, i) => i + 1).map((week) => {
-          const template = templates.find(t => t.weekNumber === week);
-          const isSelected = selectedWeek === week;
-          const hasTemplate = !!template;
-          const weekRange = weekDateRanges.find(r => r.week === week);
+      {/* WEEK SELECTOR + theme + actions */}
+      <S.FormCard>
+        <S.FormHeader>
+          <S.FormTitle>
+            <FileSpreadsheet size={18} /> Thời khóa biểu tuần
+          </S.FormTitle>
+          <S.FormSubtitle>
+            {weeksInMonth.length === 0
+              ? 'Tháng này không có tuần hợp lệ'
+              : `Chọn tuần và nhập chủ đề. Upload CSV cho cả tuần hoặc thêm từng hoạt động.`}
+          </S.FormSubtitle>
+        </S.FormHeader>
 
-          return (
-            <S.WeekTab
-              key={week}
+        <S.FormGrid>
+          <S.FormField>
+            <label>Tuần</label>
+            <select
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(Number(e.target.value))}
+              disabled={weeksInMonth.length === 0}
+            >
+              {weeksInMonth.map((w) => (
+                <option key={w.weekOrder} value={w.weekOrder}>
+                  {w.label}
+                </option>
+              ))}
+            </select>
+          </S.FormField>
+
+          <S.FormField style={{ gridColumn: 'span 3' }}>
+            <label>Chủ đề tuần *</label>
+            <input
+              type="text"
+              placeholder="VD: Tuần 1: Làm quen với biển cả"
+              value={weekTheme}
+              onChange={(e) => setWeekTheme(e.target.value)}
+              maxLength={255}
+            />
+          </S.FormField>
+
+          <S.FormActions>
+            <S.SecondaryButton type="button" onClick={downloadCsvTemplate}>
+              <Download size={16} /> Tải CSV mẫu
+            </S.SecondaryButton>
+            <S.SecondaryButton
               type="button"
-              $active={isSelected}
-              onClick={() => setSelectedWeek(week)}
+              onClick={() => csvInputRef.current?.click()}
+              disabled={!monthlySchedule}
+              title={!monthlySchedule ? 'Vui lòng lưu thông tin tháng trước' : ''}
             >
-              Tuần {week}
-              {weekRange && (
-                <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.8, display: 'block' }}>
-                  {weekRange.startLabel} - {weekRange.endLabel}
-                </span>
-              )}
-              {hasTemplate && (
-                <span style={{ marginLeft: 4, fontSize: 10 }}>
-                  {template.status === 'Approved' ? '✓' :
-                   template.status === 'Submitted' ? '⏳' : ''}
-                </span>
-              )}
-            </S.WeekTab>
-          );
-        })}
-      </S.WeekTabs>
+              <Upload size={16} /> Upload CSV
+            </S.SecondaryButton>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleCsvSelected}
+              style={{ display: 'none' }}
+            />
+            <S.PrimaryButton
+              type="button"
+              onClick={saveWeeklySchedule}
+              disabled={isSaving || !monthlySchedule || !weekTheme.trim()}
+            >
+              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu tuần'}
+            </S.PrimaryButton>
+          </S.FormActions>
+        </S.FormGrid>
+      </S.FormCard>
 
-      {/* LOADING */}
-      {isLoading && <SkeletonBoardLoader />}
-
-      {/* EMPTY STATE */}
-      {!isLoading && !currentTemplate && (
+      {/* 5-day board */}
+      {isLoading ? (
+        <S.EmptyState>Đang tải thời khóa biểu...</S.EmptyState>
+      ) : !monthlySchedule ? (
         <S.EmptyState>
-          <Calendar size={48} style={{ color: '#cbd5e0', marginBottom: 16 }} />
-          <h3>Chưa có thời khóa biểu cho tuần này</h3>
-          <p>Import file CSV hoặc thêm hoạt động thủ công.</p>
-          <S.ImportBtn type="button" onClick={openCsvImport}>
-            <Upload size={16} />
-            Import CSV
-          </S.ImportBtn>
+          Chưa có thời khóa biểu cho tháng này. Hãy nhập chủ đề tháng và bấm "Lưu thông tin tháng" để bắt đầu.
         </S.EmptyState>
+      ) : (
+        <S.Board>
+          {SCHOOL_DAYS.map((day) => (
+            <S.DayColumn key={day.key}>
+              <S.DayHeader>
+                <S.DayTitle>{day.label}</S.DayTitle>
+                <S.AddButton type="button" onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                  <Plus size={14} />
+                </S.AddButton>
+              </S.DayHeader>
+              <S.DayBody>
+                {(itemsByDay[day.key] || []).length === 0 ? (
+                  <S.EmptyDay>Chưa có hoạt động</S.EmptyDay>
+                ) : (
+                  (itemsByDay[day.key] || []).map((it) => (
+                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
+                      <S.ItemHeader>
+                        <S.ItemTime>
+                          {it.startTime.slice(0, 5)} - {it.endTime.slice(0, 5)}
+                        </S.ItemTime>
+                        <S.ItemIcon>{ACTIVITY_ICONS[it.activityType]}</S.ItemIcon>
+                      </S.ItemHeader>
+                      <S.ItemTitle>{it.activityName}</S.ItemTitle>
+                      <S.ItemType $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
+                        {ACTIVITY_TYPE_LABELS[it.activityType]}
+                      </S.ItemType>
+                      {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
+                      {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
+                      {it.scheduleDetailId ? (
+                        <S.ItemActions>
+                          <S.ItemDeleteBtn
+                            type="button"
+                            onClick={() =>
+                              setConfirmDelete({ scheduleDetailId: it.scheduleDetailId!, day: day.key })
+                            }
+                            title="Xóa"
+                          >
+                            <Trash2 size={14} />
+                          </S.ItemDeleteBtn>
+                        </S.ItemActions>
+                      ) : null}
+                    </S.ItemCard>
+                  ))
+                )}
+              </S.DayBody>
+            </S.DayColumn>
+          ))}
+        </S.Board>
       )}
 
-      {/* BOARD */}
-      {currentTemplate && (
-        <S.BoardGrid>
-          {DAYS.map((day) => {
-            const dayItems = itemsByDay[day.key] || [];
-            const isToday = isCurrentWeek && todayDayOfWeek !== null && day.key === todayDayOfWeek;
-            const dayStatus = getDayStatus(day.key);
-            const canEdit = canEditDay(day.key);
-
-            return (
-              <S.DayCol key={day.key} $isToday={isToday} $dayStatus={dayStatus}>
-                <S.DayColHead>
-                  <div>
-                    <S.DayName $isToday={isToday}>{day.label}</S.DayName>
-                    {!isToday && selectedWeekRange?.startDate && (() => {
-                      const date = getDateForDayInWeek(selectedWeekRange.startDate, selectedWeekRange?.endDate, day.key);
-                      if (!date) return <S.DayDate>{day.short}</S.DayDate>;
-                      const pad = (n: number) => String(n).padStart(2, '0');
-                      return <S.DayDate>{`${pad(date.getDate())}/${pad(date.getMonth() + 1)}`}</S.DayDate>;
-                    })()}
-                  </div>
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    {canEdit && (
-                      <S.IconBtn
-                        type="button"
-                        title="Sao chép ngày"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const otherDays = DAYS.filter(d => d.key !== day.key);
-                          if (otherDays.length > 0 && confirm(`Sao chép hoạt động sang ${otherDays[0].label}?`)) {
-                            copyDay(day.key, otherDays[0].key);
-                          }
-                        }}
-                        style={{ width: 20, height: 20 }}
-                      >
-                        <Copy size={12} />
-                      </S.IconBtn>
-                    )}
-                    {isToday && <S.TodayTag>HÔM NAY</S.TodayTag>}
-                    {dayStatus === 'past' && <S.PastTag>QUÁ KHỨ</S.PastTag>}
-                  </div>
-                </S.DayColHead>
-
-                <S.ActivityList>
-                  {dayItems.map((item) => {
-                    const typeColor = ACTIVITY_TYPE_COLORS[item.activityType] || '#667eea';
-                    const itemCanEdit = canEdit && canEditItem(item.startTime, day.key);
-
-                    return (
-                      <S.ActivityCard
-                        key={item.itemId}
-                        $typeColor={typeColor}
-                        $dayStatus={dayStatus}
-                        onClick={() => handleOpenEditItem(item)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <S.ActivityTime>
-                          {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
-                        </S.ActivityTime>
-                        <S.ActivityName>
-                          {ACTIVITY_ICONS[item.activityType]} {item.activityName}
-                        </S.ActivityName>
-                        {item.details && (
-                          <S.ActivityDetails>{item.details}</S.ActivityDetails>
-                        )}
-                        <S.ActivityActions>
-                          {itemCanEdit ? (
-                            <>
-                              <S.IconBtn
-                                type="button"
-                                title="Sửa"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenEditItem(item);
-                                }}
-                              >
-                                <Edit2 size={13} />
-                              </S.IconBtn>
-                              <S.IconBtn
-                                $danger
-                                type="button"
-                                title="Xóa"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (item.itemId) handleDeleteClick(item.itemId);
-                                }}
-                              >
-                                <Trash2 size={13} />
-                              </S.IconBtn>
-                            </>
-                          ) : (
-                            <S.IconBtn
-                              type="button"
-                              title="Xem chi tiết"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEditItem(item);
-                              }}
-                            >
-                              <Eye size={13} />
-                            </S.IconBtn>
-                          )}
-                        </S.ActivityActions>
-                      </S.ActivityCard>
-                    );
-                  })}
-
-                  {canEdit && (
-                    <S.AddActivityBtn type="button" onClick={() => handleOpenAddItem(day.key)}>
-                      <Plus size={15} />
-                      Thêm hoạt động
-                    </S.AddActivityBtn>
-                  )}
-                </S.ActivityList>
-              </S.DayCol>
-            );
-          })}
-        </S.BoardGrid>
-      )}
-
-      {/* ITEM MODAL */}
-      <ItemModal
-        isOpen={modalOpen}
-        editId={editingItemId}
-        item={editItem}
-        isReadOnly={modalViewOnly}
-        changeRequestHint={modalChangeRequestHint}
-        onClose={handleCloseModal}
-        onSave={saveItem}
-        onUpdate={updateEditItem}
-      />
-
-      {/* CSV IMPORT MODAL */}
-      <CSVImportModal
-        isOpen={csvModalOpen}
-        preview={csvPreview}
-        isImporting={isImporting}
-        onClose={closeCsvModal}
-        onPreview={handleCsvPreview}
-        onImport={handleCsvImport}
-        onViewHistory={openHistoryModal}
-        hasHistory={(importHistory?.history?.length ?? 0) > 0}
-      />
-
-      {/* IMPORT HISTORY MODAL */}
-      <ImportHistoryModal
-        isOpen={historyModalOpen}
-        onClose={() => setHistoryModalOpen(false)}
-        history={importHistory?.history ?? []}
-        sessions={importHistory?.sessions ?? []}
-      />
-
-      {/* CHANGE REQUEST: SUBMIT MODAL (used when submitting an Approved template) */}
-      <ChangeRequestModal
-        isOpen={submitChangeModalOpen}
-        mode="submit"
-        defaultReason={currentTemplate?.pendingChangeReason || ''}
-        hasPendingChangeRequest={!!currentTemplate?.hasPendingChangeRequest}
-        isSubmitting={isSubmittingChange}
-        onClose={() => setSubmitChangeModalOpen(false)}
-        onConfirm={confirmSubmitChange}
-      />
-
-      {/* CHANGE REQUEST: WITHDRAW MODAL (used to withdraw + restore) */}
-      <ChangeRequestModal
-        isOpen={withdrawChangeModalOpen}
-        mode="withdraw"
-        isSubmitting={isWithdrawingChange}
-        onClose={() => setWithdrawChangeModalOpen(false)}
-        onConfirm={confirmWithdrawChange}
-      />
-
-      {/* TOASTS */}
-      <S.ToastStack>
-        {toasts.map((toast) => (
-          <S.ToastItem key={toast.id} $variant={toast.variant}>{toast.text}</S.ToastItem>
-        ))}
-      </S.ToastStack>
-
-      {/* CONFIRM DIALOG */}
-      {confirmDialog.open && (
-        <ConfirmDialog
-          title={confirmDialog.title}
-          message={confirmDialog.message}
-          confirmText={confirmDialog.confirmText}
-          variant={confirmDialog.variant}
-          onConfirm={confirmDialog.onConfirm}
-          onCancel={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+      {/* Item modal */}
+      {itemModalOpen && editingItem && itemModalItem && (
+        <ItemModal
+          isOpen={itemModalOpen}
+          editId={null}
+          item={itemModalItem}
+          onClose={() => setItemModalOpen(false)}
+          onSave={() => handleItemSave(editingItem)}
+          onUpdate={(patch) =>
+            setEditingItem((prev) => (prev ? ({ ...prev, ...patch } as EditItem) : prev))
+          }
         />
       )}
+
+      {/* CSV Preview Modal */}
+      {csvModalOpen && csvPreview && (
+        <S.ModalBackdrop onClick={handleCancelPreview}>
+          <S.ModalBox onClick={(e) => e.stopPropagation()}>
+            <S.ModalHeader>
+              <S.ModalTitle>Xem trước CSV</S.ModalTitle>
+              <S.ModalCloseBtn type="button" onClick={handleCancelPreview}>
+                <X size={18} />
+              </S.ModalCloseBtn>
+            </S.ModalHeader>
+            <S.ModalBody>
+              {csvPreview.errors.length > 0 && (
+                <S.ErrorBox>
+                  <strong>⚠️ Lỗi ({csvPreview.errors.length}):</strong>
+                  <ul>
+                    {csvPreview.errors.slice(0, 10).map((err: string, idx: number) => (
+                      <li key={idx}>{err}</li>
+                    ))}
+                    {csvPreview.errors.length > 10 && <li>... và {csvPreview.errors.length - 10} lỗi khác</li>}
+                  </ul>
+                </S.ErrorBox>
+              )}
+              <S.PreviewSummary>
+                Tổng: <strong>{csvPreview.totalRows}</strong> dòng hợp lệ ·{' '}
+                <strong>{Object.keys(csvPreview.byWeek).length}</strong> tuần
+              </S.PreviewSummary>
+              {Object.entries(csvPreview.byWeek).map(([week, items]: [string, any]) => (
+                <S.PreviewWeekBlock key={week}>
+                  <S.PreviewWeekTitle>Tuần {week} · {items.length} hoạt động</S.PreviewWeekTitle>
+                  {items.slice(0, 5).map((it: any, idx: number) => (
+                    <S.PreviewRow key={idx}>
+                      <strong>{it.dayOfWeek}</strong> {it.startTime.slice(0, 5)}-
+                      {it.endTime.slice(0, 5)} · {it.activityName}
+                    </S.PreviewRow>
+                  ))}
+                  {items.length > 5 && <S.PreviewRow>... +{items.length - 5} hoạt động khác</S.PreviewRow>}
+                </S.PreviewWeekBlock>
+              ))}
+            </S.ModalBody>
+            <S.ModalFooter>
+              <S.SecondaryButton type="button" onClick={handleCancelPreview}>
+                Hủy
+              </S.SecondaryButton>
+              <S.PrimaryButton
+                type="button"
+                onClick={handleConfirmImport}
+                disabled={isImporting || csvPreview.totalRows === 0}
+              >
+                {isImporting ? 'Đang import...' : `Import ${csvPreview.totalRows} dòng`}
+              </S.PrimaryButton>
+            </S.ModalFooter>
+          </S.ModalBox>
+        </S.ModalBackdrop>
+      )}
+
+      {/* Confirm delete */}
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Xóa hoạt động?"
+          message="Hoạt động sẽ bị xóa khi bạn lưu tuần."
+          confirmText="Xóa"
+          cancelText="Hủy"
+          variant="danger"
+          onConfirm={() => {
+            if (confirmDelete) {
+              removeItem(confirmDelete.day, confirmDelete.scheduleDetailId);
+            }
+            setConfirmDelete(null);
+          }}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {/* Toasts */}
+      <S.ToastContainer>
+        {toasts.map((t) => (
+          <S.Toast key={t.id} $variant={t.variant}>
+            {t.text}
+          </S.Toast>
+        ))}
+      </S.ToastContainer>
     </S.Container>
   );
+};
+
+const navBtnStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 36,
+  height: 36,
+  border: '1.5px solid rgba(255,255,255,0.4)',
+  borderRadius: 8,
+  background: 'rgba(255,255,255,0.1)',
+  color: 'white',
+  cursor: 'pointer',
 };

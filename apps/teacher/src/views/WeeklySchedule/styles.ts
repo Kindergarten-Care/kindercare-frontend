@@ -982,3 +982,408 @@ export const ClassSelectArrow = styled.span`
   pointer-events: none;
   opacity: 0.8;
 `;
+
+// ── Form Card (used for both MS and WS form sections) ──────────────────────────
+
+export const FormCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+`;
+
+export const FormHeader = styled.div`
+  margin-bottom: 16px;
+`;
+
+export const FormTitle = styled.h3`
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const FormSubtitle = styled.p`
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+`;
+
+export const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const FormField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  > label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  > input,
+  > select,
+  > textarea {
+    padding: 9px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: white;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    &:disabled {
+      background: #f9fafb;
+      color: #6b7280;
+      cursor: not-allowed;
+    }
+  }
+
+  > small {
+    font-size: 12px;
+    color: #6b7280;
+  }
+`;
+
+export const FormActions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  grid-column: span 4;
+
+  @media (max-width: 1024px) {
+    grid-column: span 2;
+  }
+  @media (max-width: 640px) {
+    grid-column: span 1;
+  }
+`;
+
+export const PrimaryButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const SecondaryButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  color: #667eea;
+  border: 1.5px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #f5f7ff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+// ── CSV Preview Modal extras ───────────────────────────────────────────────────
+
+export const ErrorBox = styled.div`
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #991b1b;
+
+  ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+  }
+`;
+
+export const PreviewWeekBlock = styled.div`
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const PreviewWeekTitle = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+`;
+
+export const PreviewRow = styled.div`
+  font-size: 12px;
+  color: #4b5563;
+  padding: 2px 0;
+
+  strong {
+    color: #111827;
+    margin-right: 6px;
+  }
+`;
+
+// ── Board (5-day week grid) ────────────────────────────────────────────────────
+
+export const Board = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const DayColumn = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 240px;
+`;
+
+export const DayHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+`;
+
+export const DayTitle = styled.h4`
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+`;
+
+export const DayBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const AddButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px dashed #9ca3af;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f5f7ff;
+  }
+`;
+
+export const EmptyDay = styled.div`
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 24px 8px;
+  font-style: italic;
+`;
+
+// ── Item card ──────────────────────────────────────────────────────────────────
+
+export const ItemCard = styled.div<{ $color: string }>`
+  background: white;
+  border-left: 4px solid ${(props) => props.$color};
+  border-radius: 8px;
+  padding: 10px 12px;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const ItemHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const ItemTime = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  letter-spacing: 0.3px;
+`;
+
+export const ItemIcon = styled.span`
+  font-size: 14px;
+`;
+
+export const ItemTitle = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+`;
+
+export const ItemType = styled.span<{ $color: string }>`
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: ${(props) => props.$color};
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: ${(props) => props.$color}1A;
+  align-self: flex-start;
+`;
+
+export const ItemDetails = styled.div`
+  font-size: 12px;
+  color: #4b5563;
+  line-height: 1.3;
+`;
+
+export const ItemLocation = styled.div`
+  font-size: 11px;
+  color: #6b7280;
+`;
+
+export const ItemActions = styled.div`
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: none;
+  gap: 4px;
+
+  ${ItemCard}:hover & {
+    display: flex;
+  }
+`;
+
+export const ItemDeleteBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  cursor: pointer;
+
+  &:hover {
+    background: #fecaca;
+  }
+`;
+
+// ── Toast (new minimal wrapper used by useWeeklySchedule) ──────────────────────
+
+export const ToastContainer = styled.div`
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1100;
+`;
+
+export const Toast = styled.div<{ $variant?: 'success' | 'error' | 'warning' | 'info' }>`
+  padding: 12px 18px;
+  background: ${(props) => {
+    switch (props.$variant) {
+      case 'error':
+        return '#fee2e2';
+      case 'warning':
+        return '#fef3c7';
+      case 'info':
+        return '#dbeafe';
+      default:
+        return '#d1fae5';
+    }
+  }};
+  color: ${(props) => {
+    switch (props.$variant) {
+      case 'error':
+        return '#991b1b';
+      case 'warning':
+        return '#92400e';
+      case 'info':
+        return '#1e40af';
+      default:
+        return '#065f46';
+    }
+  }};
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-width: 240px;
+  max-width: 360px;
+`;
