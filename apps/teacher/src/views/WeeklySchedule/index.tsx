@@ -69,6 +69,7 @@ export const WeeklyScheduleView: React.FC = () => {
     classId,
     className,
     currentMonth,
+    setCurrentMonth,
     prevMonth,
     nextMonth,
     monthTheme,
@@ -239,20 +240,34 @@ export const WeeklyScheduleView: React.FC = () => {
             <select
               value={currentMonth.month}
               onChange={(e) =>
-                // We update by calling next/prev via parent; simplest: just dispatch using wrapper.
-                // Here we lift setCurrentMonth via hook? For now: rely on prev/next + select.
-                null
+                setCurrentMonth((prev) => ({
+                  ...prev,
+                  month: Number(e.target.value),
+                }))
               }
-              disabled
             >
-              <option value={currentMonth.month}>{MONTH_NAMES[currentMonth.month - 1]}</option>
+              {MONTH_NAMES.map((name, idx) => (
+                <option key={idx + 1} value={idx + 1}>
+                  {name}
+                </option>
+              ))}
             </select>
-            <small>Dùng mũi tên ở trên để đổi tháng</small>
           </S.FormField>
 
           <S.FormField>
             <label>Năm</label>
-            <input type="text" value={currentMonth.year} disabled />
+            <input
+              type="number"
+              value={currentMonth.year}
+              onChange={(e) =>
+                setCurrentMonth((prev) => ({
+                  ...prev,
+                  year: Number(e.target.value),
+                }))
+              }
+              min={2020}
+              max={2100}
+            />
           </S.FormField>
 
           <S.FormField style={{ gridColumn: 'span 2' }}>

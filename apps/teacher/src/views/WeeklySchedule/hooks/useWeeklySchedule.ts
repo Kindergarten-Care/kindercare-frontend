@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTeacherClasses } from '@/hooks/useTeacherQueries';
 import * as WeeklyScheduleService from '@/services/weeklySchedule/WeeklyScheduleService';
 import type {
@@ -159,10 +159,10 @@ export const useWeeklySchedule = (activeClassId?: number) => {
       setWeeks(data.weeks || []);
       setMonthTheme(data.monthlySchedule?.monthTheme || '');
 
-      // Auto-select first week that has data, or week 1
-      const firstFilledWeek = data.weeks?.[0]?.weekOrder ?? 1;
-      setSelectedWeek(firstFilledWeek);
-      setWeekTheme(data.weeks?.[0]?.weekTheme || '');
+      // Sync weekTheme for the currently selected week when reloading data.
+      // Do NOT reset selectedWeek here; otherwise the user is forced back to week 1 after every save.
+      const current = data.weeks?.find((w) => w.weekOrder === selectedWeek);
+      setWeekTheme(current?.weekTheme || '');
     } catch (error: any) {
       const msg = error?.response?.data?.message || 'Không thể tải thời khóa biểu';
       showToast(typeof msg === 'string' ? msg : 'Không thể tải thời khóa biểu', 'error');
@@ -351,6 +351,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     classId,
     className,
     currentMonth,
+    setCurrentMonth,
     prevMonth,
     nextMonth,
     monthTheme,
