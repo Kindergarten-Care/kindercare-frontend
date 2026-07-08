@@ -1325,6 +1325,23 @@ export const ItemActions = styled.div`
   }
 `;
 
+export const ItemEditBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: #dbeafe;
+  color: #1d4ed8;
+  cursor: pointer;
+
+  &:hover {
+    background: #bfdbfe;
+  }
+`;
+
 export const ItemDeleteBtn = styled.button`
   display: inline-flex;
   align-items: center;

@@ -286,6 +286,20 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     [weeks, selectedWeek]
   );
 
+  const updateItem = useCallback(
+    (day: SchoolDay, scheduleDetailId: number, updates: Partial<Omit<WeeklyScheduleDetail, 'scheduleDetailId' | 'weeklyScheduleId'>>) => {
+      const ws = weeks.find((w) => w.weekOrder === selectedWeek);
+      if (!ws) return;
+      const updatedItems = ws.items.map((it) =>
+        it.scheduleDetailId === scheduleDetailId ? { ...it, ...updates } : it
+      );
+      const updatedWs: WeeklySchedule = { ...ws, items: updatedItems };
+      const updatedWeeks = weeks.filter((w) => w.weekOrder !== selectedWeek);
+      setWeeks([...updatedWeeks, updatedWs].sort((a, b) => a.weekOrder - b.weekOrder));
+    },
+    [weeks, selectedWeek]
+  );
+
   // ── Month navigation ─────────────────────────────────────────────────────
   const prevMonth = useCallback(() => {
     setCurrentMonth((prev) =>
@@ -372,6 +386,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     saveWeeklySchedule,
     addItem,
     removeItem,
+    updateItem,
     csvPreview,
     csvModalOpen,
     setCsvModalOpen,

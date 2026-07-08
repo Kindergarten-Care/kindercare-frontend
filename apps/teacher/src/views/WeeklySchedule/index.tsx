@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Pencil,
   Plus,
   Save,
   Trash2,
@@ -89,6 +90,7 @@ export const WeeklyScheduleView: React.FC = () => {
     saveWeeklySchedule,
     addItem,
     removeItem,
+    updateItem,
     csvPreview,
     csvModalOpen,
     setCsvModalOpen,
@@ -103,10 +105,12 @@ export const WeeklyScheduleView: React.FC = () => {
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EditItem | null>(null);
   const [editingDay, setEditingDay] = useState<SchoolDay>('Monday');
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const openAddItem = (day: SchoolDay) => {
     const dayItems = itemsByDay[day] || [];
     setEditingDay(day);
+    setEditingId(null);
     setEditingItem({
       dayOfWeek: day,
       startTime: '09:00',
@@ -119,8 +123,23 @@ export const WeeklyScheduleView: React.FC = () => {
     setItemModalOpen(true);
   };
 
+  const openEditItem = (item: WeeklyScheduleDetail) => {
+    setEditingDay(item.dayOfWeek as SchoolDay);
+    setEditingId(item.scheduleDetailId);
+    setEditingItem({
+      dayOfWeek: item.dayOfWeek as SchoolDay,
+      startTime: item.startTime.slice(0, 5),
+      endTime: item.endTime.slice(0, 5),
+      activityName: item.activityName,
+      activityType: item.activityType,
+      details: item.details || '',
+      location: item.location || '',
+    });
+    setItemModalOpen(true);
+  };
+
   const handleItemSave = (payload: EditItem) => {
-    addItem(editingDay, {
+    const itemPayload = {
       dayOfWeek: payload.dayOfWeek,
       startTime: payload.startTime,
       endTime: payload.endTime,
@@ -128,9 +147,15 @@ export const WeeklyScheduleView: React.FC = () => {
       activityType: payload.activityType,
       details: payload.details || null,
       location: payload.location || null,
-    });
+    };
+    if (editingId !== null) {
+      updateItem(editingDay, editingId, itemPayload);
+    } else {
+      addItem(editingDay, itemPayload);
+    }
     setItemModalOpen(false);
     setEditingItem(null);
+    setEditingId(null);
   };
 
   // Adapter: ItemModal expects an EditingItem shape (with orderIndex) where
@@ -400,6 +425,13 @@ export const WeeklyScheduleView: React.FC = () => {
                       {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
                       {it.scheduleDetailId ? (
                         <S.ItemActions>
+                          <S.ItemEditBtn
+                            type="button"
+                            onClick={() => openEditItem(it)}
+                            title="Sửa"
+                          >
+                            <Pencil size={14} />
+                          </S.ItemEditBtn>
                           <S.ItemDeleteBtn
                             type="button"
                             onClick={() =>
@@ -424,7 +456,7 @@ export const WeeklyScheduleView: React.FC = () => {
       {itemModalOpen && editingItem && itemModalItem && (
         <ItemModal
           isOpen={itemModalOpen}
-          editId={null}
+          editId={editingId}
           item={itemModalItem}
           onClose={() => setItemModalOpen(false)}
           onSave={() => handleItemSave(editingItem)}
