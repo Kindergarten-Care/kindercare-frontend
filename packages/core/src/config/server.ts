@@ -36,6 +36,10 @@ export const SERVER = {
   teacher: {
     scanAttendance: '/teacher/attendance/scan',
   },
+  principal: {
+    getProfile: '/principal/profile',
+    getAccounts: '/principal/accounts',
+  },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',
     registerToken:     '/notifications/register-token',
