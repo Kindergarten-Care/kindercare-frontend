@@ -75,7 +75,6 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     ? classes?.find(c => c.classId === activeClassId) || classes?.[0] || null
     : (classes && classes.length > 0 ? classes[0] : null);
   const classId = activeClass?.classId || 1;
-  const yearId = activeClass?.yearId || 1;
 
   // Current selected month/year
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -170,12 +169,11 @@ export const useWeeklySchedule = (activeClassId?: number) => {
   // Upsert monthly schedule (creates MS record with ApprovedStatus=0)
   const saveMonthlySchedule = useCallback(async (monthTheme: string) => {
     if (!classId) return;
-    console.log('[DEBUG] saveMonthlySchedule called with:', { classId, yearId, month: currentMonth.month, year: currentMonth.year, monthTheme });
+    console.log('[DEBUG] saveMonthlySchedule called with:', { classId, month: currentMonth.month, year: currentMonth.year, monthTheme });
     console.log('[DEBUG] classId type:', typeof classId, 'value:', classId);
     setIsSaving(true);
     try {
       const result: any = await WeeklyScheduleService.upsertMonthlySchedule(classId, {
-        yearId,
         month: currentMonth.month,
         year: currentMonth.year,
         monthTheme,
@@ -192,7 +190,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     } finally {
       setIsSaving(false);
     }
-  }, [classId, yearId, currentMonth, fetchMonthlySchedule, showToast]);
+  }, [classId, currentMonth, fetchMonthlySchedule, showToast]);
 
   // Save a week's items (upsert WS + WSD)
   const saveWeek = useCallback(async () => {

@@ -42,7 +42,7 @@ export const getMonthlySchedule = async (
  */
 export const upsertMonthlySchedule = async (
   classId: number,
-  payload: { yearId: number; month: number; year: number; monthTheme: string }
+  payload: { yearId?: number; month: number; year: number; monthTheme: string }
 ): Promise<{ monthlyScheduleId: number; action: string }> => {
   const response = await apiClient.post(
     `/teacher/classes/${classId}/monthly-schedule`,
