@@ -88,41 +88,27 @@ export const MainArea = styled.div`
 
 export const SidebarItemText = styled.span`
   position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    height: 2px;
-    background-color: #166534;
-    transition: width 0.3s ease-in-out;
-    width: 0;
-  }
 `;
 
 export const SidebarItem = styled.div<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 10px 16px;
+  margin: 4px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  background-color: ${({ $active }) => ($active ? '#dcfce7' : 'transparent')};
-  color: ${({ $active }) => ($active ? '#166534' : '#4b5563')};
+  background-color: ${({ $active }) => ($active ? '#e6f3ed' : 'transparent')};
+  color: ${({ $active }) => ($active ? '#005a36' : '#4b5563')};
   font-weight: ${({ $active }) => ($active ? '600' : '500')};
   font-size: 0.9rem;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: ${({ $active }) => ($active ? '#e6f3ed' : '#f3f4f6')};
+    color: ${({ $active }) => ($active ? '#005a36' : '#111827')};
+    transform: translateX(2px);
   }
-
-  ${({ $active }) => $active && `
-    ${SidebarItemText}::after {
-      width: 100%;
-    }
-  `}
 `;
 
 export const SidebarItemContent = styled.div`
@@ -135,34 +121,52 @@ export const SidebarItemIcon = styled.span`
   font-size: 1.1rem;
 `;
 
-export const ChevronIcon = styled.svg<{ $isOpen?: boolean }>`
+export const ChevronIcon = styled.svg<{ $isOpen?: boolean; $active?: boolean }>`
   width: 16px;
   height: 16px;
   fill: none;
-  stroke: ${({ $isOpen }) => ($isOpen ? '#166534' : '#9ca3af')};
+  stroke: ${({ $isOpen, $active }) => {
+    if ($active) return '#005a36';
+    if ($isOpen) return '#005a36';
+    return '#9ca3af';
+  }};
   stroke-width: 2;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, stroke 0.2s ease-in-out;
   transform: ${({ $isOpen }) => ($isOpen ? 'rotate(180deg)' : 'rotate(0deg)')};
 `;
 
-export const SidebarSubMenu = styled.div<{ $isOpen: boolean }>`
-  display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
+export const SidebarSubMenuWrapper = styled.div<{ $isOpen: boolean }>`
+  display: grid;
+  grid-template-rows: ${({ $isOpen }) => ($isOpen ? '1fr' : '0fr')};
+  transition: grid-template-rows 0.3s ease-in-out;
+`;
+
+export const SidebarSubMenuInner = styled.div`
+  overflow: hidden;
+`;
+
+export const SidebarSubMenu = styled.div`
+  display: flex;
   flex-direction: column;
-  background-color: #dcfce7;
   padding-bottom: 8px;
+  margin-left: 36px;
+  margin-right: 16px;
+  border-left: 2px solid #e5e7eb;
 `;
 
 export const SidebarSubItem = styled.div<{ $active?: boolean }>`
-  padding: 10px 20px 10px 50px;
+  padding: 8px 16px;
+  margin: 2px 0 2px -2px; /* Pull back to overlap the border-left */
+  border-left: 2px solid ${({ $active }) => ($active ? '#005a36' : 'transparent')};
   cursor: pointer;
-  color: ${({ $active }) => ($active ? '#166534' : '#4b5563')};
+  color: ${({ $active }) => ($active ? '#005a36' : '#6b7280')};
   font-weight: ${({ $active }) => ($active ? '600' : '500')};
   font-size: 0.85rem;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: #bbf7d0;
-    color: #166534;
+    color: #005a36;
+    border-left-color: #005a36;
   }
 `;
 
@@ -178,34 +182,36 @@ export const Timestamp = styled.div`
 export const BreadcrumbContainer = styled.div`
   display: flex;
   align-items: center;
-  padding: 0 0 16px 0;
+  padding: 12px 24px 16px 24px;
   font-size: 0.875rem;
   color: #6b7280;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 `;
 
 export const BreadcrumbItem = styled.span<{ $clickable?: boolean }>`
   display: flex;
   align-items: center;
+  transition: color 0.2s ease;
   ${({ $clickable }) => $clickable && `
     cursor: pointer;
     &:hover {
-      color: #111827;
-      text-decoration: underline;
+      color: #005a36;
     }
   `}
 
-  &:not(:last-child)::after {
-    content: '/';
-    margin: 0 8px;
-    color: #9ca3af;
-    text-decoration: none;
-    cursor: default;
-  }
-
   &.active {
-    font-weight: 500;
+    font-weight: 600;
     color: #111827;
   }
+`;
+
+export const BreadcrumbSeparator = styled.span`
+  margin: 0 8px;
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
 `;
 
 export const ContentContainer = styled.main`

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@kindercare/core';
 import { PrincipalProvider } from '@/contexts/PrincipalContext';
+import { ToastContainer } from '@kindercare/ui';
 import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 
@@ -70,6 +71,7 @@ export default async function RootLayout({
             </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
+        <ToastContainer />
       </body>
     </html>
   );

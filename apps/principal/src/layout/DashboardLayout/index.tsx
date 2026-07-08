@@ -6,6 +6,8 @@ import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { getFormattedDate } from '@/utils/date';
 import { SIDEBAR_ITEMS } from './config';
+import { HomeIcon } from '@/icons/HomeIcon';
+import { ChevronRightIcon } from '@/icons/ChevronRightIcon';
 import {
   LayoutContainer,
   TopNavbar,
@@ -24,12 +26,15 @@ import {
   SidebarItemText,
   SidebarItemIcon,
   ChevronIcon,
+  SidebarSubMenuWrapper,
+  SidebarSubMenuInner,
   SidebarSubMenu,
   SidebarSubItem,
   Timestamp,
   ContentContainer,
   BreadcrumbContainer,
-  BreadcrumbItem
+  BreadcrumbItem,
+  BreadcrumbSeparator
 } from './styles';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -93,7 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             const isExpanded = !!expandedItems[item.label];
             const isChildActive = item.subItems?.some(sub => currentFullUrl === sub.href) || false;
             const isMainActive = item.href ? currentFullUrl === item.href || pathname === item.href : false;
-            const isActive = isExpanded || isMainActive || isChildActive;
+            const isActive = isMainActive || isChildActive;
 
             const handleItemClick = () => {
               if (hasSub) toggleExpand(item.label);
@@ -108,28 +113,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <SidebarItemText>{item.label}</SidebarItemText>
                   </SidebarItemContent>
                   {hasSub && (
-                    <ChevronIcon viewBox="0 0 24 24" $isOpen={isExpanded}>
+                    <ChevronIcon viewBox="0 0 24 24" $isOpen={isExpanded} $active={isActive || undefined}>
                       <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
                     </ChevronIcon>
                   )}
                 </SidebarItem>
                 
                 {hasSub && (
-                  <SidebarSubMenu $isOpen={isExpanded}>
-                    {item.subItems!.map((sub) => {
-                      const isSubActive = currentFullUrl === sub.href;
-                      return (
-                        <SidebarSubItem 
-                          key={sub.label} 
-                          $active={isSubActive || undefined}
-                          onClick={() => router.push(sub.href)}
-                        >
-                          {sub.icon && <span style={{ marginRight: '8px' }}>{sub.icon}</span>}
-                          {sub.label}
-                        </SidebarSubItem>
-                      );
-                    })}
-                  </SidebarSubMenu>
+                  <SidebarSubMenuWrapper $isOpen={isExpanded}>
+                    <SidebarSubMenuInner>
+                      <SidebarSubMenu>
+                        {item.subItems!.map((sub, idx) => {
+                          const isSubActive = currentFullUrl === sub.href;
+                          return (
+                            <SidebarSubItem 
+                              key={idx}
+                              $active={isSubActive || undefined}
+                              onClick={() => router.push(sub.href)}
+                            >
+                              {sub.icon && <span style={{ marginRight: '8px' }}>{sub.icon}</span>}
+                              {sub.label}
+                            </SidebarSubItem>
+                          );
+                        })}
+                      </SidebarSubMenu>
+                    </SidebarSubMenuInner>
+                  </SidebarSubMenuWrapper>
                 )}
               </div>
             );
@@ -143,24 +152,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <ContentContainer>
           <BreadcrumbContainer>
             <BreadcrumbItem $clickable onClick={() => router.push('/overview')}>
-              <span style={{ marginRight: '4px' }}>🏠</span> Trang chủ
+              <span style={{ marginRight: '6px', display: 'flex' }}><HomeIcon /></span> Trang chủ
             </BreadcrumbItem>
             {(() => {
               for (const item of SIDEBAR_ITEMS) {
                 if (item.href && (pathname === item.href || currentFullUrl === item.href)) {
-                  return <BreadcrumbItem className="active">{item.label}</BreadcrumbItem>;
+                  return (
+                    <>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem className="active">{item.label}</BreadcrumbItem>
+                    </>
+                  );
                 }
                 if (item.subItems) {
                   for (const sub of item.subItems) {
                     if (currentFullUrl === sub.href || pathname === sub.href) {
                       return (
                         <>
+                          <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
                           <BreadcrumbItem 
                             $clickable={!!item.href} 
                             onClick={() => item.href ? router.push(item.href) : toggleExpand(item.label)}
                           >
                             {item.label}
                           </BreadcrumbItem>
+                          <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
                           <BreadcrumbItem className="active">{sub.label}</BreadcrumbItem>
                         </>
                       );

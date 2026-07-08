@@ -20,7 +20,7 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     icon: <span>🏠</span>
   },
   {
-    label: 'Tài khoản',
+    label: 'Tài khoản & Hồ sơ',
     icon: (
       <span>👤</span>
     ),
@@ -29,4 +29,11 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
       { label: 'Phụ huynh', href: '/accounts?role=parent', icon: <span>👨‍👩‍👧‍👦</span> },
     ]
   },
+  {
+    label: 'Khối học và lớp học',
+    icon: (
+      <span>🏫</span>
+    ),
+    href: '/grades-classes'
+  }
 ];

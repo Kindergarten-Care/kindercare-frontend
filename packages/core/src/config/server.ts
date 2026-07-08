@@ -39,6 +39,11 @@ export const SERVER = {
   principal: {
     getProfile: '/principal/profile',
     getAccounts: '/principal/accounts',
+    getTeacherDetail: '/principal/teacher/:id/detail',
+    getParentDetail: '/principal/parent/:id/detail',
+    resetAccountPassword: '/principal/accounts/:id/reset-password',
+    lockAccount: '/principal/accounts/:id/lock',
+    unlockAccount: '/principal/accounts/:id/unlock',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',
