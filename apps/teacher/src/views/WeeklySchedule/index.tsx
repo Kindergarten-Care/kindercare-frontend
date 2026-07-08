@@ -128,7 +128,7 @@ export const WeeklyScheduleView: React.FC = () => {
 
   const openEditItem = (item: WeeklyScheduleDetail) => {
     setEditingDay(item.dayOfWeek as SchoolDay);
-    setEditingId(item.scheduleDetailId);
+    setEditingId(item.scheduleDetailId ?? null);
     setEditingItem({
       dayOfWeek: item.dayOfWeek as SchoolDay,
       startTime: item.startTime.slice(0, 5),
