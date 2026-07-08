@@ -1212,11 +1212,26 @@ export const DayHeader = styled.div`
   border-bottom: 2px solid #e5e7eb;
 `;
 
-export const DayTitle = styled.h4<{ $isPast?: boolean }>`
+export const DayTitle = styled.h4<{ $isPast?: boolean; $isToday?: boolean }>`
   margin: 0;
   font-size: 14px;
   font-weight: 700;
   color: ${(props) => (props.$isPast ? '#9CA3AF' : '#1f2937')};
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const TodayBadge = styled.span`
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #065F46;
+  background: #D1FAE5;
+  border: 1px solid #6EE7B7;
+  border-radius: 10px;
+  padding: 1px 7px;
+  line-height: 1.4;
 `;
 
 export const DayBody = styled.div`

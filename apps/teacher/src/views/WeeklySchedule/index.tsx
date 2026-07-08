@@ -404,7 +404,12 @@ export const WeeklyScheduleView: React.FC = () => {
             return (
             <S.DayColumn key={day.key} $isPast={dayIsPast}>
               <S.DayHeader>
-                <S.DayTitle $isPast={dayIsPast}>{day.label}</S.DayTitle>
+                <S.DayTitle $isToday={selectedWeek === todayWeekOrder && !dayIsPast}>
+                  {day.label}
+                  {selectedWeek === todayWeekOrder && !dayIsPast && (
+                    <S.TodayBadge>Hôm nay</S.TodayBadge>
+                  )}
+                </S.DayTitle>
                 <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
                   <Plus size={14} />
                 </S.AddButton>
