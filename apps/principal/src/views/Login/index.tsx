@@ -7,7 +7,7 @@ import {
 } from './styles';
 import LoginForm from './components/LoginForm';
 
-export default function LoginView(): React.ReactElement {
+export function LoginView(): React.ReactElement {
   return (
     <PageContainer>
 

@@ -5,14 +5,14 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@kindercare/core';
 import { AccountDomainModel } from '@/config/types/account';
 import { accountService } from '@/services/account/AccountService';
-import { 
-  Container, 
-  Title, 
-  Table, 
-  Th, 
-  Tr, 
-  Td, 
-  LoadingText, 
+import {
+  Container,
+  Title,
+  Table,
+  Th,
+  Tr,
+  Td,
+  LoadingText,
   ErrorText,
   DropdownContainer,
   ActionButton,
@@ -85,10 +85,10 @@ export default function AccountListView() {
   return (
     <Container>
       <Title>{displayTitle}</Title>
-      
+
       {loading && <LoadingText>Đang tải dữ liệu...</LoadingText>}
       {error && <ErrorText>{error}</ErrorText>}
-      
+
       {!loading && !error && (
         <Table>
           <thead>
@@ -123,7 +123,7 @@ export default function AccountListView() {
                           <circle cx="12" cy="19" r="1" />
                         </svg>
                       </ActionButton>
-                      
+
                       {activeDropdown === acc.id && (
                         <DropdownMenu>
                           <DropdownItem onClick={() => handleActionClick(acc.id, 'view')}>
