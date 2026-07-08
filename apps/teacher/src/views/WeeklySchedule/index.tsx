@@ -83,6 +83,8 @@ export const WeeklyScheduleView: React.FC = () => {
     setWeekTheme,
     currentWeek,
     itemsByDay,
+    todayWeekOrder,
+    isPastDay,
     isLoading,
     isSaving,
     toasts,
@@ -341,7 +343,7 @@ export const WeeklyScheduleView: React.FC = () => {
             >
               {weeksInMonth.map((w) => (
                 <option key={w.weekOrder} value={w.weekOrder}>
-                  {w.label}
+                  {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
                 </option>
               ))}
             </select>
@@ -397,11 +399,13 @@ export const WeeklyScheduleView: React.FC = () => {
         </S.EmptyState>
       ) : (
         <S.Board>
-          {SCHOOL_DAYS.map((day) => (
-            <S.DayColumn key={day.key}>
+          {SCHOOL_DAYS.map((day) => {
+            const dayIsPast = isPastDay(day.key);
+            return (
+            <S.DayColumn key={day.key} $isPast={dayIsPast}>
               <S.DayHeader>
-                <S.DayTitle>{day.label}</S.DayTitle>
-                <S.AddButton type="button" onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                <S.DayTitle $isPast={dayIsPast}>{day.label}</S.DayTitle>
+                <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
                   <Plus size={14} />
                 </S.AddButton>
               </S.DayHeader>
@@ -410,7 +414,7 @@ export const WeeklyScheduleView: React.FC = () => {
                   <S.EmptyDay>Chưa có hoạt động</S.EmptyDay>
                 ) : (
                   (itemsByDay[day.key] || []).map((it) => (
-                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
+                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]} $isPast={dayIsPast}>
                       <S.ItemHeader>
                         <S.ItemTime>
                           {it.startTime.slice(0, 5)} - {it.endTime.slice(0, 5)}
@@ -423,7 +427,7 @@ export const WeeklyScheduleView: React.FC = () => {
                       </S.ItemType>
                       {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
                       {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
-                      {it.scheduleDetailId ? (
+                      {it.scheduleDetailId && !dayIsPast ? (
                         <S.ItemActions>
                           <S.ItemEditBtn
                             type="button"
@@ -448,7 +452,8 @@ export const WeeklyScheduleView: React.FC = () => {
                 )}
               </S.DayBody>
             </S.DayColumn>
-          ))}
+            );
+          })}
         </S.Board>
       )}
 

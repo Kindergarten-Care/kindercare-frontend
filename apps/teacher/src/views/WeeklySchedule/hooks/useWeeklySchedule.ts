@@ -119,6 +119,46 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     [currentMonth.year, currentMonth.month]
   );
 
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const todayWeekOrder = useMemo(() => {
+    const dow = today.getDay(); // 0=Sun
+    const offset = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + offset);
+    const fri = new Date(monday);
+    fri.setDate(monday.getDate() + 4);
+    if (monday.getFullYear() === currentMonth.year && monday.getMonth() + 1 === currentMonth.month) {
+      const found = weeksInMonth.find(
+        (w) =>
+          w.startDate === `${String(monday.getDate()).padStart(2, '0')}/${String(monday.getMonth() + 1).padStart(2, '0')}`
+      );
+      return found?.weekOrder ?? null;
+    }
+    return null;
+  }, [today, currentMonth.year, currentMonth.month, weeksInMonth]);
+
+  const isPastDay = useCallback(
+    (dayOfWeek: SchoolDay): boolean => {
+      const dowMap: Record<SchoolDay, number> = {
+        Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5,
+      };
+      const targetDow = dowMap[dayOfWeek];
+      const dow = today.getDay(); // 0=Sun
+      const daysSinceMonday = dow === 0 ? 6 : dow - 1;
+      const currentMonday = new Date(today);
+      currentMonday.setDate(today.getDate() - daysSinceMonday);
+      const targetDate = new Date(currentMonday);
+      targetDate.setDate(currentMonday.getDate() + (targetDow - 1));
+      return targetDate < today;
+    },
+    [today]
+  );
+
   const currentWeek = useMemo(
     () => weeks.find((w) => w.weekOrder === selectedWeek) || null,
     [weeks, selectedWeek]
@@ -379,6 +419,8 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     setWeekTheme,
     currentWeek,
     itemsByDay,
+    todayWeekOrder,
+    isPastDay,
     isLoading,
     isSaving,
     toasts,
