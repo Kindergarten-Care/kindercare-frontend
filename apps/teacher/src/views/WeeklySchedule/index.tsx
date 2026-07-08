@@ -84,6 +84,7 @@ export const WeeklyScheduleView: React.FC = () => {
     currentWeek,
     itemsByDay,
     todayWeekOrder,
+    todayDayOfWeek,
     isPastDay,
     isLoading,
     isSaving,
@@ -404,9 +405,9 @@ export const WeeklyScheduleView: React.FC = () => {
             return (
             <S.DayColumn key={day.key} $isPast={dayIsPast}>
               <S.DayHeader>
-                <S.DayTitle $isToday={selectedWeek === todayWeekOrder && !dayIsPast}>
+                <S.DayTitle $isToday={selectedWeek === todayWeekOrder && day.key === todayDayOfWeek}>
                   {day.label}
-                  {selectedWeek === todayWeekOrder && !dayIsPast && (
+                  {selectedWeek === todayWeekOrder && day.key === todayDayOfWeek && (
                     <S.TodayBadge>Hôm nay</S.TodayBadge>
                   )}
                 </S.DayTitle>

@@ -142,6 +142,11 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     return null;
   }, [today, currentMonth.year, currentMonth.month, weeksInMonth]);
 
+  const todayDayOfWeek = useMemo(() => {
+    const dowMap = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', ''];
+    return dowMap[today.getDay()] ?? null;
+  }, [today]);
+
   const isPastDay = useCallback(
     (dayOfWeek: SchoolDay): boolean => {
       const dowMap: Record<SchoolDay, number> = {
@@ -420,6 +425,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     currentWeek,
     itemsByDay,
     todayWeekOrder,
+    todayDayOfWeek,
     isPastDay,
     isLoading,
     isSaving,
