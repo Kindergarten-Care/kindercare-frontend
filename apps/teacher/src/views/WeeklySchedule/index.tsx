@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Pencil,
   Plus,
   Save,
   Trash2,
@@ -69,6 +70,7 @@ export const WeeklyScheduleView: React.FC = () => {
     classId,
     className,
     currentMonth,
+    setCurrentMonth,
     prevMonth,
     nextMonth,
     monthTheme,
@@ -81,6 +83,9 @@ export const WeeklyScheduleView: React.FC = () => {
     setWeekTheme,
     currentWeek,
     itemsByDay,
+    todayWeekOrder,
+    todayDayOfWeek,
+    isPastDay,
     isLoading,
     isSaving,
     toasts,
@@ -88,6 +93,7 @@ export const WeeklyScheduleView: React.FC = () => {
     saveWeeklySchedule,
     addItem,
     removeItem,
+    updateItem,
     csvPreview,
     csvModalOpen,
     setCsvModalOpen,
@@ -102,10 +108,12 @@ export const WeeklyScheduleView: React.FC = () => {
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<EditItem | null>(null);
   const [editingDay, setEditingDay] = useState<SchoolDay>('Monday');
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const openAddItem = (day: SchoolDay) => {
     const dayItems = itemsByDay[day] || [];
     setEditingDay(day);
+    setEditingId(null);
     setEditingItem({
       dayOfWeek: day,
       startTime: '09:00',
@@ -118,8 +126,23 @@ export const WeeklyScheduleView: React.FC = () => {
     setItemModalOpen(true);
   };
 
+  const openEditItem = (item: WeeklyScheduleDetail) => {
+    setEditingDay(item.dayOfWeek as SchoolDay);
+    setEditingId(item.scheduleDetailId);
+    setEditingItem({
+      dayOfWeek: item.dayOfWeek as SchoolDay,
+      startTime: item.startTime.slice(0, 5),
+      endTime: item.endTime.slice(0, 5),
+      activityName: item.activityName,
+      activityType: item.activityType,
+      details: item.details || '',
+      location: item.location || '',
+    });
+    setItemModalOpen(true);
+  };
+
   const handleItemSave = (payload: EditItem) => {
-    addItem(editingDay, {
+    const itemPayload = {
       dayOfWeek: payload.dayOfWeek,
       startTime: payload.startTime,
       endTime: payload.endTime,
@@ -127,9 +150,15 @@ export const WeeklyScheduleView: React.FC = () => {
       activityType: payload.activityType,
       details: payload.details || null,
       location: payload.location || null,
-    });
+    };
+    if (editingId !== null) {
+      updateItem(editingDay, editingId, itemPayload);
+    } else {
+      addItem(editingDay, itemPayload);
+    }
     setItemModalOpen(false);
     setEditingItem(null);
+    setEditingId(null);
   };
 
   // Adapter: ItemModal expects an EditingItem shape (with orderIndex) where
@@ -239,20 +268,34 @@ export const WeeklyScheduleView: React.FC = () => {
             <select
               value={currentMonth.month}
               onChange={(e) =>
-                // We update by calling next/prev via parent; simplest: just dispatch using wrapper.
-                // Here we lift setCurrentMonth via hook? For now: rely on prev/next + select.
-                null
+                setCurrentMonth((prev) => ({
+                  ...prev,
+                  month: Number(e.target.value),
+                }))
               }
-              disabled
             >
-              <option value={currentMonth.month}>{MONTH_NAMES[currentMonth.month - 1]}</option>
+              {MONTH_NAMES.map((name, idx) => (
+                <option key={idx + 1} value={idx + 1}>
+                  {name}
+                </option>
+              ))}
             </select>
-            <small>Dùng mũi tên ở trên để đổi tháng</small>
           </S.FormField>
 
           <S.FormField>
             <label>Năm</label>
-            <input type="text" value={currentMonth.year} disabled />
+            <input
+              type="number"
+              value={currentMonth.year}
+              onChange={(e) =>
+                setCurrentMonth((prev) => ({
+                  ...prev,
+                  year: Number(e.target.value),
+                }))
+              }
+              min={2020}
+              max={2100}
+            />
           </S.FormField>
 
           <S.FormField style={{ gridColumn: 'span 2' }}>
@@ -301,7 +344,7 @@ export const WeeklyScheduleView: React.FC = () => {
             >
               {weeksInMonth.map((w) => (
                 <option key={w.weekOrder} value={w.weekOrder}>
-                  {w.label}
+                  {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
                 </option>
               ))}
             </select>
@@ -357,11 +400,18 @@ export const WeeklyScheduleView: React.FC = () => {
         </S.EmptyState>
       ) : (
         <S.Board>
-          {SCHOOL_DAYS.map((day) => (
-            <S.DayColumn key={day.key}>
+          {SCHOOL_DAYS.map((day) => {
+            const dayIsPast = isPastDay(day.key);
+            return (
+            <S.DayColumn key={day.key} $isPast={dayIsPast}>
               <S.DayHeader>
-                <S.DayTitle>{day.label}</S.DayTitle>
-                <S.AddButton type="button" onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                <S.DayTitle $isToday={selectedWeek === todayWeekOrder && day.key === todayDayOfWeek}>
+                  {day.label}
+                  {selectedWeek === todayWeekOrder && day.key === todayDayOfWeek && (
+                    <S.TodayBadge>Hôm nay</S.TodayBadge>
+                  )}
+                </S.DayTitle>
+                <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
                   <Plus size={14} />
                 </S.AddButton>
               </S.DayHeader>
@@ -370,7 +420,7 @@ export const WeeklyScheduleView: React.FC = () => {
                   <S.EmptyDay>Chưa có hoạt động</S.EmptyDay>
                 ) : (
                   (itemsByDay[day.key] || []).map((it) => (
-                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
+                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]} $isPast={dayIsPast}>
                       <S.ItemHeader>
                         <S.ItemTime>
                           {it.startTime.slice(0, 5)} - {it.endTime.slice(0, 5)}
@@ -383,8 +433,15 @@ export const WeeklyScheduleView: React.FC = () => {
                       </S.ItemType>
                       {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
                       {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
-                      {it.scheduleDetailId ? (
+                      {it.scheduleDetailId && !dayIsPast ? (
                         <S.ItemActions>
+                          <S.ItemEditBtn
+                            type="button"
+                            onClick={() => openEditItem(it)}
+                            title="Sửa"
+                          >
+                            <Pencil size={14} />
+                          </S.ItemEditBtn>
                           <S.ItemDeleteBtn
                             type="button"
                             onClick={() =>
@@ -401,7 +458,8 @@ export const WeeklyScheduleView: React.FC = () => {
                 )}
               </S.DayBody>
             </S.DayColumn>
-          ))}
+            );
+          })}
         </S.Board>
       )}
 
@@ -409,7 +467,7 @@ export const WeeklyScheduleView: React.FC = () => {
       {itemModalOpen && editingItem && itemModalItem && (
         <ItemModal
           isOpen={itemModalOpen}
-          editId={null}
+          editId={editingId}
           item={itemModalItem}
           onClose={() => setItemModalOpen(false)}
           onSave={() => handleItemSave(editingItem)}

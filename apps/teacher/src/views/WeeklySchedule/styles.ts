@@ -1191,7 +1191,7 @@ export const Board = styled.div`
   }
 `;
 
-export const DayColumn = styled.div`
+export const DayColumn = styled.div<{ $isPast?: boolean }>`
   background: white;
   border-radius: 12px;
   padding: 12px;
@@ -1200,6 +1200,8 @@ export const DayColumn = styled.div`
   gap: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   min-height: 240px;
+  opacity: ${(props) => (props.$isPast ? 0.55 : 1)};
+  pointer-events: ${(props) => (props.$isPast ? 'none' : 'auto')};
 `;
 
 export const DayHeader = styled.div`
@@ -1210,11 +1212,26 @@ export const DayHeader = styled.div`
   border-bottom: 2px solid #e5e7eb;
 `;
 
-export const DayTitle = styled.h4`
+export const DayTitle = styled.h4<{ $isPast?: boolean; $isToday?: boolean }>`
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #1f2937;
+  color: ${(props) => (props.$isPast ? '#9CA3AF' : '#1f2937')};
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const TodayBadge = styled.span`
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #065F46;
+  background: #D1FAE5;
+  border: 1px solid #6EE7B7;
+  border-radius: 10px;
+  padding: 1px 7px;
+  line-height: 1.4;
 `;
 
 export const DayBody = styled.div`
@@ -1223,17 +1240,17 @@ export const DayBody = styled.div`
   gap: 8px;
 `;
 
-export const AddButton = styled.button`
+export const AddButton = styled.button<{ $isPast?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1.5px dashed #9ca3af;
+  border: 1.5px dashed ${(props) => (props.$isPast ? '#D1D5DB' : '#9CA3AF')};
   background: white;
-  color: #6b7280;
-  cursor: pointer;
+  color: ${(props) => (props.$isPast ? '#D1D5DB' : '#6b7280')};
+  cursor: ${(props) => (props.$isPast ? 'not-allowed' : 'pointer')};
   transition: all 0.15s;
 
   &:hover {
@@ -1253,7 +1270,7 @@ export const EmptyDay = styled.div`
 
 // ── Item card ──────────────────────────────────────────────────────────────────
 
-export const ItemCard = styled.div<{ $color: string }>`
+export const ItemCard = styled.div<{ $color: string; $isPast?: boolean }>`
   background: white;
   border-left: 4px solid ${(props) => props.$color};
   border-radius: 8px;
@@ -1263,6 +1280,7 @@ export const ItemCard = styled.div<{ $color: string }>`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  opacity: ${(props) => (props.$isPast ? 0.6 : 1)};
 `;
 
 export const ItemHeader = styled.div`
@@ -1322,6 +1340,23 @@ export const ItemActions = styled.div`
 
   ${ItemCard}:hover & {
     display: flex;
+  }
+`;
+
+export const ItemEditBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: #dbeafe;
+  color: #1d4ed8;
+  cursor: pointer;
+
+  &:hover {
+    background: #bfdbfe;
   }
 `;
 

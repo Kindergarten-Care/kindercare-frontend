@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTeacherClasses } from '@/hooks/useTeacherQueries';
 import * as WeeklyScheduleService from '@/services/weeklySchedule/WeeklyScheduleService';
 import type {
@@ -119,6 +119,51 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     [currentMonth.year, currentMonth.month]
   );
 
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const todayWeekOrder = useMemo(() => {
+    const dow = today.getDay(); // 0=Sun
+    const offset = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + offset);
+    const fri = new Date(monday);
+    fri.setDate(monday.getDate() + 4);
+    if (monday.getFullYear() === currentMonth.year && monday.getMonth() + 1 === currentMonth.month) {
+      const found = weeksInMonth.find(
+        (w) =>
+          w.startDate === `${String(monday.getDate()).padStart(2, '0')}/${String(monday.getMonth() + 1).padStart(2, '0')}`
+      );
+      return found?.weekOrder ?? null;
+    }
+    return null;
+  }, [today, currentMonth.year, currentMonth.month, weeksInMonth]);
+
+  const todayDayOfWeek = useMemo(() => {
+    const dowMap = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', ''];
+    return dowMap[today.getDay()] ?? null;
+  }, [today]);
+
+  const isPastDay = useCallback(
+    (dayOfWeek: SchoolDay): boolean => {
+      const dowMap: Record<SchoolDay, number> = {
+        Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5,
+      };
+      const targetDow = dowMap[dayOfWeek];
+      const dow = today.getDay(); // 0=Sun
+      const daysSinceMonday = dow === 0 ? 6 : dow - 1;
+      const currentMonday = new Date(today);
+      currentMonday.setDate(today.getDate() - daysSinceMonday);
+      const targetDate = new Date(currentMonday);
+      targetDate.setDate(currentMonday.getDate() + (targetDow - 1));
+      return targetDate < today;
+    },
+    [today]
+  );
+
   const currentWeek = useMemo(
     () => weeks.find((w) => w.weekOrder === selectedWeek) || null,
     [weeks, selectedWeek]
@@ -159,10 +204,10 @@ export const useWeeklySchedule = (activeClassId?: number) => {
       setWeeks(data.weeks || []);
       setMonthTheme(data.monthlySchedule?.monthTheme || '');
 
-      // Auto-select first week that has data, or week 1
-      const firstFilledWeek = data.weeks?.[0]?.weekOrder ?? 1;
-      setSelectedWeek(firstFilledWeek);
-      setWeekTheme(data.weeks?.[0]?.weekTheme || '');
+      // Sync weekTheme for the currently selected week when reloading data.
+      // Do NOT reset selectedWeek here; otherwise the user is forced back to week 1 after every save.
+      const current = data.weeks?.find((w) => w.weekOrder === selectedWeek);
+      setWeekTheme(current?.weekTheme || '');
     } catch (error: any) {
       const msg = error?.response?.data?.message || 'Không thể tải thời khóa biểu';
       showToast(typeof msg === 'string' ? msg : 'Không thể tải thời khóa biểu', 'error');
@@ -286,6 +331,20 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     [weeks, selectedWeek]
   );
 
+  const updateItem = useCallback(
+    (day: SchoolDay, scheduleDetailId: number, updates: Partial<Omit<WeeklyScheduleDetail, 'scheduleDetailId' | 'weeklyScheduleId'>>) => {
+      const ws = weeks.find((w) => w.weekOrder === selectedWeek);
+      if (!ws) return;
+      const updatedItems = ws.items.map((it) =>
+        it.scheduleDetailId === scheduleDetailId ? { ...it, ...updates } : it
+      );
+      const updatedWs: WeeklySchedule = { ...ws, items: updatedItems };
+      const updatedWeeks = weeks.filter((w) => w.weekOrder !== selectedWeek);
+      setWeeks([...updatedWeeks, updatedWs].sort((a, b) => a.weekOrder - b.weekOrder));
+    },
+    [weeks, selectedWeek]
+  );
+
   // ── Month navigation ─────────────────────────────────────────────────────
   const prevMonth = useCallback(() => {
     setCurrentMonth((prev) =>
@@ -351,6 +410,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     classId,
     className,
     currentMonth,
+    setCurrentMonth,
     prevMonth,
     nextMonth,
     monthTheme,
@@ -364,6 +424,9 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     setWeekTheme,
     currentWeek,
     itemsByDay,
+    todayWeekOrder,
+    todayDayOfWeek,
+    isPastDay,
     isLoading,
     isSaving,
     toasts,
@@ -371,6 +434,7 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     saveWeeklySchedule,
     addItem,
     removeItem,
+    updateItem,
     csvPreview,
     csvModalOpen,
     setCsvModalOpen,
