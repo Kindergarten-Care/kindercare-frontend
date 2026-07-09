@@ -292,3 +292,67 @@ export const useMonthlyGoodKids = (year: number, month: number) => {
     staleTime: 5 * 60 * 1000,
   });
 };
+
+// ─── Class Schedule ───────────────────────────────────────────────────────────
+
+interface ScheduleItem {
+  id: number;
+  timeSlot: string;
+  subject: string;
+  activityName: string;
+  teacherName?: string;
+  notes?: string;
+}
+
+interface DailySchedule {
+  date: string;
+  items: ScheduleItem[];
+}
+
+export const useClassSchedule = (classId: number | string | undefined, date?: string) => {
+  return useQuery({
+    queryKey: ['classSchedule', classId, date],
+    queryFn: async (): Promise<DailySchedule[]> => {
+      const params: Record<string, string> = {};
+      if (date) params.date = date;
+      const res = await apiClient.get<ApiResponse<DailySchedule[]>>(
+        `/teacher/classes/${classId}/schedule`,
+        { params }
+      );
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// ─── Class Menu ───────────────────────────────────────────────────────────────
+
+interface MenuItem {
+  id: number;
+  mealType: string; // breakfast, lunch, snack, dinner
+  dishes: string[];
+  notes?: string;
+}
+
+interface DailyMenu {
+  date: string;
+  items: MenuItem[];
+}
+
+export const useClassMenu = (classId: number | string | undefined, date?: string) => {
+  return useQuery({
+    queryKey: ['classMenu', classId, date],
+    queryFn: async (): Promise<DailyMenu[]> => {
+      const params: Record<string, string> = {};
+      if (date) params.date = date;
+      const res = await apiClient.get<ApiResponse<DailyMenu[]>>(
+        `/teacher/classes/${classId}/menu`,
+        { params }
+      );
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
