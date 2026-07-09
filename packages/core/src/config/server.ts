@@ -43,6 +43,7 @@ export const SERVER = {
     getTeacherDetail: '/principal/teacher/:id/detail',
     getParentDetail: '/principal/parent/:id/detail',
     getStudentDetail: '/principal/student/:id/detail',
+    getStudents: '/principal/students',
     getUnassignedStudents: '/principal/students/unassigned',
     resetAccountPassword: '/principal/accounts/:id/reset-password',
     lockAccount: '/principal/accounts/:id/lock',

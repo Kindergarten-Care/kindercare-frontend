@@ -25,6 +25,7 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
       <span>👤</span>
     ),
     subItems: [
+      { label: 'Học sinh', href: '/students', icon: <span>👶</span> },
       { label: 'Giáo viên', href: '/accounts?role=teacher', icon: <span>👨🏼‍🏫</span> },
       { label: 'Phụ huynh', href: '/accounts?role=parent', icon: <span>👨‍👩‍👧‍👦</span> },
     ]
