@@ -6,6 +6,7 @@ export class ClassMapper {
       classId: dto.classId,
       className: dto.className,
       gradeName: dto.gradeName,
+      yearName: dto.yearName,
       totalStudents: dto.totalStudents,
       attendanceToday: {
         present: dto.attendanceToday.present,

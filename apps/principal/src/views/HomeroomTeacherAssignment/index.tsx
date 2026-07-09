@@ -88,7 +88,7 @@ export default function HomeroomTeacherAssignmentView() {
             <>
               <HeaderRow>
                 <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>Lớp {classDetail.className}</h3>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>Lớp {classDetail.className} {classDetail.yearName && <span style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 400 }}>({classDetail.yearName})</span>}</h3>
                   <p style={{ margin: 0, marginTop: 4, color: '#6b7280', fontSize: '0.875rem' }}>Thuộc: {classDetail.gradeName} • Sĩ số: {classDetail.totalStudents}</p>
                 </div>
                 <ActionButton onClick={() => setIsModalOpen(true)}>+ Bổ nhiệm Giáo viên</ActionButton>

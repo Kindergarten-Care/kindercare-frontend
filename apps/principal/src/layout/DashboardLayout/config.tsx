@@ -42,9 +42,9 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
       <span>📋</span>
     ),
     subItems: [
+      { label: 'Năm học', href: '/assignments/academic-year', icon: <span>📅</span> },
       { label: 'Bổ nhiệm GVCN', href: '/assignments/homeroom-teacher', icon: <span>👨🏼‍🏫</span> },
       { label: 'Xếp lớp', href: '/assignments/class-placement', icon: <span>🎓</span> },
-      { label: 'Năm học', href: '/assignments/academic-year', icon: <span>📅</span> },
     ]
   }
 ];

@@ -25,6 +25,7 @@ export interface ClassDetailApiDto {
   classId: number;
   className: string;
   gradeName: string;
+  yearName?: string;
   teachers: ClassTeacherApiDto[];
   totalStudents: number;
   attendanceToday: ClassAttendanceApiDto;
@@ -58,6 +59,7 @@ export interface ClassDetailDomainModel {
   classId: number;
   className: string;
   gradeName: string;
+  yearName?: string;
   teachers: ClassTeacherDomainModel[];
   totalStudents: number;
   attendanceToday: ClassAttendanceDomainModel;

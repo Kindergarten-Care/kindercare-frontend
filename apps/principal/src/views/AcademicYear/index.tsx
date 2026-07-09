@@ -194,63 +194,77 @@ export default function AcademicYearView() {
         )}
       </Card>
 
+      <Title style={{ marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '32px' }}>
+        Quy trình Chuyển giao Năm học
+      </Title>
+
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-        <Card style={{ flex: 1 }}>
-          <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div><span style={{ fontSize: '1.5rem' }}>🏁</span> Tổng kết năm học</div>
-            {activeYear && (
-              <Badge $active={true} style={{ fontSize: '1rem', padding: '6px 12px' }}>
-                {activeYear.YearName}
-              </Badge>
-            )}
-          </CardTitle>
-          <InfoText>
-            Khi tổng kết năm học <b>{activeYear?.YearName || 'đang hoạt động'}</b>:
-            <ul style={{ marginTop: 8, marginLeft: 20 }}>
-              <li>Tất cả học sinh <b>Khối Lá</b> sẽ được tự động chuyển trạng thái sang <b>Đã tốt nghiệp</b>.</li>
-              <li>Học sinh các khối khác sẽ được gỡ khỏi lớp hiện tại (đưa về trạng thái <b>Chờ xếp lớp</b>).</li>
-            </ul>
-            <i>Lưu ý: Hành động này không thể hoàn tác.</i>
-          </InfoText>
-          <DangerButton onClick={handleEndYear} disabled={loadingEnd || loadingStart}>
-            {loadingEnd ? 'Đang xử lý...' : 'Thực hiện Tổng kết'}
-          </DangerButton>
-        </Card>
+        
+        {/* Left Column */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Bước 1 */}
+          <Card style={{ borderLeft: '4px solid #ef4444', margin: 0 }}>
+            <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div><span style={{ fontSize: '1.25rem', marginRight: '8px' }}>1️⃣</span> <b>Bước 1:</b> Tổng kết năm hiện tại</div>
+              {activeYear && (
+                <Badge $active={true} style={{ fontSize: '0.85rem', padding: '4px 8px' }}>
+                  {activeYear.YearName}
+                </Badge>
+              )}
+            </CardTitle>
+            <InfoText style={{ fontSize: '0.9rem' }}>
+              Tự động tốt nghiệp học sinh Khối Lá (5 tuổi) và gỡ lớp hiện tại của toàn bộ học sinh để chuẩn bị lên lớp mới.
+              <div style={{ color: '#991b1b', marginTop: '8px' }}>
+                <b>⚠️ Lưu ý:</b> Hành động này không thể hoàn tác.
+              </div>
+            </InfoText>
+            <DangerButton onClick={handleEndYear} disabled={loadingEnd || loadingStart} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+              {loadingEnd ? 'Đang xử lý...' : 'Thực hiện Tổng kết'}
+            </DangerButton>
+          </Card>
 
-        <Card style={{ flex: 1 }}>
+          {/* Bước 3 */}
+          <Card style={{ borderLeft: '4px solid #10b981', margin: 0 }}>
+            <CardTitle>
+              <span style={{ fontSize: '1.25rem', marginRight: '8px' }}>3️⃣</span> <b>Bước 3:</b> Kích hoạt năm học mới
+            </CardTitle>
+            <InfoText style={{ margin: 0, fontSize: '0.9rem' }}>
+              Sau khi khởi tạo, hãy tìm năm học mới trên <b>Bảng danh sách</b> và bấm <b>Kích hoạt</b>. Năm học cũ sẽ tự động đóng lại.
+            </InfoText>
+          </Card>
+        </div>
+
+        {/* Right Column - Bước 2 */}
+        <Card style={{ flex: 1, borderLeft: '4px solid #0ea5e9', margin: 0 }}>
           <CardTitle>
-            <span style={{ fontSize: '1.5rem' }}>🌱</span> Khởi tạo Năm học mới
+            <span style={{ fontSize: '1.25rem', marginRight: '8px' }}>2️⃣</span> <b>Bước 2:</b> Khởi tạo năm học mới
           </CardTitle>
-          <InfoText>
-            Hành động này sẽ tạo một chu kỳ năm học mới, đồng thời <b>sao chép toàn bộ danh sách Lớp học</b> (không bao gồm học sinh & giáo viên) từ năm cũ sang.
+          <InfoText style={{ fontSize: '0.9rem' }}>
+            Tạo khung thời gian cho năm học mới. Hệ thống sẽ tự động sao chép danh sách lớp học (không bao gồm học sinh) từ năm cũ.
           </InfoText>
 
-          <form onSubmit={handleStartYear}>
+          <form onSubmit={handleStartYear} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
             <FormGroup>
-              <Label>Tên năm học (VD: 2024 - 2025)</Label>
-              <Input type="text" value={yearName} onChange={e => setYearName(e.target.value)} required />
+              <Label style={{ fontSize: '0.9rem' }}>Tên năm học (VD: Niên khóa 2027 - 2028)</Label>
+              <Input type="text" value={yearName} onChange={e => setYearName(e.target.value)} required placeholder="Nhập tên năm học..." style={{ padding: '8px 12px' }} />
             </FormGroup>
             <div style={{ display: 'flex', gap: 16 }}>
               <FormGroup style={{ flex: 1 }}>
-                <Label>Ngày bắt đầu</Label>
-                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+                <Label style={{ fontSize: '0.9rem' }}>Ngày bắt đầu</Label>
+                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required style={{ padding: '8px 12px' }} />
               </FormGroup>
               <FormGroup style={{ flex: 1 }}>
-                <Label>Ngày kết thúc</Label>
-                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
+                <Label style={{ fontSize: '0.9rem' }}>Ngày kết thúc</Label>
+                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required style={{ padding: '8px 12px' }} />
               </FormGroup>
             </div>
             
-            <FormGroup style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, marginBottom: 16 }}>
-              <input type="checkbox" id="isActiveCheck" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-              <Label htmlFor="isActiveCheck" style={{ margin: 0, cursor: 'pointer' }}>Kích hoạt năm học này ngay lập tức</Label>
-            </FormGroup>
-
-            <PrimaryButton type="submit" style={{ marginTop: 8 }} disabled={loadingStart || loadingEnd}>
-              {loadingStart ? 'Đang khởi tạo...' : 'Khởi tạo Năm học'}
+            <PrimaryButton type="submit" style={{ marginTop: 8, padding: '8px 16px', fontSize: '0.9rem' }} disabled={loadingStart || loadingEnd}>
+              {loadingStart ? 'Đang khởi tạo...' : 'Lưu & Khởi tạo Năm học'}
             </PrimaryButton>
           </form>
         </Card>
+
       </div>
     </Container>
   );
