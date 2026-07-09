@@ -148,7 +148,7 @@ export class HealthService {
   }
 
   // POST /teacher/classes/:classId/student-health/logs (single)
-  async createHealthLog(classId: number | string, studentId: number | string, payload: SubmitHealthMeasurementPayload, termPeriod?: string): Promise<HealthLogDomainModel> {
+  async createHealthLog(classId: number | string, studentId: number | string, payload: Omit<SubmitHealthMeasurementPayload, 'bmi'>, termPeriod?: string): Promise<HealthLogDomainModel> {
     const url = `/teacher/classes/${classId}/student-health/logs`;
     const params = termPeriod ? { termPeriod } : undefined;
     const res = await apiClient.post<ApiResponse<{ log: HealthLogApiDto }>>(url, { ...payload, studentId }, { params });

@@ -81,15 +81,15 @@ export const HealthView: React.FC = () => {
     }
 
     try {
-      const bmi = weight / ((height / 100) * (height / 100));
-      const measuredAt = new Date().toISOString();
       const now = new Date();
-      const termPeriod = `${now.getFullYear()}-${Math.ceil((now.getMonth() + 1) / 6)}`;
-      await healthService.createHealthLog(
-        activeClassId!,
+      const month = now.getMonth() + 1;
+      const termPeriod = month <= 6 ? `${now.getFullYear()}-1` : `${now.getFullYear()}-2`;
+      const payload = {
         studentId,
-        { studentId, height, weight, bmi: Math.round(bmi * 10) / 10, measuredAt, notes: row.note, termPeriod }
-      );
+        height,
+        weight,
+      };
+      await healthService.createHealthLog(activeClassId!, studentId, payload, termPeriod);
       setSavedRows(prev => new Set([...prev, studentId]));
       setTimeout(() => {
         setSavedRows(prev => {
@@ -101,7 +101,6 @@ export const HealthView: React.FC = () => {
 
       addToast('Lưu chỉ số thành công!', 'success');
     } catch (err: any) {
-      console.error('Save health log error:', err?.response?.data);
       const msg = err?.response?.data?.message || err?.message || 'Lỗi không xác định';
       addToast(`Lưu thất bại: ${msg}`, 'error');
     }
