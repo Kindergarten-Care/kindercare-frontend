@@ -154,8 +154,9 @@ export const HealthView: React.FC = () => {
     if (tab === 'medications') {
       setLoadingMeds(true);
       healthService.getMedicalRequests(classId).then(data => {
-        setMedications(data);
+        setMedications(Array.isArray(data) ? data : []);
       }).catch(() => {
+        setMedications([]);
         addToast('Lỗi tải đơn thuốc', 'error');
       }).finally(() => setLoadingMeds(false));
     }
@@ -163,8 +164,9 @@ export const HealthView: React.FC = () => {
     if (tab === 'bmi') {
       setLoadingStudents(true);
       studentService.getDetailedStudents(classId).then(data => {
-        setStudents(data);
+        setStudents(Array.isArray(data) ? data : []);
       }).catch(() => {
+        setStudents([]);
         addToast('Lỗi tải danh sách học sinh', 'error');
       }).finally(() => setLoadingStudents(false));
     }
