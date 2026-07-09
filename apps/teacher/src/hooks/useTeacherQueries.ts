@@ -21,7 +21,7 @@ export const useCreateNewsfeed = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateNewsfeedPayload) => {
-      await apiClient.post('/newsfeeds', payload);
+      await apiClient.post(`/teacher/classes/${payload.classId}/newsfeed`, { content: payload.content, mediaUrl: payload.mediaUrl });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
@@ -42,8 +42,8 @@ export const useNewsfeeds = (classId?: number | string) => {
   return useQuery({
     queryKey: ['newsfeeds', classId],
     queryFn: async (): Promise<NewsfeedItem[]> => {
-      const url = classId ? `/newsfeeds/class/${classId}` : '/newsfeeds';
-      const res = await apiClient.get<ApiResponse<NewsfeedItem[]>>(url);
+      const url = classId ? `/teacher/classes/${classId}/newsfeed` : '/teacher/newsfeed';
+      const res = await apiClient.get<ApiResponse<any[]>>(url);
       return res.data.data || [];
     },
     enabled: !!classId,
@@ -55,7 +55,7 @@ export const useDeleteNewsfeed = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ classId, postId }: { classId: number | string; postId: number | string }) => {
-      await apiClient.delete(`/newsfeeds/${postId}`);
+      await apiClient.delete(`/teacher/classes/${classId}/newsfeed/${postId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['newsfeeds'] });
@@ -282,14 +282,14 @@ export const useMedicalRequests = (classId?: number | string, status?: string) =
   return useQuery({
     queryKey: ['medicalRequests', classId, status],
     queryFn: async (): Promise<MedicalRequest[]> => {
+      if (!classId || classId === '0') return [];
       const params: Record<string, string> = {};
       if (status) params.status = status;
-      const url = classId
-        ? `/teacher/classes/${classId}/medical-requests`
-        : '/teacher/classes/0/medical-requests';
+      const url = `/teacher/classes/${classId}/medical-requests`;
       const res = await apiClient.get<ApiResponse<MedicalRequest[]>>(url, { params });
       return res.data.data || [];
     },
+    enabled: !!classId && classId !== '0',
     staleTime: 1 * 60 * 1000,
   });
 };
@@ -369,12 +369,12 @@ interface MonthlyGoodKid {
   year: number;
 }
 
-export const useMonthlyGoodKids = (year: number, month: number) => {
+export const useMonthlyGoodKids = (classId: number | string, year: number, month: number) => {
   return useQuery({
-    queryKey: ['monthlyGoodKids', year, month],
+    queryKey: ['monthlyGoodKids', classId, year, month],
     queryFn: async (): Promise<MonthlyGoodKid[]> => {
       const res = await apiClient.get<ApiResponse<MonthlyGoodKid[]>>(
-        `/teacher/monthly-good-kids?year=${year}&month=${month}`
+        `/teacher/classes/${classId}/monthly-good-kids?year=${year}&month=${month}`
       );
       return res.data.data || [];
     },
