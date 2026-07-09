@@ -29,6 +29,40 @@ export const useCreateNewsfeed = () => {
   });
 };
 
+interface NewsfeedItem {
+  id: number;
+  content: string;
+  mediaUrl?: string;
+  teacherName: string;
+  teacherAvatar?: string;
+  createdAt: number;
+}
+
+export const useNewsfeeds = (classId?: number | string) => {
+  return useQuery({
+    queryKey: ['newsfeeds', classId],
+    queryFn: async (): Promise<NewsfeedItem[]> => {
+      const url = classId ? `/newsfeeds/class/${classId}` : '/newsfeeds';
+      const res = await apiClient.get<ApiResponse<NewsfeedItem[]>>(url);
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 30 * 1000,
+  });
+};
+
+export const useDeleteNewsfeed = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ classId, postId }: { classId: number | string; postId: number | string }) => {
+      await apiClient.delete(`/newsfeeds/${postId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds'] });
+    },
+  });
+};
+
 function toDomain(api: TeacherClassApiDto): TeacherClassDomainModel {
   const name = api.className ?? '';
   const parts = name.split(/\s+/);
