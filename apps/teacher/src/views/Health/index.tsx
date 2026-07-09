@@ -41,7 +41,8 @@ export const HealthView: React.FC = () => {
     }
   }, [classes, activeClassId]);
 
-  const { data: students } = useDetailedStudents(activeClassId);
+  const { data: studentsData } = useDetailedStudents(activeClassId);
+  const students = studentsData?.students ?? [];
 
   // ── Health Measurements ────────────────────────────────────────────────────────
   const [healthRows, setHealthRows] = useState<Map<number, HealthRowState>>(new Map());
