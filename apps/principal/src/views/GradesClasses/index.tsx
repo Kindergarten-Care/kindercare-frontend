@@ -62,10 +62,20 @@ export default function GradesClassesView() {
     }));
   };
 
+  const totalGrades = grades.length;
+  const totalClasses = grades.reduce((sum, g) => sum + g.classes.length, 0);
+
   return (
     <Container>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <Title style={{ marginBottom: 0 }}>Khối học và Lớp học</Title>
+        <Title style={{ marginBottom: 0 }}>
+          Khối học và Lớp học 
+          {totalGrades > 0 && (
+            <span style={{ fontSize: '1.1rem', color: '#64748b', fontWeight: 'normal', marginLeft: '12px' }}>
+              ({totalGrades} Khối • {totalClasses} Lớp)
+            </span>
+          )}
+        </Title>
         <button 
           style={{
             display: 'flex',

@@ -30,13 +30,6 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     ]
   },
   {
-    label: 'Khối học và lớp học',
-    icon: (
-      <span>🏫</span>
-    ),
-    href: '/grades-classes'
-  },
-  {
     label: 'Công tác biên chế',
     icon: (
       <span>📋</span>
@@ -46,5 +39,12 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
       { label: 'Bổ nhiệm GVCN', href: '/assignments/homeroom-teacher', icon: <span>👨🏼‍🏫</span> },
       { label: 'Xếp lớp', href: '/assignments/class-placement', icon: <span>🎓</span> },
     ]
-  }
+  },
+  {
+    label: 'Khối học và lớp học',
+    icon: (
+      <span>🏫</span>
+    ),
+    href: '/grades-classes'
+  },
 ];
