@@ -11,44 +11,50 @@ import * as S from './styles';
 import ChildSelectorModal from './ChildSelectorModal';
 import ChildSelectorDropdown from './ChildSelectorDropdown';
 import { useRequestBadge } from './useRequestBadge';
+import { useBillingBadge } from './useBillingBadge';
 import {
   IconHome, IconDiary, IconMenu, IconProfile,
-  IconChart, IconCalendar, IconCreditCard, IconReceipt,
-  IconSettings, IconLogout, IconChevronLeft, IconChevronRight,
-  IconChevronDown, IconRequest,
+  IconChart, IconCalendar, IconCreditCard,
+  IconChevronLeft, IconChevronRight,
+  IconChevronDown, IconRequest, IconWave, IconClose,
 } from '@/assets/icons/dashboard';
 
 interface ParentSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) => {
+const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle, mobileOpen, onMobileClose }) => {
+  const effectiveCollapsed = collapsed && !mobileOpen;
   const pathname = usePathname();
   const locale = useLocale();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { children: kids, activeStudent, setActiveStudent } = useStudent();
   const { parentProfile } = useParent();
   const pendingRequestCount = useRequestBadge();
+  const unpaidCount = useBillingBadge();
 
   const [csOpen, setCsOpen] = useState<boolean>(false);
-  const [showSettings, setShowSettings] = useState<boolean>(false);
   const csRef = useRef<HTMLDivElement>(null);
-  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent): void => {
       if (csRef.current && !csRef.current.contains(e.target as Node)) setCsOpen(false);
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setShowSettings(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = async (e: React.MouseEvent): Promise<void> => {
-    e.stopPropagation();
-    await logout();
-  };
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
 
   const activeChild = activeStudent ? {
     id: activeStudent.studentId,
@@ -59,23 +65,25 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
   } : null;
 
   return (
-    <S.SidebarWrapper>
-      <S.SidebarContainer $collapsed={collapsed}>
+    <>
+      {mobileOpen && <S.MobileOverlay onClick={onMobileClose} />}
+      <S.SidebarWrapper $mobileOpen={mobileOpen}>
+      <S.SidebarContainer $collapsed={effectiveCollapsed}>
 
-      <S.Brand $collapsed={collapsed}>
-        <S.BrandWrapper $collapsed={collapsed}>
+      <S.Brand $collapsed={effectiveCollapsed}>
+        <S.BrandWrapper $collapsed={effectiveCollapsed}>
           <S.LogoImg
             src="https://media.kindercare.app/KinderCare%20Logo/KC_ParentDashboardLogo.png"
             alt="KinderCare"
-            $collapsed={collapsed}
+            $collapsed={effectiveCollapsed}
           />
         </S.BrandWrapper>
       </S.Brand>
 
       {/* Child Switcher */}
       {activeChild && (
-        <S.CSwitcher $collapsed={collapsed} ref={csRef}>
-          <S.CSTrigger $collapsed={collapsed} onClick={() => setCsOpen(o => !o)}>
+        <S.CSwitcher $collapsed={effectiveCollapsed} ref={csRef}>
+          <S.CSTrigger $collapsed={effectiveCollapsed} onClick={() => setCsOpen(o => !o)}>
             <S.CSAv $gradient={activeChild.gradient}>
               {activeStudent && activeStudent.avatarUrl ? (
                 <img src={activeStudent.avatarUrl} alt={activeChild.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
@@ -83,27 +91,27 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
                 activeChild.initial
               )}
             </S.CSAv>
-            <S.CSInfo $hidden={collapsed}>
+            <S.CSInfo $hidden={effectiveCollapsed}>
               <S.CSName>{activeChild.name}</S.CSName>
               <S.CSClass>{activeChild.className}</S.CSClass>
             </S.CSInfo>
-            <S.CSChev $open={csOpen} $hidden={collapsed}>
+            <S.CSChev $open={csOpen} $hidden={effectiveCollapsed}>
               <IconChevronDown size={14} />
             </S.CSChev>
-            {collapsed && <S.Tooltip>{activeChild.name}</S.Tooltip>}
+            {effectiveCollapsed && <S.Tooltip>{activeChild.name}</S.Tooltip>}
           </S.CSTrigger>
 
           <ChildSelectorDropdown
-            isOpen={csOpen && !collapsed}
+            isOpen={csOpen && !effectiveCollapsed}
             onClose={() => setCsOpen(false)}
             kids={kids}
             activeStudent={activeStudent}
             setActiveStudent={setActiveStudent}
-            collapsed={collapsed}
+            collapsed={effectiveCollapsed}
           />
 
           <ChildSelectorModal
-            isOpen={csOpen && collapsed}
+            isOpen={csOpen && effectiveCollapsed}
             onClose={() => setCsOpen(false)}
             kids={kids}
             activeStudent={activeStudent}
@@ -115,105 +123,101 @@ const ParentSidebar: React.FC<ParentSidebarProps> = ({ collapsed, onToggle }) =>
       <S.Divider />
 
       {/* Nav sections */}
-      <S.NavLabel $hidden={collapsed}>Hôm nay</S.NavLabel>
-      <S.NavItem href={`/${locale}/dashboard`} $active={pathname.includes('/dashboard')} $collapsed={collapsed}>
+      <S.NavLabel $hidden={effectiveCollapsed}>Hôm nay</S.NavLabel>
+      <S.NavItem href={`/${locale}/dashboard`} $active={pathname.includes('/dashboard')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconHome size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Tổng quan</S.NavSpan>
-        {collapsed && <S.Tooltip>Tổng quan</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Tổng quan</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Tổng quan</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href={`/${locale}/diary`} $active={pathname.includes('/diary')} $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/diary`} $active={pathname.includes('/diary')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconDiary size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Nhật ký bé</S.NavSpan>
-        {!collapsed && <S.NavBadge>MỚI</S.NavBadge>}
-        {collapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
-        {collapsed && <S.Tooltip>Nhật ký bé</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Nhật ký bé</S.NavSpan>
+        {!effectiveCollapsed && <S.NavBadge>MỚI</S.NavBadge>}
+        {effectiveCollapsed && <S.NavBadge $collapsed>N</S.NavBadge>}
+        {effectiveCollapsed && <S.Tooltip>Nhật ký bé</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href={`/${locale}/schedule`} $active={pathname.includes('/schedule')} $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/schedule`} $active={pathname.includes('/schedule')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconMenu size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Thực đơn & Lịch học</S.NavSpan>
-        {collapsed && <S.Tooltip>Thực đơn & Lịch học</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Thực đơn & Lịch học</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Thực đơn & Lịch học</S.Tooltip>}
       </S.NavItem>
 
-      <S.NavLabel $hidden={collapsed}>Bé & Học tập</S.NavLabel>
-      <S.NavItem href={`/${locale}/profile`} $active={pathname.includes('/profile')} $collapsed={collapsed}>
+      <S.NavLabel $hidden={effectiveCollapsed}>Bé & Học tập</S.NavLabel>
+      <S.NavItem href={`/${locale}/profile`} $active={pathname.includes('/profile')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconProfile size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Hồ sơ bé</S.NavSpan>
-        {collapsed && <S.Tooltip>Hồ sơ bé</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Hồ sơ bé</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Hồ sơ bé</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href={`/${locale}/growth`} $active={pathname.includes('/growth')} $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/growth`} $active={pathname.includes('/growth')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconChart size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Lịch sử phát triển</S.NavSpan>
-        {collapsed && <S.Tooltip>Lịch sử phát triển</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Lịch sử phát triển</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Lịch sử phát triển</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href={`/${locale}/calendar`} $active={pathname.includes('/calendar')} $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/calendar`} $active={pathname.includes('/calendar')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconCalendar size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Lịch & Sự kiện</S.NavSpan>
-        {collapsed && <S.Tooltip>Lịch & Sự kiện</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Lịch & Sự kiện</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Lịch & Sự kiện</S.Tooltip>}
       </S.NavItem>
-      <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={collapsed}>
+      <S.NavItem href={`/${locale}/request`} $active={pathname.includes('/request')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconRequest size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Yêu cầu phụ huynh</S.NavSpan>
-        {pendingRequestCount > 0 && !collapsed && (
+        <S.NavSpan $hidden={effectiveCollapsed}>Yêu cầu phụ huynh</S.NavSpan>
+        {pendingRequestCount > 0 && !effectiveCollapsed && (
           <S.NavBadge>{pendingRequestCount > 99 ? '99+' : pendingRequestCount}</S.NavBadge>
         )}
-        {pendingRequestCount > 0 && collapsed && (
+        {pendingRequestCount > 0 && effectiveCollapsed && (
           <S.NavBadge $collapsed>{pendingRequestCount > 9 ? '9+' : pendingRequestCount}</S.NavBadge>
         )}
-        {collapsed && <S.Tooltip>Yêu cầu phụ huynh</S.Tooltip>}
+        {effectiveCollapsed && <S.Tooltip>Yêu cầu phụ huynh</S.Tooltip>}
+      </S.NavItem>
+      <S.NavItem href={`/${locale}/extracurricular`} $active={pathname.includes('/extracurricular')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
+        <S.NavIcon><IconWave size={18} /></S.NavIcon>
+        <S.NavSpan $hidden={effectiveCollapsed}>Hoạt động ngoại khóa</S.NavSpan>
+        {effectiveCollapsed && <S.Tooltip>Hoạt động ngoại khóa</S.Tooltip>}
       </S.NavItem>
 
-      <S.NavLabel $hidden={collapsed}>Tài chính</S.NavLabel>
-      <S.NavItem href="#" $collapsed={collapsed}>
+      <S.NavLabel $hidden={effectiveCollapsed}>Tài chính</S.NavLabel>
+      <S.NavItem href={`/${locale}/billing`} $active={pathname.includes('/billing')} $collapsed={effectiveCollapsed} onClick={onMobileClose}>
         <S.NavIcon><IconCreditCard size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Học phí & Lệ phí</S.NavSpan>
-        {!collapsed && <S.NavBadge style={{ background: '#d97706' }}>!</S.NavBadge>}
-        {collapsed && <S.Tooltip>Học phí & Lệ phí</S.Tooltip>}
-      </S.NavItem>
-      <S.NavItem href="#" $collapsed={collapsed}>
-        <S.NavIcon><IconReceipt size={18} /></S.NavIcon>
-        <S.NavSpan $hidden={collapsed}>Lịch sử thanh toán</S.NavSpan>
-        {collapsed && <S.Tooltip>Lịch sử thanh toán</S.Tooltip>}
+        <S.NavSpan $hidden={effectiveCollapsed}>Học phí & Lệ phí</S.NavSpan>
+        {unpaidCount > 0 && !effectiveCollapsed && (
+          <S.NavBadge>{unpaidCount > 99 ? '99+' : unpaidCount}</S.NavBadge>
+        )}
+        {unpaidCount > 0 && effectiveCollapsed && (
+          <S.NavBadge $collapsed>{unpaidCount > 9 ? '9+' : unpaidCount}</S.NavBadge>
+        )}
+        {effectiveCollapsed && <S.Tooltip>Học phí & Lệ phí</S.Tooltip>}
       </S.NavItem>
 
       {/* Footer */}
-      <S.SideProfile $collapsed={collapsed}>
+      <S.SideProfile $collapsed={effectiveCollapsed}>
         <S.ParentAv>
           {parentProfile?.avatarUrl ? (
-            <img 
-              src={parentProfile.avatarUrl} 
-              alt={parentProfile.fullName} 
+            <img
+              src={parentProfile.avatarUrl}
+              alt={parentProfile.fullName}
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
             />
           ) : (
             user?.relationship?.toLowerCase() === 'cha' ? '👨' : '👩'
           )}
         </S.ParentAv>
-        <S.ParentInfo $hidden={collapsed}>
+        <S.ParentInfo $hidden={effectiveCollapsed}>
           <strong>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</strong>
           <span>Phụ huynh {user?.relationship ? `· ${user.relationship}` : ''}</span>
         </S.ParentInfo>
-
-        {!collapsed && (
-          <S.DropdownContainer ref={settingsRef}>
-            <S.SettingsBtn onClick={e => { e.stopPropagation(); setShowSettings(s => !s); }}>
-              <IconSettings size={16} />
-            </S.SettingsBtn>
-            {showSettings && (
-              <S.DropdownMenu>
-                <S.DropdownItem onClick={handleLogout}>
-                  <IconLogout size={15} /> Đăng xuất
-                </S.DropdownItem>
-              </S.DropdownMenu>
-            )}
-          </S.DropdownContainer>
-        )}
-        {collapsed && <S.Tooltip>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</S.Tooltip>}
+        {effectiveCollapsed && <S.Tooltip>{parentProfile?.fullName || user?.fullName || user?.username || 'Phụ huynh'}</S.Tooltip>}
       </S.SideProfile>
     </S.SidebarContainer>
-    <S.ToggleBtn $collapsed={collapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
+    <S.ToggleBtn $collapsed={effectiveCollapsed} onClick={onToggle} title={collapsed ? 'Mở rộng' : 'Thu gọn'}>
       {collapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
     </S.ToggleBtn>
+    {mobileOpen && (
+      <S.MobileCloseBtn onClick={onMobileClose} aria-label="Đóng menu">
+        <IconClose size={18} />
+      </S.MobileCloseBtn>
+    )}
   </S.SidebarWrapper>
+  </>
   );
 };
 

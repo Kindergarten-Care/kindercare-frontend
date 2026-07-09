@@ -13,4 +13,23 @@
     "title": "KinderCare - Hệ Thống Quản Lý Mầm Non",
     "description": "Nền tảng quản lý mầm non toàn diện, hiện đại và bảo mật."
   }
+  ,
+  "LessonPlan": {
+    "asideTitle": "Trang Soạn",
+    "asideSubtitle": "Giáo viên • Lớp • Ngày",
+    "pageTitle": "Trang Soạn giáo án",
+    "dateLabel": "Ngày: {date}",
+    "chipTitle": "Tiêu đề",
+    "chipGoals": "Mục tiêu",
+    "chipMaterials": "Chuẩn bị",
+    "activityTitle": "Tiêu đề hoạt động",
+    "activityExample": "Ví dụ: Làm quen với chữ cái A",
+    "goalsTitle": "Mục tiêu",
+    "goal1": "Nhận diện chữ cái A",
+    "goal2": "Phát âm đúng âm /a/",
+    "activitiesTitle": "Hoạt động",
+    "activitySteps": "1. Khởi động (5 phút)\n2. Trình bày (15 phút)\n3. Thực hành (15 phút)",
+    "assessmentTitle": "Đánh giá",
+    "assessmentNote": "Ghi chú quan sát và kết luận"
+  }
 }

@@ -1,8 +1,30 @@
 import { apiClient, ApiResponse, SERVER } from '@kindercare/core';
-import { WorkHistoryApiDto, WorkHistoryDomainModel, SettingsApiDto, SettingsDomainModel } from '@/config/types/profile';
+import { 
+  TeacherProfileApiDto, 
+  TeacherProfileDomainModel,
+  WorkHistoryApiDto, 
+  WorkHistoryDomainModel, 
+  SettingsApiDto, 
+  SettingsDomainModel 
+} from '@/config/types/profile';
 import { ProfileMapper } from './ProfileMapper';
 
 class ProfileService {
+  async getProfile(): Promise<TeacherProfileDomainModel> {
+    const res = await apiClient.get<ApiResponse<TeacherProfileApiDto>>(SERVER.teacher.getProfile);
+
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || 'Failed to fetch teacher profile');
+    }
+
+    const data = res.data.data;
+    if (!data) {
+      throw new Error('No profile data returned');
+    }
+
+    return ProfileMapper.toDomain(data);
+  }
+
   async getWorkHistory(): Promise<WorkHistoryDomainModel[]> {
     try {
       const { data: res } = await apiClient.get<ApiResponse<WorkHistoryApiDto[]>>(SERVER.teacher.workHistory);

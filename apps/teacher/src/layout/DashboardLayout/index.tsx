@@ -25,9 +25,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     <S.LayoutContainer $isCollapsed={isCollapsed}>
       <TeacherSidebar 
         isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
         isCollapsed={isCollapsed}
-        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+        onClose={() => setIsSidebarOpen(false)} 
+        onToggleCollapse={() => setIsCollapsed(c => !c)}
       />
       
       {isSidebarOpen && (
@@ -48,4 +48,3 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </S.LayoutContainer>
   );
 };
-

@@ -6,7 +6,7 @@ export const ColLeft = styled.div`
   min-width: 0;
   position: sticky;
   top: 24px;
-  @media (max-width: 980px) { position: static; }
+  @media (max-width: 980px) { position: static; order: 2; }
 `;
 
 export const SecHead = styled.div`
@@ -75,6 +75,7 @@ export const PostAvatar = styled.span`
   font-family: var(--font-plus-jakarta, 'Plus Jakarta Sans'), sans-serif;
   font-size: 14px;
   font-weight: 700;
+  overflow: hidden;
 `;
 
 export const PostAuthor = styled.div`

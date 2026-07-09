@@ -5,17 +5,17 @@ import {
   CheckSquare, 
   Calendar, 
   Users,
-  Contact,
   BookOpen,
   Heart,
   Star,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTeacherClasses, useTeacherProfile } from '@/hooks/useTeacherQueries';
+import type { TeacherClassDomainModel } from '@/config/types/class';
 
 interface TeacherSidebarProps {
   isOpen?: boolean;
@@ -33,18 +33,38 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { data: profile } = useTeacherProfile();
   
+  const avatarUrl = profile?.avatarUrl;
+  
+  // Load classes using react query — returns TeacherClassDomainModel[]
+  const { data: classes } = useTeacherClasses();
+  
+  // Default to first class if available — displayName and classInitial are pre-computed by ClassMapper
+  const activeClass: TeacherClassDomainModel | null = classes && classes.length > 0 ? classes[0] : null;
+  const studentCount  = activeClass?.studentCount  ?? 0;
+  const displayClassName = activeClass?.displayName  ?? 'Lớp Mầm 1';
+  const classInitial     = activeClass?.classInitial ?? 'M1';
+
   const isDashboardActive = pathname === '/';
   const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
   const isScheduleActive = pathname === '/schedule';
+  const isLessonPlanActive = pathname === '/lesson-plan';
+  const isWeeklyScheduleActive = pathname === '/weekly-schedule';
   const isProfileActive = pathname === '/profile';
+  const isStudentHealthActive = pathname === '/student-health';
 
   // Extract user initials
   const getInitials = (name?: string) => {
     if (!name) return 'GV';
     const parts = name.trim().split(' ');
     return parts[parts.length - 1].charAt(0).toUpperCase();
+  };
+
+  // Helper to handle placeholder features
+  const handleFeatureNotImplemented = (featureName: string) => {
+    alert(`Tính năng "${featureName}" đang được phát triển.`);
   };
 
   return (
@@ -59,23 +79,20 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
       {/* LOGO */}
       <S.LogoContainer $isCollapsed={isCollapsed}>
         <S.LogoBlock>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#005A36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-          </svg>
+          <img
+            src="https://media.kindercare.app/KinderCare%20Logo/Kindercare_TeacherDashboardLogo.png"
+            alt="KinderCare Logo"
+            style={{ width: '100%', height: 'auto', maxWidth: 200, objectFit: 'contain' }}
+          />
         </S.LogoBlock>
-        <S.FullOnly $isCollapsed={isCollapsed}>
-          <S.LogoTitle>KINDER CARE</S.LogoTitle>
-          <S.LogoSub>QUẢN LÝ GIÁO VIÊN</S.LogoSub>
-        </S.FullOnly>
       </S.LogoContainer>
 
       {/* CLASS SELECTOR */}
-      <S.ProfileCard $isCollapsed={isCollapsed}>
-        <S.ProfileAvatar>M1</S.ProfileAvatar>
+      <S.ProfileCard $isCollapsed={isCollapsed} onClick={() => router.push('/students')}>
+        <S.ProfileAvatar>{classInitial}</S.ProfileAvatar>
         <S.FullOnly $isCollapsed={isCollapsed}>
-          <S.ProfileName>Lớp Mầm 1</S.ProfileName>
-          <S.ProfileDesc>42 học sinh</S.ProfileDesc>
+          <S.ProfileName>{displayClassName}</S.ProfileName>
+          <S.ProfileDesc>{studentCount} học sinh</S.ProfileDesc>
         </S.FullOnly>
         {!isCollapsed && (
           <ChevronRight size={16} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
@@ -106,20 +123,28 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           {isStudentsActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Users size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Danh sách lớp</S.NavLabel>
-          <S.NavBadge $isCollapsed={isCollapsed}>20</S.NavBadge>
+          <S.NavBadge $isCollapsed={isCollapsed}>{studentCount}</S.NavBadge>
         </S.NavItem>
 
-        <S.NavItem $isCollapsed={isCollapsed}>
-          <S.NavIcon><BookOpen size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Soạn giáo án</S.NavLabel>
+        <S.NavItem $active={isWeeklyScheduleActive} $isCollapsed={isCollapsed} onClick={() => router.push('/weekly-schedule')}>
+          {isWeeklyScheduleActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><Calendar size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Thời khóa biểu</S.NavLabel>
+          <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>CHĂM SÓC</S.SectTitle>
-        <S.NavItem $isCollapsed={isCollapsed}>
+        <S.NavItem
+          $active={isStudentHealthActive}
+          $isCollapsed={isCollapsed}
+          onClick={() => router.push('/student-health')}
+        >
+          {isStudentHealthActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Heart size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Y tế & Sức khỏe</S.NavLabel>
+          <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
-        <S.NavItem $isCollapsed={isCollapsed}>
+        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Phiếu bé ngoan')}>
           <S.NavIcon style={{ color: '#FBBF24' }}><Star size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Phiếu bé ngoan</S.NavLabel>
           <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
@@ -128,10 +153,16 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
 
       {/* USER BAR */}
       <S.UserBar $isCollapsed={isCollapsed}>
-        <S.UserAvatar>{getInitials(user?.fullName)}</S.UserAvatar>
+        <S.UserAvatar onClick={() => router.push('/profile')} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={profile?.fullName || user?.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            getInitials(profile?.fullName || user?.fullName)
+          )}
+        </S.UserAvatar>
         <S.FullOnly $isCollapsed={isCollapsed}>
-          <S.UserName>{user?.fullName || 'Giáo viên'}</S.UserName>
-          <S.UserRole>Giáo viên</S.UserRole>
+          <S.UserName>{profile?.fullName || user?.fullName || 'Giáo viên'}</S.UserName>
+          <S.UserRole>{user?.roleName === 'Teacher' ? 'Giáo viên' : (user?.roleName || 'Giáo viên')}</S.UserRole>
         </S.FullOnly>
         <S.SettingsBtn onClick={logout} title="Đăng xuất" style={{ display: isCollapsed ? 'none' : 'flex' }}>
           <LogOut size={15} strokeWidth={1.9} />

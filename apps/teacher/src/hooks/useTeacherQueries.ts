@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@kindercare/core';
 import { NewsfeedService } from '@/services/newsfeed';
+import { classService } from '@/services/class/ClassService';
+import { profileService } from '@/services/profile/ProfileService';
 import { AttendanceService } from '@/services/attendance';
+import { mapApiLeaveRequestToDomain } from '@/services/leave-requests';
+import { SettingsDomainModel } from '@/config/types/profile';
 
 // --- DASHBOARD STATS ---
 export const useDashboardStats = () => {
@@ -18,13 +22,19 @@ export const useDashboardStats = () => {
 export const useTeacherClasses = () => {
   return useQuery({
     queryKey: ['teacherClasses'],
-    queryFn: () => AttendanceService.getTeacherClasses(),
+    queryFn: () => classService.getClasses(),
+    staleTime: 5 * 60 * 1000, // 5 minutes — class list changes rarely
   });
 };
 
 // --- PROFILE ---
-import { profileService } from '@/services/profile/ProfileService';
-import { SettingsDomainModel } from '@/config/types/profile';
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacherProfile'],
+    queryFn: () => profileService.getProfile(),
+    staleTime: 15 * 60 * 1000, // cache profile details for 15 mins
+  });
+};
 
 export const useTeacherWorkHistory = () => {
   return useQuery({
@@ -70,8 +80,6 @@ export const useUpdateAvatar = () => {
   });
 };
 
-import { mapApiLeaveRequestToDomain } from '@/services/attendance';
-
 // --- LEAVE REQUESTS ---
 export const useLeaveRequests = (status = 'Pending') => {
   return useQuery({
@@ -108,7 +116,6 @@ export const useUpdateLeaveRequest = () => {
       }
     },
     onSettled: () => {
-      // Invalidate the query to refetch pending requests
       queryClient.invalidateQueries({ queryKey: ['leaveRequests'] });
     },
   });
@@ -227,6 +234,19 @@ export const useMonthlyGoodKids = (classId: string | number | undefined, month: 
 };
 
 // --- NEWSFEED ---
+export const useDetailedStudents = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['detailedStudents', classId],
+    queryFn: async () => {
+      if (!classId) return [];
+      const { studentService } = await import('@/services/student/StudentService');
+      return studentService.getDetailedStudents(classId);
+    },
+    enabled: !!classId,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+};
+
 export const useNewsfeeds = (classId: number | string | undefined) => {
   return useQuery({
     queryKey: ['newsfeeds', classId],

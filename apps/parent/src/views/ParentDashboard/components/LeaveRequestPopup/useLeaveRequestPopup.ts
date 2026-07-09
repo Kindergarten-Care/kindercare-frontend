@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useStudent } from '@/contexts/StudentContext';
 import { leaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { kcToast } from '@kindercare/ui';
+
+// Must match REASONS[0].value in index.tsx — kept in sync manually since it's the API-facing default.
+const DEFAULT_REASON = 'Bé bị ốm';
 
 interface UseLeaveRequestPopupProps {
   isOpen: boolean;
@@ -21,11 +25,12 @@ const getLocalDateString = (offsetDays = 0): string => {
 };
 
 export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLeaveRequestPopupProps) => {
+  const t = useTranslations('Dashboard');
   const { activeStudent } = useStudent();
   const [isLongLeave, setIsLongLeave] = useState<boolean>(false);
-  const [singleDate, setSingleDate] = useState<string>(getLocalDateString(0));
-  const [startDate, setStartDate] = useState<string>(getLocalDateString(0));
-  const [endDate, setEndDate] = useState<string>(getLocalDateString(1));
+  const [singleDate, setSingleDate] = useState<string>(getLocalDateString(1));
+  const [startDate, setStartDate] = useState<string>(getLocalDateString(1));
+  const [endDate, setEndDate] = useState<string>(getLocalDateString(2));
   const [selectedReason, setSelectedReason] = useState<string>('Bé bị ốm');
   const [note, setNote] = useState<string>('');
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
@@ -81,6 +86,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     const dayStr = String(dayNum).padStart(2, '0');
     const clickedDateStr = `${viewYear}-${monthStr}-${dayStr}`;
 
+    // Leave requests can only be filed starting tomorrow — reject today or earlier.
+    if (clickedDateStr < getLocalDateString(1)) return;
+
     if (!isLongLeave) {
       setSingleDate(clickedDateStr);
     } else {
@@ -117,7 +125,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
 
   const handleSubmit = async () => {
     if (!activeStudent) {
-      kcToast.error('Không tìm thấy thông tin học sinh.', 'Lỗi');
+      kcToast.error(t('leave.errStudentNotFound'), t('errorTitle'));
       return;
     }
 
@@ -125,7 +133,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     const toDateStr = isLongLeave ? endDate : singleDate;
 
     if (!fromDateStr || !toDateStr) {
-      kcToast.error('Vui lòng chọn thời gian nghỉ.', 'Lỗi');
+      kcToast.error(t('leave.errSelectDuration'), t('errorTitle'));
       return;
     }
 
@@ -134,7 +142,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     const toTimestamp = Math.floor(new Date(`${toDateStr}T23:59:59+07:00`).getTime() / 1000);
 
     if (isLongLeave && fromTimestamp > toTimestamp) {
-      kcToast.error('Ngày bắt đầu không được lớn hơn ngày kết thúc.', 'Lỗi');
+      kcToast.error(t('leave.errStartAfterEnd'), t('errorTitle'));
       return;
     }
 
@@ -146,16 +154,16 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
         toDate: toTimestamp,
         reason: selectedReason,
         evidenceUrl: null,
-        parentNotes: note.trim() || `Phụ huynh báo nghỉ với lý do: ${selectedReason}`,
+        parentNotes: note.trim() || t('leave.defaultNoteTemplate', { reason: selectedReason }),
       }, attachedFile);
 
-      kcToast.success('Gửi đơn xin nghỉ thành công!', 'Thành công');
+      kcToast.success(t('leave.successMsg'), t('successTitle'));
 
       // Reset state & close
       setIsLongLeave(false);
-      setSingleDate(getLocalDateString(0));
-      setStartDate(getLocalDateString(0));
-      setEndDate(getLocalDateString(1));
+      setSingleDate(getLocalDateString(1));
+      setStartDate(getLocalDateString(1));
+      setEndDate(getLocalDateString(2));
       setSelectedReason('Bé bị ốm');
       setNote('');
       setAttachedFile(null);
@@ -163,7 +171,7 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
       onClose();
     } catch (err: any) {
       console.error('Failed to create leave request:', err);
-      kcToast.error(err.message || 'Gửi đơn xin nghỉ thất bại. Vui lòng thử lại.', 'Lỗi');
+      kcToast.error(err.message || t('leave.errSubmitFailed'), t('errorTitle'));
     } finally {
       setIsSubmitting(false);
     }
@@ -172,8 +180,9 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
   const firstDow = new Date(viewYear, viewMonth, 1).getDay();
   const prefixBlanks = firstDow === 0 ? 6 : firstDow - 1;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const todayDateObj = new Date();
-  const todayStr = `${todayDateObj.getFullYear()}-${String(todayDateObj.getMonth() + 1).padStart(2, '0')}-${String(todayDateObj.getDate()).padStart(2, '0')}`;
+  const todayStr = getLocalDateString(0);
+  // Leave requests can only be filed starting tomorrow — today is no longer selectable.
+  const minDateStr = getLocalDateString(1);
 
   return {
     isLongLeave,
@@ -204,5 +213,6 @@ export const useLeaveRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseLe
     prefixBlanks,
     daysInMonth,
     todayStr,
+    minDateStr,
   };
 };

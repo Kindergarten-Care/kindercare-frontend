@@ -4,12 +4,18 @@ import styled from 'styled-components';
 
 export const DashboardWrapper = styled.div<{ $collapsed: boolean }>`
   display: grid;
-  grid-template-columns: ${p => p.$collapsed ? '84px' : '260px'} 1fr;
+  grid-template-columns: ${p => p.$collapsed ? '84px' : '260px'} minmax(0, 1fr);
   min-height: 100vh;
   background: var(--canvas);
   color: var(--fg);
   font-size: 14px;
   transition: grid-template-columns 0.22s ease;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
 `;
 
 export const MainContent = styled.main`
@@ -17,6 +23,8 @@ export const MainContent = styled.main`
   display: flex;
   flex-direction: column;
   min-height: 0;
+  container-type: inline-size;
+  container-name: dashboard-main;
 `;
 
 export const HeaderBand = styled.header`
@@ -71,6 +79,11 @@ export const HeaderInner = styled.div`
     padding: 13px 16px;
     gap: 12px;
   }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+    gap: 8px;
+  }
 `;
 
 export const Greet = styled.div`
@@ -87,6 +100,10 @@ export const GreetName = styled.h1<{ $collapsed: boolean }>`
   overflow: hidden;
   text-overflow: ellipsis;
   transition: font-size 0.22s ease;
+
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
 `;
 
 export const GreetDate = styled.p`
@@ -101,45 +118,6 @@ export const Actions = styled.div`
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-`;
-
-export const SearchBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0 13px;
-  height: 42px;
-  width: 240px;
-  color: var(--muted-2);
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &:focus-within {
-    border-color: var(--brand);
-    box-shadow: 0 0 0 3px var(--brand-tint);
-  }
-
-  input {
-    border: none;
-    outline: none;
-    background: none;
-    font: inherit;
-    font-size: 13.5px;
-    color: var(--fg);
-    width: 100%;
-
-    &::placeholder { color: var(--muted-2); }
-  }
-
-  @media (max-width: 1080px) {
-    width: 42px;
-    padding: 0;
-    justify-content: center;
-
-    input { display: none; }
-  }
 `;
 
 export const IconBtn = styled.button`
@@ -214,6 +192,19 @@ export const AvatarOnline = styled.span`
 export const PageArea = styled.div`
   flex: 1;
   margin: 0 86.5px;
+
+  @media (max-width: 1280px) {
+    margin: 0 40px;
+  }
+
+  @media (max-width: 860px) {
+    margin: 0 16px;
+  }
+
+  @media (max-width: 768px) {
+    margin: 0;
+    padding: 0 12px;
+  }
 `;
 
 export const SettingsWrapper = styled.div`

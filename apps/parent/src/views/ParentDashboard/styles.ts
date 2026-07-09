@@ -12,22 +12,22 @@ export const DashboardContainer = styled.div`
   gap: 32px;
 
   @media (max-width: 860px) {
-    padding: 18px 18px 96px;
+    padding: 18px 0 96px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 0 96px;
   }
 `;
 
 export const MainGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 384px;
+  grid-template-columns: minmax(0, 1fr) 384px;
   gap: 32px;
   width: 100%;
   align-items: start;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
-  }
-
-  @media (max-width: 900px) {
+  @container dashboard-main (max-width: 1100px) {
     display: flex;
     flex-direction: column;
   }
@@ -37,6 +37,7 @@ export const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 32px;
+  width: 100%;
   min-width: 0;
 `;
 
@@ -44,6 +45,7 @@ export const RightColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 32px;
+  width: 100%;
   min-width: 0;
 `;
 
@@ -54,8 +56,9 @@ export const LeftTopGrid = styled.div`
   align-items: stretch;
   width: 100%;
 
-  @media (max-width: 960px) {
-    grid-template-columns: minmax(0, 1fr);
+  @container dashboard-main (max-width: 1100px) {
+    display: flex;
+    flex-direction: column;
   }
 `;
 
@@ -63,15 +66,17 @@ export const ColumnStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 32px;
+  width: 100%;
+  min-width: 0;
 `;
 
 export const BottomGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
 
-  @media (max-width: 768px) {
+  @container dashboard-main (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;

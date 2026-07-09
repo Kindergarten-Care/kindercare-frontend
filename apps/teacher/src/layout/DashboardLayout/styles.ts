@@ -3,7 +3,7 @@ import styled from 'styled-components';
 export const LayoutContainer = styled.div<{ $isCollapsed?: boolean }>`
   display: flex;
   height: 100vh;
-  width: ${props => props.$isCollapsed ? 'calc(100% - 88px)' : 'calc(100% - 262px)'};
+  width: calc(100% - ${props => props.$isCollapsed ? '88px' : '262px'});
   margin-left: ${props => props.$isCollapsed ? '88px' : '262px'};
   overflow: hidden;
   background: #E9F1EC;
@@ -54,6 +54,5 @@ export const PageContent = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   position: relative; 
-  z-index: 1;
   min-width: 0;
 `;

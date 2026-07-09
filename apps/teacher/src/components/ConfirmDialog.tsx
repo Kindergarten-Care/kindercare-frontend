@@ -80,7 +80,6 @@ const ConfirmBtn = styled.button<{ $variant?: 'danger' | 'primary' }>`
 `;
 
 interface ConfirmDialogProps {
-  isOpen: boolean;
   title: string;
   message: string;
   confirmText?: string;
@@ -91,7 +90,6 @@ interface ConfirmDialogProps {
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  isOpen,
   title,
   message,
   confirmText = 'Xác nhận',
@@ -100,8 +98,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!isOpen) return null;
-
   return (
     <Overlay onClick={onCancel}>
       <Dialog onClick={e => e.stopPropagation()}>

@@ -96,6 +96,26 @@ export const PhotoCap = styled.span`
   gap: 5px;
 `;
 
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  border-radius: 13px;
+  border: 1px dashed #D9E2DC;
+  background: #FAFBFA;
+  color: var(--muted-2, #9CA3AF);
+  text-align: center;
+`;
+
+export const EmptyStateTitle = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted, #6B7280);
+`;
+
 export const PhotoOverlay = styled.div`
   position: absolute;
   inset: 0;

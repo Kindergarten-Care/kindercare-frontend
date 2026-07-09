@@ -7,6 +7,7 @@ export const PageWrap = styled.div`
   margin: 0 auto;
   padding: 24px 32px 56px;
   @media (max-width: 860px) { padding: 18px 18px 48px; }
+  @media (max-width: 768px) { padding: 16px 0 48px; }
 `;
 
 export const PageHeader = styled.div`
@@ -65,6 +66,17 @@ export const SecTitle = styled.h2`
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #1F2937;
+`;
+
+export const SecTag = styled.span`
+  margin-left: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  background: #E3EDFD;
+  white-space: nowrap;
 `;
 
 export const GrowthGrid = styled.div`

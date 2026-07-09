@@ -22,11 +22,13 @@ import { initPushNotification } from '@kindercare/core';
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
 const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
 
 import { AttendanceService } from '@/services/attendance';
+import { LeaveRequestService } from '@/services/leave-requests';
 import { Student } from '@/config/types/attendance';
 
 import { 
@@ -49,6 +51,7 @@ const getWeekNumber = (d: Date) => {
 };
 
 export const TeacherDashboardView: React.FC = () => {
+  const router = useRouter();
   const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
 
   const [activeClassId, setActiveClassId] = useState<number | null>(null);
@@ -206,7 +209,7 @@ export const TeacherDashboardView: React.FC = () => {
         // Nếu không có trong list pending (đã duyệt, hoặc chưa có request nào pending), fetch trực tiếp
         if (!target) {
           try {
-            target = await AttendanceService.getLeaveRequestDetail(openLeaveId);
+            target = await LeaveRequestService.getLeaveRequestDetail(openLeaveId);
           } catch (e) {
             console.warn('Could not fetch leave request detail for deep link');
           }
@@ -539,6 +542,8 @@ export const TeacherDashboardView: React.FC = () => {
             setRequestListType('leave');
           } else if (feature === 'Y tế & Sức khỏe') {
             setRequestListType('medical');
+          } else if (feature === 'Soạn giáo án') {
+            router.push('/lesson-plan');
           } else {
             addToast(`Đang mở: ${feature}`);
           }

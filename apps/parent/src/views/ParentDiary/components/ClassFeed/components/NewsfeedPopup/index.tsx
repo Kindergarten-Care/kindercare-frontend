@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { ResponsiveModal } from '@kindercare/ui';
 import { NewsfeedDomainModel } from '@/config/types/newsfeed';
 import { getLastNameInitial } from '@/utils/formatName';
 import { IconClose } from '@/assets/icons/dashboard';
@@ -15,30 +16,6 @@ interface NewsfeedPopupProps {
 }
 
 export function NewsfeedPopup({ isOpen, onClose, newsfeeds, onZoomImage }: NewsfeedPopupProps) {
-  const [shouldRender, setShouldRender] = useState(isOpen);
-  const [isClosing, setIsClosing] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true);
-      setIsClosing(false);
-      document.body.style.overflow = 'hidden';
-    } else if (shouldRender) {
-      setIsClosing(true);
-      document.body.style.overflow = '';
-      const t = setTimeout(() => {
-        setShouldRender(false);
-        setIsClosing(false);
-      }, 200);
-      return () => clearTimeout(t);
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, shouldRender]);
-
-  if (!shouldRender) return null;
-
   const formatTime = (ts: bigint) => {
     const d = new Date(Number(ts) * 1000);
     const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -47,9 +24,7 @@ export function NewsfeedPopup({ isOpen, onClose, newsfeeds, onZoomImage }: Newsf
   };
 
   return (
-    <>
-      <P.Overlay $isClosing={isClosing} onClick={onClose} />
-      <P.Container $isClosing={isClosing}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="680px" mobileMaxHeight="85vh">
         <P.Header>
           <P.Title>Bảng tin lớp học</P.Title>
           <P.CloseBtn onClick={onClose} aria-label="Đóng">
@@ -93,7 +68,6 @@ export function NewsfeedPopup({ isOpen, onClose, newsfeeds, onZoomImage }: Newsf
             );
           })}
         </P.ScrollArea>
-      </P.Container>
-    </>
+    </ResponsiveModal>
   );
 }

@@ -1,23 +1,27 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, DailyLesson, ChildHeroInfo } from '@/config/types/dashboard';
+import { useTranslations } from 'next-intl';
+import { CalendarDay, AttendanceStats, ScheduleItem, AlbumPhoto, ChildHeroInfo, UrgentNotice } from '@/config/types/dashboard';
 import { useStudent } from '@/contexts/StudentContext';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { formatDateFromBigInt, tsToHHMM, currentMonthParam } from '@/utils/Student/Date';
 import { formatPersonName } from '@/utils/formatName';
 import { attendanceService } from '@/services/Attendance/AttendanceService';
 import { AttendanceDomainModel } from '@/config/types/attendance';
-import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
 import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
 import { assessmentService } from '@/services/Assessment/AssessmentService';
 import { weeklyScheduleService } from '@/services/WeeklySchedule/WeeklyScheduleService';
+import { menuService } from '@/services/Menu/MenuService';
+import { MenuDomainModel } from '@/config/types/menu';
+import { invoiceService } from '@/services/Invoice/InvoiceService';
 import { ActivityType } from '@/config/types/dailySchedule';
 import { WeeklyScheduleDomainModel } from '@/config/types/weeklySchedule';
-import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AssessmentDomainModel } from '@/config/types/assessment';
+import { InvoiceDomainModel } from '@/config/types/invoice';
 import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
+import { formatVND, formatBillingMonth, getDueStatus } from '@/utils/Billing/format';
 
 // ─── Domain → Widget mappers ──────────────────────────────────────────────────
 
@@ -29,17 +33,6 @@ const ACTIVITY_META: Record<ActivityType, { icon: string; color: string }> = {
   play:    { icon: '🌳', color: '#059669' },
   dropoff: { icon: '🏠', color: '#005A36' },
   other:   { icon: '📌', color: '#6b7280' },
-};
-
-const LESSON_META: Record<string, { icon: string; color: string }> = {
-  math:     { icon: '🔢', color: '#3b82f6' },
-  science:  { icon: '🔬', color: '#10b981' },
-  art:      { icon: '🎨', color: '#ec4899' },
-  music:    { icon: '🎵', color: '#e11d48' },
-  language: { icon: '📖', color: '#d97706' },
-  english:  { icon: '🔤', color: '#2563eb' },
-  craft:    { icon: '✂️', color: '#8b5cf6' },
-  sport:    { icon: '⚽', color: '#059669' },
 };
 
 const DOW_KEYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
@@ -67,18 +60,25 @@ const weeklyTimetableToTodayItems = (timetable: WeeklyScheduleDomainModel | null
     });
 };
 
-const lessonsToItems = (lessons: DailyLessonDomainModel[]): DailyLesson[] =>
-  lessons.map(lesson => {
-    const meta = LESSON_META[lesson.iconType] ?? { icon: '📚', color: '#6b7280' };
-    return {
-      id: String(lesson.lessonLogId),
-      subject: lesson.subjectName,
-      title: lesson.lessonTitle,
-      description: lesson.details,
-      icon: meta.icon,
-      color: meta.color,
-    };
-  });
+/** Invoices with an upcoming or overdue due date, turned into dashboard urgent notices. */
+const invoicesToUrgentNotices = (
+  invoices: InvoiceDomainModel[],
+  t: ReturnType<typeof useTranslations>
+): UrgentNotice[] =>
+  invoices
+    .map(inv => ({ inv, due: getDueStatus(inv.dueDate, inv.paymentStatus) }))
+    .filter(({ due }) => due.variant === 'soon' || due.variant === 'overdue')
+    .sort((a, b) => (a.inv.dueDate ?? 0) - (b.inv.dueDate ?? 0))
+    .map(({ inv, due }) => ({
+      id: `invoice-${inv.invoiceId}`,
+      severity: due.variant === 'overdue' ? 'urgent' : 'important',
+      title: t('notices.invoiceTitle', { month: formatBillingMonth(inv.billingMonth), amount: formatVND(inv.totalAmount) }),
+      detail: due.variant === 'overdue'
+        ? t('notices.overdueDetail', { label: due.label })
+        : t('notices.dueSoonDetail', { label: due.label }),
+      date: due.label,
+      icon: '💰',
+    }));
 
 const albumsToPhotos = (albums: DailyAlbumDomainModel[]): AlbumPhoto[] =>
   albums.flatMap(album =>
@@ -155,6 +155,7 @@ const calculateAttendanceData = (
 
 export function useParentDashboard() {
   const { activeStudent, loading: studentLoading } = useStudent();
+  const t = useTranslations('Dashboard');
 
   const [apiLoading, setApiLoading] = useState(false);
   const [isLeavePopupOpen, setIsLeavePopupOpen] = useState(false);
@@ -171,9 +172,11 @@ export function useParentDashboard() {
   const [attendanceStats, setAttendanceStats] = useState<AttendanceStats>(DEFAULT_STATS);
 
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
-  const [lessons, setLessons] = useState<DailyLesson[]>([]);
   const [photos, setPhotos] = useState<AlbumPhoto[]>([]);
   const [latestAssessment, setLatestAssessment] = useState<AssessmentDomainModel | null>(null);
+  const [urgentNotices, setUrgentNotices] = useState<UrgentNotice[]>([]);
+  const [unpaidCount, setUnpaidCount] = useState(0);
+  const [dailyMenu, setDailyMenu] = useState<MenuDomainModel | null>(null);
 
   const prevMonth = useCallback((): void => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
@@ -202,28 +205,89 @@ export function useParentDashboard() {
     Promise.allSettled([
       attendanceService.getAttendance(id),
       weeklyScheduleService.getWeeklyTimetable(id),
-      dailyLessonService.getDailyLessons(id),
       dailyAlbumService.getDailyAlbums(id),
       assessmentService.getAssessments(id, currentMonthParam()),
+      invoiceService.getInvoices(id),
+      menuService.getMenu(id),
     ])
-      .then(([attendance, timetable, lessons, albums, assessments]) => {
+      .then(([attendance, timetable, albums, assessments, invoices, menu]) => {
         if (attendance.status === 'fulfilled') setAllRecords(attendance.value);
         else console.error('Attendance API failed:', attendance.reason);
 
         if (timetable.status === 'fulfilled') setSchedule(weeklyTimetableToTodayItems(timetable.value));
         else console.error('Weekly timetable API failed:', timetable.reason);
 
-        if (lessons.status === 'fulfilled') setLessons(lessonsToItems(lessons.value));
-        else console.error('Daily lessons API failed:', lessons.reason);
+
 
         if (albums.status === 'fulfilled') setPhotos(albumsToPhotos(albums.value));
         else console.error('Daily albums API failed:', albums.reason);
 
         if (assessments.status === 'fulfilled') setLatestAssessment(assessments.value[0] ?? null);
         else console.error('Assessments API failed:', assessments.reason);
+
+        if (menu.status === 'fulfilled') setDailyMenu(menu.value);
+        else console.error('Daily menu API failed:', menu.reason);
+
+        if (invoices.status === 'fulfilled') {
+          const invoiceNotices = invoicesToUrgentNotices(invoices.value, t);
+
+          const sortedUnpaid = invoices.value
+            .filter(inv => inv.paymentStatus !== 'Paid')
+            .sort((a, b) => (a.dueDate ?? Infinity) - (b.dueDate ?? Infinity));
+
+          const topUnpaid = sortedUnpaid[0] ?? null;
+          const topDue = topUnpaid ? getDueStatus(topUnpaid.dueDate, topUnpaid.paymentStatus) : null;
+          const feeNotice = topUnpaid && topDue
+            ? {
+                id: 'fee-alert',
+                severity: topDue.variant === 'overdue' ? 'urgent' as const : 'important' as const,
+                title: `Thanh toán ${formatBillingMonth(topUnpaid.billingMonth)} · ${formatVND(topUnpaid.totalAmount)}`,
+                detail: topDue.variant === 'overdue'
+                  ? `Đã quá hạn: ${topDue.label}`
+                  : `Đến hạn: ${topDue.label}`,
+                date: topDue.label,
+                icon: '💰',
+              }
+            : null;
+
+          setUrgentNotices([...(feeNotice ? [feeNotice] : []), ...invoiceNotices]);
+
+          Promise.all(
+            invoices.value.map(async (inv) => {
+              if (inv.invoiceType === 'EXTRACURRICULAR' && inv.paymentStatus === 'Partial') {
+                try {
+                  const detail = await invoiceService.getInvoiceDetail(inv.invoiceId);
+                  if (detail.extracurricularItems) {
+                    const activeItems = detail.extracurricularItems.filter(
+                      item => item.status === 'Active' || item.status === 'Pending'
+                    );
+                    if (activeItems.length > 0) {
+                      const allPending = activeItems.every(item => item.status === 'Pending');
+                      if (allPending) {
+                        return { ...inv, paymentStatus: 'Unpaid' as const };
+                      }
+                      const allActive = activeItems.every(item => item.status === 'Active');
+                      if (allActive) {
+                        return { ...inv, paymentStatus: 'Paid' as const };
+                      }
+                    }
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              }
+              return inv;
+            })
+          ).then(enrichedList => {
+            const count = enrichedList.filter(inv => inv.paymentStatus !== 'Paid').length;
+            setUnpaidCount(count);
+          });
+        } else {
+          console.error('Invoices API failed:', invoices.reason);
+        }
       })
       .finally(() => setApiLoading(false));
-  }, [activeStudent?.studentId]);
+  }, [activeStudent?.studentId, t]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -279,41 +343,41 @@ export function useParentDashboard() {
     const isWeekend = today.getDay() === 0 || today.getDay() === 6;
 
     let attendanceStatus: ChildHeroInfo['attendanceStatus'] = 'not_started';
-    let checkinTime = 'Chưa điểm danh';
-    let checkinSub = 'Chờ điểm danh sáng';
+    let checkinTime = t('hero.notCheckedIn');
+    let checkinSub = t('hero.waitingMorningCheckin');
 
     if (isWeekend) {
       attendanceStatus = 'holiday';
-      checkinTime = 'Ngày nghỉ';
-      checkinSub = 'Cuối tuần';
+      checkinTime = t('hero.holiday');
+      checkinSub = t('hero.weekend');
     } else if (todayRecord) {
       const statusLower = todayRecord.status?.toLowerCase();
       if (statusLower === 'excused') {
         attendanceStatus = 'excused';
-        checkinTime = 'Nghỉ học';
-        checkinSub = 'Có phép';
+        checkinTime = t('hero.excusedTitle');
+        checkinSub = t('hero.excusedSub');
       } else if (statusLower === 'absent') {
         attendanceStatus = 'absent';
-        checkinTime = 'Vắng mặt';
-        checkinSub = 'Không phép';
+        checkinTime = t('hero.absentTitle');
+        checkinSub = t('hero.absentSub');
       } else if (statusLower === 'holiday') {
         attendanceStatus = 'holiday';
-        checkinTime = 'Ngày nghỉ';
-        checkinSub = 'Lễ / Tết';
+        checkinTime = t('hero.holiday');
+        checkinSub = t('hero.holidaySub');
       } else if (statusLower === 'present') {
         if (todayRecord.checkInTime) {
           const inTime = tsToHHMM(todayRecord.checkInTime);
           if (todayRecord.checkOutTime) {
             const outTime = tsToHHMM(todayRecord.checkOutTime);
             attendanceStatus = 'checked_out';
-            checkinTime = `Đã ra về · ${outTime}`;
+            checkinTime = t('hero.checkedOut', { time: outTime });
             const pickupDisplay = formatPersonName(todayRecord.pickedUpBy, todayRecord.pickedUpRelationship, '');
-            checkinSub = pickupDisplay ? `Đón bởi: ${pickupDisplay}` : 'Đã đón bé';
+            checkinSub = pickupDisplay ? t('hero.pickedUpBy', { name: pickupDisplay }) : t('hero.pickedUpGeneric');
           } else {
             attendanceStatus = 'studying';
-            checkinTime = `Đã đến trường · ${inTime}`;
+            checkinTime = t('hero.checkedIn', { time: inTime });
             const dropoffDisplay = formatPersonName(todayRecord.droppedOffBy, todayRecord.droppedOffRelationship, '');
-            checkinSub = dropoffDisplay ? `Đưa bởi: ${dropoffDisplay}` : 'Đang học';
+            checkinSub = dropoffDisplay ? t('hero.droppedOffBy', { name: dropoffDisplay }) : t('hero.studyingGeneric');
           }
         }
       }
@@ -333,13 +397,13 @@ export function useParentDashboard() {
     ? {
         name: activeStudent.fullName,
         className: activeStudent.className,
-        teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : 'Chưa phân công',
+        teacher: leadTeacher ? getTeacherDisplayName(leadTeacher) : t('hero.teacherUnassigned'),
         academicYear: activeStudent.academicYearName,
         branch: activeStudent.campusName,
         statusTags: [
-          { label: `🎂 NS: ${formatDateFromBigInt(activeStudent.dateOfBirth)}`, type: 'neutral' as const },
-          { label: `📅 Nhập học: ${formatDateFromBigInt(activeStudent.admissionDate)}`, type: 'neutral' as const },
-          { label: activeStudent.allergies ? `⚠️ ${activeStudent.allergies}` : 'Không dị ứng', type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
+          { label: t('hero.dobTag', { date: formatDateFromBigInt(activeStudent.dateOfBirth) }), type: 'neutral' as const },
+          { label: t('hero.admissionTag', { date: formatDateFromBigInt(activeStudent.admissionDate) }), type: 'neutral' as const },
+          { label: activeStudent.allergies ? t('hero.allergyTag', { allergies: activeStudent.allergies }) : t('hero.noAllergies'), type: activeStudent.allergies ? 'yellow' as const : 'green' as const },
         ],
         checkinTime: todayStatus.checkinTime,
         checkinSub: todayStatus.checkinSub,
@@ -351,11 +415,11 @@ export function useParentDashboard() {
     loading: studentLoading || apiLoading,
     activeStudent,
     schedule,
-    lessons,
     photos,
     calendarDays,
     attendanceStats,
     latestAssessment,
+    urgentNotices,
     childHero,
     todayCalendarStatus,
     avatarGradient: activeStudent ? getAvatarGradient(activeStudent.studentId) : '',
@@ -368,5 +432,7 @@ export function useParentDashboard() {
     isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
     isProxyPopupOpen, openProxyPopup, closeProxyPopup,
     isQrPopupOpen,     openQrPopup,     closeQrPopup,
+    unpaidCount,
+    dailyMenu,
   };
 }

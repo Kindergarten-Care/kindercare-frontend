@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import * as S from './styles';
 import { IconChart } from '@/assets/icons/dashboard';
 import { AssessmentDomainModel } from '@/config/types/assessment';
@@ -49,7 +49,6 @@ const PaintbrushIcon: React.FC<IconProps> = ({ size = 18, ...props }) => (
 
 interface DomainConfig {
   id: string;
-  name: string;
   color: string;
   bg: string;
   Icon: React.FC<IconProps>;
@@ -58,27 +57,37 @@ interface DomainConfig {
 }
 
 const DOMAIN_CONFIGS: DomainConfig[] = [
-  { id: 'physical',  name: 'Thể chất',           color: '#2563eb', bg: '#eff6ff',  Icon: BarbellIcon,      scoreKey: 'physicalScore',        fallbackScore: 7.8 },
-  { id: 'cognitive', name: 'Nhận thức',            color: '#005A36', bg: '#eaf7f0',  Icon: BrainIcon,        scoreKey: 'cognitiveScore',        fallbackScore: 9.1 },
-  { id: 'language',  name: 'Ngôn ngữ',             color: '#7c3aed', bg: '#f5f3ff',  Icon: MessageSquareIcon, scoreKey: 'languageScore',         fallbackScore: 9.4 },
-  { id: 'social',    name: 'Tình cảm – Xã hội',   color: '#f97316', bg: '#fff7ed',  Icon: HeartIcon,        scoreKey: 'socioEmotionalScore',   fallbackScore: 8.5 },
-  { id: 'aesthetic', name: 'Thẩm mỹ',              color: '#ec4899', bg: '#fdf2f8',  Icon: PaintbrushIcon,   scoreKey: 'aestheticScore',        fallbackScore: 8.2 },
+  { id: 'physical',  color: '#2563eb', bg: '#eff6ff',  Icon: BarbellIcon,      scoreKey: 'physicalScore',        fallbackScore: 7.8 },
+  { id: 'cognitive', color: '#005A36', bg: '#eaf7f0',  Icon: BrainIcon,        scoreKey: 'cognitiveScore',        fallbackScore: 9.1 },
+  { id: 'language',  color: '#7c3aed', bg: '#f5f3ff',  Icon: MessageSquareIcon, scoreKey: 'languageScore',         fallbackScore: 9.4 },
+  { id: 'social',    color: '#f97316', bg: '#fff7ed',  Icon: HeartIcon,        scoreKey: 'socioEmotionalScore',   fallbackScore: 8.5 },
+  { id: 'aesthetic', color: '#ec4899', bg: '#fdf2f8',  Icon: PaintbrushIcon,   scoreKey: 'aestheticScore',        fallbackScore: 8.2 },
 ];
+
+const DOMAIN_NAME_KEYS: Record<string, string> = {
+  physical: 'domains.physical',
+  cognitive: 'domains.cognitive',
+  language: 'domains.language',
+  social: 'domains.social',
+  aesthetic: 'domains.aesthetic',
+};
 
 interface DevelopmentalDomainsWidgetProps {
   assessment?: AssessmentDomainModel | null;
+  hideDetailsLink?: boolean;
 }
 
 /** "MM-YYYY" (API format) → "Tháng M/YYYY". */
-const formatAssessmentMonth = (assessmentMonth: string): string | null => {
+const formatAssessmentMonth = (assessmentMonth: string, t: ReturnType<typeof useTranslations>): string | null => {
   const [month, year] = assessmentMonth.split('-').map(Number);
   if (!month || !year) return null;
-  return `Tháng ${month}/${year}`;
+  return t('domains.monthLabel', { month, year });
 };
 
-const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment }) => {
+const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({ assessment, hideDetailsLink }) => {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations('Dashboard');
 
   if (!assessment) {
     return (
@@ -87,7 +96,7 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
           <S.CardTitleContainer>
             <S.CardTitle>
               <IconChart size={18} color="var(--brand, #005a36)" />
-              5 lĩnh vực phát triển
+              {t('domains.title')}
             </S.CardTitle>
           </S.CardTitleContainer>
         </S.CardHead>
@@ -98,8 +107,8 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
               <path d="m19 9-5 5-4-4-3 3" />
             </svg>
           </S.EmptyIcon>
-          <S.EmptyTitle>Chưa có đánh giá tháng này</S.EmptyTitle>
-          <S.EmptySub>Kết quả 5 lĩnh vực phát triển của bé<br />sẽ được cập nhật sớm nhất</S.EmptySub>
+          <S.EmptyTitle>{t('domains.emptyTitle')}</S.EmptyTitle>
+          <S.EmptySub dangerouslySetInnerHTML={{ __html: t.raw('domains.emptySub') }} />
         </S.EmptyState>
       </S.Card>
     );
@@ -112,7 +121,7 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
   });
 
   const avg = scores.reduce((sum, d) => sum + d.score, 0) / scores.length;
-  const monthLabel = formatAssessmentMonth(assessment.assessmentMonth);
+  const monthLabel = formatAssessmentMonth(assessment.assessmentMonth, t);
 
   return (
     <S.Card>
@@ -120,18 +129,20 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
         <S.CardTitleContainer>
           <S.CardTitle>
             <IconChart size={18} color="var(--brand, #005a36)" />
-            5 lĩnh vực phát triển
+            {t('domains.title')}
           </S.CardTitle>
-          <S.AvgBadge>TB {avg.toFixed(1)}</S.AvgBadge>
+          <S.AvgBadge>{t('domains.average', { avg: avg.toFixed(1) })}</S.AvgBadge>
           {monthLabel && <S.MonthTag>{monthLabel}</S.MonthTag>}
         </S.CardTitleContainer>
-        <S.DetailLink onClick={() => router.push(`/${locale}/growth`)}>
-          Chi tiết →
-        </S.DetailLink>
+        {!hideDetailsLink && (
+          <S.DetailLink onClick={() => router.push(`/${locale}/growth`)}>
+            {t('domains.viewDetail')}
+          </S.DetailLink>
+        )}
       </S.CardHead>
 
       <S.DomainsGrid>
-        {scores.map(({ id, name, score, color, bg, Icon }) => (
+        {scores.map(({ id, score, color, bg, Icon }) => (
           <S.DomainCard key={id} $color={color}>
             <S.DomainHead>
               <S.DomainIcon $bg={bg} $color={color}>
@@ -139,11 +150,11 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
               </S.DomainIcon>
             </S.DomainHead>
 
-            <S.DomainLabel>{name}</S.DomainLabel>
+            <S.DomainLabel>{t(DOMAIN_NAME_KEYS[id])}</S.DomainLabel>
 
             <S.ScoreRow>
               <S.ScoreValue>{score.toFixed(1)}</S.ScoreValue>
-              <S.ScoreMax>/10</S.ScoreMax>
+              <S.ScoreMax>{t('domains.scoreMax')}</S.ScoreMax>
             </S.ScoreRow>
 
             <S.ProgressWrapper>
@@ -155,7 +166,7 @@ const DevelopmentalDomainsWidget: React.FC<DevelopmentalDomainsWidgetProps> = ({
 
       {assessment.teacherComment && (
         <S.TeacherComment>
-          <strong>Nhận xét của giáo viên:</strong> {assessment.teacherComment}
+          <strong>{t('domains.teacherCommentLabel')}</strong> {assessment.teacherComment}
         </S.TeacherComment>
       )}
     </S.Card>

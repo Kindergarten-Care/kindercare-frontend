@@ -1,48 +1,74 @@
-export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 export type SchoolDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+export type DayOfWeek = SchoolDay | 'Saturday' | 'Sunday';
+
 export type ActivityType = 'pickup' | 'meal' | 'study' | 'nap' | 'play' | 'dropoff' | 'other';
 
-export interface MonthlySchedule {
-  monthlyScheduleId: number;
-  classId: number;
-  month: number;
-  year: number;
-  monthTheme: string;
-  approvedStatus: number; // 0 = Draft, 1 = Approved
-  isActive: boolean;
-  createdAt?: number;
-  updatedAt?: number;
-  weeks?: WeeklySchedule[];
-}
-
-export interface WeeklySchedule {
-  weeklyScheduleId: number;
-  monthlyScheduleId: number;
-  weekOrder: number;
-  weekTheme: string;
-  status: number; // 0 = Draft, 1 = Submitted, 2 = Approved
-  createdAt?: number;
-  updatedAt?: number;
-  items: WeeklyScheduleDetail[];
-}
-
+/**
+ * WeeklyScheduleDetail (WSD) - 1 row in WeeklyScheduleDetails table.
+ * Maps directly to: DayOfWeek, StartTime, EndTime, ActivityName, Details, Location, ActivityType
+ */
 export interface WeeklyScheduleDetail {
   scheduleDetailId?: number;
-  dayOfWeek: DayOfWeek;
-  startTime: string;
+  weeklyScheduleId?: number;
+  dayOfWeek: SchoolDay;
+  startTime: string; // HH:MM or HH:MM:SS
   endTime: string;
   activityName: string;
   activityType: ActivityType;
   details?: string | null;
   location?: string | null;
-  orderIndex?: number;
 }
 
-export interface WeekInfo {
-  order: number;
-  startDate: Date;
-  endDate: Date;
-  label: string; // e.g. "Tuần 1: 01/07 - 04/07/2026"
+/**
+ * WeeklySchedule (WS) - 1 row in WeeklySchedules table.
+ */
+export interface WeeklySchedule {
+  weeklyScheduleId?: number;
+  monthlyScheduleId: number;
+  weekOrder: number;
+  weekTheme: string;
+  createdAt?: number;
+  updatedAt?: number;
+  items: WeeklyScheduleDetail[];
+}
+
+/**
+ * MonthlySchedule (MS) - 1 row in MonthlySchedules table.
+ */
+export interface MonthlySchedule {
+  monthlyScheduleId?: number;
+  classId: number;
+  month: number;
+  year: number;
+  monthTheme: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface WeekInMonth {
+  weekOrder: number;
+  startDate: string; // DD/MM
+  endDate: string; // DD/MM
+  label: string; // "Tuần 1 (01/07 - 05/07)"
+}
+
+export interface MonthlyScheduleResponse {
+  monthlySchedule: MonthlySchedule | null;
+  weeks: WeeklySchedule[];
+  weeksInMonth: WeekInMonth[];
+}
+
+export interface CSVPreviewResult {
+  items: (WeeklyScheduleDetail & { weekOrder: number })[];
+  errors: string[];
+  byWeek: Record<number, (WeeklyScheduleDetail & { weekOrder: number })[]>;
+  totalRows: number;
+}
+
+export interface CSVImportResult {
+  success: number;
+  failed: number;
+  errors: string[];
 }
 
 export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
@@ -75,14 +101,10 @@ export const DAY_LABELS: Record<DayOfWeek, string> = {
   Sunday: 'Chủ nhật',
 };
 
-export const STATUS_LABELS: Record<number, string> = {
-  0: 'Nháp',
-  1: 'Đã gửi duyệt',
-  2: 'Đã duyệt',
-};
-
-export const STATUS_COLORS: Record<number, string> = {
-  0: '#6B7280',
-  1: '#F59E0B',
-  2: '#10B981',
-};
+export const SCHOOL_DAYS: { key: SchoolDay; label: string; short: string }[] = [
+  { key: 'Monday', label: 'Thứ 2', short: 'T2' },
+  { key: 'Tuesday', label: 'Thứ 3', short: 'T3' },
+  { key: 'Wednesday', label: 'Thứ 4', short: 'T4' },
+  { key: 'Thursday', label: 'Thứ 5', short: 'T5' },
+  { key: 'Friday', label: 'Thứ 6', short: 'T6' },
+];

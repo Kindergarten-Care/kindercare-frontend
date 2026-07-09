@@ -1,5 +1,16 @@
 import { apiClient } from '@kindercare/core';
 
+export interface NewsfeedPost {
+  postId: number;
+  classId: number;
+  teacherId: number;
+  content: string;
+  mediaUrl?: string;
+  postedAt: number; // Unix timestamp
+  teacherName?: string;
+  teacherAvatar?: string;
+  taggedStudents?: { studentId: number; studentName: string }[];
+}
 export class NewsfeedService {
   /**
    * Tạo bài viết/nhật ký lớp học mới

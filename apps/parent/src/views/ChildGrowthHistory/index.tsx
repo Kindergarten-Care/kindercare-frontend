@@ -46,13 +46,14 @@ export function ChildGrowthHistory() {
       </S.PageHeader>
 
       <S.Section>
-        <DevelopmentalDomainsWidget assessment={currentAssessment} />
+        <DevelopmentalDomainsWidget assessment={currentAssessment} hideDetailsLink={true} />
       </S.Section>
 
       <S.Section>
         <S.SecHead>
           <S.SecIcon $bg="#E3EDFD" $fg="#2563EB"><IconChart size={18} /></S.SecIcon>
           <S.SecTitle>Chỉ số thể chất &amp; biểu đồ tăng trưởng</S.SecTitle>
+          {latest && <S.SecTag>{latest.month}, {latest.termPeriod.split('-')[0]}</S.SecTag>}
         </S.SecHead>
         <S.GrowthGrid>
           <PhysicalMetricsStack

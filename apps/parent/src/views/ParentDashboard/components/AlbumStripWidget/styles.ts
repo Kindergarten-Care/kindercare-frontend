@@ -1,6 +1,7 @@
 'use client';
 
 import styled, { keyframes } from 'styled-components';
+import { ResponsiveModal } from '@kindercare/ui';
 
 const rise = keyframes`
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
@@ -8,6 +9,8 @@ const rise = keyframes`
 `;
 
 export const Card = styled.div`
+  container-type: inline-size;
+  container-name: album-strip-card;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -15,6 +18,10 @@ export const Card = styled.div`
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 `;
 
 export const Head = styled.div`
@@ -47,6 +54,12 @@ export const HeadTitle = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+
+  @container album-strip-card (max-width: 260px) {
+    font-size: 14px;
+  }
 `;
 
 export const PhotoCount = styled.span`
@@ -59,6 +72,8 @@ export const PhotoCount = styled.span`
   background: var(--brand-tint);
   padding: 3px 9px;
   border-radius: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 `;
 
 export const HeadSub = styled.div`
@@ -202,28 +217,6 @@ export const MoreTile = styled.button`
   }
 `;
 
-export const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-export const GalleryModal = styled.div`
-  background: var(--surface);
-  border-radius: 20px;
-  width: min(820px, 94vw);
-  max-height: 88vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  animation: ${rise} 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
-`;
 
 export const GalleryHead = styled.div`
   display: flex;
@@ -231,6 +224,12 @@ export const GalleryHead = styled.div`
   gap: 16px;
   padding: 22px 24px;
   border-bottom: 1px solid #f3f4f6;
+`;
+
+export const StyledResponsiveModal = styled(ResponsiveModal)`
+  @media (min-width: 768px) {
+    max-height: 85vh;
+  }
 `;
 
 export const GalleryHeadInfo = styled.div`
@@ -255,6 +254,25 @@ export const GalleryGrid = styled.div`
   gap: 16px;
   padding: 22px 24px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `;
 
 export const GalleryPhoto = styled.button<{ $bg: string }>`

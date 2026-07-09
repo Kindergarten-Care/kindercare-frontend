@@ -9,6 +9,11 @@ export const Card = styled.div`
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   padding: 18px;
   overflow: hidden;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 export const Grid = styled.div`
@@ -39,7 +44,7 @@ export const DayCell = styled.button<{ $inMonth?: boolean; $weekend?: boolean; $
   gap: 4px;
   cursor: pointer;
   transition: all .15s;
-  border: 1px solid ${p => p.$selected ? '#005A36' : p.$today ? '#BBDAC8' : '#EEF3F0'};
+  border: 1px solid ${p => p.$selected ? '#005A36' : p.$today ? '#BBDAC8' : '#D9E2DC'};
   background: ${p => p.$selected ? '#E6F3ED' : p.$today ? '#F4F8F5' : p.$weekend ? '#FAFBFA' : '#fff'};
   opacity: ${p => p.$inMonth ? 1 : .45};
 

@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from './styles';
 import { IconClose, IconCheck, IconMedicine, IconPlus } from '@/assets/icons/dashboard';
 import { useMedicationRequestPopup } from './useMedicationRequestPopup';
@@ -13,12 +15,13 @@ interface MedicationRequestPopupProps {
   onSubmitSuccess?: () => void;
 }
 
-const TIMING_OPTIONS = [
-  'Sau ăn sáng',
-  'Sau ăn trưa',
-  'Trước khi ngủ',
-  'Khi cần'
-];
+// `value` is sent to the API as-is and must stay stable across locales; only the label is translated.
+export const TIMING_OPTIONS = [
+  { value: 'Sau ăn sáng', labelKey: 'medication.timingAfterBreakfast' },
+  { value: 'Sau ăn trưa', labelKey: 'medication.timingAfterLunch' },
+  { value: 'Trước khi ngủ', labelKey: 'medication.timingBeforeSleep' },
+  { value: 'Khi cần', labelKey: 'medication.timingAsNeeded' },
+] as const;
 
 const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
   isOpen,
@@ -27,6 +30,7 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
   className,
   onSubmitSuccess
 }) => {
+  const t = useTranslations('Dashboard');
   const {
     medicines,
     generalNote,
@@ -42,20 +46,17 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
     handleClose,
   } = useMedicationRequestPopup({ isOpen, onClose, onSubmitSuccess });
 
-  if (!isOpen) return null;
-
   return (
-    <S.Overlay onClick={handleClose}>
-      <S.ModalContainer onClick={(e) => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={handleClose} maxWidth="580px">
         <S.HeadRow>
           <S.IconBox>
             <IconMedicine size={22} color="#dc2626" />
           </S.IconBox>
           <S.TitleWrap>
-            <S.Title>Dặn dò thuốc</S.Title>
-            <S.Subtitle>Gửi giáo viên cho bé {studentName} · Lớp {className}</S.Subtitle>
+            <S.Title>{t('medication.title')}</S.Title>
+            <S.Subtitle>{t('medication.subtitle', { name: studentName, className })}</S.Subtitle>
           </S.TitleWrap>
-          <S.CloseBtn onClick={handleClose} aria-label="Đóng popup">
+          <S.CloseBtn onClick={handleClose} aria-label={t('closePopup')}>
             <IconClose size={16} />
           </S.CloseBtn>
         </S.HeadRow>
@@ -68,12 +69,12 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
                 <S.CardHeader>
                   <S.CardBadge>
                     <IconMedicine size={12} color="var(--brand)" />
-                    Thuốc {index + 1}
+                    {t('medication.cardBadge', { number: index + 1 })}
                   </S.CardBadge>
                   {medicines.length > 1 && (
                     <S.RemoveCardBtn type="button" onClick={() => handleRemoveMedicine(med.id)}>
                       <IconClose size={12} color="#dc2626" />
-                      Xóa thuốc
+                      {t('medication.removeCard')}
                     </S.RemoveCardBtn>
                   )}
                 </S.CardHeader>
@@ -83,17 +84,17 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
                   <S.ImageUploadSlot onClick={() => document.getElementById(`file-input-${med.id}`)?.click()}>
                     {photoUrl ? (
                       <>
-                        <S.AttachedImagePreview src={photoUrl} alt={`Ảnh thuốc ${index + 1}`} />
+                        <S.AttachedImagePreview src={photoUrl} alt={t('medication.photoAlt', { number: index + 1 })} />
                         <S.ImageOverlayActions>
                           <S.RemovePhotoBtn type="button" onClick={(e) => handleRemovePhoto(med.id, e)}>
-                            Xóa ảnh
+                            {t('medication.removePhoto')}
                           </S.RemovePhotoBtn>
                         </S.ImageOverlayActions>
                       </>
                     ) : (
                       <>
                         <span style={{ fontSize: '18px' }}>📷</span>
-                        <S.UploadSlotLabel>Đính kèm ảnh</S.UploadSlotLabel>
+                        <S.UploadSlotLabel>{t('medication.attachPhoto')}</S.UploadSlotLabel>
                       </>
                     )}
                     <input
@@ -109,10 +110,10 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
                   <S.CardFieldsWrap>
                     {/* Tên thuốc */}
                     <S.InputGroup>
-                      <S.InputLabel>Tên thuốc</S.InputLabel>
+                      <S.InputLabel>{t('medication.nameLabel')}</S.InputLabel>
                       <S.StyledInput
                         type="text"
-                        placeholder="Ví dụ: Siro ho Prospan"
+                        placeholder={t('medication.namePlaceholder')}
                         value={med.name}
                         onChange={(e) => handleFieldChange(med.id, 'name', e.target.value)}
                       />
@@ -121,20 +122,20 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
                     {/* Dosage and Frequency side-by-side */}
                     <S.RowGrid2>
                       <S.InputGroup>
-                        <S.InputLabel>Liều lượng</S.InputLabel>
+                        <S.InputLabel>{t('medication.dosageLabel')}</S.InputLabel>
                         <S.StyledInput
                           type="text"
-                          placeholder="5ml / 1 viên"
+                          placeholder={t('medication.dosagePlaceholder')}
                           value={med.dosage}
                           onChange={(e) => handleFieldChange(med.id, 'dosage', e.target.value)}
                         />
                       </S.InputGroup>
 
                       <S.InputGroup>
-                        <S.InputLabel>Số lần / ngày</S.InputLabel>
+                        <S.InputLabel>{t('medication.frequencyLabel')}</S.InputLabel>
                         <S.StyledInput
                           type="text"
-                          placeholder="2 lần"
+                          placeholder={t('medication.frequencyPlaceholder')}
                           value={med.frequency}
                           onChange={(e) => handleFieldChange(med.id, 'frequency', e.target.value)}
                         />
@@ -143,16 +144,16 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
 
                     {/* Timing selection */}
                     <div>
-                      <S.TimingLabel>Thời điểm uống</S.TimingLabel>
+                      <S.TimingLabel>{t('medication.timingLabel')}</S.TimingLabel>
                       <S.PillsRow>
                         {TIMING_OPTIONS.map(time => (
                           <S.PillBtn
-                            key={time}
+                            key={time.value}
                             type="button"
-                            $active={med.selectedTimes.includes(time)}
-                            onClick={() => handleTimeToggle(med.id, time)}
+                            $active={med.selectedTimes.includes(time.value)}
+                            onClick={() => handleTimeToggle(med.id, time.value)}
                           >
-                            {time}
+                            {t(time.labelKey)}
                           </S.PillBtn>
                         ))}
                       </S.PillsRow>
@@ -166,14 +167,14 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
           {/* Add more button */}
           <S.AddMoreBtn type="button" onClick={handleAddMedicine}>
             <IconPlus size={14} color="var(--brand)" />
-            Thêm loại thuốc khác
+            {t('medication.addMore')}
           </S.AddMoreBtn>
 
           {/* General Notes for teacher */}
           <S.FormGroup>
-            <S.SectionLabel>Lưu ý chung cho giáo viên (tùy chọn)</S.SectionLabel>
+            <S.SectionLabel>{t('medication.generalNoteLabel')}</S.SectionLabel>
             <S.StyledTextarea
-              placeholder="Ví dụ: Tất cả thuốc để trong ba lô, ngăn trước..."
+              placeholder={t('medication.generalNotePlaceholder')}
               value={generalNote}
               onChange={(e) => setGeneralNote(e.target.value)}
             />
@@ -182,15 +183,14 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
 
         <S.Footer>
           <S.CancelBtn type="button" onClick={handleClose} disabled={isSubmitting}>
-            Hủy
+            {t('cancel')}
           </S.CancelBtn>
           <S.SubmitBtn type="button" onClick={handleSubmit} disabled={isSubmitting}>
             <IconCheck size={16} color="#ffffff" />
-            {isSubmitting ? 'Đang gửi...' : 'Gửi dặn dò'}
+            {isSubmitting ? t('submitting') : t('medication.submit')}
           </S.SubmitBtn>
         </S.Footer>
-      </S.ModalContainer>
-    </S.Overlay>
+    </ResponsiveModal>
   );
 };
 
