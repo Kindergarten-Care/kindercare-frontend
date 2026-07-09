@@ -53,7 +53,6 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const isLessonPlanActive = pathname === '/lesson-plan';
   const isWeeklyScheduleActive = pathname === '/weekly-schedule';
   const isProfileActive = pathname === '/profile';
-  const isStudentHealthActive = pathname === '/student-health';
 
   // Extract user initials
   const getInitials = (name?: string) => {
@@ -134,16 +133,6 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>CHĂM SÓC</S.SectTitle>
-        <S.NavItem
-          $active={isStudentHealthActive}
-          $isCollapsed={isCollapsed}
-          onClick={() => router.push('/student-health')}
-        >
-          {isStudentHealthActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
-          <S.NavIcon><Heart size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Y tế & Sức khỏe</S.NavLabel>
-          <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
-        </S.NavItem>
         <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Phiếu bé ngoan')}>
           <S.NavIcon style={{ color: '#FBBF24' }}><Star size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Phiếu bé ngoan</S.NavLabel>
