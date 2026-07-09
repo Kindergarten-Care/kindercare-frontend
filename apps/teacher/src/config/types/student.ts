@@ -17,7 +17,7 @@ export interface HealthRecordApiDto {
 export interface StudentDetailedApiDto {
   studentId: number;
   fullName: string;
-  dateOfBirth: number | null; // seconds
+  dateOfBirth: number | null; // seconds (as returned by API)
   gender: string;
   allergies: string | null;
   avatarUrl: string | null;
@@ -39,12 +39,13 @@ export interface HealthRecordDomainModel {
   height: number;
   weight: number;
   bmi: number;
+  lastMeasuredAt?: string;
 }
 
 export interface StudentDetailedDomainModel {
   studentId: number;
   fullName: string;
-  dateOfBirth: bigint | null; // bigint in seconds as per api-integration.md
+  dateOfBirth: number | null; // number (seconds) as returned by API
   gender: string;
   allergies: string | null;
   avatarUrl: string | null;

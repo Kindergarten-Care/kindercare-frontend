@@ -3,6 +3,7 @@ export * from './src/services/SocketService';
 
 // Config & Types
 export * from './src/config/types/socket';
+export * from './src/config/types/health';
 export * from './src/config/server';
 export * from './src/types/api';
 export * from './src/types/auth';

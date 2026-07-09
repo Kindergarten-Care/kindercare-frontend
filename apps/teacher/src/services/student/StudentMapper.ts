@@ -5,7 +5,7 @@ export class StudentMapper {
     return {
       studentId: dto.studentId,
       fullName: dto.fullName,
-      dateOfBirth: dto.dateOfBirth ? BigInt(dto.dateOfBirth) : null,
+      dateOfBirth: dto.dateOfBirth,
       gender: dto.gender,
       allergies: dto.allergies,
       avatarUrl: dto.avatarUrl,

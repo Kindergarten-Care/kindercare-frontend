@@ -62,6 +62,7 @@ export interface CSVPreviewResult {
   items: (WeeklyScheduleDetail & { weekOrder: number })[];
   errors: string[];
   byWeek: Record<number, (WeeklyScheduleDetail & { weekOrder: number })[]>;
+  byDay: Record<DayOfWeek, (WeeklyScheduleDetail & { weekOrder: number })[]>;
   totalRows: number;
 }
 
