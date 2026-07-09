@@ -20,28 +20,6 @@ import {
   Avatar,
   Badge,
   AvatarWrapper,
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { studentService } from '@/services/Student/StudentService';
-import { StudentDetailDomainModel } from '@/config/types/student';
-import { useRouter } from '@/i18n/routing';
-import {
-  Container,
-  Header,
-  BackButton,
-  LoadingText,
-  ErrorText,
-  Title,
-  Card,
-  CardTitle,
-  InfoGrid,
-  InfoItem,
-  InfoLabel,
-  InfoValue,
-  Avatar,
-  Badge,
-  AvatarWrapper,
   InitialsText
 } from './styles';
 import { getInitials } from '../AccountList/utils/getInitials';
@@ -126,7 +104,9 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày sinh</InfoLabel>
-            <InfoValue>{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : 'N/A'}</InfoValue>
+            <InfoValue>
+              {student.dateOfBirth ? new Date(Number(student.dateOfBirth) * 1000).toLocaleDateString('vi-VN') : '—'}
+            </InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Giới tính</InfoLabel>
@@ -134,7 +114,9 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày nhập học</InfoLabel>
-            <InfoValue>{student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('vi-VN') : 'N/A'}</InfoValue>
+            <InfoValue>
+              {student.admissionDate ? new Date(Number(student.admissionDate) * 1000).toLocaleDateString('vi-VN') : '—'}
+            </InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Lớp hiện tại</InfoLabel>
@@ -143,7 +125,7 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           <InfoItem>
             <InfoLabel>Trạng thái</InfoLabel>
             <InfoValue>
-              <Badge>{student.status}</Badge>
+              <Badge $status={student.status}>{student.status === 'Studying' ? 'Đang học' : student.status}</Badge>
             </InfoValue>
           </InfoItem>
           <InfoItem style={{ gridColumn: '1 / -1' }}>
@@ -182,6 +164,14 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
                   <InfoItem>
                     <InfoLabel>Email</InfoLabel>
                     <InfoValue>{parent.email || 'N/A'}</InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>Nghề nghiệp</InfoLabel>
+                    <InfoValue>{parent.occupation || 'N/A'}</InfoValue>
+                  </InfoItem>
+                  <InfoItem style={{ gridColumn: '1 / -1' }}>
+                    <InfoLabel>Địa chỉ</InfoLabel>
+                    <InfoValue>{parent.address || 'N/A'}</InfoValue>
                   </InfoItem>
                 </InfoGrid>
               </div>
