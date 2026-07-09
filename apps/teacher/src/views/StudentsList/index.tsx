@@ -176,7 +176,7 @@ export const StudentsListView: React.FC = () => {
   }
 
   // Calculate age string
-  const calculateAgeStr = (dobSeconds?: bigint | null) => {
+  const calculateAgeStr = (dobSeconds?: number | null) => {
     if (!dobSeconds) return 'Chưa cập nhật';
     const birthDate = new Date(Number(dobSeconds) * 1000);
     const birthYear = birthDate.getFullYear();

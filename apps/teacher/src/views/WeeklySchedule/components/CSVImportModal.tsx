@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 import * as S from '../styles';
-import type { CSVPreviewResult } from '@/services/weeklySchedule/WeeklyScheduleService';
+import type { CSVPreviewResult, WeeklyScheduleDetail } from '@/config/types/weeklySchedule';
 import { ACTIVITY_TYPE_LABELS, DAY_LABELS } from '@/config/types/weeklySchedule';
 import type { SchoolDay } from '@/config/types/weeklySchedule';
 
@@ -169,7 +169,7 @@ Tuesday,09:00,10:15,Học tập,study,Giờ học Tiếng Việt,Lớp học`}
                       {preview.errors.length} lỗi trong file CSV
                     </p>
                     <ul style={{ margin: '4px 0 0 0', fontSize: 12, color: '#991B1B', paddingLeft: 16 }}>
-                      {preview.errors.slice(0, 5).map((err, i) => <li key={i}>{err}</li>)}
+                      {preview.errors.slice(0, 5).map((err: string, i: number) => <li key={i}>{err}</li>)}
                       {preview.errors.length > 5 && <li>...và {preview.errors.length - 5} lỗi khác</li>}
                     </ul>
                   </div>
@@ -201,7 +201,7 @@ Tuesday,09:00,10:15,Học tập,study,Giờ học Tiếng Việt,Lớp học`}
                         <div style={{ fontWeight: 700, fontSize: 13, color: '#2d3748', marginBottom: 8 }}>
                           {DAY_LABELS[day]} — {items.length} hoạt động
                         </div>
-                        {items.map((item, idx) => (
+                        {items.map((item: WeeklyScheduleDetail & { weekOrder: number }, idx: number) => (
                           <div key={idx} style={{
                             display: 'flex', gap: 8, alignItems: 'center',
                             padding: '4px 0', fontSize: 12, color: '#4a5568',

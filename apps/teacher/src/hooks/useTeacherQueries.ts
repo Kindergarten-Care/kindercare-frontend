@@ -1,320 +1,447 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@kindercare/core';
-import { NewsfeedService } from '@/services/newsfeed';
-import { classService } from '@/services/class/ClassService';
-import { profileService } from '@/services/profile/ProfileService';
-import { AttendanceService } from '@/services/attendance';
-import { mapApiLeaveRequestToDomain } from '@/services/leave-requests';
-import { SettingsDomainModel } from '@/config/types/profile';
+import { apiClient, ApiResponse } from '@kindercare/core';
+import type { StudentDetailedDomainModel } from '@/config/types/student';
+import type { TeacherClassApiDto, TeacherClassDomainModel } from '@/config/types/class';
 
-// --- DASHBOARD STATS ---
-export const useDashboardStats = () => {
-  return useQuery({
-    queryKey: ['dashboardStats'],
-    queryFn: async () => {
-      const response = await apiClient.get('/teacher/dashboard');
-      return response.data.data;
-    },
-    staleTime: 60 * 1000, // 1 minute
-  });
-};
+interface DetailedStudentsResponse {
+  classId: number;
+  totalStudents: number;
+  students: StudentDetailedDomainModel[];
+}
 
-export const useTeacherClasses = () => {
-  return useQuery({
-    queryKey: ['teacherClasses'],
-    queryFn: () => classService.getClasses(),
-    staleTime: 5 * 60 * 1000, // 5 minutes — class list changes rarely
-  });
-};
+// ─── Newsfeed ─────────────────────────────────────────────────────────────────
 
-// --- PROFILE ---
-export const useTeacherProfile = () => {
-  return useQuery({
-    queryKey: ['teacherProfile'],
-    queryFn: () => profileService.getProfile(),
-    staleTime: 15 * 60 * 1000, // cache profile details for 15 mins
-  });
-};
-
-export const useTeacherWorkHistory = () => {
-  return useQuery({
-    queryKey: ['teacherWorkHistory'],
-    queryFn: () => profileService.getWorkHistory(),
-  });
-};
-
-export const useTeacherSettings = () => {
-  return useQuery({
-    queryKey: ['teacherSettings'],
-    queryFn: () => profileService.getSettings(),
-  });
-};
-
-export const useUpdateSettings = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (settings: SettingsDomainModel) => profileService.updateSettings(settings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacherSettings'] });
-    }
-  });
-};
-
-export const useChangePassword = () => {
-  return useMutation({
-    mutationFn: (data: { current: string; new: string }) => 
-      profileService.changePassword(data.current, data.new)
-  });
-};
-
-export const useUploadAvatar = () => {
-  return useMutation({
-    mutationFn: (file: File) => profileService.uploadAvatar(file)
-  });
-};
-
-export const useUpdateAvatar = () => {
-  return useMutation({
-    mutationFn: (data: { avatarUrl: string; fullName: string }) => 
-      profileService.updateAvatar(data.avatarUrl, data.fullName)
-  });
-};
-
-// --- LEAVE REQUESTS ---
-export const useLeaveRequests = (status = 'Pending') => {
-  return useQuery({
-    queryKey: ['leaveRequests', status],
-    queryFn: async () => {
-      const response = await apiClient.get(`/teacher/leave-requests?status=${status}`);
-      return (response.data.data || []).map(mapApiLeaveRequestToDomain);
-    },
-    staleTime: 60 * 1000,
-  });
-};
-
-export const useUpdateLeaveRequest = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ requestId, status }: { requestId: string | number, status: string }) => {
-      const response = await apiClient.put(`/teacher/leave-requests/${requestId}/status`, { status });
-      return response.data;
-    },
-    onMutate: async ({ requestId, status }) => {
-      await queryClient.cancelQueries({ queryKey: ['leaveRequests'] });
-      const previousLeaves = queryClient.getQueryData(['leaveRequests', 'Pending']);
-      
-      queryClient.setQueryData(['leaveRequests', 'Pending'], (old: any) => {
-        if (!old) return [];
-        return old.map((req: any) => String(req.id) === String(requestId) ? { ...req, status } : req);
-      });
-      
-      return { previousLeaves };
-    },
-    onError: (err, newRequest, context) => {
-      if (context?.previousLeaves) {
-        queryClient.setQueryData(['leaveRequests', 'Pending'], context.previousLeaves);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['leaveRequests'] });
-    },
-  });
-};
-
-// --- TIMELINE (SCHEDULE & MENU) ---
-export const useClassSchedule = (classId: number | string | undefined, dateSeconds?: number) => {
-  return useQuery({
-    queryKey: ['classSchedule', classId, dateSeconds],
-    queryFn: async () => {
-      if (!classId) return [];
-      const { scheduleService } = await import('@/services/schedule/ScheduleService');
-      return scheduleService.getSchedule(classId, dateSeconds);
-    },
-    enabled: !!classId,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-  });
-};
-
-export const useClassMenu = (classId: string | number | undefined) => {
-  return useQuery({
-    queryKey: ['classMenu', classId],
-    queryFn: async () => {
-      if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/menu`);
-      return response.data.data;
-    },
-    enabled: !!classId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
-
-// --- MEDICAL REQUESTS ---
-export const useMedicalRequests = (classId: string | number | undefined) => {
-  return useQuery({
-    queryKey: ['medicalRequests', classId],
-    queryFn: async () => {
-      if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/medical-requests`);
-      return response.data.data;
-    },
-    enabled: !!classId,
-  });
-};
-
-export const useUpdateMedicalRequest = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ requestId, status, teacherNote }: { requestId: string | number; status: string; teacherNote?: string }) => {
-      const response = await apiClient.put(`/teacher/medical-requests/${requestId}`, { status, teacherNote });
-      return response.data;
-    },
-    onMutate: async ({ requestId, status }) => {
-      await queryClient.cancelQueries({ queryKey: ['medicalRequests'] });
-      
-      const previousMedicalRequests = queryClient.getQueriesData({ queryKey: ['medicalRequests'] });
-      
-      queryClient.setQueriesData({ queryKey: ['medicalRequests'] }, (old: any) => {
-        if (!old) return old;
-        return old.map((req: any) => 
-          (String(req.requestId) === String(requestId) || String(req.id) === String(requestId))
-            ? { ...req, status } 
-            : req
-        );
-      });
-      
-      return { previousMedicalRequests };
-    },
-    onError: (err, newRequest, context) => {
-      if (context?.previousMedicalRequests) {
-        context.previousMedicalRequests.forEach(([queryKey, oldData]) => {
-          queryClient.setQueryData(queryKey, oldData);
-        });
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });
-    },
-  });
-};
-
-// --- NOTIFICATIONS ---
-export const useNotifications = () => {
-  return useQuery({
-    queryKey: ['notifications'],
-    queryFn: async () => {
-      const response = await apiClient.get('/teacher/notifications');
-      return response.data.data;
-    },
-  });
-};
-
-// --- WEEKLY REWARDS ---
-export const useRewardBadges = () => {
-  return useQuery({
-    queryKey: ['rewardBadges'],
-    queryFn: async () => {
-      const response = await apiClient.get('/teacher/reward-badges');
-      return response.data.data;
-    },
-  });
-};
-
-export const useMonthlyGoodKids = (classId: string | number | undefined, month: number, year: number) => {
-  return useQuery({
-    queryKey: ['monthlyGoodKids', classId, month, year],
-    queryFn: async () => {
-      if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/monthly-good-kids`, {
-        params: { month, year }
-      });
-      return response.data.data;
-    },
-    enabled: !!classId,
-  });
-};
-
-// --- NEWSFEED ---
-export const useDetailedStudents = (classId: number | string | undefined) => {
-  return useQuery({
-    queryKey: ['detailedStudents', classId],
-    queryFn: async () => {
-      if (!classId) return [];
-      const { studentService } = await import('@/services/student/StudentService');
-      return studentService.getDetailedStudents(classId);
-    },
-    enabled: !!classId,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-  });
-};
-
-export const useNewsfeeds = (classId: number | string | undefined) => {
-  return useQuery({
-    queryKey: ['newsfeeds', classId],
-    queryFn: async () => {
-      if (!classId) return [];
-      return NewsfeedService.getNewsfeeds(classId);
-    },
-    enabled: !!classId,
-    staleTime: 60 * 1000, // 1 minute
-  });
-};
+export interface CreateNewsfeedPayload {
+  classId: number | string;
+  content: string;
+  mediaUrl?: string;
+}
 
 export const useCreateNewsfeed = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ classId, content, mediaUrl }: { classId: number | string; content: string; mediaUrl?: string }) => 
-      NewsfeedService.createNewsfeedPost(classId, content, mediaUrl),
+    mutationFn: async (payload: CreateNewsfeedPayload) => {
+      await apiClient.post(`/teacher/classes/${payload.classId}/newsfeeds`, { content: payload.content, mediaUrl: payload.mediaUrl });
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
-    }
+    },
+  });
+};
+
+interface NewsfeedItem {
+  id: number;
+  content: string;
+  mediaUrl?: string;
+  teacherName: string;
+  teacherAvatar?: string;
+  createdAt: number;
+}
+
+export const useNewsfeeds = (classId?: number | string) => {
+  return useQuery({
+    queryKey: ['newsfeeds', classId],
+    queryFn: async (): Promise<NewsfeedItem[]> => {
+      const url = classId ? `/teacher/classes/${classId}/newsfeeds` : '/teacher/newsfeeds';
+      const res = await apiClient.get<ApiResponse<any[]>>(url);
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 30 * 1000,
   });
 };
 
 export const useDeleteNewsfeed = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ classId, postId }: { classId: number | string; postId: number | string }) => 
-      NewsfeedService.deleteNewsfeedPost(classId, postId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
-      queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
-    }
+    mutationFn: async ({ postId }: { classId?: number | string; postId: number | string }) => {
+      await apiClient.delete(`/teacher/newsfeeds/${postId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds'] });
+    },
   });
 };
 
-// --- WEEKLY REWARDS (Award) ---
-export const useWeeklyRewards = (classId: string | number | undefined, weekNumber: number, year: number) => {
+function toDomain(api: TeacherClassApiDto): TeacherClassDomainModel {
+  const name = api.className ?? '';
+  const parts = name.split(/\s+/);
+  const initials = parts
+    .filter(Boolean)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('');
+
+  return {
+    classId: api.classId,
+    className: name,
+    yearId: api.yearId,
+    displayName: name ? `Lớp ${name}` : 'Lớp không tên',
+    classInitial: initials || 'LC',
+    studentCount: api.studentCount ?? 0,
+  };
+}
+
+/**
+ * Fetch all classes assigned to the current teacher
+ * GET /teacher/classes
+ */
+export const useTeacherClasses = () => {
   return useQuery({
-    queryKey: ['weeklyRewards', classId, weekNumber, year],
-    queryFn: async () => {
-      if (!classId) return [];
-      const response = await apiClient.get(`/teacher/classes/${classId}/weekly-rewards`, {
-        params: { weekNumber, year }
-      });
-      return response.data.data;
+    queryKey: ['teacherClasses'],
+    queryFn: async (): Promise<TeacherClassDomainModel[]> => {
+      const res = await apiClient.get<ApiResponse<TeacherClassApiDto[]>>('/teacher/classes');
+      const data = res.data.data ?? [];
+      return data.map(toDomain);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// ─── Teacher Profile ───────────────────────────────────────────────────────────
+
+interface TeacherProfile {
+  teacherId: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  avatarUrl: string | null;
+  dateOfBirth: number | null;
+  address: string | null;
+  hireDate: number | null;
+  specialization: string | null;
+}
+
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacherProfile'],
+    queryFn: async (): Promise<TeacherProfile> => {
+      const res = await apiClient.get<ApiResponse<TeacherProfile>>('/teacher/profile');
+      return res.data.data ?? {
+        teacherId: 0,
+        fullName: '',
+        email: '',
+        phone: '',
+        avatarUrl: null,
+        dateOfBirth: null,
+        address: null,
+        hireDate: null,
+        specialization: null,
+      };
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+/**
+ * Fetch detailed students for a specific class
+ * GET /teacher/classes/:classId/detailed-students
+ */
+export const useDetailedStudents = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['detailedStudents', classId],
+    queryFn: async (): Promise<DetailedStudentsResponse> => {
+      const res = await apiClient.get<ApiResponse<DetailedStudentsResponse>>(
+        `/teacher/classes/${classId}/detailed-students`
+      );
+      return res.data.data ?? { classId: 0, totalStudents: 0, students: [] };
     },
     enabled: !!classId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+/**
+ * Fetch all students (basic) for a specific class
+ * GET /teacher/classes/:classId/students
+ */
+export const useClassStudents = (classId: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['classStudents', classId],
+    queryFn: async (): Promise<{ studentId: number; fullName: string; avatarUrl: string | null }[]> => {
+      const res = await apiClient.get<ApiResponse<any[]>>(`/teacher/classes/${classId}/students`);
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 2 * 60 * 1000,
+  });
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+interface DashboardStats {
+  totalStudents: number;
+  presentToday: number;
+  absentToday: number;
+  pendingLeaveRequests: number;
+  pendingMedicalRequests: number;
+  weeklyRewardCount: number;
+}
+
+export const useDashboardStats = () => {
+  return useQuery({
+    queryKey: ['teacherDashboard'],
+    queryFn: async (): Promise<DashboardStats> => {
+      const res = await apiClient.get<ApiResponse<DashboardStats>>('/teacher/dashboard');
+      return res.data.data ?? {
+        totalStudents: 0,
+        presentToday: 0,
+        absentToday: 0,
+        pendingLeaveRequests: 0,
+        pendingMedicalRequests: 0,
+        weeklyRewardCount: 0,
+      };
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+};
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+interface NotificationItem {
+  id: number;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: number;
+  type: string;
+}
+
+export const useNotifications = () => {
+  return useQuery({
+    queryKey: ['teacherNotifications'],
+    queryFn: async (): Promise<NotificationItem[]> => {
+      const res = await apiClient.get<ApiResponse<NotificationItem[]>>('/teacher/notifications');
+      return res.data.data || [];
+    },
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
+
+// ─── Leave Requests ───────────────────────────────────────────────────────────
+
+interface LeaveRequest {
+  requestId: number;
+  studentId: number;
+  studentName: string;
+  reason: string;
+  startDate: number;
+  endDate: number;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  parentNote?: string;
+  createdAt: number;
+}
+
+export const useLeaveRequests = (status?: string) => {
+  return useQuery({
+    queryKey: ['leaveRequests', status],
+    queryFn: async (): Promise<LeaveRequest[]> => {
+      const params: Record<string, string> = {};
+      if (status) params.status = status;
+      const res = await apiClient.get<ApiResponse<LeaveRequest[]>>('/teacher/leave-requests', { params });
+      return res.data.data || [];
+    },
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+export const useUpdateLeaveRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      status,
+    }: {
+      requestId: number;
+      status: 'Approved' | 'Rejected';
+    }) => {
+      await apiClient.patch(`/teacher/leave-requests/${requestId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaveRequests'] });
+    },
+  });
+};
+
+// ─── Medical Requests ──────────────────────────────────────────────────────────
+
+interface MedicalRequest {
+  medRequestId: number;
+  studentId: number;
+  studentName: string;
+  parentName: string;
+  medicineDetails: string;
+  dosage: string;
+  frequency: string;
+  scheduledDate: number;
+  status: 'Pending' | 'Done' | 'Skipped';
+  parentNote?: string;
+  createdAt: number;
+}
+
+export const useMedicalRequests = (classId?: number | string, status?: string) => {
+  return useQuery({
+    queryKey: ['medicalRequests', classId, status],
+    queryFn: async (): Promise<MedicalRequest[]> => {
+      const params: Record<string, string> = {};
+      if (status) params.status = status;
+      const url = classId
+        ? `/teacher/classes/${classId}/medical-requests`
+        : '/teacher/classes/0/medical-requests';
+      const res = await apiClient.get<ApiResponse<MedicalRequest[]>>(url, { params });
+      return res.data.data || [];
+    },
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+export const useUpdateMedicalRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      status,
+    }: {
+      requestId: number;
+      status: 'Done' | 'Skipped';
+    }) => {
+      await apiClient.patch(`/teacher/medical-requests/${requestId}`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });
+    },
+  });
+};
+
+// ─── Weekly Rewards ───────────────────────────────────────────────────────────
+
+interface WeeklyReward {
+  rewardId: number;
+  studentId: number;
+  studentName: string;
+  badge: string;
+  reason: string;
+  awardedAt: number;
+  awardedBy: number;
+}
+
+export const useWeeklyRewards = (classId?: number | string, weekStartDate?: string) => {
+  return useQuery({
+    queryKey: ['weeklyRewards', classId, weekStartDate],
+    queryFn: async (): Promise<WeeklyReward[]> => {
+      const params: Record<string, string> = {};
+      if (weekStartDate) params.weekStartDate = weekStartDate;
+      const url = classId
+        ? `/teacher/classes/${classId}/weekly-rewards`
+        : '/teacher/classes/0/weekly-rewards';
+      const res = await apiClient.get<ApiResponse<WeeklyReward[]>>(url, { params });
+      return res.data.data || [];
+    },
+    staleTime: 2 * 60 * 1000,
   });
 };
 
 export const useAwardWeeklyRewards = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ classId, weekNumber, year, awards }: { 
-      classId: number | string; 
-      weekNumber: number; 
-      year: number; 
-      awards: { studentId: number; teacherNote?: string }[] 
+    mutationFn: async ({
+      classId,
+      rewards,
+    }: {
+      classId: number | string;
+      rewards: Array<{ studentId: number; badge: string; reason: string }>;
     }) => {
-      const response = await apiClient.post(`/teacher/classes/${classId}/weekly-rewards`, {
-        weekNumber, year, awards
-      });
-      return response.data;
+      await apiClient.post(`/teacher/classes/${classId}/weekly-rewards`, { rewards });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['weeklyRewards', variables.classId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
+  });
+};
+
+// ─── Monthly Good Kids ─────────────────────────────────────────────────────────
+
+interface MonthlyGoodKid {
+  studentId: number;
+  studentName: string;
+  avatarUrl: string | null;
+  reason: string;
+  month: number;
+  year: number;
+}
+
+export const useMonthlyGoodKids = (year: number, month: number) => {
+  return useQuery({
+    queryKey: ['monthlyGoodKids', year, month],
+    queryFn: async (): Promise<MonthlyGoodKid[]> => {
+      const res = await apiClient.get<ApiResponse<MonthlyGoodKid[]>>(
+        `/teacher/monthly-good-kids?year=${year}&month=${month}`
+      );
+      return res.data.data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// ─── Class Schedule ───────────────────────────────────────────────────────────
+
+interface ScheduleItem {
+  id: number;
+  timeSlot: string;
+  subject: string;
+  activityName: string;
+  teacherName?: string;
+  notes?: string;
+}
+
+interface DailySchedule {
+  date: string;
+  items: ScheduleItem[];
+}
+
+export const useClassSchedule = (classId: number | string | undefined, date?: string) => {
+  return useQuery({
+    queryKey: ['classSchedule', classId, date],
+    queryFn: async (): Promise<DailySchedule[]> => {
+      const params: Record<string, string> = {};
+      if (date) params.date = date;
+      const res = await apiClient.get<ApiResponse<DailySchedule[]>>(
+        `/teacher/classes/${classId}/schedule`,
+        { params }
+      );
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// ─── Class Menu ───────────────────────────────────────────────────────────────
+
+interface MenuItem {
+  id: number;
+  mealType: string; // breakfast, lunch, snack, dinner
+  dishes: string[];
+  notes?: string;
+}
+
+interface DailyMenu {
+  date: string;
+  items: MenuItem[];
+}
+
+export const useClassMenu = (classId: number | string | undefined, date?: string) => {
+  return useQuery({
+    queryKey: ['classMenu', classId, date],
+    queryFn: async (): Promise<DailyMenu[]> => {
+      const params: Record<string, string> = {};
+      if (date) params.date = date;
+      const res = await apiClient.get<ApiResponse<DailyMenu[]>>(
+        `/teacher/classes/${classId}/menu`,
+        { params }
+      );
+      return res.data.data || [];
+    },
+    enabled: !!classId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
