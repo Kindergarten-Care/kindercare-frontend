@@ -112,3 +112,43 @@ export const Avatar = styled.div`
     object-fit: cover;
   }
 `;
+
+export const Badge = styled.span<{ $status?: string }>`
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: ${props => 
+    props.$status === 'Studying' ? '#ecfccb' :
+    props.$status === 'Pending_Assignment' ? '#fef08a' : '#f1f5f9'
+  };
+  color: ${props => 
+    props.$status === 'Studying' ? '#4d7c0f' :
+    props.$status === 'Pending_Assignment' ? '#854d0e' : '#475569'
+  };
+`;
+
+export const AvatarWrapper = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+export const InitialsText = styled.span`
+  font-size: 24px;
+  font-weight: 600;
+  color: #94a3b8;
+`;

@@ -3,6 +3,8 @@ export interface StudentParentApiDto {
   fullName: string;
   phoneNumber: string;
   email: string;
+  occupation?: string;
+  address?: string;
   relationship: string;
   isPrimary: number;
 }
@@ -26,6 +28,8 @@ export interface StudentParentDomainModel {
   fullName: string;
   phoneNumber: string;
   email: string;
+  occupation?: string;
+  address?: string;
   relationship: string;
   isPrimary: boolean;
 }

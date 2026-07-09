@@ -18,6 +18,8 @@ export class StudentMapper {
         fullName: p.fullName,
         phoneNumber: p.phoneNumber,
         email: p.email,
+        occupation: p.occupation,
+        address: p.address,
         relationship: p.relationship,
         isPrimary: p.isPrimary === 1
       })) || []
