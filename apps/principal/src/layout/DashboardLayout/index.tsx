@@ -195,7 +195,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </>
                 );
               }
-              if (pathname.startsWith('/teacher/')) {
+              if (pathname.startsWith('/students/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/grades-classes')}>Khối học và Lớp học</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.back()}>Chi tiết Lớp học</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Hồ sơ Học sinh</BreadcrumbItem>
+                  </>
+                );
+              }
+              if (pathname.startsWith('/accounts/teacher/')) {
+                if (searchParams.get('from') === 'class') {
+                  return (
+                    <>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem $clickable onClick={() => router.push('/grades-classes')}>Khối học và Lớp học</BreadcrumbItem>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem $clickable onClick={() => router.back()}>Chi tiết Lớp học</BreadcrumbItem>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem className="active">Chi tiết Giáo viên</BreadcrumbItem>
+                    </>
+                  );
+                }
                 return (
                   <>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>

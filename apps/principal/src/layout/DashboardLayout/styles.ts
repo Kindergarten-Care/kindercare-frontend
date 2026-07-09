@@ -188,6 +188,9 @@ export const BreadcrumbContainer = styled.div`
   background-color: #ffffff;
   border-bottom: 1px solid #eaeaea;
   box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 export const BreadcrumbItem = styled.span<{ $clickable?: boolean }>`

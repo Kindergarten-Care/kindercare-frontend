@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@kindercare/core';
 import { accountService } from '@/services/account/AccountService';
 import { TeacherDetailDomainModel } from '@/config/types/account';
@@ -191,8 +191,12 @@ const Button = styled.button<{ $danger?: boolean, $primary?: boolean }>`
 `;
 
 export default function TeacherDetailView() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromClass = searchParams?.get('from') === 'class';
+  
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [teacher, setTeacher] = useState<TeacherDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(false);
@@ -249,11 +253,13 @@ export default function TeacherDetailView() {
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          Quay lại danh sách
+          Quay lại {fromClass ? 'lớp học' : 'danh sách'}
         </BackButton>
-        <Button $danger onClick={() => setShowResetModal(true)}>
-          Khôi phục mật khẩu
-        </Button>
+        {!fromClass && (
+          <Button $danger onClick={() => setShowResetModal(true)}>
+            Khôi phục mật khẩu
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -272,7 +278,9 @@ export default function TeacherDetailView() {
         </HeaderRow>
         <InfoGrid>
           <InfoItem><InfoLabel>Họ Tên</InfoLabel><InfoValue>{teacher.fullName}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Tên đăng nhập</InfoLabel><InfoValue>{teacher.username}</InfoValue></InfoItem>
+          {!fromClass && (
+            <InfoItem><InfoLabel>Tên đăng nhập</InfoLabel><InfoValue>{teacher.username}</InfoValue></InfoItem>
+          )}
           <InfoItem><InfoLabel>Email</InfoLabel><InfoValue>{teacher.email || '—'}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Số điện thoại</InfoLabel><InfoValue>{teacher.phoneNumber || '—'}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Ngày sinh</InfoLabel><InfoValue>{formatDate(teacher.dateOfBirth)}</InfoValue></InfoItem>
