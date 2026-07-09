@@ -39,14 +39,17 @@ function formatDate(timestamp: number) {
 export const MedicalRequestsPopup: React.FC<MedicalRequestsPopupProps> = ({
   onClose,
   requests,
+  classId,
   addToast,
 }) => {
   const [noteInputs, setNoteInputs] = useState<Record<number, string>>({});
   const updateStatus = useUpdateMedicationStatus();
 
   const handleAction = async (requestId: number, status: 'Completed' | 'Rejected') => {
+    if (!classId) return;
     try {
       await updateStatus.mutateAsync({
+        classId,
         requestId,
         status,
         teacherNote: noteInputs[requestId] || undefined,

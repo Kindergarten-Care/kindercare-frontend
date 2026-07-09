@@ -74,7 +74,7 @@ export const StudentsListView: React.FC = () => {
     );
   }
 
-  const allStudents = students || [];
+  const allStudents: StudentDetailedDomainModel[] = students?.students || [];
 
   // Deterministic Helpers for attributes not supported by Backend API
   const getStudentStatus = (studentId: number): 'present' | 'late' | 'absent' => {

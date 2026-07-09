@@ -31,12 +31,15 @@ export default function TeacherProfilePage() {
     );
   }
 
+  // dateOfBirth from profile is Unix timestamp (number | null), convert to string for AuthUser
   const mergedUser: AuthUser = {
     ...user,
     ...profile,
     address: profile?.address || user?.address,
     avatarUrl: profile?.avatarUrl || user?.avatarUrl,
-    dateOfBirth: profile?.dateOfBirth || user?.dateOfBirth,
+    dateOfBirth: profile?.dateOfBirth
+      ? new Date(profile.dateOfBirth * 1000).toISOString().split('T')[0]
+      : user?.dateOfBirth,
     idCard: profile?.idCard || user?.idCard,
     professionalRank: profile?.professionalRank || user?.professionalRank,
   };

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiResponse } from '@kindercare/core';
 import type { StudentDetailedDomainModel } from '@/config/types/student';
 import type { TeacherClassApiDto, TeacherClassDomainModel } from '@/config/types/class';
+import { WorkHistoryDomainModel } from '@/config/types/profile';
 
 interface DetailedStudentsResponse {
   classId: number;
@@ -109,6 +110,8 @@ interface TeacherProfile {
   address: string | null;
   hireDate: number | null;
   specialization: string | null;
+  idCard?: string;
+  professionalRank?: string;
 }
 
 export const useTeacherProfile = () => {
@@ -443,5 +446,100 @@ export const useClassMenu = (classId: number | string | undefined, date?: string
     },
     enabled: !!classId,
     staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+// ─── Profile Settings ─────────────────────────────────────────────────────────
+
+interface TeacherSettings {
+  pushEnabled: boolean;
+  emailEnabled: boolean;
+  weeklyReportEnabled: boolean;
+}
+
+export const useTeacherSettings = () => {
+  return useQuery({
+    queryKey: ['teacherSettings'],
+    queryFn: async (): Promise<TeacherSettings> => {
+      const res = await apiClient.get<ApiResponse<TeacherSettings>>('/teacher/settings');
+      return res.data.data ?? {
+        pushEnabled: true,
+        emailEnabled: true,
+        weeklyReportEnabled: false,
+      };
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+};
+
+export const useUpdateSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (settings: Partial<TeacherSettings>) => {
+      await apiClient.patch('/teacher/settings', settings);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacherSettings'] });
+    },
+  });
+};
+
+// ─── Password ─────────────────────────────────────────────────────────────────
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: async ({
+      current,
+      new: newPassword,
+    }: {
+      current: string;
+      new: string;
+    }) => {
+      await apiClient.post('/teacher/auth/change-password', {
+        currentPassword: current,
+        newPassword,
+      });
+    },
+  });
+};
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+export const useUploadAvatar = () => {
+  return useMutation({
+    mutationFn: async (file: File): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await apiClient.post<ApiResponse<{ url: string }>>('/upload', formData);
+      return res.data.data?.url || '';
+    },
+  });
+};
+
+export const useUpdateAvatar = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ avatarUrl, fullName }: { avatarUrl: string; fullName?: string }) => {
+      await apiClient.patch('/teacher/profile', {
+        avatarUrl,
+        fullName,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacherProfile'] });
+    },
+  });
+};
+
+// ─── Work History ─────────────────────────────────────────────────────────────
+
+export const useTeacherWorkHistory = () => {
+  return useQuery({
+    queryKey: ['teacherWorkHistory'],
+    queryFn: async (): Promise<WorkHistoryDomainModel[]> => {
+      const res = await apiClient.get<ApiResponse<WorkHistoryDomainModel[]>>('/teacher/work-history');
+      return res.data.data || [];
+    },
+    staleTime: 10 * 60 * 1000,
   });
 };
