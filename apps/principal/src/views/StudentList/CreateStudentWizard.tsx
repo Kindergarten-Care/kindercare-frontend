@@ -354,7 +354,6 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
                     value={packageId} 
                     onChange={e => setPackageId(Number(e.target.value))}
                   >
-                    <option value="">-- Không chọn --</option>
                     {paymentConfigs.packages.map(pkg => (
                       <option key={pkg.id} value={pkg.id}>
                         {pkg.name} ({pkg.duration} tháng - Giảm {pkg.discount}%)
