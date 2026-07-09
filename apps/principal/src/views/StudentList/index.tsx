@@ -41,6 +41,7 @@ export default function StudentListView() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name_asc');
   const [classes, setClasses] = useState<string[]>([]);
   
   // Pagination
@@ -74,6 +75,19 @@ export default function StudentListView() {
     router.push(`/students/${studentId}`);
   };
 
+  const getFirstName = (fullName: string) => {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(' ');
+    return parts[parts.length - 1];
+  };
+
+  const getLastName = (fullName: string) => {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(' ');
+    parts.pop();
+    return parts.join(' ');
+  };
+
   // Filter
   const filteredStudents = students.filter(student => {
     if (classFilter !== 'all' && student.currentClass !== classFilter) {
@@ -90,15 +104,28 @@ export default function StudentListView() {
     return true;
   });
 
+  // Sort
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    const nameA = getFirstName(a.fullName).toLowerCase();
+    const nameB = getFirstName(b.fullName).toLowerCase();
+    
+    if (sortBy === 'name_asc') {
+      return nameA.localeCompare(nameB, 'vi-VN');
+    } else if (sortBy === 'name_desc') {
+      return nameB.localeCompare(nameA, 'vi-VN');
+    }
+    return 0;
+  });
+
   // Pagination
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filteredStudents.slice(startIndex, startIndex + itemsPerPage);
+  const currentData = sortedStudents.slice(startIndex, startIndex + itemsPerPage);
 
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, classFilter]);
+  }, [searchTerm, classFilter, sortBy]);
 
   const formatDate = (timestamp: number) => {
     if (!timestamp) return 'Chưa cập nhật';
@@ -126,44 +153,50 @@ export default function StudentListView() {
             <option key={cls} value={cls}>{cls}</option>
           ))}
         </Select>
+
+        <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="name_asc">Tên (A-Z)</option>
+          <option value="name_desc">Tên (Z-A)</option>
+        </Select>
       </HeaderActions>
 
       <TableCard>
         <Table>
           <thead>
             <Tr>
-              <Th>STT</Th>
-              <Th>Học sinh</Th>
+              <Th style={{ width: '60px', textAlign: 'center' }}>STT</Th>
+              <Th style={{ width: '60px' }}></Th>
+              <Th>Họ và tên đệm</Th>
+              <Th>Tên</Th>
               <Th>Mã HS</Th>
               <Th>Ngày sinh</Th>
               <Th>Giới tính</Th>
               <Th>Lớp hiện tại</Th>
-              <Th>Thao tác</Th>
+              <Th style={{ textAlign: 'center' }}>Thao tác</Th>
             </Tr>
           </thead>
           <tbody>
             {loading ? (
-              <Tr><Td colSpan={7}><LoadingText>Đang tải dữ liệu...</LoadingText></Td></Tr>
+              <Tr><Td colSpan={9}><LoadingText>Đang tải dữ liệu...</LoadingText></Td></Tr>
             ) : error ? (
-              <Tr><Td colSpan={7}><ErrorText>{error}</ErrorText></Td></Tr>
+              <Tr><Td colSpan={9}><ErrorText>{error}</ErrorText></Td></Tr>
             ) : currentData.length === 0 ? (
-              <Tr><Td colSpan={7}><LoadingText>Không tìm thấy học sinh nào.</LoadingText></Td></Tr>
+              <Tr><Td colSpan={9}><LoadingText>Không tìm thấy học sinh nào.</LoadingText></Td></Tr>
             ) : (
               currentData.map((student, index) => (
                 <Tr key={student.id}>
-                  <Td>{startIndex + index + 1}</Td>
+                  <Td style={{ textAlign: 'center' }}>{startIndex + index + 1}</Td>
                   <Td>
-                    <UserInfoCell>
-                      <AvatarWrapper>
-                        {student.avatarUrl ? (
-                          <AvatarImg src={student.avatarUrl} alt={student.fullName} />
-                        ) : (
-                          <AvatarText>{getInitials(student.fullName)}</AvatarText>
-                        )}
-                      </AvatarWrapper>
-                      <span style={{ fontWeight: 500 }}>{student.fullName}</span>
-                    </UserInfoCell>
+                    <AvatarWrapper>
+                      {student.avatarUrl ? (
+                        <AvatarImg src={student.avatarUrl} alt={student.fullName} />
+                      ) : (
+                        <AvatarText>{getInitials(student.fullName)}</AvatarText>
+                      )}
+                    </AvatarWrapper>
                   </Td>
+                  <Td style={{ fontWeight: 500, color: '#111827' }}>{getLastName(student.fullName)}</Td>
+                  <Td style={{ fontWeight: 500, color: '#111827' }}>{getFirstName(student.fullName)}</Td>
                   <Td>{student.id}</Td>
                   <Td>{formatDate(student.dateOfBirth)}</Td>
                   <Td>{student.gender || 'Chưa cập nhật'}</Td>
@@ -174,10 +207,11 @@ export default function StudentListView() {
                       <span style={{ color: '#6b7280' }}>Chờ xếp lớp</span>
                     )}
                   </Td>
-                  <Td>
+                  <Td style={{ textAlign: 'center' }}>
                     <IconBtn 
                       title="Xem hồ sơ" 
                       onClick={() => handleViewProfile(student.id)}
+                      style={{ margin: '0 auto' }}
                     >
                       <ViewIcon width={20} height={20} />
                     </IconBtn>
