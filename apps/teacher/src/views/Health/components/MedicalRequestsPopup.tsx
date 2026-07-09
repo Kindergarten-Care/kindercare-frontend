@@ -89,7 +89,7 @@ export const MedicalRequestsPopup: React.FC<MedicalRequestsPopupProps> = ({
 
               {requests.map((req, idx) => (
                 <div
-                  key={req.medRequestId}
+                  key={req.medRequestId ?? `req-${idx}`}
                   style={{
                     border: '1px solid #E6EEE9',
                     borderRadius: 14,

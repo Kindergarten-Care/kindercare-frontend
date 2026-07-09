@@ -93,7 +93,8 @@ export class HealthService {
   async getMedicalRequests(classId: number | string, timestamp?: number): Promise<MedicationDomainModel[]> {
     const params: Record<string, string> = {};
     if (timestamp) params.date = String(timestamp);
-    const url = `/teacher/classes/${classId}/student-health/medications`;
+    // Backend uses /medical-requests instead of /student-health/medications
+    const url = `/teacher/classes/${classId}/medical-requests`;
     const res = await apiClient.get<ApiResponse<{ medications: MedicationApiDto[] }>>(url, { params });
     const raw = res.data.data?.medications || res.data.data || [];
     return (Array.isArray(raw) ? raw : []).map(mapMedication);
@@ -147,9 +148,10 @@ export class HealthService {
   }
 
   // POST /teacher/classes/:classId/student-health/logs (single)
-  async createHealthLog(classId: number | string, studentId: number | string, payload: SubmitHealthMeasurementPayload): Promise<HealthLogDomainModel> {
+  async createHealthLog(classId: number | string, studentId: number | string, payload: SubmitHealthMeasurementPayload, termPeriod?: string): Promise<HealthLogDomainModel> {
     const url = `/teacher/classes/${classId}/student-health/logs`;
-    const res = await apiClient.post<ApiResponse<{ log: HealthLogApiDto }>>(url, { ...payload, studentId });
+    const params = termPeriod ? { termPeriod } : undefined;
+    const res = await apiClient.post<ApiResponse<{ log: HealthLogApiDto }>>(url, { ...payload, studentId }, { params });
     return mapHealthLog(res.data.data?.log ?? res.data.data);
   }
 
