@@ -165,6 +165,7 @@ export const useCreateHealthLog = () => {
     }) => healthService.createHealthLog(classId, studentId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['classHealthLogs', variables.classId] });
+      queryClient.invalidateQueries({ queryKey: ['detailedStudents', variables.classId] });
     },
   });
 };
