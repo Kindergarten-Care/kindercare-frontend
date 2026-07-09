@@ -45,6 +45,7 @@ export const SERVER = {
     searchParents: '/principal/parents/search',
     getPaymentConfigs: '/principal/payment-configs',
     getStudentDetail: '/principal/student/:id/detail',
+    addParentToStudent: '/principal/student/:id/parents',
     getStudents: '/principal/students',
     enrollStudent: '/principal/students/enroll',
     importStudents: '/principal/students/import',

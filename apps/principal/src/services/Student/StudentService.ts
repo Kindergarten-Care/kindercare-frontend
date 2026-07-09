@@ -12,6 +12,15 @@ class StudentService {
     return StudentMapper.toStudentDetailDomain(res.data);
   }
 
+  async addParentToStudent(studentId: number | string, payload: any): Promise<any> {
+    const url = SERVER.principal.addParentToStudent.replace(':id', String(studentId));
+    const { data: res } = await apiClient.post<ApiResponse<any>>(url, payload);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
   async getUnassignedStudents(): Promise<any[]> {
     const { data: res } = await apiClient.get<ApiResponse<any[]>>(SERVER.principal.getUnassignedStudents);
     if (!res.success) {

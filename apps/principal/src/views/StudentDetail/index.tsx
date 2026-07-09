@@ -17,8 +17,52 @@ import {
   InfoItem,
   InfoLabel,
   InfoValue,
-  Avatar
+  Avatar,
+  Badge,
+  AvatarWrapper,
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { studentService } from '@/services/Student/StudentService';
+import { StudentDetailDomainModel } from '@/config/types/student';
+import { useRouter } from '@/i18n/routing';
+import {
+  Container,
+  Header,
+  BackButton,
+  LoadingText,
+  ErrorText,
+  Title,
+  Card,
+  CardTitle,
+  InfoGrid,
+  InfoItem,
+  InfoLabel,
+  InfoValue,
+  Avatar,
+  Badge,
+  AvatarWrapper,
+  InitialsText
 } from './styles';
+import { getInitials } from '../AccountList/utils/getInitials';
+import AddParentModal from './AddParentModal';
+import styled from 'styled-components';
+
+const PrimaryButton = styled.button`
+  padding: 8px 16px;
+  background-color: #047857;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #065f46;
+  }
+`;
 
 interface StudentDetailProps {
   studentId: string;
@@ -29,24 +73,26 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
   const [student, setStudent] = useState<StudentDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddParent, setShowAddParent] = useState(false);
 
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        setLoading(true);
-        const data = await studentService.getStudentDetail(studentId);
-        setStudent(data);
-        setError(null);
-      } catch (err: any) {
-        setError(err.message || 'Lỗi khi tải hồ sơ học sinh');
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (studentId) {
-      fetchDetail();
+  const fetchStudentDetail = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await studentService.getStudentDetail(studentId);
+      setStudent(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi khi tải hồ sơ học sinh');
+    } finally {
+      setLoading(false);
     }
   }, [studentId]);
+
+  useEffect(() => {
+    if (studentId) {
+      fetchStudentDetail();
+    }
+  }, [studentId, fetchStudentDetail]);
 
   if (loading) return <Container><LoadingText>Đang tải dữ liệu...</LoadingText></Container>;
   if (error) return <Container><ErrorText>{error}</ErrorText></Container>;
@@ -65,54 +111,54 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
       </Header>
 
       <Card>
-        <Avatar>
+        <AvatarWrapper>
           {student.avatarUrl ? (
             <img src={student.avatarUrl} alt={student.fullName} />
           ) : (
-            student.fullName?.charAt(0)
+            <InitialsText>{getInitials(student.fullName)}</InitialsText>
           )}
-        </Avatar>
+        </AvatarWrapper>
         <CardTitle>Thông tin cá nhân</CardTitle>
         <InfoGrid>
           <InfoItem>
-            <InfoLabel>Họ và Tên</InfoLabel>
+            <InfoLabel>Họ và tên</InfoLabel>
             <InfoValue>{student.fullName}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày sinh</InfoLabel>
-            <InfoValue>
-              {student.dateOfBirth ? new Date(Number(student.dateOfBirth) * 1000).toLocaleDateString('vi-VN') : '—'}
-            </InfoValue>
+            <InfoValue>{student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('vi-VN') : 'N/A'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Giới tính</InfoLabel>
-            <InfoValue>{student.gender === 'Male' ? 'Nam' : student.gender === 'Female' ? 'Nữ' : 'Khác'}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Lớp học</InfoLabel>
-            <InfoValue>{student.className || 'Chưa xếp lớp'}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Dị ứng (Lưu ý y tế)</InfoLabel>
-            <InfoValue>{student.allergies || 'Không có'}</InfoValue>
+            <InfoValue>{student.gender || 'N/A'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày nhập học</InfoLabel>
-            <InfoValue>
-              {student.admissionDate ? new Date(Number(student.admissionDate) * 1000).toLocaleDateString('vi-VN') : '—'}
-            </InfoValue>
+            <InfoValue>{student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('vi-VN') : 'N/A'}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Lớp hiện tại</InfoLabel>
+            <InfoValue>{student.className || 'Chưa xếp lớp'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Trạng thái</InfoLabel>
             <InfoValue>
-              {student.status === 'Studying' ? 'Đang học' : student.status}
+              <Badge>{student.status}</Badge>
             </InfoValue>
+          </InfoItem>
+          <InfoItem style={{ gridColumn: '1 / -1' }}>
+            <InfoLabel>Ghi chú dị ứng / Bệnh lý</InfoLabel>
+            <InfoValue>{student.allergies || 'Không có'}</InfoValue>
           </InfoItem>
         </InfoGrid>
       </Card>
 
       <Card>
-        <CardTitle>Thông tin phụ huynh</CardTitle>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <CardTitle style={{ marginBottom: 0 }}>Thông tin phụ huynh</CardTitle>
+          <PrimaryButton onClick={() => setShowAddParent(true)}>+ Thêm phụ huynh / người thân</PrimaryButton>
+        </div>
+        
         {student.parents && student.parents.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {student.parents.map(parent => (
@@ -135,16 +181,29 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
                   </InfoItem>
                   <InfoItem>
                     <InfoLabel>Email</InfoLabel>
-                    <InfoValue>{parent.email}</InfoValue>
+                    <InfoValue>{parent.email || 'N/A'}</InfoValue>
                   </InfoItem>
                 </InfoGrid>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ color: '#64748b' }}>Chưa có thông tin phụ huynh</div>
+          <div style={{ color: '#64748b' }}>
+            <p>Chưa có thông tin phụ huynh</p>
+          </div>
         )}
       </Card>
+
+      {showAddParent && (
+        <AddParentModal 
+          studentId={Number(studentId)}
+          onClose={() => setShowAddParent(false)}
+          onSuccess={() => {
+            setShowAddParent(false);
+            fetchStudentDetail();
+          }}
+        />
+      )}
     </Container>
   );
 }
