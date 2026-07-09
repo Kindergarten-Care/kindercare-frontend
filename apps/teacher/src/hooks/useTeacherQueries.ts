@@ -43,6 +43,41 @@ export const useTeacherClasses = () => {
   });
 };
 
+// ─── Teacher Profile ───────────────────────────────────────────────────────────
+
+interface TeacherProfile {
+  teacherId: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  avatarUrl: string | null;
+  dateOfBirth: number | null;
+  address: string | null;
+  hireDate: number | null;
+  specialization: string | null;
+}
+
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacherProfile'],
+    queryFn: async (): Promise<TeacherProfile> => {
+      const res = await apiClient.get<ApiResponse<TeacherProfile>>('/teacher/profile');
+      return res.data.data ?? {
+        teacherId: 0,
+        fullName: '',
+        email: '',
+        phone: '',
+        avatarUrl: null,
+        dateOfBirth: null,
+        address: null,
+        hireDate: null,
+        specialization: null,
+      };
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
 /**
  * Fetch detailed students for a specific class
  * GET /teacher/classes/:classId/detailed-students
