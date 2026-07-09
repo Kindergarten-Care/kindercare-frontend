@@ -99,3 +99,33 @@ export const Input = styled.input`
     box-shadow: 0 0 0 1px #0ea5e9;
   }
 `;
+
+export const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+`;
+
+export const Th = styled.th`
+  background: #f9fafb;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+`;
+
+export const Td = styled.td`
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
+`;
+
+export const Badge = styled.span<{ $active?: boolean }>`
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: ${props => props.$active ? '#dcfce7' : '#f3f4f6'};
+  color: ${props => props.$active ? '#166534' : '#4b5563'};
+`;

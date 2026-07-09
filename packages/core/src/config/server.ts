@@ -51,6 +51,8 @@ export const SERVER = {
     assignStudents: '/principal/assignments/students',
     endAcademicYear: '/principal/academic-year/end',
     startAcademicYear: '/principal/academic-year/start',
+    getAcademicYears: '/principal/academic-years',
+    activateAcademicYear: '/principal/academic-year/:id/activate',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

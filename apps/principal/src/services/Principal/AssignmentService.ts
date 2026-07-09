@@ -38,6 +38,22 @@ export class AssignmentService {
     }
     return res.data;
   }
+
+  async getAcademicYears(): Promise<any[]> {
+    const { data: res } = await apiClient.get<ApiResponse<any[]>>(SERVER.principal.getAcademicYears);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data || [];
+  }
+
+  async activateAcademicYear(yearId: number): Promise<void> {
+    const url = SERVER.principal.activateAcademicYear.replace(':id', yearId.toString());
+    const { data: res } = await apiClient.patch<ApiResponse<any>>(url, {});
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+  }
 }
 
 export const assignmentService = new AssignmentService();

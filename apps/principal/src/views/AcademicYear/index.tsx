@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Container, Title, Card, CardTitle, InfoText, DangerButton, PrimaryButton, FormGroup, Label, Input } from './styles';
+import React, { useState, useEffect } from 'react';
+import { Container, Title, Card, CardTitle, InfoText, DangerButton, PrimaryButton, FormGroup, Label, Input, Table, Th, Td, Badge } from './styles';
 import { assignmentService } from '@/services/Principal/AssignmentService';
 
 export default function AcademicYearView() {
   const [loadingEnd, setLoadingEnd] = useState(false);
   const [loadingStart, setLoadingStart] = useState(false);
+  const [loadingYears, setLoadingYears] = useState(false);
+  const [loadingActivate, setLoadingActivate] = useState<number | null>(null);
+  
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -14,6 +17,24 @@ export default function AcademicYearView() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isActive, setIsActive] = useState(false);
+
+  const [years, setYears] = useState<any[]>([]);
+
+  const fetchYears = async () => {
+    try {
+      setLoadingYears(true);
+      const data = await assignmentService.getAcademicYears();
+      setYears(data);
+    } catch (err: any) {
+      setError(err.message || 'Lỗi khi tải danh sách năm học');
+    } finally {
+      setLoadingYears(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchYears();
+  }, []);
 
   const handleEndYear = async () => {
     if (!window.confirm('CẢNH BÁO: Hành động này sẽ TỐT NGHIỆP toàn bộ học sinh Khối Lá và GỠ LỚP toàn bộ học sinh khối khác. Bạn có chắc chắn muốn kết thúc năm học hiện tại?')) {
@@ -26,6 +47,7 @@ export default function AcademicYearView() {
       setSuccessMsg(null);
       const res = await assignmentService.endAcademicYear();
       setSuccessMsg(`Đã kết thúc năm học thành công. Cấp bằng tốt nghiệp cho ${res.graduatedStudents} học sinh.`);
+      fetchYears();
     } catch (err: any) {
       setError(err.message || 'Lỗi khi kết thúc năm học');
     } finally {
@@ -62,12 +84,34 @@ export default function AcademicYearView() {
       setStartDate('');
       setEndDate('');
       setIsActive(false);
+      fetchYears();
     } catch (err: any) {
       setError(err.message || 'Lỗi khi khởi tạo năm học mới');
     } finally {
       setLoadingStart(false);
     }
   };
+
+  const handleActivate = async (yearId: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn kích hoạt năm học này? Các năm học khác sẽ bị vô hiệu hóa.')) {
+      return;
+    }
+    
+    try {
+      setLoadingActivate(yearId);
+      setError(null);
+      setSuccessMsg(null);
+      await assignmentService.activateAcademicYear(yearId);
+      setSuccessMsg('Kích hoạt năm học thành công!');
+      fetchYears();
+    } catch (err: any) {
+      setError(err.message || 'Lỗi khi kích hoạt năm học');
+    } finally {
+      setLoadingActivate(null);
+    }
+  };
+
+  const formatDate = (ts: number) => new Date(ts * 1000).toLocaleDateString('vi-VN');
 
   return (
     <Container>
@@ -84,6 +128,65 @@ export default function AcademicYearView() {
           {successMsg}
         </div>
       )}
+
+      <Card>
+        <CardTitle>
+          <span style={{ fontSize: '1.5rem' }}>📅</span> Danh sách Năm học
+        </CardTitle>
+        <InfoText>Dưới đây là danh sách các năm học đã được khởi tạo trên hệ thống.</InfoText>
+        
+        {loadingYears ? (
+          <div>Đang tải dữ liệu...</div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>ID</Th>
+                  <Th>Tên năm học</Th>
+                  <Th>Ngày bắt đầu</Th>
+                  <Th>Ngày kết thúc</Th>
+                  <Th>Trạng thái</Th>
+                  <Th>Thao tác</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {years.map(y => (
+                  <tr key={y.YearID}>
+                    <Td>#{y.YearID}</Td>
+                    <Td style={{ fontWeight: 600 }}>{y.YearName}</Td>
+                    <Td>{formatDate(y.StartDate)}</Td>
+                    <Td>{formatDate(y.EndDate)}</Td>
+                    <Td>
+                      <Badge $active={y.IsActive === 1}>
+                        {y.IsActive === 1 ? 'Đang hoạt động' : 'Chưa kích hoạt'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      {y.IsActive === 0 && (
+                        <PrimaryButton 
+                          style={{ padding: '6px 12px', fontSize: '0.875rem' }}
+                          onClick={() => handleActivate(y.YearID)}
+                          disabled={loadingActivate === y.YearID}
+                        >
+                          {loadingActivate === y.YearID ? 'Đang xử lý...' : 'Kích hoạt'}
+                        </PrimaryButton>
+                      )}
+                    </Td>
+                  </tr>
+                ))}
+                {years.length === 0 && (
+                  <tr>
+                    <Td colSpan={6} style={{ textAlign: 'center', color: '#6b7280' }}>
+                      Chưa có dữ liệu năm học nào.
+                    </Td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
+        )}
+      </Card>
 
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         <Card style={{ flex: 1 }}>
