@@ -258,18 +258,21 @@ export const HealthView: React.FC = () => {
     }
   };
 
+  // ── Normalized students array (defensive) ────────────────────────────────────
+  const safeStudents: StudentDetailedDomainModel[] = Array.isArray(students) ? students : [];
+
   // ── Filtered lists ──────────────────────────────────────────────────────────
   const filteredMeds = medications.filter(m =>
     !medSearch || m.studentName.toLowerCase().includes(medSearch.toLowerCase()) ||
     m.medicineDetails.toLowerCase().includes(medSearch.toLowerCase())
   );
 
-  const filteredStudents = students.filter(s =>
-    !studentSearch || s.fullName.toLowerCase().includes(studentSearch.toLowerCase())
+  const filteredStudents = safeStudents.filter(s =>
+    !studentSearch || s.fullName?.toLowerCase().includes(studentSearch.toLowerCase())
   );
 
   // ── Allergy stats (count students with allergies) ───────────────────────────
-  const allergyStudentCount = students.filter(s => s.allergies && s.allergies.trim() !== '' && s.allergies !== 'null').length;
+  const allergyStudentCount = safeStudents.filter(s => s.allergies && s.allergies.trim() !== '' && s.allergies !== 'null').length;
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -618,7 +621,7 @@ export const HealthView: React.FC = () => {
           {allergyStudentCount === 0 ? (
             <S.EmptyState>Không có học sinh nào có thông tin dị ứng được ghi nhận.</S.EmptyState>
           ) : (
-            students.filter(s => s.allergies && s.allergies.trim() !== '' && s.allergies !== 'null').map(s => (
+            safeStudents.filter(s => s.allergies && s.allergies.trim() !== '' && s.allergies !== 'null').map(s => (
               <S.StudentRow key={s.studentId}>
                 <S.StudentAvatar $grad={getAvatarGrad(s.fullName)}>
                   {s.avatarUrl ? (
