@@ -120,7 +120,7 @@ export default function GradesClassesView() {
                             style={{ cursor: 'pointer' }}
                           >
                             <FileIcon>📚</FileIcon>
-                            {cls.className}
+                            {cls.className} {cls.yearName && <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({cls.yearName})</span>}
                           </ClassNode>
                         ))
                       ) : (

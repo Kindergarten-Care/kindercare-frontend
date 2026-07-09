@@ -1,6 +1,7 @@
 export interface ClassDomainModel {
   classId: number;
   className: string;
+  yearName?: string;
 }
 
 export interface GradeDomainModel {

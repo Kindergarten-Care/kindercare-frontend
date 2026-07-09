@@ -143,15 +143,11 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
     { name: `Vắng không phép: ${classDetail.attendanceToday.absent}`, value: classDetail.attendanceToday.absent, color: '#ef4444' }, // Red
   ];
 
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  const academicYear = currentMonth >= 7 ? `${currentYear}-${currentYear + 1}` : `${currentYear - 1}-${currentYear}`;
-
   return (
     <Container>
       <Header>
         <div>
-          <Title>{classDetail.className} (Năm học {academicYear})</Title>
+          <Title>{classDetail.className} {classDetail.yearName && <span style={{ fontSize: '1.25rem', color: '#6b7280', fontWeight: 500 }}>({classDetail.yearName})</span>}</Title>
           <Subtitle>Khối: {classDetail.gradeName}</Subtitle>
         </div>
         <TotalStudentsCard>
