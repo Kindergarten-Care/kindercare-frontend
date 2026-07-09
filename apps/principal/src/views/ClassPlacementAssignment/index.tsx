@@ -10,7 +10,8 @@ import { GradeDomainModel, ClassDomainModel } from '@/config/types/grade';
 import { ClassDetailDomainModel } from '@/config/types/class';
 
 export default function ClassPlacementAssignmentView() {
-  const [unassignedStudents, setUnassignedStudents] = useState<any[]>([]);
+  const [sourceClassId, setSourceClassId] = useState<string>('');
+  const [sourceStudents, setSourceStudents] = useState<any[]>([]);
   const [grades, setGrades] = useState<GradeDomainModel[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [classDetail, setClassDetail] = useState<ClassDetailDomainModel | null>(null);
@@ -21,15 +22,23 @@ export default function ClassPlacementAssignmentView() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUnassignedStudents();
+    fetchSourceStudents();
+  }, [sourceClassId]);
+
+  useEffect(() => {
     fetchGrades();
   }, []);
 
-  const fetchUnassignedStudents = async () => {
+  const fetchSourceStudents = async () => {
     try {
       setLoading(true);
-      const data = await studentService.getUnassignedStudents();
-      setUnassignedStudents(data);
+      if (!sourceClassId) {
+        const data = await studentService.getUnassignedStudents();
+        setSourceStudents(data);
+      } else {
+        const detail = await classService.getClassDetail(parseInt(sourceClassId));
+        setSourceStudents(detail.students || []);
+      }
       setSelectedUnassigned([]);
     } catch (err: any) {
       console.error(err);
@@ -82,7 +91,7 @@ export default function ClassPlacementAssignmentView() {
       await assignmentService.assignStudentsToClass(selectedUnassigned, parseInt(selectedClassId));
       
       // Refresh both lists
-      await fetchUnassignedStudents();
+      await fetchSourceStudents();
       const detail = await classService.getClassDetail(parseInt(selectedClassId));
       setClassDetail(detail);
       
@@ -99,21 +108,33 @@ export default function ClassPlacementAssignmentView() {
       <Title>Xếp lớp cho Học sinh</Title>
 
       <SplitView>
-        {/* Left Panel: Unassigned Students */}
+        {/* Left Panel: Source Selection & Students */}
         <Panel>
           <PanelHeader>
-            <div style={{ fontWeight: 600, color: '#111827' }}>Học sinh chờ xếp lớp</div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: 4 }}>
-              Đã chọn: {selectedUnassigned.length} / {unassignedStudents.length}
+            <div style={{ fontWeight: 600, color: '#111827', marginBottom: 8 }}>Chọn nguồn học sinh</div>
+            <Select value={sourceClassId} onChange={(e) => setSourceClassId(e.target.value)}>
+              <option value="">Học sinh chờ xếp lớp</option>
+              {grades.map(grade => (
+                <optgroup key={`src-${grade.gradeId}`} label={grade.gradeName}>
+                  {grade.classes.map(cls => (
+                    <option key={`src-${cls.classId}`} value={cls.classId}>
+                      {cls.className} {cls.yearName ? `(${cls.yearName})` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </Select>
+            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: 8 }}>
+              Đã chọn: {selectedUnassigned.length} / {sourceStudents.length}
             </div>
           </PanelHeader>
           <ListContainer>
             {loading ? (
               <EmptyState>Đang tải...</EmptyState>
-            ) : unassignedStudents.length === 0 ? (
+            ) : sourceStudents.length === 0 ? (
               <EmptyState>Không có học sinh nào cần xếp lớp.</EmptyState>
             ) : (
-              unassignedStudents.map(student => (
+              sourceStudents.map(student => (
                 <StudentItem 
                   key={student.studentId}
                   $selected={selectedUnassigned.includes(student.studentId)}
@@ -139,7 +160,7 @@ export default function ClassPlacementAssignmentView() {
         {/* Action Center */}
         <ActionCenter>
           <MoveButton 
-            disabled={!selectedClassId || selectedUnassigned.length === 0 || loading}
+            disabled={!selectedClassId || selectedUnassigned.length === 0 || loading || sourceClassId === selectedClassId}
             onClick={handleAssignToClass}
             title="Chuyển vào lớp"
           >
