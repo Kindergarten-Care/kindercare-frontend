@@ -122,7 +122,7 @@ export const HealthView: React.FC = () => {
   const [savedStudentIds, setSavedStudentIds] = useState<Set<string>>(new Set());
 
   const computedBmi = calcBmi(parseFloat(bmiHeight), parseFloat(bmiWeight));
-  const selectedStudent = students.find(s => String(s.studentId) === bmiStudentId);
+  const selectedStudent = safeStudents.find(s => String(s.studentId) === bmiStudentId);
   const selectedStudentAge = ageYearsFromTs(selectedStudent?.dateOfBirth ?? null);
   const bmiStatusLabel = computedBmi > 0 ? bmiStatus(computedBmi, selectedStudentAge) : '—';
 
@@ -258,11 +258,12 @@ export const HealthView: React.FC = () => {
     }
   };
 
-  // ── Normalized students array (defensive) ────────────────────────────────────
+  // ── Normalized arrays (defensive) ───────────────────────────────────────────────
   const safeStudents: StudentDetailedDomainModel[] = Array.isArray(students) ? students : [];
+  const safeMedications: MedicationDomainModel[] = Array.isArray(medications) ? medications : [];
 
   // ── Filtered lists ──────────────────────────────────────────────────────────
-  const filteredMeds = medications.filter(m =>
+  const filteredMeds = safeMedications.filter(m =>
     !medSearch || m.studentName.toLowerCase().includes(medSearch.toLowerCase()) ||
     m.medicineDetails.toLowerCase().includes(medSearch.toLowerCase())
   );
@@ -315,10 +316,10 @@ export const HealthView: React.FC = () => {
             <Pill size={24} strokeWidth={2} />
           </S.BentoIcon>
           <S.BentoMeta>
-            <S.BentoValue>{medications.filter(m => m.status === 'Pending').length}</S.BentoValue>
+            <S.BentoValue>{safeMedications.filter(m => m.status === 'Pending').length}</S.BentoValue>
             <S.BentoLabel>Đơn thuốc chờ duyệt</S.BentoLabel>
           </S.BentoMeta>
-          {medications.filter(m => m.status === 'Pending').length > 0 && (
+          {safeMedications.filter(m => m.status === 'Pending').length > 0 && (
             <S.BentoBadge $color="#D97706" $bg="#FEF3C7">CHỜ XỬ LÝ</S.BentoBadge>
           )}
         </S.BentoCard>
@@ -333,7 +334,7 @@ export const HealthView: React.FC = () => {
             <Ruler size={24} strokeWidth={2} />
           </S.BentoIcon>
           <S.BentoMeta>
-            <S.BentoValue>{students.length}</S.BentoValue>
+            <S.BentoValue>{safeStudents.length}</S.BentoValue>
             <S.BentoLabel>Học sinh đo BMI</S.BentoLabel>
           </S.BentoMeta>
         </S.BentoCard>
@@ -369,13 +370,13 @@ export const HealthView: React.FC = () => {
                     onChange={e => {
                       setBmiStudentId(e.target.value);
                       // prefill from existing health record
-                      const st = students.find(s => String(s.studentId) === e.target.value);
+                      const st = safeStudents.find(s => String(s.studentId) === e.target.value);
                       if (st?.healthRecord?.height) setBmiHeight(String(st.healthRecord.height));
                       if (st?.healthRecord?.weight) setBmiWeight(String(st.healthRecord.weight));
                     }}
                   >
                     <option value="">-- Chọn học sinh --</option>
-                    {students.map(s => (
+                    {safeStudents.map(s => (
                       <option key={s.studentId} value={s.studentId}>
                         {s.fullName} {s.healthRecord?.bmi ? `· BMI: ${s.healthRecord.bmi}` : ''}
                       </option>
