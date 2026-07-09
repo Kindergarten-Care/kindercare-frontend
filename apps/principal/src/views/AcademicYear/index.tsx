@@ -36,8 +36,14 @@ export default function AcademicYearView() {
     fetchYears();
   }, []);
 
+  const activeYear = years.find(y => y.IsActive === 1);
+
   const handleEndYear = async () => {
-    if (!window.confirm('CẢNH BÁO: Hành động này sẽ TỐT NGHIỆP toàn bộ học sinh Khối Lá và GỠ LỚP toàn bộ học sinh khối khác. Bạn có chắc chắn muốn kết thúc năm học hiện tại?')) {
+    if (!activeYear) {
+      window.alert('Không có năm học nào đang hoạt động để tổng kết!');
+      return;
+    }
+    if (!window.confirm(`CẢNH BÁO: Hành động này sẽ tổng kết năm học "${activeYear.YearName}".\n\n- Học sinh Khối Lá sẽ TỐT NGHIỆP.\n- Học sinh khối khác sẽ bị GỠ KHỎI LỚP (Chờ xếp lớp lại).\n\nBạn có chắc chắn muốn tiếp tục?`)) {
       return;
     }
 
@@ -46,7 +52,7 @@ export default function AcademicYearView() {
       setError(null);
       setSuccessMsg(null);
       const res = await assignmentService.endAcademicYear();
-      setSuccessMsg(`Đã kết thúc năm học thành công. Cấp bằng tốt nghiệp cho ${res.graduatedStudents} học sinh.`);
+      setSuccessMsg(`Đã kết thúc năm học ${activeYear.YearName} thành công. Cấp bằng tốt nghiệp cho ${res.graduatedStudents} học sinh.`);
       fetchYears();
     } catch (err: any) {
       setError(err.message || 'Lỗi khi kết thúc năm học');
@@ -190,11 +196,16 @@ export default function AcademicYearView() {
 
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         <Card style={{ flex: 1 }}>
-          <CardTitle>
-            <span style={{ fontSize: '1.5rem' }}>🏁</span> Tổng kết năm học
+          <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div><span style={{ fontSize: '1.5rem' }}>🏁</span> Tổng kết năm học</div>
+            {activeYear && (
+              <Badge $active={true} style={{ fontSize: '1rem', padding: '6px 12px' }}>
+                {activeYear.YearName}
+              </Badge>
+            )}
           </CardTitle>
           <InfoText>
-            Khi tổng kết năm học:
+            Khi tổng kết năm học <b>{activeYear?.YearName || 'đang hoạt động'}</b>:
             <ul style={{ marginTop: 8, marginLeft: 20 }}>
               <li>Tất cả học sinh <b>Khối Lá</b> sẽ được tự động chuyển trạng thái sang <b>Đã tốt nghiệp</b>.</li>
               <li>Học sinh các khối khác sẽ được gỡ khỏi lớp hiện tại (đưa về trạng thái <b>Chờ xếp lớp</b>).</li>
