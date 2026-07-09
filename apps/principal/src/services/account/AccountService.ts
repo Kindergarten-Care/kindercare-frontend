@@ -63,5 +63,15 @@ class AccountService {
       throw new Error(res.message);
     }
   }
+
+  async searchParents(phone: string): Promise<any> {
+    const { data: res } = await apiClient.get<ApiResponse<any>>(
+      `${SERVER.principal.searchParents}?phone=${phone}`
+    );
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
 }
 export const accountService = new AccountService();

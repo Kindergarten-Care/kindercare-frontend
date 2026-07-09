@@ -17,7 +17,6 @@ import {
   Th,
   Tr,
   Td,
-  UserInfoCell,
   AvatarWrapper,
   AvatarImg,
   AvatarText,
@@ -30,6 +29,41 @@ import {
   PageButton
 } from './styles';
 import { getInitials } from '../AccountList/utils/getInitials';
+import CreateStudentWizard from './CreateStudentWizard';
+import StudentImportModal from './StudentImportModal';
+import styled from 'styled-components';
+
+const PrimaryButton = styled.button`
+  padding: 10px 16px;
+  background-color: #047857;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #065f46;
+  }
+`;
+
+const SecondaryButton = styled.button`
+  padding: 10px 16px;
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+`;
 
 export default function StudentListView() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -43,6 +77,9 @@ export default function StudentListView() {
   const [classFilter, setClassFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name_asc');
   const [classes, setClasses] = useState<string[]>([]);
+  
+  const [showCreateWizard, setShowCreateWizard] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -136,7 +173,13 @@ export default function StudentListView() {
 
   return (
     <Container>
-      <Title>Danh sách Học sinh</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <Title style={{ marginBottom: 0 }}>Danh sách Học sinh</Title>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <SecondaryButton onClick={() => setShowImportModal(true)}>Import CSV</SecondaryButton>
+          <PrimaryButton onClick={() => setShowCreateWizard(true)}>+ Thêm mới</PrimaryButton>
+        </div>
+      </div>
       
       <HeaderActions>
         <SearchContainer>
@@ -225,7 +268,7 @@ export default function StudentListView() {
         {!loading && !error && filteredStudents.length > 0 && (
           <PaginationContainer>
             <PaginationText>
-              Hiển thị {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredStudents.length)} của {filteredStudents.length} học sinh
+              Hiển thị {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedStudents.length)} của {sortedStudents.length} học sinh
             </PaginationText>
             <PaginationGroup>
               <PageButton 
@@ -244,6 +287,26 @@ export default function StudentListView() {
           </PaginationContainer>
         )}
       </TableCard>
+
+      {showCreateWizard && (
+        <CreateStudentWizard 
+          onClose={() => setShowCreateWizard(false)} 
+          onSuccess={() => {
+            setShowCreateWizard(false);
+            fetchStudents(); // Refresh data
+          }} 
+        />
+      )}
+
+      {showImportModal && (
+        <StudentImportModal 
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            setShowImportModal(false);
+            fetchStudents(); // Refresh data
+          }}
+        />
+      )}
     </Container>
   );
 }

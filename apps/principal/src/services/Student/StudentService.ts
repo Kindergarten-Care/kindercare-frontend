@@ -27,6 +27,32 @@ class StudentService {
     }
     return res.data;
   }
+
+  async enrollStudent(data: any): Promise<any> {
+    const { data: res } = await apiClient.post<ApiResponse<any>>(SERVER.principal.enrollStudent, data);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
+  async importStudents(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data: res } = await apiClient.post<ApiResponse<any>>(
+      SERVER.principal.importStudents, 
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
 }
 
 export const studentService = new StudentService();
