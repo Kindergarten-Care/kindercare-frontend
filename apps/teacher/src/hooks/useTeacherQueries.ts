@@ -9,6 +9,26 @@ interface DetailedStudentsResponse {
   students: StudentDetailedDomainModel[];
 }
 
+// ─── Newsfeed ─────────────────────────────────────────────────────────────────
+
+export interface CreateNewsfeedPayload {
+  classId: number | string;
+  content: string;
+  mediaUrl?: string;
+}
+
+export const useCreateNewsfeed = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: CreateNewsfeedPayload) => {
+      await apiClient.post('/newsfeeds', payload);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['newsfeeds', variables.classId] });
+    },
+  });
+};
+
 function toDomain(api: TeacherClassApiDto): TeacherClassDomainModel {
   const name = api.className ?? '';
   const parts = name.split(/\s+/);
