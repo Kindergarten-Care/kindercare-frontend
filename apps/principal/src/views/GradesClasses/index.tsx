@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { GradeDomainModel } from '@/config/types/grade';
 import { gradeService } from '@/services/grade/GradeService';
+import { useRouter } from '@/i18n/routing';
 import {
   Container,
   Title,
@@ -29,6 +30,7 @@ export default function GradesClassesView() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedGrades, setExpandedGrades] = useState<Record<number, boolean>>({});
+  const router = useRouter();
 
   useEffect(() => {
     fetchGradesAndClasses();
@@ -112,7 +114,11 @@ export default function GradesClassesView() {
                     <ClassList>
                       {grade.classes.length > 0 ? (
                         grade.classes.map(cls => (
-                          <ClassNode key={cls.classId}>
+                          <ClassNode 
+                            key={cls.classId}
+                            onClick={() => router.push(`/classes/${cls.classId}`)}
+                            style={{ cursor: 'pointer' }}
+                          >
                             <FileIcon>📚</FileIcon>
                             {cls.className}
                           </ClassNode>

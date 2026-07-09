@@ -184,6 +184,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   }
                 }
               }
+
+              if (pathname.startsWith('/classes/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/grades-classes')}>Khối học và Lớp học</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết Lớp học</BreadcrumbItem>
+                  </>
+                );
+              }
+              if (pathname.startsWith('/teacher/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts')}>Tài khoản & Hồ sơ</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts/teachers')}>Giáo viên</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết Giáo viên</BreadcrumbItem>
+                  </>
+                );
+              }
               return null;
             })()}
           </BreadcrumbContainer>

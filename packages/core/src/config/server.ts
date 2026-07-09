@@ -39,6 +39,7 @@ export const SERVER = {
   principal: {
     getProfile: '/principal/profile',
     getAccounts: '/principal/accounts',
+    getClassDetail: '/principal/class/:id/detail',
     getTeacherDetail: '/principal/teacher/:id/detail',
     getParentDetail: '/principal/parent/:id/detail',
     resetAccountPassword: '/principal/accounts/:id/reset-password',
