@@ -20,6 +20,14 @@ class StudentService {
     return res.data;
   }
 
+  async getPaymentConfigs(): Promise<any> {
+    const { data: res } = await apiClient.get<ApiResponse<any>>(SERVER.principal.getPaymentConfigs);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
   async getAllStudents(): Promise<any[]> {
     const { data: res } = await apiClient.get<ApiResponse<any[]>>(SERVER.principal.getStudents);
     if (!res.success) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { accountService } from '@/services/account/AccountService';
 import { studentService } from '@/services/Student/StudentService';
@@ -173,6 +173,25 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Config Data
+  const [paymentConfigs, setPaymentConfigs] = useState<{ packages: any[], baseFee: any }>({ packages: [], baseFee: null });
+  const [packageId, setPackageId] = useState<number | ''>('');
+
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const configs = await studentService.getPaymentConfigs();
+        setPaymentConfigs(configs);
+        if (configs.packages.length > 0) {
+          setPackageId(configs.packages[0].id); // Default to first package
+        }
+      } catch (err) {
+        console.error('Error fetching payment configs', err);
+      }
+    };
+    fetchConfigs();
+  }, []);
 
   // Step 1 Data
   const [student, setStudent] = useState({
@@ -259,7 +278,8 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
         account: isNewParent ? {
           username: parent.phoneNumber,
           password: `KinderCare_${parent.phoneNumber}`
-        } : null
+        } : null,
+        packageId: packageId === '' ? null : packageId
       };
 
       await studentService.enrollStudent(payload);
@@ -319,14 +339,30 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
                   </Select>
                 </FormGroup>
               </div>
-              <FormGroup>
-                <Label>Ngày nhập học</Label>
-                <Input 
-                  type="date" 
-                  value={student.admissionDate} 
-                  onChange={e => setStudent({...student, admissionDate: e.target.value})} 
-                />
-              </FormGroup>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <FormGroup style={{ flex: 1 }}>
+                  <Label>Ngày nhập học</Label>
+                  <Input 
+                    type="date" 
+                    value={student.admissionDate} 
+                    onChange={e => setStudent({...student, admissionDate: e.target.value})} 
+                  />
+                </FormGroup>
+                <FormGroup style={{ flex: 1 }}>
+                  <Label>Gói học phí</Label>
+                  <Select 
+                    value={packageId} 
+                    onChange={e => setPackageId(Number(e.target.value))}
+                  >
+                    <option value="">-- Không chọn --</option>
+                    {paymentConfigs.packages.map(pkg => (
+                      <option key={pkg.id} value={pkg.id}>
+                        {pkg.name} ({pkg.duration} tháng - Giảm {pkg.discount}%)
+                      </option>
+                    ))}
+                  </Select>
+                </FormGroup>
+              </div>
               <FormGroup>
                 <Label>Ghi chú dị ứng / bệnh lý (Nếu có)</Label>
                 <Textarea 
