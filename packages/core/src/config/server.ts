@@ -76,9 +76,6 @@ export const SERVER = {
     postNewsfeed:            '/teacher/classes/:classId/newsfeeds',
     workHistory:             '/teacher/work-history',
     settings:                '/teacher/settings',
-    // Student Health module (Teacher Student Health)
-    getMedicalRequests:      '/teacher/classes/:classId/medical-requests',
-    updateMedicationStatus:  '/teacher/medical-requests/:requestId',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

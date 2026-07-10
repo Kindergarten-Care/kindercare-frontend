@@ -7,9 +7,16 @@ import { SocketProvider } from '@/contexts/SocketContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ReduxProvider } from '@/store/ReduxProvider';
 import type { Metadata } from 'next';
-import { Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter, Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
 import QueryProvider from '@/providers/QueryProvider';
 import '../globals.css';
+
+const inter = Inter({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 const montserrat = Montserrat({
   subsets: ['vietnamese', 'latin'],
@@ -70,7 +77,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${montserrat.variable} ${plusJakarta.variable}`}>
+    <html lang={locale} className={`${inter.variable} ${montserrat.variable} ${plusJakarta.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
