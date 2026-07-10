@@ -42,7 +42,7 @@ export const Title = styled.h1`
   letter-spacing: -0.03em;
   color: #1F2937;
   margin: 0;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
 `;
 
 export const Subtitle = styled.p`
@@ -115,7 +115,7 @@ export const StatValue = styled.div`
   font-size: 22px;
   font-weight: 800;
   color: #1F2937;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
   letter-spacing: -0.02em;
 `;
 
@@ -342,7 +342,7 @@ export const BMIValue = styled.div`
   font-size: 28px;
   font-weight: 800;
   color: #1F2937;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
   letter-spacing: -0.03em;
 `;
 
@@ -867,3 +867,4 @@ export const FilterRow = styled.div`
   gap: 10px;
   flex-wrap: wrap;
 `;
+

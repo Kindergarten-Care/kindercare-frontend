@@ -8,7 +8,7 @@ export const Container = styled.div`
   padding: 24px 40px 44px;
   min-height: calc(100vh - 80px); /* Chiều cao trừ đi header */
   background: #eff6f1;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const TopHeader = styled.div`

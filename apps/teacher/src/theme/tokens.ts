@@ -29,8 +29,8 @@ export const theme: AppTheme = {
     white: '#ffffff',
   },
   fonts: {
-    display: "var(--font-montserrat), 'Montserrat', sans-serif",
-    body: "var(--font-montserrat), 'Montserrat', sans-serif",
+    display: "var(--font-inter), 'Inter', sans-serif",
+    body: "var(--font-inter), 'Inter', sans-serif",
   },
   radius: {
     sm: '6px',

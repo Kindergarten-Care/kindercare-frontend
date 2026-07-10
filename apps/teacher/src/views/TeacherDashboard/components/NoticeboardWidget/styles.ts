@@ -21,7 +21,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const Badge = styled.div`
@@ -67,11 +67,12 @@ export const NoticeTitle = styled.span`
   font-size: 16px;
   font-weight: bold;
   color: #181d18;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const NoticeDate = styled.span`
   font-size: 14px;
   color: #6f7a6e;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
+

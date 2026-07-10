@@ -265,7 +265,7 @@ export const StudentsListView: React.FC = () => {
                 letterSpacing: '-0.02em',
                 marginTop: '6px',
                 margin: '6px 0 0 0',
-                fontFamily: '"Plus Jakarta Sans", sans-serif'
+                fontFamily: 'inherit'
               }}>Danh sách lớp</h1>
             )}
             

@@ -59,7 +59,7 @@ export const Title = styled.h3`
   color: #1F2937;
   letter-spacing: -0.01em;
   margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const Subtitle = styled.p`
@@ -67,7 +67,7 @@ export const Subtitle = styled.p`
   color: #9CA3AF;
   font-weight: 500;
   margin: 2px 0 0 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const AttendanceCounter = styled.div`
@@ -92,7 +92,7 @@ export const CounterText = styled.span`
   font-weight: 800;
   font-size: 15px;
   color: #059669;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 
   span {
     color: #6EE7B7;
@@ -165,7 +165,7 @@ export const LiveBadge = styled.div`
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
   z-index: 5;
 `;
 
@@ -250,7 +250,7 @@ export const CenterInfo = styled.div`
   justify-content: center;
   gap: 6px;
   color: #0f766e;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const BoxIcon = styled.span`
@@ -276,7 +276,7 @@ export const TriggerButton = styled.button`
   border: none;
   background: linear-gradient(135deg, #10B981, #059669);
   color: #fff;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
   weight: 800;
   font-size: 15px;
   cursor: pointer;
@@ -306,7 +306,7 @@ export const ActionButton = styled.button`
   border: 1px solid #E3F0E8;
   background: #F7FBF8;
   color: #374151;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -336,7 +336,7 @@ export const FeedTitle = styled.h4`
   font-weight: 800;
   color: #1F2937;
   margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FeedBadge = styled.span`
@@ -346,7 +346,7 @@ export const FeedBadge = styled.span`
   background: #ECFDF5;
   padding: 4px 11px;
   border-radius: 999px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FeedList = styled.div`
@@ -399,7 +399,7 @@ export const FeedAvatar = styled.span<{ $color: string }>`
   font-size: 17px;
   color: #374151;
   background: ${props => props.$color};
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FeedInfo = styled.div`
@@ -418,7 +418,7 @@ export const FeedName = styled.span`
   font-weight: 800;
   font-size: 15px;
   color: #1F2937;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FeedTimeBadge = styled.span`
@@ -429,7 +429,7 @@ export const FeedTimeBadge = styled.span`
   border: 1px solid #A7F3D0;
   padding: 2px 8px;
   border-radius: 999px;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FeedWarning = styled.div`
@@ -440,7 +440,7 @@ export const FeedWarning = styled.div`
   font-size: 12.5px;
   font-weight: 600;
   color: #E11D48;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const WaitingRow = styled.div`
@@ -479,7 +479,7 @@ export const Ripples = styled.span`
 export const WaitingText = styled.span`
   font-size: 13px;
   font-weight: 600;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const FlashOverlay = styled.div<{ $active: boolean }>`
@@ -499,3 +499,4 @@ export const FlashOverlay = styled.div<{ $active: boolean }>`
     100% { opacity: 0; }
   }
 `;
+

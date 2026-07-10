@@ -22,7 +22,7 @@ export const Container = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: inherit;
   color: #1F2937;
 `;
 
