@@ -141,9 +141,9 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
 
-        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Phiếu bé ngoan')}>
+        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Đánh giá hằng tháng')}>
           <S.NavIcon style={{ color: '#FBBF24' }}><Star size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Phiếu bé ngoan</S.NavLabel>
+          <S.NavLabel $isCollapsed={isCollapsed}>Đánh giá hằng tháng</S.NavLabel>
           <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
       </S.NavSection>

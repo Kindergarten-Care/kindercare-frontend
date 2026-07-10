@@ -229,7 +229,7 @@ export const GoodKidModal: React.FC<GoodKidModalProps> = ({ isOpen, data, onClos
           </CloseBtn>
           <Avatar $imgUrl={data.avatarUrl}>{!data.avatarUrl && initial}</Avatar>
           <Title>{data.studentName}</Title>
-          <Subtitle>Đánh giá Phiếu bé ngoan Tháng Tự Động</Subtitle>
+          <Subtitle>Đánh giá hằng tháng Tháng Tự Động</Subtitle>
         </Header>
         
         <Content>

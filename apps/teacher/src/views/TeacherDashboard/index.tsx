@@ -267,7 +267,7 @@ export const TeacherDashboardView: React.FC = () => {
     { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
     { id: '2', label: 'Hoạt động', icon: '🧩', iconBg: '#E0E7FF', iconColor: '#4338CA', onClick: () => setTimelineModalOpen(true) },
     { id: '3', label: 'Y tế', icon: '💊', iconBg: '#FCE7F3', iconColor: '#BE185D', onClick: () => setRequestListType('medical') },
-    { id: '4', label: 'Phiếu bé ngoan', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => setIsAllKidsModalOpen(true) },
+    { id: '4', label: 'Đánh giá hằng tháng', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => setIsAllKidsModalOpen(true) },
     { id: '5', label: 'Đơn phép', icon: '📝', iconBg: '#F3E8FF', iconColor: '#7E22CE', onClick: () => setRequestListType('leave') },
   ];
 
