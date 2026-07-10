@@ -82,8 +82,8 @@ export const HealthView: React.FC = () => {
 
     try {
       const now = new Date();
-      const month = now.getMonth() + 1;
-      const termPeriod = month <= 6 ? `${now.getFullYear()}-1` : `${now.getFullYear()}-2`;
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const termPeriod = `${now.getFullYear()}-${month}`;
       const payload = {
         studentId,
         height,
