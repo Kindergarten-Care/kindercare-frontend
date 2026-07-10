@@ -121,12 +121,15 @@ export const HealthView: React.FC = () => {
   const [savingBmi, setSavingBmi] = useState(false);
   const [savedStudentIds, setSavedStudentIds] = useState<Set<string>>(new Set());
 
+  // ── Normalized arrays (defensive) ───────────────────────────────────────────────
+  const safeStudents: StudentDetailedDomainModel[] = Array.isArray(students) ? students : [];
+  const safeMedications: MedicationDomainModel[] = Array.isArray(medications) ? medications : [];
+
+  // ── BMI computed values (after safeStudents is defined) ───────────────────────
   const computedBmi = calcBmi(parseFloat(bmiHeight), parseFloat(bmiWeight));
   const selectedStudent = safeStudents.find(s => String(s.studentId) === bmiStudentId);
   const selectedStudentAge = ageYearsFromTs(selectedStudent?.dateOfBirth ?? null);
   const bmiStatusLabel = computedBmi > 0 ? bmiStatus(computedBmi, selectedStudentAge) : '—';
-
-  // ── Fetch class ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       try {
@@ -210,8 +213,9 @@ export const HealthView: React.FC = () => {
 
   // ── Handle med status update ───────────────────────────────────────────────
   const handleMedStatus = async (medId: number, newStatus: 'Completed' | 'Rejected', note?: string) => {
+    if (!classId) return;
     try {
-      await healthService.updateMedicationStatus(medId, newStatus, note);
+      await healthService.updateMedicationStatus(classId, medId, newStatus, note);
       setMedications(prev => prev.map(m => m.medRequestId === medId ? { ...m, status: newStatus, teacherNote: note } : m));
       addToast(newStatus === 'Completed' ? 'Đã xác nhận đơn thuốc' : 'Đã từ chối đơn thuốc', 'success');
     } catch {
@@ -257,10 +261,6 @@ export const HealthView: React.FC = () => {
       setSavingBmi(false);
     }
   };
-
-  // ── Normalized arrays (defensive) ───────────────────────────────────────────────
-  const safeStudents: StudentDetailedDomainModel[] = Array.isArray(students) ? students : [];
-  const safeMedications: MedicationDomainModel[] = Array.isArray(medications) ? medications : [];
 
   // ── Filtered lists ──────────────────────────────────────────────────────────
   const filteredMeds = safeMedications.filter(m =>

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 import path from 'path';
-import { loadMonorepoEnv, withApiProxy } from '../../packages/config/withMonorepoEnv';
+import { loadMonorepoEnv } from '../../packages/config/withMonorepoEnv';
 
 loadMonorepoEnv(path.resolve(__dirname, '../..'));
 
@@ -38,6 +38,15 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async rewrites() {
+    const target = process.env.NEXT_PUBLIC_API_URL;
+    // Rewrite /api/* → BE server (works with basePath '/teacher')
+    // Browser calls: /api/teacher/classes → Next.js receives: /api/teacher/classes → rewrite to: https://web-test.kindercare.app/api/v1/teacher/classes
+    const proxyRewrites = target && !target.startsWith('/')
+      ? [{ source: '/api/:path*', destination: `${target}/:path*` }]
+      : [];
+    return proxyRewrites;
+  },
 };
 
-export default withNextIntl(withApiProxy(nextConfig));
+export default withNextIntl(nextConfig);

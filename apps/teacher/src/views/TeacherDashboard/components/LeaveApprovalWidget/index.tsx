@@ -44,7 +44,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
 
   useEffect(() => {
     if (data) {
-      setRequests(data);
+      setRequests(data as any);
     }
   }, [data]);
 
@@ -70,7 +70,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
 
     try {
       const status = approve ? 'Approved' : 'Rejected';
-      await updateLeaveRequest.mutateAsync({ requestId: id, status });
+      await updateLeaveRequest.mutateAsync({ requestId: Number(id), status });
       
       // Update attendance status in database to sync
       const targetRequest = requests.find(r => r.id === id);
@@ -108,7 +108,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     } catch (e) {
       console.warn('Failed to process leave request:', e);
       onAction('Gặp lỗi khi xử lý đơn nghỉ học.');
-      if (data) setRequests(data); // Revert on failure
+      if (data) setRequests(data as any); // Revert on failure
     }
   };
 

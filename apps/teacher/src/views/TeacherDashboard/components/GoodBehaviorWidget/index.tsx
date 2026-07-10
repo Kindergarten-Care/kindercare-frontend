@@ -27,7 +27,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
   const d = new Date();
   const currentWeek = Math.ceil(Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / (24 * 60 * 60 * 1000)) / 7);
 
-  const { data: weeklyRewards, isLoading } = useWeeklyRewards(classId || undefined, currentWeek, currentYear);
+  const { data: weeklyRewards, isLoading } = useWeeklyRewards(classId || undefined, String(currentWeek));
   const { mutate: awardRewards, isPending: isAwarding } = useAwardWeeklyRewards();
 
   useEffect(() => {
@@ -96,11 +96,12 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
       const p = praises[s.id] || [];
       return {
         studentId: Number(s.id),
-        teacherNote: p.join(', ')
+        badge: 'star',
+        reason: p.join(', '),
       };
     });
 
-    awardRewards({ classId, weekNumber: currentWeek, year: currentYear, awards: awardsPayload }, {
+    awardRewards({ classId, rewards: awardsPayload }, {
       onSuccess: () => {
         const newAwards = { ...awards };
         eligibleStudents.forEach(s => {

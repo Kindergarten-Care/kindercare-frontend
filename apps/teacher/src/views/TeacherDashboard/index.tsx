@@ -98,7 +98,7 @@ export const TeacherDashboardView: React.FC = () => {
   const currentYear = now.getFullYear();
   const currentWeek = getWeekNumber(now);
 
-  const { data: rawMonthlyKids = [] } = useMonthlyGoodKids(activeClassId || undefined, currentMonth, currentYear);
+  const { data: rawMonthlyKids = [] } = useMonthlyGoodKids(currentYear, currentMonth);
 
   const qrScannerRef = useRef<any>(null);
 
@@ -113,7 +113,7 @@ export const TeacherDashboardView: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoadingDashboard(true);
-      const classes = dashboardData?.classes || await AttendanceService.getTeacherClasses();
+      const classes = (dashboardData as any)?.classes || await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
         setActiveClassId(firstClass.classId);
@@ -186,14 +186,14 @@ export const TeacherDashboardView: React.FC = () => {
 
   // MOCK DATA FOR NEW WIDGETS
   const handleApproveLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: reqId, status: 'Approved' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Approved' }, {
       onSuccess: () => addToast('🎉 Đã duyệt đơn xin phép!'),
       onError: () => addToast('❌ Lỗi khi duyệt đơn')
     });
   };
 
   const handleRejectLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: reqId, status: 'Rejected' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Rejected' }, {
       onSuccess: () => addToast('Đã từ chối đơn!'),
       onError: () => addToast('❌ Lỗi khi từ chối đơn')
     });
@@ -209,24 +209,25 @@ export const TeacherDashboardView: React.FC = () => {
         // Nếu không có trong list pending (đã duyệt, hoặc chưa có request nào pending), fetch trực tiếp
         if (!target) {
           try {
-            target = await LeaveRequestService.getLeaveRequestDetail(openLeaveId);
+            target = (await LeaveRequestService.getLeaveRequestDetail(openLeaveId) as any) || undefined;
           } catch (e) {
             console.warn('Could not fetch leave request detail for deep link');
           }
         }
         
         if (target) {
+          const t: any = target;
           setSelectedLeave({
-            id: String(target.id),
-            studentName: target.studentName,
-            parentName: target.parentName || 'Phụ huynh',
-            parentPhone: target.parentPhone || '0988 123 456',
-            reason: target.reason,
-            fromDate: target.fromDate,
-            toDate: target.toDate,
-            parentNotes: target.parentNotes,
-            attachmentUrl: target.attachmentUrl,
-            avatarUrl: target.studentAvatar || target.avatarUrl || target.avatar
+            id: String(t.id ?? t.requestId),
+            studentName: t.studentName,
+            parentName: t.parentName || 'Phụ huynh',
+            parentPhone: t.parentPhone || '0988 123 456',
+            reason: t.reason,
+            fromDate: t.fromDate,
+            toDate: t.toDate,
+            parentNotes: t.parentNotes,
+            attachmentUrl: t.attachmentUrl,
+            avatarUrl: t.studentAvatar || t.avatarUrl || t.avatar
           });
         }
       }
@@ -234,17 +235,18 @@ export const TeacherDashboardView: React.FC = () => {
       // Handle Medical Request
       if (openMedId && !selectedMedical) {
         // Có thể medical reqs chưa fetch xong
-        const target = rawMedicalReqs.find((m: any) => String(m.requestId || m.id) === openMedId);
+        const target = rawMedicalReqs.find((m: any) => String(m.medRequestId || m.requestId || m.id) === openMedId);
         if (target) {
+          const m: any = target;
           setSelectedMedical({
-            id: String(target.requestId || target.id),
-            studentName: target.studentName,
-            medicineName: target.medicineName,
-            dosage: target.dosage,
-            timeToTake: target.timeToTake,
-            parentNotes: target.parentNotes,
-            imageUrl: target.attachmentUrl,
-            avatarUrl: target.studentAvatar || target.avatarUrl || target.avatar
+            id: String(m.medRequestId || m.requestId || m.id),
+            studentName: m.studentName,
+            medicineName: m.medicineName,
+            dosage: m.dosage,
+            timeToTake: m.timeToTake,
+            parentNotes: m.parentNotes,
+            imageUrl: m.attachmentUrl,
+            avatarUrl: m.studentAvatar || m.avatarUrl || m.avatar
           });
         }
       }
@@ -362,7 +364,7 @@ export const TeacherDashboardView: React.FC = () => {
       btnBorder: isDone ? '#D1D5DB' : '#FCA5A5',
       action: () => {
         if (!isDone) {
-          updateMedicalReq.mutate({ requestId: med.requestId || med.id, status: 'Completed' }, {
+          updateMedicalReq.mutate({ requestId: Number(med.requestId || med.id), status: 'Done' as any }, {
             onSuccess: () => addToast('Đã ghi nhận cho uống thuốc')
           });
         }
@@ -519,9 +521,7 @@ export const TeacherDashboardView: React.FC = () => {
           if (!activeClassId) return;
           awardRewards.mutate({
             classId: activeClassId,
-            weekNumber: currentWeek,
-            year: currentYear,
-            awards: [{ studentId: Number(id), teacherNote: note }]
+            rewards: [{ studentId: Number(id), badge: 'star', reason: note }]
           }, {
             onSuccess: () => {
               addToast(`🎁 Đã cấp phiếu bé ngoan cho bé thành công!`); 

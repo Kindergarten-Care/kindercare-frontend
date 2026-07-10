@@ -9,6 +9,7 @@ import {
   useCreateHealthLog,
   useClassMedicalRequests,
 } from '@/hooks/useHealthQueries';
+import { healthService } from '@/services/health/HealthService';
 import { StudentDetailedDomainModel } from '@/config/types/student';
 import type { TeacherClassDomainModel } from '@/config/types/class';
 import type { MedicationDomainModel } from '@/config/types/health';
@@ -80,12 +81,15 @@ export const HealthView: React.FC = () => {
     }
 
     try {
-      await createHealthLog.mutateAsync({
-        classId: activeClassId!,
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const termPeriod = `${now.getFullYear()}-${month}`;
+      const payload = {
         studentId,
-        payload: { studentId, height, weight },
-      });
-
+        height,
+        weight,
+      };
+      await healthService.createHealthLog(activeClassId!, studentId, payload, termPeriod);
       setSavedRows(prev => new Set([...prev, studentId]));
       setTimeout(() => {
         setSavedRows(prev => {
@@ -96,8 +100,9 @@ export const HealthView: React.FC = () => {
       }, 3000);
 
       addToast('Lưu chỉ số thành công!', 'success');
-    } catch {
-      addToast('Lưu thất bại, vui lòng thử lại', 'error');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Lỗi không xác định';
+      addToast(`Lưu thất bại: ${msg}`, 'error');
     }
   };
 
@@ -491,8 +496,6 @@ export const HealthView: React.FC = () => {
         <AllergiesPopup
           onClose={() => setShowAllergies(false)}
           students={studentsWithAllergies}
-          onViewStudent={handleViewAllergies}
-          classId={activeClassId}
         />
       )}
 
