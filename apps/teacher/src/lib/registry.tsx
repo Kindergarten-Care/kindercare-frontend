@@ -1,7 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { useServerInsertedHTML } from 'next/navigation';
-import { StyleSheetManager, ServerStyleSheet } from 'styled-components';
+import { StyleSheetManager, ServerStyleSheet, ThemeProvider } from 'styled-components';
+import { theme } from '@/theme/tokens';
 
 export default function StyledComponentsRegistry({ children }: { children: React.ReactNode }) {
     const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet());
@@ -12,11 +13,20 @@ export default function StyledComponentsRegistry({ children }: { children: React
         return <>{styles}</>;
     });
 
-    if (typeof window !== 'undefined') return <>{children}</>;
+    if (typeof window !== 'undefined') {
+        return (
+            <ThemeProvider theme={theme}>
+                {children}
+            </ThemeProvider>
+        );
+    }
 
     return (
         <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
-            {children}
+            <ThemeProvider theme={theme}>
+                {children}
+            </ThemeProvider>
         </StyleSheetManager>
     );
 }
+
