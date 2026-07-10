@@ -8,6 +8,7 @@ import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { initPushNotification } from '@kindercare/core';
 
 interface TopAppBarProps {
   fullName: string;
@@ -32,6 +33,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
 
   // Lắng nghe Push FCM Foreground
   useEffect(() => {
+    initPushNotification().catch(() => {});
     let counter = 0;
     const handler = (e: Event) => {
       const payload = (e as CustomEvent).detail;

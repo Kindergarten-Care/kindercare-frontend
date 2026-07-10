@@ -18,7 +18,7 @@ import { GoodKidModal } from './components/GoodKidModal';
 import { TimelineModal } from './components/TimelineModal';
 import { AllFeaturesModal } from './components/AllFeaturesModal';
 import { RequestListModal } from './components/RequestListModal';
-import { initPushNotification } from '@kindercare/core';
+
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -81,10 +81,7 @@ export const TeacherDashboardView: React.FC = () => {
   const [isAllKidsModalOpen, setIsAllKidsModalOpen] = useState(false);
   const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'all' | null>(null);
 
-  // Khởi tạo FCM Push Notification
-  useEffect(() => {
-    initPushNotification().catch(() => {});
-  }, []);
+
 
   // API Hooks integration
   const { data: pendingLeaves = [] } = useLeaveRequests('Pending');
