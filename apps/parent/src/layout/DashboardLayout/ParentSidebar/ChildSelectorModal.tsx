@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ResponsiveModal } from '@kindercare/ui';
 import { getInitials, getAvatarGradient } from '@/utils/Student/Avatar';
 import { IconClose, IconCheck, IconPlus } from '@/assets/icons/dashboard';
 import * as S from './styles';
@@ -20,11 +21,9 @@ const ChildSelectorModal: React.FC<ChildSelectorModalProps> = ({
   activeStudent,
   setActiveStudent
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <S.CSModalOverlay onClick={onClose}>
-      <S.CSModalContainer onClick={(e) => e.stopPropagation()}>
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} maxWidth="360px">
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
         <S.CSModalHeader>
           <S.CSModalTitle>Chọn hồ sơ bé</S.CSModalTitle>
           <S.CSModalClose onClick={onClose} aria-label="Đóng">
@@ -75,8 +74,8 @@ const ChildSelectorModal: React.FC<ChildSelectorModalProps> = ({
         <S.CSAdd style={{ borderTop: '1px solid var(--border-soft)', marginTop: 4, paddingTop: 10 }}>
           <IconPlus size={14} /> Thêm hồ sơ bé
         </S.CSAdd>
-      </S.CSModalContainer>
-    </S.CSModalOverlay>
+      </div>
+    </ResponsiveModal>
   );
 };
 

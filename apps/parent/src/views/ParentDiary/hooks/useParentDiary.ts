@@ -6,10 +6,16 @@ import { dailyScheduleService } from '@/services/DailySchedule/DailyScheduleServ
 import { dailyAlbumService } from '@/services/DailyAlbum/DailyAlbumService';
 import { attendanceService } from '@/services/Attendance/AttendanceService';
 import { dailyLessonService } from '@/services/DailyLesson/DailyLessonService';
+import { newsfeedService } from '@/services/Newsfeed/NewsfeedService';
+import { menuService } from '@/services/Menu/MenuService';
+import { dailyActivityService } from '@/services/DailyActivity/DailyActivityService';
 import { DailyScheduleDomainModel, ActivityType } from '@/config/types/dailySchedule';
 import { DailyAlbumDomainModel } from '@/config/types/dailyAlbum';
 import { AttendanceDomainModel } from '@/config/types/attendance';
 import { DailyLessonDomainModel } from '@/config/types/dailyLesson';
+import { NewsfeedDomainModel } from '@/config/types/newsfeed';
+import { MenuDomainModel } from '@/config/types/menu';
+import { DailyActivityDomainModel } from '@/config/types/dailyActivity';
 import { tsToHHMM } from '@/utils/Student/Date';
 
 export interface DiaryTimelineItem {
@@ -52,33 +58,54 @@ function calcNapDuration(items: DailyScheduleDomainModel[]): string {
   return `${m}p`;
 }
 
-export function useParentDiary() {
+export function useParentDiary(selectedDate: Date) {
   const { activeStudent, loading: studentLoading } = useStudent();
   const [rawSchedule, setRawSchedule] = useState<DailyScheduleDomainModel[]>([]);
   const [rawAlbums, setRawAlbums] = useState<DailyAlbumDomainModel[]>([]);
   const [rawAttendance, setRawAttendance] = useState<AttendanceDomainModel[]>([]);
   const [rawLessons, setRawLessons] = useState<DailyLessonDomainModel[]>([]);
+  const [newsfeeds, setNewsfeeds] = useState<NewsfeedDomainModel[]>([]);
+  const [dailyMenu, setDailyMenu] = useState<MenuDomainModel | null>(null);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivityDomainModel | null>(null);
   const [apiLoading, setApiLoading] = useState(false);
+
+  const dateTimestamp = Math.floor(selectedDate.getTime() / 1000);
 
   useEffect(() => {
     if (!activeStudent?.studentId) return;
     setApiLoading(true);
+
     Promise.allSettled([
-      dailyScheduleService.getDailySchedule(activeStudent.studentId),
-      dailyAlbumService.getDailyAlbums(activeStudent.studentId),
+      dailyScheduleService.getDailySchedule(activeStudent.studentId, dateTimestamp),
+      dailyAlbumService.getDailyAlbums(activeStudent.studentId, dateTimestamp),
       attendanceService.getAttendance(activeStudent.studentId),
       dailyLessonService.getDailyLessons(activeStudent.studentId),
-    ]).then(([schedule, albums, attendance, lessons]) => {
+      newsfeedService.getNewsfeeds(activeStudent.studentId),
+      menuService.getMenu(activeStudent.studentId, dateTimestamp),
+      dailyActivityService.getDailyActivities(activeStudent.studentId, dateTimestamp),
+    ]).then(([schedule, albums, attendance, lessons, feeds, menu, activity]) => {
       if (schedule.status === 'fulfilled') setRawSchedule(schedule.value);
       else console.error('Diary schedule failed:', schedule.reason);
+
       if (albums.status === 'fulfilled') setRawAlbums(albums.value);
       else console.error('Diary albums failed:', albums.reason);
+
       if (attendance.status === 'fulfilled') setRawAttendance(attendance.value);
       else console.error('Diary attendance failed:', attendance.reason);
+
       if (lessons.status === 'fulfilled') setRawLessons(lessons.value);
       else console.error('Diary lessons failed:', lessons.reason);
+
+      if (feeds.status === 'fulfilled') setNewsfeeds(feeds.value);
+      else console.error('Diary newsfeeds failed:', feeds.reason);
+
+      if (menu.status === 'fulfilled') setDailyMenu(menu.value);
+      else console.error('Diary menu failed:', menu.reason);
+
+      if (activity.status === 'fulfilled') setDailyActivity(activity.value);
+      else console.error('Diary daily activity failed:', activity.reason);
     }).finally(() => setApiLoading(false));
-  }, [activeStudent?.studentId]);
+  }, [activeStudent?.studentId, dateTimestamp]);
 
   const timelineItems: DiaryTimelineItem[] = rawSchedule.map(item => ({
     id: String(item.dailyScheduleId),
@@ -112,6 +139,10 @@ export function useParentDiary() {
     photos,
     stats,
     todayAttendance,
+    attendances: rawAttendance,
     lessons: rawLessons,
+    newsfeeds,
+    dailyMenu,
+    dailyActivity,
   };
 }

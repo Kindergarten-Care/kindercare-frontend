@@ -8,6 +8,9 @@ const fadeIn = keyframes`
 `;
 
 export const Card = styled.div`
+  container-type: inline-size;
+  container-name: growth-card;
+  min-width: 0;
   background: var(--surface, #fff);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -16,6 +19,7 @@ export const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
   height: 100%;
   box-sizing: border-box;
 `;
@@ -26,6 +30,7 @@ export const CardHead = styled.div`
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
 `;
 
 export const CardTitle = styled.h3`
@@ -35,6 +40,7 @@ export const CardTitle = styled.h3`
   align-items: center;
   gap: 8px;
   color: var(--fg);
+  min-width: 0;
 `;
 
 export const LegendRow = styled.div`
@@ -66,6 +72,10 @@ export const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+
+  @container growth-card (max-width: 300px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const StatCard = styled.div<{ $type?: 'green' | 'blue' | 'purple' }>`

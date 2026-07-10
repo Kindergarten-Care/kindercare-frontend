@@ -62,6 +62,79 @@ const ScannerWrapper = styled.div`
   background: #000;
   position: relative;
   overflow: hidden;
+  
+  /* Overrides for html5-qrcode injected elements to fill container */
+  #qr-reader {
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  #qr-reader video {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Viewfinder Frame overlay (Darkened outer area) */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65%;
+    height: 65%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    z-index: 2;
+    box-shadow: 0 0 0 400px rgba(0,0,0,0.5); /* Dimming outer area */
+    pointer-events: none;
+  }
+
+  /* 4 corner brackets */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65%;
+    height: 65%;
+    z-index: 3;
+    background: 
+      linear-gradient(to right, #10B981 4px, transparent 4px) 0 0,
+      linear-gradient(to bottom, #10B981 4px, transparent 4px) 0 0,
+      linear-gradient(to left, #10B981 4px, transparent 4px) 100% 0,
+      linear-gradient(to bottom, #10B981 4px, transparent 4px) 100% 0,
+      linear-gradient(to right, #10B981 4px, transparent 4px) 0 100%,
+      linear-gradient(to top, #10B981 4px, transparent 4px) 0 100%,
+      linear-gradient(to left, #10B981 4px, transparent 4px) 100% 100%,
+      linear-gradient(to top, #10B981 4px, transparent 4px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 32px 32px;
+    pointer-events: none;
+    border-radius: 20px;
+  }
+`;
+
+const ScanLine = styled.div`
+  position: absolute;
+  top: 17.5%;
+  left: 17.5%;
+  width: 65%;
+  height: 2.5px;
+  background: #10B981;
+  box-shadow: 0 0 15px #10B981, 0 0 30px #10B981, 0 0 50px #10B981;
+  z-index: 4;
+  border-radius: 5px;
+  animation: scan 2s infinite ease-in-out;
+  pointer-events: none;
+
+  @keyframes scan {
+    0%, 100% { top: 17.5%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    50% { top: 82.5%; }
+  }
 `;
 
 const ResultCard = styled.div<{ $isSuccess: boolean }>`
@@ -245,6 +318,7 @@ export function QrScannerModal({ onClose, onScanSuccess }: QrScannerModalProps) 
         ) : (
           <ScannerWrapper>
             <div id={containerId} style={{ width: '100%', height: '100%' }} />
+            <ScanLine />
           </ScannerWrapper>
         )}
       </ModalContent>

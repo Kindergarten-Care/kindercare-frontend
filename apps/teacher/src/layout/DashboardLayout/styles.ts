@@ -1,15 +1,16 @@
 import styled from 'styled-components';
 
-export const LayoutContainer = styled.div`
+export const LayoutContainer = styled.div<{ $isCollapsed?: boolean }>`
   display: flex;
   height: 100vh;
-  width: calc(100% - 80px);
-  margin-left: 80px;
+  width: calc(100% - ${props => props.$isCollapsed ? '88px' : '262px'});
+  margin-left: ${props => props.$isCollapsed ? '88px' : '262px'};
   overflow: hidden;
-  background: linear-gradient(90deg, #F8FAF8 0%, #ffffff 100%);
+  background: #E9F1EC;
   box-sizing: border-box;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+  @media (max-width: ${props => props.theme.breakpoints?.lg || '1024px'}) {
     width: 100%;
     margin-left: 0;
   }
@@ -53,6 +54,5 @@ export const PageContent = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   position: relative; 
-  z-index: 1;
   min-width: 0;
 `;

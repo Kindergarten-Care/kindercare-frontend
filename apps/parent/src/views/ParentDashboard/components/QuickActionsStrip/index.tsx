@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { IconMedicine, IconCreditCard, IconDiary, IconProfile } from '@/assets/icons/dashboard';
 
@@ -10,14 +11,8 @@ interface QuickActionsStripProps {
   onFee?: () => void;
   onDiary?: () => void;
   onPickup?: () => void;
+  unpaidCount?: number;
 }
-
-const ACTIONS = [
-  { id: 'medication', label: 'Dặn dò thuốc',  Icon: IconMedicine,    bg: '#fef3c7', color: '#d97706' },
-  { id: 'fee',        label: 'Học phí',       Icon: IconCreditCard,  bg: '#dbeafe', color: '#2563eb', badge: '!' },
-  { id: 'diary',      label: 'Nhật ký',       Icon: IconDiary,       bg: '#f3e8ff', color: '#7c3aed' },
-  { id: 'pickup',     label: 'Đăng ký đón hộ', Icon: IconProfile,     bg: '#e2f8f0', color: '#0f766e' },
-];
 
 const QuickActionsStrip: React.FC<QuickActionsStripProps> = ({
   onAbsence,
@@ -25,7 +20,17 @@ const QuickActionsStrip: React.FC<QuickActionsStripProps> = ({
   onFee,
   onDiary,
   onPickup,
+  unpaidCount,
 }) => {
+  const t = useTranslations('Dashboard');
+
+  const ACTIONS = [
+    { id: 'medication', label: t('quickActions.medication'),  Icon: IconMedicine,    bg: '#fef3c7', color: '#d97706' },
+    { id: 'fee',        label: t('quickActions.fee'),         Icon: IconCreditCard,  bg: '#dbeafe', color: '#2563eb', badge: unpaidCount && unpaidCount > 0 ? String(unpaidCount) : undefined },
+    { id: 'diary',      label: t('quickActions.diary'),       Icon: IconDiary,       bg: '#f3e8ff', color: '#7c3aed' },
+    { id: 'pickup',     label: t('quickActions.pickupProxy'), Icon: IconProfile,     bg: '#e2f8f0', color: '#0f766e' },
+  ];
+
   const handlers: Record<string, (() => void) | undefined> = {
     absence: onAbsence,
     medication: onMedication,

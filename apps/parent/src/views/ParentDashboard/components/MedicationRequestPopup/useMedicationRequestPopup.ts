@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useStudent } from '@/contexts/StudentContext';
 import { medicationRequestService } from '@/services/MedicationRequest/MedicationRequestService';
 import { kcToast } from '@kindercare/ui';
@@ -32,6 +33,7 @@ const createEmptyMedicine = (index: number): MedicineItem => ({
 });
 
 export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: UseMedicationRequestPopupProps) => {
+  const t = useTranslations('Dashboard');
   const { activeStudent } = useStudent();
   const [medicines, setMedicines] = useState<MedicineItem[]>([createEmptyMedicine(1)]);
   const [generalNote, setGeneralNote] = useState<string>('');
@@ -138,13 +140,13 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
 
   const handleSubmit = async () => {
     if (!activeStudent) {
-      kcToast.error('Không tìm thấy thông tin học sinh.', 'Lỗi');
+      kcToast.error(t('leave.errStudentNotFound'), t('errorTitle'));
       return;
     }
 
     const invalidMed = medicines.find(m => !m.name.trim());
     if (invalidMed) {
-      kcToast.error('Vui lòng điền đầy đủ tên thuốc!', 'Lỗi');
+      kcToast.error(t('medication.errNameRequired'), t('errorTitle'));
       return;
     }
 
@@ -160,7 +162,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
           studentId: activeStudent.studentId,
           requestDate,
           medicineDetails: m.name.trim(),
-          dosage: m.dosage.trim() || 'Không ghi rõ',
+          dosage: m.dosage.trim() || t('medication.dosageUnspecified'),
           frequency: m.frequency.trim() || null,
           timeToTake: m.selectedTimes.join(', ') || null,
           parentNote: generalNote.trim() || null,
@@ -169,7 +171,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
 
       await Promise.all(promises);
 
-      kcToast.success('Gửi dặn dò thuốc thành công!', 'Thành công');
+      kcToast.success(t('medication.successMsg'), t('successTitle'));
 
       // Reset state and close
       cleanupUrls();
@@ -179,7 +181,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
       onClose();
     } catch (err: any) {
       console.error('Failed to create medication requests:', err);
-      kcToast.error(err.message || 'Gửi dặn dò thuốc thất bại. Vui lòng thử lại.', 'Lỗi');
+      kcToast.error(err.message || t('medication.errSubmitFailed'), t('errorTitle'));
     } finally {
       setIsSubmitting(false);
     }

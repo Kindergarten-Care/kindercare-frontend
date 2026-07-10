@@ -13,6 +13,7 @@ interface TimelineItemParsed {
   title: string;
   sub: string;
   timestamp: number; // original unix timestamp
+  statusFromDb?: string; // Status from backend API
 }
 
 export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
@@ -67,6 +68,7 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
             title: s.activityName,
             sub: s.description || s.details || 'Hoạt động theo lịch',
             timestamp: getTimestamp(s.startTime),
+            statusFromDb: s.status,
           });
         }
       });
@@ -90,7 +92,11 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
     return items.sort((a, b) => a.timestamp - b.timestamp);
   }, [scheduleData, menuData]);
 
-  const getStatus = (itemTimeStr: string, itemTimestamp: number): 'done' | 'current' | 'next' => {
+  const getStatus = (itemTimeStr: string, itemTimestamp: number, dbStatus?: string): 'done' | 'current' | 'next' => {
+    // 1. Explicit DB Status overrides
+    if (dbStatus === 'COMPLETED' || dbStatus === 'Xong') return 'done';
+    if (dbStatus === 'IN_PROGRESS' || dbStatus === 'Đang diễn ra') return 'current';
+
     // Current time in UTC+7
     const nowUTC7Str = new Date().toLocaleTimeString('en-US', {
       timeZone: 'Asia/Ho_Chi_Minh',
@@ -106,7 +112,14 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
     let itemMins = itemH * 60 + itemM;
     if (isNaN(itemMins)) itemMins = 0;
     
-    // Logic: if past by 30 mins, it's done. If within -15 to +30 it's current. Otherwise next.
+    // 2. If we have a DB status explicitly pending, prevent it from faking "done".
+    // Show as "current" if it's time to do it or overdue.
+    if (dbStatus === 'PENDING' || dbStatus === 'Chưa diễn ra') {
+      if (currentMins >= itemMins - 15) return 'current';
+      return 'next';
+    }
+
+    // 3. Fallback pure time-based logic (for Menu items which have no status)
     if (currentMins > itemMins + 45) return 'done';
     if (currentMins >= itemMins - 15 && currentMins <= itemMins + 45) return 'current';
     return 'next';
@@ -151,7 +164,7 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
           </div>
         ) : (
           timelineItems.map((t, idx) => {
-            const status = getStatus(t.time, t.timestamp);
+            const status = getStatus(t.time, t.timestamp, t.statusFromDb);
             const isNext = status === 'next';
             const isCurrent = status === 'current';
             const dotColor = getDotColor(status);

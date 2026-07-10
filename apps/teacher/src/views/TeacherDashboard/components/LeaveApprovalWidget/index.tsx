@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { AttendanceService } from '@/services/attendance';
+import { LeaveRequestService } from '@/services/leave-requests';
 import { LeaveRequest } from '@/config/types/attendance';
 
 import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
@@ -12,14 +13,19 @@ const formatDate = (timestamp: number | undefined): string => {
   const d = new Date(timestamp * 1000);
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}/${month}`;
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 const formatCreatedAt = (val: any): string => {
   if (!val) return '...';
   const d = new Date(val);
   if (isNaN(d.getTime())) return String(val);
-  return d.toLocaleString('vi-VN');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  return `${time} ${day}/${month}/${year}`;
 };
 
 interface LeaveApprovalWidgetProps {
@@ -38,7 +44,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
 
   useEffect(() => {
     if (data) {
-      setRequests(data);
+      setRequests(data as any);
     }
   }, [data]);
 
@@ -47,7 +53,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     setLeaveReqDetail(null);
     setIsLoadingReqDetail(true);
     try {
-      const detail = await AttendanceService.getLeaveRequestDetail(r.id);
+      const detail = await LeaveRequestService.getLeaveRequestDetail(r.id);
       if (detail) {
         setLeaveReqDetail(detail);
       }
@@ -64,7 +70,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
 
     try {
       const status = approve ? 'Approved' : 'Rejected';
-      await updateLeaveRequest.mutateAsync({ requestId: id, status });
+      await updateLeaveRequest.mutateAsync({ requestId: Number(id), status });
       
       // Update attendance status in database to sync
       const targetRequest = requests.find(r => r.id === id);
@@ -102,7 +108,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     } catch (e) {
       console.warn('Failed to process leave request:', e);
       onAction('Gặp lỗi khi xử lý đơn nghỉ học.');
-      if (data) setRequests(data); // Revert on failure
+      if (data) setRequests(data as any); // Revert on failure
     }
   };
 
@@ -229,7 +235,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
                   <S.ModalMetaField>
                     <S.ModalLabel>Thời gian nghỉ: </S.ModalLabel>
                     <span style={{ color: '#1F2937', fontWeight: 500 }}>
-                      Từ {leaveReqDetail.fromDate ? new Date(leaveReqDetail.fromDate * 1000).toLocaleDateString('vi-VN') : '...'} đến {leaveReqDetail.toDate ? new Date(leaveReqDetail.toDate * 1000).toLocaleDateString('vi-VN') : '...'}
+                      Từ {formatDate(leaveReqDetail.fromDate)} đến {formatDate(leaveReqDetail.toDate)}
                     </span>
                   </S.ModalMetaField>
                   <S.ModalMetaField>

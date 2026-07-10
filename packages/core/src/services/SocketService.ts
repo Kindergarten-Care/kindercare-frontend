@@ -5,21 +5,34 @@ import { ClientToServerEvents, ServerToClientEvents } from '../config/types/sock
 class SocketService {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
 
-  public connect(): void {
-    if (this.socket) return;
+  public connect(token?: string): void {
+    if (this.socket?.connected) return;
+
+    // If a socket exists but isn't connected, clean it up first
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
 
     this.socket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
+      auth: token ? { token } : undefined,
     });
 
     this.socket.on('connect', () => {
-      console.log('Connected to socket server');
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from socket server');
+    this.socket.on('connect_error', (err) => {
     });
+
+    this.socket.on('disconnect', (reason) => {
+    });
+  }
+
+  /** Convenience: connect with a JWT token for authenticated users. */
+  public connectWithAuth(token: string): void {
+    this.connect(token);
   }
 
   public disconnect(): void {

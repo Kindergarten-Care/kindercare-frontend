@@ -27,7 +27,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
   const d = new Date();
   const currentWeek = Math.ceil(Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / (24 * 60 * 60 * 1000)) / 7);
 
-  const { data: weeklyRewards, isLoading } = useWeeklyRewards(classId || undefined, currentWeek, currentYear);
+  const { data: weeklyRewards, isLoading } = useWeeklyRewards(classId || undefined, String(currentWeek));
   const { mutate: awardRewards, isPending: isAwarding } = useAwardWeeklyRewards();
 
   useEffect(() => {
@@ -96,11 +96,12 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
       const p = praises[s.id] || [];
       return {
         studentId: Number(s.id),
-        teacherNote: p.join(', ')
+        badge: 'star',
+        reason: p.join(', '),
       };
     });
 
-    awardRewards({ classId, weekNumber: currentWeek, year: currentYear, awards: awardsPayload }, {
+    awardRewards({ classId, rewards: awardsPayload }, {
       onSuccess: () => {
         const newAwards = { ...awards };
         eligibleStudents.forEach(s => {
@@ -178,7 +179,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
           <S.HeaderLeft>
             <S.IconContainer>🌟</S.IconContainer>
             <S.TitleBox>
-              <S.WidgetTitle>Phiếu bé ngoan</S.WidgetTitle>
+              <S.WidgetTitle>Đánh giá hằng tháng</S.WidgetTitle>
               <S.WidgetSubtitle>Tuần 22-26/06</S.WidgetSubtitle>
             </S.TitleBox>
           </S.HeaderLeft>
@@ -221,7 +222,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
           <S.ModalContent onClick={e => e.stopPropagation()}>
             <S.ModalHeader>
               <S.ModalTitleInfo>
-                <S.ModalTitle>🎉 Tổng kết & Phát Phiếu bé ngoan</S.ModalTitle>
+                <S.ModalTitle>🎉 Tổng kết & Phát Đánh giá hằng tháng</S.ModalTitle>
                 <S.ModalSubtitle>Hệ thống đề xuất: {eligibleStudents.length}/{students.length} bé đủ điều kiện.</S.ModalSubtitle>
               </S.ModalTitleInfo>
               <S.HeaderActions>

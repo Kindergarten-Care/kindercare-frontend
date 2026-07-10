@@ -5,18 +5,38 @@ const SW_PATH = '/firebase-messaging-sw.js';
 const SESSION_TOKEN_KEY = 'kc_fcm_token';
 
 let initialized = false;
+let registered = false;
 
-export async function initPushNotification(): Promise<void> {
+/** True once a device token has been successfully obtained and synced to the backend this session. */
+export function isPushRegistered(): boolean {
+  return registered;
+}
+
+export interface InitPushNotificationOptions {
+  /** Bypass the once-per-session guard to retry after a prior failure or denial. */
+  force?: boolean;
+}
+
+/** Returns true once the device token has been obtained and synced to the backend. */
+export async function initPushNotification(options: InitPushNotificationOptions = {}): Promise<boolean> {
   // Guard: browser-only, requires Service Worker support
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
 
-  // Run only once per page session even if called multiple times (React StrictMode safe)
-  if (initialized) return;
+  // Run only once per page session even if called multiple times (React StrictMode safe),
+  // unless the caller explicitly wants to retry (e.g. user just re-enabled it in settings).
+  if (initialized && !options.force) return registered;
   initialized = true;
 
   try {
     // 1. Fetch public Firebase client config from backend
     const config = await notificationService.getFirebaseConfig();
+
+    // Defensive: ensure config has required projectId
+    if (!config?.projectId) {
+      console.warn('[FCM] Firebase config missing projectId — push notifications disabled.');
+      registered = false;
+      return false;
+    }
 
     // 2. Dynamic imports keep firebase/messaging out of the SSR bundle entirely
     const { initializeApp, getApps, getApp } = await import('firebase/app');
@@ -30,7 +50,8 @@ export async function initPushNotification(): Promise<void> {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
       console.log('[FCM] Notification permission not granted.');
-      return;
+      registered = false;
+      return false;
     }
 
     // 5. Register service worker and obtain FCM token
@@ -42,7 +63,8 @@ export async function initPushNotification(): Promise<void> {
 
     if (!currentToken) {
       console.warn('[FCM] Could not retrieve messaging token.');
-      return;
+      registered = false;
+      return false;
     }
 
     // 6. Only sync to backend when token is new or changed (avoids redundant calls on page refresh)
@@ -52,6 +74,7 @@ export async function initPushNotification(): Promise<void> {
       sessionStorage.setItem(SESSION_TOKEN_KEY, currentToken);
     }
     console.log('[FCM] Device token registered.');
+    registered = true;
 
     // 7. Handle foreground push messages while the app is open
     onMessage(messaging, (payload: MessagePayload) => {
@@ -62,7 +85,12 @@ export async function initPushNotification(): Promise<void> {
         );
       }
     });
+
+    return true;
   } catch (error) {
+    console.warn('[FCM] Push notification unavailable — server may be offline');
     console.error('[FCM] Initialization error:', error);
+    registered = false;
+    return false;
   }
 }

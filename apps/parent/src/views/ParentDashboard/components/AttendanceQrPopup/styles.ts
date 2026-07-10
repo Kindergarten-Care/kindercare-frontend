@@ -2,50 +2,10 @@
 
 import styled, { keyframes } from 'styled-components';
 
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
-
-const scaleIn = keyframes`
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-`;
-
 const scan = keyframes`
   0% { top: 0%; }
   50% { top: 100%; }
   100% { top: 0%; }
-`;
-
-export const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: ${fadeIn} 0.2s ease-out;
-`;
-
-export const ModalContainer = styled.div`
-  background: #ffffff;
-  border-radius: 28px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.15), 
-    0 12px 24px -8px rgba(0, 0, 0, 0.08);
-  animation: ${scaleIn} 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 `;
 
 export const HeadRow = styled.div`
