@@ -86,9 +86,4 @@ export const SERVER = {
     deleteNotification: '/notifications/:id',
     deleteAllNotifications: '/notifications',
   },
-  teacher: {
-    getDetailedStudents: '/teacher/classes/:classId/detailed-students',
-    getSchedule: '/teacher/classes/:classId/schedule',
-    getProfile: '/teacher/profile',
-  },
 } as const;

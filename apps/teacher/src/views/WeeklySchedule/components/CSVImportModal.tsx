@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 import * as S from '../styles';
-import { ACTIVITY_TYPE_LABELS, DAY_LABELS } from '@/config/types/weeklySchedule';
+import { ACTIVITY_TYPE_LABELS, DAY_LABELS, WeeklyScheduleDetail } from '@/config/types/weeklySchedule';
 import type { SchoolDay, CSVPreviewResult } from '@/config/types/weeklySchedule';
 
 interface CSVImportModalProps {
