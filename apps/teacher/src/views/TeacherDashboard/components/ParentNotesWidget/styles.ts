@@ -25,7 +25,7 @@ export const WidgetTitle = styled.h3`
   font-weight: bold;
   color: #181d18;
   margin: 0;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const NotesList = styled.div`
@@ -65,14 +65,14 @@ export const StudentName = styled.span`
   font-size: 16px;
   font-weight: bold;
   color: #181d18;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const NoteText = styled.span`
   font-size: 14px;
   font-style: italic;
   color: #3f493f;
-  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: inherit;
 `;
 
 export const Checkbox = styled.div`
@@ -84,3 +84,4 @@ export const Checkbox = styled.div`
   flex-shrink: 0;
   cursor: pointer;
 `;
+

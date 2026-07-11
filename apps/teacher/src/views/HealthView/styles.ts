@@ -15,7 +15,7 @@ export const PageContainer = styled.div`
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #1F2937;
   -webkit-font-smoothing: antialiased;
 `;

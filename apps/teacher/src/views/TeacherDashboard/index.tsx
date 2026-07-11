@@ -18,7 +18,7 @@ import { GoodKidModal } from './components/GoodKidModal';
 import { TimelineModal } from './components/TimelineModal';
 import { AllFeaturesModal } from './components/AllFeaturesModal';
 import { RequestListModal } from './components/RequestListModal';
-import { initPushNotification } from '@kindercare/core';
+
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -81,12 +81,11 @@ export const TeacherDashboardView: React.FC = () => {
   const [isAllKidsModalOpen, setIsAllKidsModalOpen] = useState(false);
   const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'all' | null>(null);
 
-  // Khởi tạo FCM Push Notification
-  useEffect(() => {
-    initPushNotification().catch(() => {});
-  }, []);
+
 
   // API Hooks integration
+  // Fetch ALL requests (not just Pending) to show processed ones with faded style
+  const { data: allLeaveRequests = [] } = useLeaveRequests();
   const { data: pendingLeaves = [] } = useLeaveRequests('Pending');
   const updateLeaveReq = useUpdateLeaveRequest();
   const { data: rawMedicalReqs = [] } = useMedicalRequests(activeClassId || undefined);
@@ -267,7 +266,7 @@ export const TeacherDashboardView: React.FC = () => {
     { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
     { id: '2', label: 'Hoạt động', icon: '🧩', iconBg: '#E0E7FF', iconColor: '#4338CA', onClick: () => setTimelineModalOpen(true) },
     { id: '3', label: 'Y tế', icon: '💊', iconBg: '#FCE7F3', iconColor: '#BE185D', onClick: () => setRequestListType('medical') },
-    { id: '4', label: 'Phiếu bé ngoan', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => setIsAllKidsModalOpen(true) },
+    { id: '4', label: 'Đánh giá hằng tháng', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => setIsAllKidsModalOpen(true) },
     { id: '5', label: 'Đơn phép', icon: '📝', iconBg: '#F3E8FF', iconColor: '#7E22CE', onClick: () => setRequestListType('leave') },
   ];
 
@@ -305,30 +304,38 @@ export const TeacherDashboardView: React.FC = () => {
   
   const featuredKids = allFeaturedKids.slice(0, 4);
 
-  // Map Real Leave Requests to TaskList
-  const leaveTasks: TaskItem[] = pendingLeaves.map((leave: any) => {
+  // Map Real Leave Requests to TaskList - show ALL requests, not just pending
+  const leaveTasks: TaskItem[] = allLeaveRequests.map((leave: any) => {
     const names = leave.studentName ? leave.studentName.split(' ') : ['?'];
     const initial = names[names.length - 1].charAt(0).toUpperCase();
     const student = studentsList.find((s: any) => String(s.id) === String(leave.studentId));
+    const isDone = leave.status === 'APPROVED' || leave.status === 'Approved' || leave.status === 'REJECTED' || leave.status === 'Rejected';
     return {
       id: String(leave.requestId || leave.id),
       name: leave.studentName,
       initial,
       avatarUrl: leave.studentAvatar || leave.avatarUrl || leave.avatar || student?.avatar,
-      color: '#FEF08A', // Yellowish for leave requests
-      tag: 'Đơn phép',
-      tagStyle: { color: '#B45309', background: '#FEF3C7', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
+      color: isDone ? '#E5E7EB' : '#FEF08A', // Gray if processed, yellow if pending
+      tag: leave.status === 'APPROVED' || leave.status === 'Approved' ? 'Đã duyệt' : (leave.status === 'REJECTED' || leave.status === 'Rejected' ? 'Đã từ chối' : 'Đơn phép'),
+      tagStyle: { 
+        color: leave.status === 'APPROVED' || leave.status === 'Approved' ? '#059669' : (leave.status === 'REJECTED' || leave.status === 'Rejected' ? '#DC2626' : '#B45309'), 
+        background: leave.status === 'APPROVED' || leave.status === 'Approved' ? '#D1FAE5' : (leave.status === 'REJECTED' || leave.status === 'Rejected' ? '#FEE2E2' : '#FEF3C7'), 
+        fontSize: '10px', 
+        padding: '2px 6px', 
+        borderRadius: '4px', 
+        fontWeight: 'bold' 
+      },
       sub: `Lý do: ${leave.reason || 'Việc gia đình'}`,
-      btn: leave.status === 'Approved' ? 'Đã duyệt' : (leave.status === 'Rejected' ? 'Đã từ chối' : (updateLeaveReq.isPending && String(updateLeaveReq.variables?.requestId) === String(leave.requestId || leave.id) ? 'Đang duyệt...' : 'Duyệt')),
-      btnColor: (leave.status === 'Approved' || leave.status === 'Rejected') ? '#9CA3AF' : '#005A36',
-      btnBorder: (leave.status === 'Approved' || leave.status === 'Rejected') ? '#D1D5DB' : '#A7E0C6',
+      btn: isDone ? 'Đã xử lý' : (updateLeaveReq.isPending && String(updateLeaveReq.variables?.requestId) === String(leave.requestId || leave.id) ? 'Đang duyệt...' : 'Duyệt'),
+      btnColor: isDone ? '#9CA3AF' : '#005A36',
+      btnBorder: isDone ? '#D1D5DB' : '#A7E0C6',
       action: () => {
-        if (leave.status !== 'Approved' && leave.status !== 'Rejected') {
+        if (!isDone) {
           handleApproveLeave(String(leave.requestId || leave.id));
         }
       },
-      rowStyle: (leave.status === 'Approved' || leave.status === 'Rejected') ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
-      isDone: leave.status === 'Approved' || leave.status === 'Rejected', // For sorting
+      rowStyle: isDone ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
+      isDone, // For sorting - processed items go to bottom
       createdAt: leave.createdAt ? new Date(leave.createdAt).getTime() : Date.now(),
       onRowClick: () => setSelectedLeave({
         id: String(leave.requestId || leave.id),
@@ -340,7 +347,8 @@ export const TeacherDashboardView: React.FC = () => {
         toDate: leave.toDate,
         parentNotes: leave.parentNotes,
         attachmentUrl: leave.attachmentUrl,
-        avatarUrl: leave.studentAvatar || leave.avatarUrl || leave.avatar || student?.avatar
+        avatarUrl: leave.studentAvatar || leave.avatarUrl || leave.avatar || student?.avatar,
+        status: leave.status // Pass status to modal
       })
     };
   });

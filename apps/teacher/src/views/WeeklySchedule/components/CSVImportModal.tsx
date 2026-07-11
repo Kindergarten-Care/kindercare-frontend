@@ -3,9 +3,8 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 import * as S from '../styles';
-import type { CSVPreviewResult, WeeklyScheduleDetail } from '@/config/types/weeklySchedule';
-import { ACTIVITY_TYPE_LABELS, DAY_LABELS } from '@/config/types/weeklySchedule';
-import type { SchoolDay } from '@/config/types/weeklySchedule';
+import { ACTIVITY_TYPE_LABELS, DAY_LABELS, WeeklyScheduleDetail } from '@/config/types/weeklySchedule';
+import type { SchoolDay, CSVPreviewResult } from '@/config/types/weeklySchedule';
 
 interface CSVImportModalProps {
   isOpen: boolean;
@@ -120,7 +119,7 @@ export const CSVImportModal: React.FC<CSVImportModalProps> = ({
                   fontSize: 11, color: '#4a5568', background: '#edf2f7',
                   padding: 12, borderRadius: 6, overflow: 'auto', margin: 0,
                 }}>
-{`DayOfWeek,StartTime,EndTime,ActivityName,ActivityType,Details,Location
+                  {`DayOfWeek,StartTime,EndTime,ActivityName,ActivityType,Details,Location
 Monday,07:30,08:30,Đón bé,pickup,Tập bài dân vũ,Sân trường
 Monday,08:30,09:00,Ăn sáng,meal,Suất ăn sáng,Phòng ăn
 Tuesday,09:00,10:15,Học tập,study,Giờ học Tiếng Việt,Lớp học`}
@@ -191,7 +190,7 @@ Tuesday,09:00,10:15,Học tập,study,Giờ học Tiếng Việt,Lớp học`}
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {DAYS.map(day => {
-                    const items = preview.byDay?.[day] || [];
+                    const items = (preview.items || []).filter((it) => it.dayOfWeek === day);
                     if (items.length === 0) return null;
                     return (
                       <div key={day} style={{

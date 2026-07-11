@@ -61,7 +61,7 @@ export const Title = styled.h1`
   letter-spacing: -0.03em;
   color: #1F2937;
   margin: 0;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
 `;
 
 export const StatPill = styled.div`
@@ -171,7 +171,7 @@ export const AvatarBox = styled.div<{ $grad: string }>`
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
   overflow: hidden;
 `;
 
@@ -560,7 +560,7 @@ export const HealthVal = styled.div`
   font-size: 24px;
   font-weight: 800;
   margin-top: 3px;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: inherit;
 `;
 
 export const PrescriptionBox = styled.div`
@@ -603,5 +603,6 @@ export const ToastItem = styled.div`
   align-items: center;
   gap: 6px;
 `;
+
 
 

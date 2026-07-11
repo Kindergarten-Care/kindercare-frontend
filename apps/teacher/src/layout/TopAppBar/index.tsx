@@ -8,6 +8,8 @@ import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { initPushNotification, socketService } from '@kindercare/core';
+import { useSocketContext } from '@/contexts/SocketContext';
 
 interface TopAppBarProps {
   fullName: string;
@@ -24,6 +26,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
   
   const dispatch = useDispatch<AppDispatch>();
   const unreadCount = useSelector(selectUnreadCount);
+  const { isConnected } = useSocketContext();
 
   // Lấy inbox khi mount
   useEffect(() => {
@@ -32,6 +35,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
 
   // Lắng nghe Push FCM Foreground
   useEffect(() => {
+    initPushNotification().catch(() => {});
     let counter = 0;
     const handler = (e: Event) => {
       const payload = (e as CustomEvent).detail;
@@ -65,6 +69,44 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
     window.addEventListener('kc:push:message', handler);
     return () => window.removeEventListener('kc:push:message', handler);
   }, [dispatch]);
+
+  // Lắng nghe Socket sự kiện new_notification
+  useEffect(() => {
+    if (!isConnected) return;
+    const socket = socketService.getSocket();
+    if (!socket) return;
+
+    const onNewNotification = (payload: any) => {
+      let dataObj = payload.dataPayload || {};
+      if (typeof dataObj === 'string') {
+        try { dataObj = JSON.parse(dataObj); } catch(e) {}
+      }
+      const notif = {
+        ...payload,
+        dataPayload: dataObj,
+      };
+      
+      // Ngăn prepend nếu payload trống
+      if (notif.title || notif.message) {
+        dispatch(prependItem(notif as any));
+        
+        toast.info(notif.title || 'Bạn có thông báo mới!', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    };
+
+    socket.on('new_notification', onNewNotification);
+    return () => {
+      socket.off('new_notification', onNewNotification);
+    };
+  }, [isConnected, dispatch]);
 
   // Helper to get first name
   const getFirstName = (name: string) => {

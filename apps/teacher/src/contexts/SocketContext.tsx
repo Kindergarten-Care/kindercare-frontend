@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { socketService } from '@kindercare/core';
+import { socketService, getToken } from '@kindercare/core';
 
 interface SocketContextType {
   isConnected: boolean;
@@ -15,7 +15,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   useEffect(() => {
-    socketService.connect();
+    const token = getToken();
+    if (token) {
+      socketService.connectWithAuth(token);
+    } else {
+      socketService.connect();
+    }
+
     const socket = socketService.getSocket();
 
     if (socket) {
@@ -24,6 +30,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       socket.on('connect', onConnect);
       socket.on('disconnect', onDisconnect);
+
+      if (socket.connected) {
+        setIsConnected(true);
+      }
 
       return () => {
         socket.off('connect', onConnect);

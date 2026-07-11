@@ -7,6 +7,26 @@ export interface TeacherClassApiDto {
   studentCount: number;
 }
 
+export interface TeacherActiveClassInfoDto {
+  classId: number;
+  className: string;
+  gradeId: number;
+  yearId: number;
+  roleInClass: string;
+}
+
+export interface TeacherAcademicYearDto {
+  yearName: string;
+  startDate: number;
+  endDate: number;
+  isActive: number;
+}
+
+export interface TeacherActiveClassResponseDto {
+  classInfo: TeacherActiveClassInfoDto;
+  academicYear: TeacherAcademicYearDto;
+}
+
 // ─── Domain Models (shaped for UI consumption) ───────────────────────────────
 
 export interface TeacherClassDomainModel {

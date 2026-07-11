@@ -10,8 +10,9 @@ import { useStudent } from '@/contexts/StudentContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
-import { initPushNotification, type NotificationDto } from '@kindercare/core';
+import { initPushNotification, type NotificationDto, socketService } from '@kindercare/core';
 import { getGreeting, getFormattedDate, resolveRelationship } from '../utils/layoutHelpers';
+import { useSocketContext } from '@/contexts/SocketContext';
 
 let _localNotifId = 0;
 
@@ -28,6 +29,7 @@ export function useDashboardLayout() {
   const { activeStudent } = useStudent();
   const dispatch = useDispatch<AppDispatch>();
   const unreadCount = useSelector(selectUnreadCount);
+  const { isConnected } = useSocketContext();
 
   // Init FCM only after login — user must be present
   useEffect(() => {
@@ -60,6 +62,30 @@ export function useDashboardLayout() {
     window.addEventListener('kc:push:message', handler);
     return () => window.removeEventListener('kc:push:message', handler);
   }, [dispatch]);
+
+  // Refresh inbox when a new notification arrives via Socket
+  useEffect(() => {
+    if (!isConnected) return;
+    const socket = socketService.getSocket();
+    if (!socket) return;
+    
+    const onNewNotification = (payload: any) => {
+      let dataObj = payload.dataPayload || {};
+      if (typeof dataObj === 'string') {
+        try { dataObj = JSON.parse(dataObj); } catch(e) {}
+      }
+      const notif: NotificationDto = {
+        ...payload,
+        dataPayload: dataObj,
+      };
+      dispatch(prependItem(notif));
+    };
+
+    socket.on('new_notification', onNewNotification);
+    return () => {
+      socket.off('new_notification', onNewNotification);
+    };
+  }, [isConnected, dispatch]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

@@ -222,27 +222,13 @@ export const useNotifications = () => {
 
 // ─── Leave Requests ───────────────────────────────────────────────────────────
 
-interface LeaveRequest {
-  requestId: number;
-  studentId: number;
-  studentName: string;
-  reason: string;
-  startDate: number;
-  endDate: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  parentNote?: string;
-  createdAt: number;
-}
+import { LeaveRequest, LeaveRequestStatus } from '@/config/types/attendance';
+import { LeaveRequestService } from '@/services/leave-requests';
 
 export const useLeaveRequests = (status?: string) => {
-  return useQuery({
+  return useQuery<LeaveRequest[]>({
     queryKey: ['leaveRequests', status],
-    queryFn: async (): Promise<LeaveRequest[]> => {
-      const params: Record<string, string> = {};
-      if (status) params.status = status;
-      const res = await apiClient.get<ApiResponse<LeaveRequest[]>>('/teacher/leave-requests', { params });
-      return res.data.data || [];
-    },
+    queryFn: () => LeaveRequestService.getAllLeaveRequests(status),
     staleTime: 1 * 60 * 1000,
   });
 };
@@ -257,7 +243,7 @@ export const useUpdateLeaveRequest = () => {
       requestId: number;
       status: 'Approved' | 'Rejected';
     }) => {
-      await apiClient.patch(`/teacher/leave-requests/${requestId}/status`, { status });
+      return LeaveRequestService.processLeaveRequest(String(requestId), status);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leaveRequests'] });

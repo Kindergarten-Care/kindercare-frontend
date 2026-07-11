@@ -179,7 +179,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
           <S.HeaderLeft>
             <S.IconContainer>🌟</S.IconContainer>
             <S.TitleBox>
-              <S.WidgetTitle>Phiếu bé ngoan</S.WidgetTitle>
+              <S.WidgetTitle>Đánh giá hằng tháng</S.WidgetTitle>
               <S.WidgetSubtitle>Tuần 22-26/06</S.WidgetSubtitle>
             </S.TitleBox>
           </S.HeaderLeft>
@@ -222,7 +222,7 @@ export const GoodBehaviorWidget: React.FC<GoodBehaviorWidgetProps> = ({ students
           <S.ModalContent onClick={e => e.stopPropagation()}>
             <S.ModalHeader>
               <S.ModalTitleInfo>
-                <S.ModalTitle>🎉 Tổng kết & Phát Phiếu bé ngoan</S.ModalTitle>
+                <S.ModalTitle>🎉 Tổng kết & Phát Đánh giá hằng tháng</S.ModalTitle>
                 <S.ModalSubtitle>Hệ thống đề xuất: {eligibleStudents.length}/{students.length} bé đủ điều kiện.</S.ModalSubtitle>
               </S.ModalTitleInfo>
               <S.HeaderActions>

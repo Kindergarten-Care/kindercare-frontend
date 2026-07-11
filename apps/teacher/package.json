@@ -10,11 +10,9 @@
   "dependencies": {
     "@kindercare/config": "*",
     "@kindercare/core": "*",
-
     "@kindercare/ui": "*",
     "@reduxjs/toolkit": "^2.12.0",
     "@tanstack/react-query": "^5.101.1",
-
     "axios": "^1.15.2",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.17.0",
