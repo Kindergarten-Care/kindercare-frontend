@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { studentService } from '@/services/Student/StudentService';
+import { gradeService } from '@/services/grade/GradeService';
 import { StudentDetailDomainModel, StudentDetailApiDto } from '@/config/types/student';
 import { StudentMapper } from '@/services/Student/StudentMapper';
 import { ITEMS_PER_PAGE } from '@/constants';
@@ -38,16 +39,19 @@ export const useStudentList = (): UseStudentListReturn => {
   const fetchStudents = useCallback(async () => {
     try {
       setLoading(true);
-      const rawData = await studentService.getAllStudents();
+      const [rawData, grades] = await Promise.all([
+        studentService.getAllStudents(),
+        gradeService.getGradesAndClasses(),
+      ]);
       // Map through StudentMapper to convert API DTO → Domain Model
       const mapped: StudentDetailDomainModel[] = (rawData as StudentDetailApiDto[]).map(
         StudentMapper.toStudentDetailDomain
       );
       setStudents(mapped);
-      const uniqueClasses = Array.from(
-        new Set(mapped.map(s => s.className).filter(Boolean))
-      ) as string[];
-      setClasses(uniqueClasses.sort());
+      // Danh sách lớp lấy từ toàn bộ khối/lớp trong trường, không chỉ suy ra từ học sinh đã có
+      // để các lớp chưa có học sinh nào vẫn xuất hiện trong bộ lọc.
+      const allClasses = grades.flatMap(g => g.classes.map(c => c.className));
+      setClasses(Array.from(new Set(allClasses)).sort());
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách học sinh');
     } finally {

@@ -4,7 +4,11 @@ import React from 'react';
 import { useClassPlacement } from './hooks/useClassPlacement';
 import StudentPoolPanel from './components/StudentPoolPanel';
 import TargetClassPanel from './components/TargetClassPanel';
-import { Container, PageHeader, Title, PageSubtitle, SplitView, ActionCenter, MoveButton } from './styles';
+import {
+  Container, PageHeader, HeaderText, Title, PageSubtitle,
+  SaveButton, SaveBadge, ErrorBanner,
+  SplitView, MidCol, MoveButton,
+} from './styles';
 
 export default function ClassPlacementAssignmentView() {
   const {
@@ -14,53 +18,72 @@ export default function ClassPlacementAssignmentView() {
     selectedClassId,
     classDetail,
     selectedStudentIds,
+    stagedStudents,
     loading,
     loadingClass,
+    saving,
+    error,
     handleSourceClassChange,
     handleTargetClassChange,
     toggleStudentSelection,
-    handleAssignToClass,
+    selectAllSource,
+    clearSourceSelection,
+    moveSelectedToStaging,
+    unstageStudent,
+    handleSaveAssignment,
   } = useClassPlacement();
 
-  const isDisabled = !selectedClassId || selectedStudentIds.length === 0 || loading || sourceClassId === selectedClassId;
+  const canMove = selectedStudentIds.length > 0 && !!selectedClassId;
+  const canSave = stagedStudents.length > 0 && !!selectedClassId && !saving;
 
   return (
     <Container>
       <PageHeader>
-        <Title>Xếp lớp cho Học sinh</Title>
-        <PageSubtitle>Chọn học sinh từ nguồn và xếp vào lớp học đích phù hợp</PageSubtitle>
+        <HeaderText>
+          <Title>Xếp lớp cho Học sinh</Title>
+          <PageSubtitle>Chọn học sinh từ nguồn và xếp vào lớp học đích phù hợp</PageSubtitle>
+        </HeaderText>
+        <SaveButton disabled={!canSave} onClick={handleSaveAssignment}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><path d="M17 21v-8H7v8M7 3v5h8" /></svg>
+          {saving ? 'Đang lưu...' : 'Lưu xếp lớp'}
+          {stagedStudents.length > 0 && <SaveBadge>{stagedStudents.length}</SaveBadge>}
+        </SaveButton>
       </PageHeader>
+
+      {error && <ErrorBanner>{error}</ErrorBanner>}
 
       <SplitView>
         <StudentPoolPanel
           sourceClassId={sourceClassId}
           sourceStudents={sourceStudents}
           grades={grades}
-          selectedCount={selectedStudentIds.length}
           loading={loading}
           onSourceClassChange={handleSourceClassChange}
           onToggleSelection={toggleStudentSelection}
+          onSelectAll={selectAllSource}
+          onClearSelection={clearSourceSelection}
           selectedStudentIds={selectedStudentIds}
         />
 
-        <ActionCenter>
+        <MidCol>
           <MoveButton
-            disabled={isDisabled}
-            onClick={handleAssignToClass}
-            title={isDisabled ? 'Chọn học sinh và lớp đích' : `Xếp ${selectedStudentIds.length} học sinh vào lớp`}
+            $primary
+            disabled={!canMove}
+            onClick={moveSelectedToStaging}
+            title={canMove ? `Chuyển ${selectedStudentIds.length} học sinh sang lớp đích` : 'Chọn học sinh và lớp đích'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </MoveButton>
-        </ActionCenter>
+        </MidCol>
 
         <TargetClassPanel
           selectedClassId={selectedClassId}
           classDetail={classDetail}
+          stagedStudents={stagedStudents}
           grades={grades}
           loadingClass={loadingClass}
           onClassChange={handleTargetClassChange}
+          onUnstage={unstageStudent}
         />
       </SplitView>
     </Container>

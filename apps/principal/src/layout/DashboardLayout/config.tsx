@@ -48,4 +48,11 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     ),
     href: '/grades-classes'
   },
+  {
+    label: 'Biểu phí & Tài chính',
+    icon: (
+      <span>💰</span>
+    ),
+    href: '/finance'
+  },
 ];

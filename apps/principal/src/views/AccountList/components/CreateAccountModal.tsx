@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import {
-  ModalOverlay,
-  ModalContent,
+  Modal,
   ModalHeader,
-  ModalTitle,
-  CloseButton,
-  Form,
-  FormGroup,
-  Label,
-  RequiredStar,
-  Input,
-  ErrorText,
-  NoteText,
-  ButtonGroup,
-  CancelBtn,
-  SubmitBtn
-} from './CreateAccountModal.styles';
+  ModalBody,
+  KmField,
+  KmLabel,
+  KmInput,
+  KmErrorText,
+  KmCallout,
+  KmFoot,
+  KmBtn,
+  UserPlusIcon,
+} from '@/components/Modal';
 import { kcToast } from '@kindercare/ui';
 import { accountService } from '../../../services/account/AccountService';
 
@@ -66,22 +62,23 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
   const [isUsernameTouched, setIsUsernameTouched] = useState(false);
 
   const title = role === 'teacher' ? 'Thêm Giáo viên' : 'Thêm Phụ huynh';
+  const subtitle = role === 'teacher' ? 'Tạo tài khoản giáo viên mới' : 'Tạo tài khoản phụ huynh mới';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'username') {
       setIsUsernameTouched(true);
     }
 
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
-      
+
       // Auto-generate username if fullName changes and username hasn't been manually touched (only for teachers)
       if (role === 'teacher' && name === 'fullName' && !isUsernameTouched) {
         newData.username = generateUsername(value);
       }
-      
+
       return newData;
     });
 
@@ -95,7 +92,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     const newErrors: Record<string, string> = {};
     if (role === 'teacher' && !formData.username.trim()) newErrors.username = 'Tên đăng nhập là bắt buộc';
     if (!formData.fullName.trim()) newErrors.fullName = 'Họ và tên là bắt buộc';
-    
+
     if (role === 'parent' && !formData.phoneNumber.trim()) {
       newErrors.phoneNumber = 'Số điện thoại là bắt buộc đối với phụ huynh';
     }
@@ -126,80 +123,84 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
   };
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>{title}</ModalTitle>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </ModalHeader>
+    <Modal size="md" onClose={onClose}>
+      <ModalHeader
+        icon={<UserPlusIcon />}
+        iconVariant="brand"
+        title={title}
+        subtitle={subtitle}
+        onClose={onClose}
+      />
 
-        <Form onSubmit={handleSubmit}>
-          {role === 'teacher' ? (
-            <NoteText>Mật khẩu mặc định của tài khoản sẽ là <strong>123456</strong>.</NoteText>
-          ) : (
-            <NoteText>Hệ thống sẽ dùng Số điện thoại làm Tên đăng nhập. Mật khẩu mặc định là <strong>123456</strong>.</NoteText>
-          )}
-          
+      <form onSubmit={handleSubmit}>
+        <ModalBody>
           {role === 'teacher' && (
-            <FormGroup>
-              <Label>Tên đăng nhập <RequiredStar>*</RequiredStar></Label>
-              <Input 
+            <KmField>
+              <KmLabel>Tên đăng nhập <span className="opt">*</span></KmLabel>
+              <KmInput
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                $hasError={!!errors.username}
                 placeholder="Nhập tên đăng nhập (VD: nguyenvan_a)"
               />
-              {errors.username && <ErrorText>{errors.username}</ErrorText>}
-            </FormGroup>
+              {errors.username && <KmErrorText>{errors.username}</KmErrorText>}
+            </KmField>
           )}
 
-          <FormGroup>
-            <Label>Họ và tên <RequiredStar>*</RequiredStar></Label>
-            <Input 
+          <KmField>
+            <KmLabel>Họ và tên <span className="opt">*</span></KmLabel>
+            <KmInput
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              $hasError={!!errors.fullName}
               placeholder="Nhập họ và tên"
             />
-            {errors.fullName && <ErrorText>{errors.fullName}</ErrorText>}
-          </FormGroup>
+            {errors.fullName && <KmErrorText>{errors.fullName}</KmErrorText>}
+          </KmField>
 
-          <FormGroup>
-            <Label>
-              Số điện thoại 
-              {role === 'parent' && <RequiredStar>*</RequiredStar>}
-            </Label>
-            <Input 
+          <KmField>
+            <KmLabel>
+              Số điện thoại
+              {role === 'parent' && <span className="opt"> *</span>}
+            </KmLabel>
+            <KmInput
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              $hasError={!!errors.phoneNumber}
               placeholder="Nhập số điện thoại"
             />
-            {errors.phoneNumber && <ErrorText>{errors.phoneNumber}</ErrorText>}
-          </FormGroup>
+            {errors.phoneNumber && <KmErrorText>{errors.phoneNumber}</KmErrorText>}
+          </KmField>
 
-          <FormGroup>
-            <Label>Email</Label>
-            <Input 
+          <KmField>
+            <KmLabel>Email</KmLabel>
+            <KmInput
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Nhập email (Tùy chọn)"
             />
-          </FormGroup>
+          </KmField>
 
-          <ButtonGroup>
-            <CancelBtn type="button" onClick={onClose} disabled={isSubmitting}>Hủy</CancelBtn>
-            <SubmitBtn type="submit" $isLoading={isSubmitting} disabled={isSubmitting}>
-              {isSubmitting ? 'Đang xử lý...' : 'Lưu'}
-            </SubmitBtn>
-          </ButtonGroup>
-        </Form>
-      </ModalContent>
-    </ModalOverlay>
+          <KmCallout $variant="amber">
+            {role === 'teacher' ? (
+              <span>Mật khẩu mặc định của tài khoản sẽ là <b>123456</b>.</span>
+            ) : (
+              <span>Hệ thống sẽ dùng Số điện thoại làm Tên đăng nhập. Mật khẩu mặc định là <b>123456</b>.</span>
+            )}
+          </KmCallout>
+        </ModalBody>
+
+        <KmFoot>
+          <KmBtn type="button" $variant="ghost" onClick={onClose} disabled={isSubmitting}>
+            Hủy
+          </KmBtn>
+          <KmBtn type="submit" $variant="brand" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang xử lý...' : 'Lưu'}
+          </KmBtn>
+        </KmFoot>
+      </form>
+    </Modal>
   );
 };

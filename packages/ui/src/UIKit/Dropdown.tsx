@@ -8,6 +8,8 @@ export interface DropdownOption<T extends string = string> {
   value: T;
   label: string;
   disabled?: boolean;
+  /** Nhãn nhóm (vd tên khối học) — các option liên tiếp cùng group sẽ được gộp dưới 1 tiêu đề nhóm. */
+  group?: string;
 }
 
 export interface DropdownProps<T extends string = string> {
@@ -99,6 +101,23 @@ const Panel = styled.ul`
   max-height: 240px;
   overflow-y: auto;
   animation: ${panelFade} 0.16s ease-out;
+`;
+
+const GroupLabel = styled.li`
+  padding: 0.5rem 0.85rem 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.muted};
+  list-style: none;
+  pointer-events: none;
+
+  &:not(:first-child) {
+    margin-top: 0.25rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+  }
 `;
 
 const Item = styled.li<{ $active: boolean; $selected: boolean; $disabled?: boolean }>`
@@ -310,25 +329,28 @@ export function Dropdown<T extends string = string>({
           {options.map((option, index) => {
             const isSelected = index === selectedIndex;
             const isActive = index === activeIndex;
+            const showGroupLabel = !!option.group && option.group !== options[index - 1]?.group;
             return (
-              <Item
-                key={option.value}
-                role="option"
-                aria-selected={isSelected}
-                aria-disabled={option.disabled}
-                $active={isActive}
-                $selected={isSelected}
-                $disabled={option.disabled}
-                onMouseEnter={() => !option.disabled && setActiveIndex(index)}
-                onClick={() => selectAt(index)}
-              >
-                <span>{option.label}</span>
-                {isSelected && (
-                  <CheckIcon>
-                    <CheckGlyph />
-                  </CheckIcon>
-                )}
-              </Item>
+              <React.Fragment key={option.value}>
+                {showGroupLabel && <GroupLabel>{option.group}</GroupLabel>}
+                <Item
+                  role="option"
+                  aria-selected={isSelected}
+                  aria-disabled={option.disabled}
+                  $active={isActive}
+                  $selected={isSelected}
+                  $disabled={option.disabled}
+                  onMouseEnter={() => !option.disabled && setActiveIndex(index)}
+                  onClick={() => selectAt(index)}
+                >
+                  <span>{option.label}</span>
+                  {isSelected && (
+                    <CheckIcon>
+                      <CheckGlyph />
+                    </CheckIcon>
+                  )}
+                </Item>
+              </React.Fragment>
             );
           })}
         </Panel>

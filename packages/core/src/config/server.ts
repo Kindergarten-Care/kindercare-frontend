@@ -59,6 +59,13 @@ export const SERVER = {
     startAcademicYear: '/principal/academic-year/start',
     getAcademicYears: '/principal/academic-years',
     activateAcademicYear: '/principal/academic-year/:id/activate',
+    getFees: '/principal/fees',
+    getInvoices: '/principal/invoices',
+    updateBaseFee: '/principal/base-fees/:id',
+    createPaymentPackage: '/principal/payment-packages',
+    updatePaymentPackage: '/principal/payment-packages/:id',
+    createExtracurricular: '/principal/extracurriculars',
+    updateExtracurricular: '/principal/extracurriculars/:id',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

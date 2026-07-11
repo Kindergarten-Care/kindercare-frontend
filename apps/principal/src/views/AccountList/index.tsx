@@ -23,7 +23,6 @@ import {
   SearchWrapper,
   SearchIcon,
   SearchInput,
-  FilterSelect,
   TableCard,
   Table,
   Th,
@@ -101,11 +100,15 @@ export default function AccountListView() {
           />
         </SearchWrapper>
 
-        <FilterSelect value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-          <option value="all">Tất cả trạng thái</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Đã khóa</option>
-        </FilterSelect>
+        <Dropdown
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { value: 'all', label: 'Tất cả trạng thái' },
+            { value: 'active', label: 'Đang hoạt động' },
+            { value: 'inactive', label: 'Đã khóa' },
+          ]}
+        />
       </FilterBar>
 
       {loading ? (

@@ -48,6 +48,7 @@ export interface TeacherDetailApiDto {
 export interface ParentDetailChildApiDto {
   studentId: number;
   fullName: string;
+  avatarUrl: string | null;
   dateOfBirth: number | null;
   gender: string | null;
   classId: number | null;
@@ -103,6 +104,7 @@ export interface TeacherDetailDomainModel {
 export interface ParentDetailChildDomainModel {
   studentId: number;
   fullName: string;
+  avatarUrl: string | null;
   dateOfBirth: bigint | null;
   gender: string | null;
   classId: number | null;

@@ -6,13 +6,26 @@ import { useAuth } from '@kindercare/core';
 import { accountService } from '@/services/account/AccountService';
 import { ParentDetailDomainModel } from '@/config/types/account';
 import {
-  Container, TopActions, BackButton, HeaderCard, HeaderLeft, BigAvatar, BigAvatarImg,
-  ParentName, ParentMeta, UsernameTag, RoleTag, EditButton,
-  SectionCard, SectionHeader, SectionIconWrapper, SectionTitle, CountBadge,
-  InfoGrid, InfoItem, InfoLabel, InfoValue,
-  Table, Th, Td, Tr, StudentInfoCell, SmallAvatar, SmallAvatarImg, Badge,
-  ModalOverlay, ModalContent, ModalActions, ModalButton
+  Container, HeaderActions, BtnGhost, BtnDanger,
+  Hero, HeroBg, HeroAvatar, HeroAvatarImg, HeroMain, HeroName, HeroMeta, Pill, Cdot,
+  CardPad, CardHead, CardTitle, TitleIcon, CountChip,
+  InfoGrid, Field, FieldLabel, FieldValue,
+  Table, Th, Tr, Td, KidCell, KidAvatar, KidAvatarImg, KidName,
+  CodeText, ClassChip, GenderChip, RelText, YesChip, NoChip, DobText, EmptyText,
+  ModalOverlay, Modal, ModalHead, ModalHeadTitle, ModalBody, ModalFoot, ModalBtn,
+  StateText
 } from './styles';
+
+const AVATAR_PALETTE = [
+  ['#DB2777', '#f9a8d4'],
+  ['#8B5CF6', '#c4b5fd'],
+  ['#10b981', '#6ee7b7'],
+  ['#F97316', '#fdba74'],
+  ['#2563EB', '#60a5fa'],
+  ['#14B8A6', '#5eead4'],
+  ['#6366F1', '#a5b4fc'],
+  ['#0EA5E9', '#7dd3fc'],
+];
 
 const formatDate = (bigintDate: bigint | null) => {
   if (!bigintDate) return '—';
@@ -26,13 +39,9 @@ const getInitials = (name?: string) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const getAvatarBg = (name: string) => {
-  const colors = ['#f472b6', '#818cf8', '#10b981', '#fb923c', '#3b82f6', '#f43f5e'];
-  let sum = 0;
-  for (let i = 0; i < name.length; i++) {
-    sum += name.charCodeAt(i);
-  }
-  return colors[sum % colors.length];
+const avatarGradient = (seed: number) => {
+  const [from, to] = AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
+  return `linear-gradient(140deg, ${from}, ${to})`;
 };
 
 export default function ParentDetailView() {
@@ -82,157 +91,141 @@ export default function ParentDetailView() {
     return () => { isMounted = false; };
   }, [id, isAuthenticated, authLoading]);
 
-  if (loading) return <Container>Đang tải dữ liệu...</Container>;
-  if (error) return <Container style={{ color: 'red' }}>{error}</Container>;
+  if (loading) return <Container><StateText>Đang tải dữ liệu...</StateText></Container>;
+  if (error) return <Container><StateText style={{ color: '#dc2626' }}>{error}</StateText></Container>;
   if (!parent) return null;
 
   return (
     <Container>
-      <TopActions>
-        <BackButton onClick={() => router.back()}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          Quay lại danh sách phụ huynh
-        </BackButton>
-      </TopActions>
+      <HeaderActions>
+        <BtnGhost onClick={() => router.back()}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          Quay lại danh sách
+        </BtnGhost>
+        <BtnDanger onClick={() => setShowResetModal(true)}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          Khôi phục mật khẩu
+        </BtnDanger>
+      </HeaderActions>
 
-      <HeaderCard>
-        <HeaderLeft>
-          {parent.avatarUrl ? (
-            <BigAvatarImg src={parent.avatarUrl} alt={parent.fullName} />
-          ) : (
-            <BigAvatar $color="#f97316">{getInitials(parent.fullName)}</BigAvatar>
-          )}
-          <div>
-            <ParentName>{parent.fullName}</ParentName>
-            <ParentMeta>
-              <UsernameTag>@{parent.username}</UsernameTag>
-              <RoleTag>Phụ huynh - {parent.children.length} con đang học</RoleTag>
-            </ParentMeta>
-          </div>
-        </HeaderLeft>
-        <EditButton onClick={() => setShowResetModal(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-          </svg>
-          Chỉnh sửa
-        </EditButton>
-      </HeaderCard>
+      <Hero>
+        <HeroBg />
+        <HeroAvatar>
+          {parent.avatarUrl ? <HeroAvatarImg src={parent.avatarUrl} alt={parent.fullName} /> : getInitials(parent.fullName)}
+        </HeroAvatar>
+        <HeroMain>
+          <HeroName>{parent.fullName}</HeroName>
+          <HeroMeta>
+            <Pill $variant="code">@{parent.username}</Pill>
+            <Pill $variant="role">
+              <Cdot />
+              Phụ huynh · {parent.children.length} con đang học
+            </Pill>
+          </HeroMeta>
+        </HeroMain>
+      </Hero>
 
-      <SectionCard>
-        <SectionHeader>
-          <SectionIconWrapper>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </SectionIconWrapper>
-          <SectionTitle>Thông tin cá nhân</SectionTitle>
-        </SectionHeader>
+      <CardPad>
+        <CardHead>
+          <CardTitle>
+            <TitleIcon>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+            </TitleIcon>
+            Thông tin cá nhân
+          </CardTitle>
+        </CardHead>
         <InfoGrid>
-          <InfoItem><InfoLabel>Họ Tên</InfoLabel><InfoValue>{parent.fullName}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Tên đăng nhập</InfoLabel><InfoValue>{parent.username}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Email</InfoLabel><InfoValue>{parent.email || '—'}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Số điện thoại</InfoLabel><InfoValue>{parent.phoneNumber || '—'}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Ngày sinh</InfoLabel><InfoValue>{formatDate(parent.dateOfBirth)}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Nghề nghiệp</InfoLabel><InfoValue>{parent.job || '—'}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>CMND / CCCD</InfoLabel><InfoValue>{parent.idCard || '—'}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>Địa chỉ</InfoLabel><InfoValue>{parent.address || '—'}</InfoValue></InfoItem>
+          <Field><FieldLabel>Họ tên</FieldLabel><FieldValue>{parent.fullName}</FieldValue></Field>
+          <Field><FieldLabel>Tên đăng nhập</FieldLabel><FieldValue>{parent.username}</FieldValue></Field>
+          <Field><FieldLabel>Email</FieldLabel><FieldValue $muted={!parent.email}>{parent.email || '—'}</FieldValue></Field>
+          <Field><FieldLabel>Số điện thoại</FieldLabel><FieldValue $mono $muted={!parent.phoneNumber}>{parent.phoneNumber || '—'}</FieldValue></Field>
+          <Field><FieldLabel>Ngày sinh</FieldLabel><FieldValue $mono $muted={!parent.dateOfBirth}>{formatDate(parent.dateOfBirth)}</FieldValue></Field>
+          <Field><FieldLabel>Nghề nghiệp</FieldLabel><FieldValue $muted={!parent.job}>{parent.job || '—'}</FieldValue></Field>
+          <Field><FieldLabel>CMND / CCCD</FieldLabel><FieldValue $mono $muted={!parent.idCard}>{parent.idCard || '—'}</FieldValue></Field>
+          <Field><FieldLabel>Địa chỉ</FieldLabel><FieldValue $muted={!parent.address}>{parent.address || '—'}</FieldValue></Field>
         </InfoGrid>
-      </SectionCard>
+      </CardPad>
 
-      <SectionCard>
-        <SectionHeader>
-          <SectionIconWrapper>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </SectionIconWrapper>
-          <SectionTitle>
-            Danh sách con
-            <CountBadge>{parent.children.length}</CountBadge>
-          </SectionTitle>
-        </SectionHeader>
-        
-        <Table>
-          <thead>
-            <tr>
-              <Th>MÃ HS</Th>
-              <Th>HỌ TÊN CON</Th>
-              <Th>LỚP</Th>
-              <Th>NGÀY SINH</Th>
-              <Th>GIỚI TÍNH</Th>
-              <Th>QUAN HỆ</Th>
-              <Th>ĐẠI DIỆN CHÍNH</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {parent.children.length === 0 ? (
+      <CardPad style={{ marginBottom: 0 }}>
+        <CardHead style={{ marginBottom: 18 }}>
+          <CardTitle>
+            <TitleIcon>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1M15 15h2a4 4 0 0 1 4 4v1" /></svg>
+            </TitleIcon>
+            Danh sách con <CountChip>{parent.children.length}</CountChip>
+          </CardTitle>
+        </CardHead>
+
+        {parent.children.length === 0 ? (
+          <EmptyText>Không có học sinh nào</EmptyText>
+        ) : (
+          <Table>
+            <thead>
               <tr>
-                <Td colSpan={7} style={{ textAlign: 'center' }}>Không có học sinh nào</Td>
+                <Th>Mã HS</Th>
+                <Th>Họ tên con</Th>
+                <Th>Lớp</Th>
+                <Th>Ngày sinh</Th>
+                <Th>Giới tính</Th>
+                <Th>Quan hệ</Th>
+                <Th>Đại diện chính</Th>
               </tr>
-            ) : (
-              parent.children.map((c, index) => (
-                <Tr key={c.studentId}>
-                  <Td style={{ color: '#9ca3af' }}>HS-{String(c.studentId).padStart(4, '0')}</Td>
-                  <Td>
-                    <StudentInfoCell>
-                      {(c as any).avatarUrl ? (
-                        <SmallAvatarImg src={(c as any).avatarUrl} alt={c.fullName} />
+            </thead>
+            <tbody>
+              {parent.children.map((c, index) => {
+                const isGirl = c.gender?.toLowerCase() === 'nữ' || c.gender?.toLowerCase() === 'female';
+                return (
+                  <Tr key={c.studentId}>
+                    <Td><CodeText>HS-{String(c.studentId).padStart(4, '0')}</CodeText></Td>
+                    <Td>
+                      <KidCell>
+                        <KidAvatar $bg={avatarGradient(index)}>
+                          {c.avatarUrl ? <KidAvatarImg src={c.avatarUrl} alt={c.fullName} /> : getInitials(c.fullName)}
+                        </KidAvatar>
+                        <KidName>{c.fullName}</KidName>
+                      </KidCell>
+                    </Td>
+                    <Td>{c.className ? <ClassChip>{c.className}</ClassChip> : <span style={{ color: '#9ca3af' }}>—</span>}</Td>
+                    <Td><DobText>{formatDate(c.dateOfBirth)}</DobText></Td>
+                    <Td>{c.gender ? <GenderChip $girl={isGirl}>{c.gender}</GenderChip> : '—'}</Td>
+                    <Td><RelText>{c.relationship || '—'}</RelText></Td>
+                    <Td>
+                      {c.isPrimary ? (
+                        <YesChip>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                          Có
+                        </YesChip>
                       ) : (
-                        <SmallAvatar $bg={getAvatarBg(c.fullName)}>{getInitials(c.fullName)}</SmallAvatar>
+                        <NoChip>Không</NoChip>
                       )}
-                      <span style={{ fontWeight: 600 }}>{c.fullName}</span>
-                    </StudentInfoCell>
-                  </Td>
-                  <Td><Badge $type="class">{c.className || '—'}</Badge></Td>
-                  <Td>{formatDate(c.dateOfBirth)}</Td>
-                  <Td>
-                    <Badge $type={c.gender === 'Nữ' ? 'genderF' : c.gender === 'Nam' ? 'genderM' : undefined}>
-                      {c.gender || '—'}
-                    </Badge>
-                  </Td>
-                  <Td>{c.relationship || '—'}</Td>
-                  <Td>
-                    {c.isPrimary ? (
-                      <Badge $type="primary">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Có
-                      </Badge>
-                    ) : (
-                      '—'
-                    )}
-                  </Td>
-                </Tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </SectionCard>
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
+      </CardPad>
 
       {showResetModal && (
         <ModalOverlay onClick={() => !resetting && setShowResetModal(false)}>
-          <ModalContent onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Xác nhận thay đổi</h2>
-            <p style={{ color: '#4B5563', marginTop: '12px', fontSize: '0.9rem' }}>
-              Chức năng cập nhật phụ huynh đang được phát triển. Bạn có muốn đặt lại mật khẩu của tài khoản <b>{parent.username}</b> về mặc định (123456) không?
-            </p>
-            {resetError && <p style={{ color: '#EF4444', fontSize: '0.875rem', marginTop: '8px' }}>{resetError}</p>}
-            <ModalActions>
-              <ModalButton onClick={() => setShowResetModal(false)} disabled={resetting}>Hủy bỏ</ModalButton>
-              <ModalButton $danger onClick={handleResetPassword} disabled={resetting}>
-                {resetting ? 'Đang xử lý...' : 'Khôi phục mật khẩu'}
-              </ModalButton>
-            </ModalActions>
-          </ModalContent>
+          <Modal onClick={e => e.stopPropagation()}>
+            <ModalHead>
+              <ModalHeadTitle>Xác nhận khôi phục mật khẩu</ModalHeadTitle>
+            </ModalHead>
+            <ModalBody>
+              <p style={{ color: '#4b5563', fontSize: '13.5px', lineHeight: 1.5 }}>
+                Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản <b>{parent.username}</b> về mặc định (123456) không?
+              </p>
+              {resetError && <p style={{ color: '#dc2626', fontSize: '0.875rem', marginTop: '8px' }}>{resetError}</p>}
+              <ModalFoot>
+                <ModalBtn onClick={() => setShowResetModal(false)} disabled={resetting}>Hủy bỏ</ModalBtn>
+                <ModalBtn $danger onClick={handleResetPassword} disabled={resetting}>
+                  {resetting ? 'Đang xử lý...' : 'Xác nhận'}
+                </ModalBtn>
+              </ModalFoot>
+            </ModalBody>
+          </Modal>
         </ModalOverlay>
       )}
     </Container>

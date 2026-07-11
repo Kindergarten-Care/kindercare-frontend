@@ -4,45 +4,95 @@ import React, { useEffect, useState } from 'react';
 import { classService } from '@/services/Class/ClassService';
 import { ClassDetailDomainModel } from '@/config/types/class';
 import { useRouter } from '@/i18n/routing';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { getInitials } from '@/views/AccountList/utils/getInitials';
 import { Dropdown } from '@kindercare/ui';
 import {
   Container,
-  Header,
-  Title,
-  Subtitle,
-  MainGrid,
-  LeftColumn,
-  RightColumn,
-  Section,
-  SectionTitle,
-  InfoGrid,
-  InfoCard,
-  AvatarPlaceholder,
-  InfoDetails,
-  InfoName,
-  InfoSubtext,
-  TabContainer,
-  TabRow,
-  TabButton,
-  LoadingText,
-  ErrorText,
-  ChartContainer,
-  Table,
-  Th,
-  Td,
-  TotalStudentsCard,
-  TotalStudentsLabel,
-  TotalStudentsValue,
-  PaginationContainer,
-  PaginationButton,
-  PageInfo,
-  ToolbarContainer,
-  SearchInput
+  Hero, HeroBg, HeroBadge, HeroMain, HeroName, HeroYear, HeroMeta, Pill, HeroStat, HeroStatValue, HeroStatLabel,
+  Layout, Stack, CardPad, CardHead, CardTitle, TitleIcon, CountChip,
+  TeacherRow, TeacherAvatar, TeacherAvatarImg, TeacherName, TeacherRole, TeacherContact, ContactLine, EmptyText,
+  DateText, DonutWrap, DonutChartWrap, DonutCenter, DonutPct, DonutSub, Legend, LegendRow, LegendSwatch, LegendValue,
+  Toolbar, SearchWrapper, SearchIcon, SearchInput, SortDropdownWrap,
+  TableScrollArea, Table, Th, Tr, Td, RowNum, StuCell, StuAvatar, StuAvatarImg, StuName, CodeText, DobText, ViewBtn,
+  TableFoot, Pager, PageBtn,
+  LoadingText, ErrorText,
 } from './styles';
 
 interface ClassDetailProps {
   classId: string;
+}
+
+const AVATAR_PALETTE = [
+  ['#F97316', '#fdba74'],
+  ['#2563EB', '#60a5fa'],
+  ['#10b981', '#6ee7b7'],
+  ['#DB2777', '#f9a8d4'],
+  ['#8B5CF6', '#c4b5fd'],
+  ['#0EA5E9', '#7dd3fc'],
+  ['#F59E0B', '#fcd34d'],
+  ['#14B8A6', '#5eead4'],
+  ['#6366F1', '#a5b4fc'],
+];
+
+const avatarGradient = (seed: number) => {
+  const [from, to] = AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
+  return `linear-gradient(140deg, ${from}, ${to})`;
+};
+
+type GradeKey = 'mam' | 'choi' | 'la' | 'default';
+
+const GRADE_STYLES: Record<GradeKey, { gradient: string; shadow: string }> = {
+  mam: { gradient: 'linear-gradient(140deg, #fbbf24, #fde68a)', shadow: 'rgba(217, 119, 6, 0.55)' },
+  choi: { gradient: 'linear-gradient(140deg, #4ade80, #86efac)', shadow: 'rgba(34, 197, 94, 0.55)' },
+  la: { gradient: 'linear-gradient(140deg, #60a5fa, #2563eb)', shadow: 'rgba(37, 99, 235, 0.55)' },
+  default: { gradient: 'linear-gradient(140deg, #60a5fa, #2563eb)', shadow: 'rgba(37, 99, 235, 0.55)' },
+};
+
+const getGradeKey = (gradeName?: string): GradeKey => {
+  const name = (gradeName || '').toLowerCase();
+  if (name.includes('mầm') || name.includes('mam')) return 'mam';
+  if (name.includes('chồi') || name.includes('choi')) return 'choi';
+  if (name.includes('lá') || name.includes('la')) return 'la';
+  return 'default';
+};
+
+function GradeIcon({ gradeKey, size = 34 }: { gradeKey: GradeKey; size?: number }) {
+  switch (gradeKey) {
+    case 'mam':
+      // Mầm: hạt đang nảy mầm
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21v-8" />
+          <path d="M12 13c0-4 3-6 7-6 0 4-3 6-7 6z" />
+          <path d="M12 13c0-3-2.5-5-5.5-5 0 3 2.5 5 5.5 5z" />
+        </svg>
+      );
+    case 'choi':
+      // Chồi: chồi non hai lá
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21V10" />
+          <path d="M12 12c0-3.5 2.5-6 6.5-6 0 3.5-2.5 6-6.5 6z" />
+          <path d="M12 12c0-3.5-2.5-6-6.5-6 0 3.5 2.5 6 6.5 6z" />
+        </svg>
+      );
+    case 'la':
+      // Lá: cây lá đầy đủ
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21V9" />
+          <path d="M12 9c0-4.5 3.5-7 8-7 0 4.5-3.5 7-8 7z" />
+          <path d="M12 13c0-4.5-3.5-7-8-7 0 4.5 3.5 7 8 7z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 15c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 3 1M3 9c2 0 3-1 5-1s3 1 5 1 3-1 5-1 3 1 3 1" />
+        </svg>
+      );
+  }
 }
 
 const getFirstName = (fullName: string) => {
@@ -51,23 +101,33 @@ const getFirstName = (fullName: string) => {
   return parts.length > 0 ? parts[parts.length - 1] : '';
 };
 
-const getLastName = (fullName: string) => {
-  if (!fullName) return '';
-  const parts = fullName.trim().split(' ');
-  if (parts.length <= 1) return '';
-  parts.pop();
-  return parts.join(' ');
+const formatDate = (ts: bigint | null) => {
+  if (!ts) return '—';
+  return new Date(Number(ts) * 1000).toLocaleDateString('vi-VN');
+};
+
+const buildPageList = (currentPage: number, totalPages: number): (number | '…')[] => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  const pages = new Set<number>([1, 2, totalPages - 1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  const sorted = Array.from(pages).filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+  const result: (number | '…')[] = [];
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) result.push('…');
+    result.push(p);
+  });
+  return result;
 };
 
 export default function ClassDetailView({ classId }: ClassDetailProps) {
   const [classDetail, setClassDetail] = useState<ClassDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('students');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name_asc');
-  const pageSize = 5;
+  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc'>('name_asc');
+  const pageSize = 6;
   const router = useRouter();
 
   useEffect(() => {
@@ -94,11 +154,11 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
   const filteredAndSortedStudents = React.useMemo(() => {
     if (!classDetail) return [];
     let result = [...classDetail.students];
-    
+
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      result = result.filter(student => 
-        student.fullName.toLowerCase().includes(lowerSearch) || 
+      result = result.filter(student =>
+        student.fullName.toLowerCase().includes(lowerSearch) ||
         String(student.studentId).toLowerCase().includes(lowerSearch)
       );
     }
@@ -106,16 +166,8 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
     result.sort((a, b) => {
       const nameA = getFirstName(a.fullName);
       const nameB = getFirstName(b.fullName);
-
-      if (sortBy === 'name_asc') {
-        const cmp = nameA.localeCompare(nameB);
-        return cmp !== 0 ? cmp : a.fullName.localeCompare(b.fullName);
-      }
-      if (sortBy === 'name_desc') {
-        const cmp = nameB.localeCompare(nameA);
-        return cmp !== 0 ? cmp : b.fullName.localeCompare(a.fullName);
-      }
-      return 0;
+      const cmp = sortBy === 'name_asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      return cmp !== 0 ? cmp : a.fullName.localeCompare(b.fullName);
     });
 
     return result;
@@ -125,215 +177,253 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
   const totalPages = Math.ceil(totalStudentsCount / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
   const currentStudents = filteredAndSortedStudents.slice(startIndex, startIndex + pageSize);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+  const pageList = buildPageList(currentPage, totalPages);
 
   if (loading) return <Container><LoadingText>Đang tải dữ liệu...</LoadingText></Container>;
   if (error) return <Container><ErrorText>{error}</ErrorText></Container>;
   if (!classDetail) return null;
 
+  const { present, absent, excused } = classDetail.attendanceToday;
+  const notMarked = Math.max(classDetail.totalStudents - present - absent - excused, 0);
+  const attendanceRate = classDetail.totalStudents > 0 ? Math.round((present / classDetail.totalStudents) * 100) : 0;
+
   const attendanceData = [
-    { name: `Có mặt: ${classDetail.attendanceToday.present}`, value: classDetail.attendanceToday.present, color: '#10b981' }, // Green
-    { name: `Vắng phép: ${classDetail.attendanceToday.excused}`, value: classDetail.attendanceToday.excused, color: '#f59e0b' }, // Yellow
-    { name: `Vắng không phép: ${classDetail.attendanceToday.absent}`, value: classDetail.attendanceToday.absent, color: '#ef4444' }, // Red
+    { name: 'Có mặt', value: present, color: '#237a3c' },
+    { name: 'Vắng không phép', value: absent, color: '#dc2626' },
+    { name: 'Vắng có phép', value: excused, color: '#d97706' },
+    { name: 'Chưa điểm danh', value: notMarked, color: '#eef4f0' },
   ];
+
+  const gradeKey = getGradeKey(classDetail.gradeName);
+  const gradeStyle = GRADE_STYLES[gradeKey];
 
   return (
     <Container>
-      <Header>
-        <div>
-          <Title>{classDetail.className} {classDetail.yearName && <span style={{ fontSize: '1.25rem', color: '#6b7280', fontWeight: 500 }}>({classDetail.yearName})</span>}</Title>
-          <Subtitle>Khối: {classDetail.gradeName}</Subtitle>
-        </div>
-        <TotalStudentsCard>
-          <TotalStudentsLabel>Sĩ số</TotalStudentsLabel>
-          <TotalStudentsValue>{classDetail.totalStudents}</TotalStudentsValue>
-        </TotalStudentsCard>
-      </Header>
+      <Hero>
+        <HeroBg />
+        <HeroBadge $gradient={gradeStyle.gradient} $shadow={gradeStyle.shadow}>
+          <GradeIcon gradeKey={gradeKey} />
+        </HeroBadge>
+        <HeroMain>
+          <HeroName>
+            {classDetail.className}
+            {classDetail.yearName && <HeroYear>{classDetail.yearName}</HeroYear>}
+          </HeroName>
+          <HeroMeta>
+            <Pill $variant="grade">
+              <GradeIcon gradeKey={gradeKey} size={14} />
+              Khối {classDetail.gradeName}
+            </Pill>
+          </HeroMeta>
+        </HeroMain>
+        <HeroStat>
+          <HeroStatValue>{classDetail.totalStudents}</HeroStatValue>
+          <HeroStatLabel>Sĩ số</HeroStatLabel>
+        </HeroStat>
+        <HeroStat>
+          <HeroStatValue>{classDetail.teachers.length}</HeroStatValue>
+          <HeroStatLabel>Giáo viên</HeroStatLabel>
+        </HeroStat>
+      </Hero>
 
-      <MainGrid>
-        <LeftColumn>
-          <Section>
-            <SectionTitle>Giáo viên phụ trách</SectionTitle>
-            <InfoGrid>
-              {classDetail.teachers.length > 0 ? (
-                classDetail.teachers.map((teacher) => (
-                  <InfoCard 
-                    key={teacher.id} 
-                    style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
-                    onClick={() => router.push(`/accounts/teacher/${teacher.id}?from=class`)}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                  >
-                    <AvatarPlaceholder>
+      <Layout>
+        <Stack>
+          <CardPad>
+            <CardTitle>
+              <TitleIcon>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10 12 5 2 10l10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+              </TitleIcon>
+              Giáo viên phụ trách
+            </CardTitle>
+
+            {classDetail.teachers.length > 0 ? (
+              classDetail.teachers.map((teacher, index) => (
+                <React.Fragment key={teacher.id}>
+                  <TeacherRow onClick={() => router.push(`/accounts/teacher/${teacher.id}?from=class`)}>
+                    <TeacherAvatar $bg={avatarGradient(index)}>
                       {teacher.avatarUrl ? (
-                        <img src={teacher.avatarUrl} alt={teacher.fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        <TeacherAvatarImg src={teacher.avatarUrl} alt={teacher.fullName} />
                       ) : (
-                        teacher.fullName.charAt(0)
+                        getInitials(teacher.fullName)
                       )}
-                    </AvatarPlaceholder>
-                    <InfoDetails>
-                      <InfoName style={{ color: '#0ea5e9' }}>{teacher.fullName}</InfoName>
-                      <InfoSubtext>{teacher.roleInClass}</InfoSubtext>
-                      {teacher.phoneNumber && <InfoSubtext>📞 {teacher.phoneNumber}</InfoSubtext>}
-                      {teacher.email && <InfoSubtext>✉️ {teacher.email}</InfoSubtext>}
-                    </InfoDetails>
-                  </InfoCard>
-                ))
-              ) : (
-                <InfoSubtext>Chưa có giáo viên được phân công.</InfoSubtext>
-              )}
-            </InfoGrid>
-          </Section>
-
-          <Section>
-            <SectionTitle>Điểm danh hôm nay ({new Date().toLocaleDateString('vi-VN')})</SectionTitle>
-            <ChartContainer>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={attendanceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {attendanceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value} học sinh`, 'Số lượng']} />
-                  <Legend verticalAlign="bottom" height={36}/>
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </Section>
-        </LeftColumn>
-
-        <RightColumn>
-          <TabContainer style={{ marginTop: 0 }}>
-            <TabRow>
-              <TabButton $active={activeTab === 'students'} onClick={() => setActiveTab('students')}>
-                Danh sách học sinh
-              </TabButton>
-              {/* Thêm các tab khác ở đây sau này nếu cần */}
-            </TabRow>
-
-            {activeTab === 'students' && (
-              <Section style={{ padding: 0 }}>
-                <ToolbarContainer>
-                  <SearchInput 
-                    placeholder="Tìm kiếm theo tên hoặc mã học sinh..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <div style={{ width: '200px' }}>
-                    <Dropdown 
-                      value={sortBy} 
-                      onChange={(val) => setSortBy(val as string)}
-                      options={[
-                        { value: 'name_asc', label: 'Tên (A-Z)' },
-                        { value: 'name_desc', label: 'Tên (Z-A)' }
-                      ]}
-                    />
-                  </div>
-                </ToolbarContainer>
-                <div style={{ overflowX: 'auto', padding: '0 24px 24px 24px' }}>
-                  <Table>
-                    <thead>
-                      <tr>
-                        <Th style={{ width: '60px', textAlign: 'center' }}>STT</Th>
-                        <Th style={{ width: '80px' }}></Th>
-                        <Th>Họ và tên đệm</Th>
-                        <Th>Tên</Th>
-                        <Th>Mã học sinh</Th>
-                        <Th>Ngày sinh</Th>
-                        <Th>Ngày nhập học</Th>
-                        <Th style={{ textAlign: 'center' }}>Thao tác</Th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentStudents.length > 0 ? (
-                        currentStudents.map((student, index) => (
-                          <tr key={student.studentId}>
-                            <Td style={{ textAlign: 'center' }}>{startIndex + index + 1}</Td>
-                            <Td>
-                              <AvatarPlaceholder style={{ width: '40px', height: '40px', fontSize: '1rem' }}>
-                                {student.avatarUrl ? (
-                                  <img src={student.avatarUrl} alt={student.fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                                ) : (
-                                  student.fullName.charAt(0)
-                                )}
-                              </AvatarPlaceholder>
-                            </Td>
-                            <Td style={{ fontWeight: 500, color: '#0f172a' }}>{getLastName(student.fullName)}</Td>
-                            <Td style={{ fontWeight: 500, color: '#0f172a' }}>{getFirstName(student.fullName)}</Td>
-                            <Td>{student.studentId}</Td>
-                            <Td>{student.dateOfBirth ? new Date(Number(student.dateOfBirth) * 1000).toLocaleDateString('vi-VN') : '—'}</Td>
-                            <Td>{student.admissionDate ? new Date(Number(student.admissionDate) * 1000).toLocaleDateString('vi-VN') : '—'}</Td>
-                            <Td style={{ textAlign: 'center' }}>
-                              <button 
-                                onClick={() => router.push(`/students/${student.studentId}?from=class`)}
-                                style={{
-                                  padding: '6px 12px',
-                                  backgroundColor: '#f1f5f9',
-                                  color: '#334155',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  transition: 'background-color 0.2s'
-                                }}
-                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                              >
-                                Xem hồ sơ
-                              </button>
-                            </Td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <Td colSpan={8} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
-                            Lớp học này chưa có học sinh nào.
-                          </Td>
-                        </tr>
+                    </TeacherAvatar>
+                    <div style={{ minWidth: 0 }}>
+                      <TeacherName>{teacher.fullName}</TeacherName>
+                      <TeacherRole>{teacher.roleInClass}</TeacherRole>
+                    </div>
+                  </TeacherRow>
+                  {index === 0 && (teacher.phoneNumber || teacher.email) && (
+                    <TeacherContact>
+                      {teacher.phoneNumber && (
+                        <ContactLine>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+                          {teacher.phoneNumber}
+                        </ContactLine>
                       )}
-                    </tbody>
-                  </Table>
-                </div>
-                {totalPages > 1 && (
-                  <PaginationContainer>
-                    <PaginationButton 
-                      onClick={handlePrevPage} 
-                      disabled={currentPage === 1}
-                      $disabled={currentPage === 1}
-                    >
-                      &lt;
-                    </PaginationButton>
-                    <PageInfo>Trang {currentPage} / {totalPages}</PageInfo>
-                    <PaginationButton 
-                      onClick={handleNextPage} 
-                      disabled={currentPage === totalPages}
-                      $disabled={currentPage === totalPages}
-                    >
-                      &gt;
-                    </PaginationButton>
-                  </PaginationContainer>
-                )}
-              </Section>
+                      {teacher.email && (
+                        <ContactLine>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 6 10-6" /></svg>
+                          {teacher.email}
+                        </ContactLine>
+                      )}
+                    </TeacherContact>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <EmptyText>Chưa có giáo viên được phân công.</EmptyText>
             )}
-          </TabContainer>
-        </RightColumn>
-      </MainGrid>
+          </CardPad>
+
+          <CardPad>
+            <CardTitle>
+              <TitleIcon>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+              </TitleIcon>
+              Điểm danh hôm nay
+            </CardTitle>
+            <DateText>{new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' })}</DateText>
+
+            <DonutWrap>
+              <DonutChartWrap>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={attendanceData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                      {attendanceData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value} học sinh`, name]} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <DonutCenter>
+                  <DonutPct>{attendanceRate}%</DonutPct>
+                  <DonutSub>{present}/{classDetail.totalStudents} có mặt</DonutSub>
+                </DonutCenter>
+              </DonutChartWrap>
+
+              <Legend>
+                {attendanceData.map(item => (
+                  <LegendRow key={item.name}>
+                    <LegendSwatch $color={item.color} />
+                    {item.name}
+                    <LegendValue $color={item.color === '#eef4f0' ? '#9ca3af' : item.color}>{item.value}</LegendValue>
+                  </LegendRow>
+                ))}
+              </Legend>
+            </DonutWrap>
+          </CardPad>
+        </Stack>
+
+        <CardPad>
+          <CardHead>
+            <CardTitle>
+              <TitleIcon>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+              </TitleIcon>
+              Danh sách học sinh <CountChip>{classDetail.totalStudents}</CountChip>
+            </CardTitle>
+          </CardHead>
+
+          <Toolbar>
+            <SearchWrapper>
+              <SearchIcon>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+              </SearchIcon>
+              <SearchInput
+                placeholder="Tìm theo tên hoặc mã học sinh…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </SearchWrapper>
+            <SortDropdownWrap>
+              <Dropdown<'name_asc' | 'name_desc'>
+                value={sortBy}
+                onChange={(val) => setSortBy(val)}
+                options={[
+                  { value: 'name_asc', label: 'Tên (A → Z)' },
+                  { value: 'name_desc', label: 'Tên (Z → A)' },
+                ]}
+                fullWidth
+                ariaLabel="Sắp xếp theo tên"
+              />
+            </SortDropdownWrap>
+          </Toolbar>
+
+          <TableScrollArea $minRows={pageSize}>
+            <Table>
+              <thead>
+                <tr>
+                  <Th style={{ width: 44, textAlign: 'center' }}>#</Th>
+                  <Th>Học sinh</Th>
+                  <Th>Mã HS</Th>
+                  <Th>Ngày sinh</Th>
+                  <Th>Ngày nhập học</Th>
+                  <Th style={{ textAlign: 'right' }}>Thao tác</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentStudents.length > 0 ? (
+                  currentStudents.map((student, index) => (
+                    <Tr key={student.studentId}>
+                      <Td style={{ textAlign: 'center' }}>
+                        <RowNum>{startIndex + index + 1}</RowNum>
+                      </Td>
+                      <Td>
+                        <StuCell>
+                          <StuAvatar $bg={avatarGradient(startIndex + index)}>
+                            {student.avatarUrl ? (
+                              <StuAvatarImg src={student.avatarUrl} alt={student.fullName} />
+                            ) : (
+                              getInitials(student.fullName)
+                            )}
+                          </StuAvatar>
+                          <StuName>{student.fullName}</StuName>
+                        </StuCell>
+                      </Td>
+                      <Td><CodeText>HS-{String(student.studentId).padStart(4, '0')}</CodeText></Td>
+                      <Td><DobText>{formatDate(student.dateOfBirth)}</DobText></Td>
+                      <Td><DobText>{formatDate(student.admissionDate)}</DobText></Td>
+                      <Td style={{ textAlign: 'right' }}>
+                        <ViewBtn onClick={() => router.push(`/students/${student.studentId}?from=class`)}>
+                          Xem hồ sơ
+                        </ViewBtn>
+                      </Td>
+                    </Tr>
+                  ))
+                ) : (
+                  <tr>
+                    <Td colSpan={6}>
+                      <EmptyText>Lớp học này chưa có học sinh nào.</EmptyText>
+                    </Td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </TableScrollArea>
+
+          {totalStudentsCount > 0 && (
+            <TableFoot>
+              <span>
+                Hiển thị {startIndex + 1}–{Math.min(startIndex + pageSize, totalStudentsCount)} trong {totalStudentsCount} học sinh
+              </span>
+              <Pager>
+                <PageBtn $disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>←</PageBtn>
+                {pageList.map((p, i) =>
+                  p === '…' ? (
+                    <PageBtn key={`ellipsis-${i}`} $disabled>…</PageBtn>
+                  ) : (
+                    <PageBtn key={p} $active={p === currentPage} onClick={() => setCurrentPage(p)}>
+                      {p}
+                    </PageBtn>
+                  )
+                )}
+                <PageBtn $disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>→</PageBtn>
+              </Pager>
+            </TableFoot>
+          )}
+        </CardPad>
+      </Layout>
     </Container>
   );
 }

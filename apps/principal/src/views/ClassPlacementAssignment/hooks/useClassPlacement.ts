@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { studentService } from '@/services/Student/StudentService';
 import { gradeService } from '@/services/grade/GradeService';
 import { classService } from '@/services/Class/ClassService';
 import { assignmentService } from '@/services/Principal/AssignmentService';
 import { GradeDomainModel } from '@/config/types/grade';
-import { ClassDetailDomainModel } from '@/config/types/class';
-import { ClassStudentDomainModel } from '@/config/types/class';
+import { ClassDetailDomainModel, ClassStudentDomainModel } from '@/config/types/class';
 
 interface UseClassPlacementReturn {
   grades: GradeDomainModel[];
@@ -14,23 +13,33 @@ interface UseClassPlacementReturn {
   selectedClassId: string;
   classDetail: ClassDetailDomainModel | null;
   selectedStudentIds: number[];
+  stagedStudents: ClassStudentDomainModel[];
   loading: boolean;
   loadingClass: boolean;
+  saving: boolean;
+  error: string | null;
   handleSourceClassChange: (classId: string) => void;
   handleTargetClassChange: (classId: string) => void;
   toggleStudentSelection: (studentId: number) => void;
-  handleAssignToClass: () => Promise<void>;
+  selectAllSource: () => void;
+  clearSourceSelection: () => void;
+  moveSelectedToStaging: () => void;
+  unstageStudent: (studentId: number) => void;
+  handleSaveAssignment: () => Promise<void>;
 }
 
 export const useClassPlacement = (): UseClassPlacementReturn => {
   const [grades, setGrades] = useState<GradeDomainModel[]>([]);
   const [sourceClassId, setSourceClassId] = useState('');
-  const [sourceStudents, setSourceStudents] = useState<ClassStudentDomainModel[]>([]);
+  const [sourceStudentsRaw, setSourceStudentsRaw] = useState<ClassStudentDomainModel[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [classDetail, setClassDetail] = useState<ClassDetailDomainModel | null>(null);
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const [stagedStudents, setStagedStudents] = useState<ClassStudentDomainModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingClass, setLoadingClass] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchGrades = useCallback(async () => {
     try {
@@ -46,12 +55,11 @@ export const useClassPlacement = (): UseClassPlacementReturn => {
       setLoading(true);
       if (!classId) {
         const data = await studentService.getUnassignedStudents();
-        setSourceStudents(data);
+        setSourceStudentsRaw(data);
       } else {
         const detail = await classService.getClassDetail(parseInt(classId));
-        setSourceStudents(detail.students ?? []);
+        setSourceStudentsRaw(detail.students ?? []);
       }
-      setSelectedStudentIds([]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,18 +91,32 @@ export const useClassPlacement = (): UseClassPlacementReturn => {
     fetchSourceStudents(sourceClassId);
   }, [sourceClassId, fetchSourceStudents]);
 
-  const handleSourceClassChange = useCallback((classId: string) => {
-    setSourceClassId(classId);
+  // Ẩn khỏi nguồn những học sinh đã được đưa vào hàng chờ (staging) để tránh chọn trùng.
+  const sourceStudents = useMemo(() => {
+    const stagedIds = new Set(stagedStudents.map(s => s.studentId));
+    return sourceStudentsRaw.filter(s => !stagedIds.has(s.studentId));
+  }, [sourceStudentsRaw, stagedStudents]);
+
+  const resetStaging = useCallback(() => {
+    setStagedStudents([]);
+    setSelectedStudentIds([]);
+    setError(null);
   }, []);
 
+  const handleSourceClassChange = useCallback((classId: string) => {
+    resetStaging();
+    setSourceClassId(classId);
+  }, [resetStaging]);
+
   const handleTargetClassChange = useCallback(async (classId: string) => {
+    resetStaging();
     setSelectedClassId(classId);
     if (classId) {
       await fetchClassDetail(classId);
     } else {
       setClassDetail(null);
     }
-  }, [fetchClassDetail]);
+  }, [fetchClassDetail, resetStaging]);
 
   const toggleStudentSelection = useCallback((studentId: number) => {
     setSelectedStudentIds(prev =>
@@ -104,19 +126,41 @@ export const useClassPlacement = (): UseClassPlacementReturn => {
     );
   }, []);
 
-  const handleAssignToClass = useCallback(async () => {
-    if (!selectedClassId || selectedStudentIds.length === 0) return;
+  const selectAllSource = useCallback(() => {
+    setSelectedStudentIds(sourceStudents.map(s => s.studentId));
+  }, [sourceStudents]);
+
+  const clearSourceSelection = useCallback(() => {
+    setSelectedStudentIds([]);
+  }, []);
+
+  const moveSelectedToStaging = useCallback(() => {
+    if (selectedStudentIds.length === 0) return;
+    const toMove = sourceStudents.filter(s => selectedStudentIds.includes(s.studentId));
+    setStagedStudents(prev => [...prev, ...toMove]);
+    setSelectedStudentIds([]);
+  }, [selectedStudentIds, sourceStudents]);
+
+  const unstageStudent = useCallback((studentId: number) => {
+    setStagedStudents(prev => prev.filter(s => s.studentId !== studentId));
+  }, []);
+
+  const handleSaveAssignment = useCallback(async () => {
+    if (!selectedClassId || stagedStudents.length === 0) return;
     try {
-      setLoading(true);
-      await assignmentService.assignStudentsToClass(selectedStudentIds, parseInt(selectedClassId));
+      setSaving(true);
+      setError(null);
+      const studentIds = stagedStudents.map(s => s.studentId);
+      await assignmentService.assignStudentsToClass(studentIds, parseInt(selectedClassId));
+      setStagedStudents([]);
       await fetchSourceStudents(sourceClassId);
       await fetchClassDetail(selectedClassId);
     } catch (err: unknown) {
-      window.alert((err as Error)?.message ?? 'Có lỗi xảy ra khi xếp lớp');
+      setError((err as Error)?.message ?? 'Có lỗi xảy ra khi xếp lớp');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  }, [selectedClassId, selectedStudentIds, sourceClassId, fetchSourceStudents, fetchClassDetail]);
+  }, [selectedClassId, stagedStudents, sourceClassId, fetchSourceStudents, fetchClassDetail]);
 
   return {
     grades,
@@ -125,11 +169,18 @@ export const useClassPlacement = (): UseClassPlacementReturn => {
     selectedClassId,
     classDetail,
     selectedStudentIds,
+    stagedStudents,
     loading,
     loadingClass,
+    saving,
+    error,
     handleSourceClassChange,
     handleTargetClassChange,
     toggleStudentSelection,
-    handleAssignToClass,
+    selectAllSource,
+    clearSourceSelection,
+    moveSelectedToStaging,
+    unstageStudent,
+    handleSaveAssignment,
   };
 };

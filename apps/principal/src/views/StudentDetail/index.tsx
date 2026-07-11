@@ -4,54 +4,45 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { studentService } from '@/services/Student/StudentService';
 import { StudentDetailDomainModel } from '@/config/types/student';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Container,
-  LoadingText,
-  ErrorText,
-  HeaderCard,
-  AvatarWrapper,
-  InitialsText,
-  HeaderInfo,
-  StudentName,
-  BadgeRow,
-  Badge,
-  HeaderActions,
-  ChangeClassButton,
-  BackButton,
-  TopBackButton,
-  SectionCard,
-  SectionHeader,
-  SectionIcon,
-  SectionTitle,
-  InfoGrid,
-  InfoItem,
-  InfoLabel,
-  InfoValue,
-  EmptyText,
-  ParentCard,
-  ParentHeader,
-  ParentName,
-  ParentRelationship,
-  PrimaryBadge,
-  ActionButton,
-  AddButton,
-  AllergyNote,
-} from './styles';
+import { getInitials } from '@/views/AccountList/utils/getInitials';
 import AddParentModal from './AddParentModal';
+import {
+  Container, LoadingText, ErrorText,
+  HeaderActions, BtnGhost, BtnBrand,
+  Hero, HeroBg, HeroAvatar, HeroAvatarImg, HeroMain, HeroName, HeroMeta, Pill, Cdot,
+  CardPad, CardHead, CardTitle, TitleIcon,
+  InfoGrid, Field, FieldLabel, FieldValue, AllergyNote,
+  Parents, ParentCard, ParentCardHead, ParentAvatar, ParentAvatarImg, ParentName, ParentRel, PrimaryTag,
+  ParentGrid, ContactLine, EmptyText,
+} from './styles';
 
-// ─── Helpers ───
+const AVATAR_PALETTE = [
+  ['#DB2777', '#f9a8d4'],
+  ['#2563EB', '#60a5fa'],
+  ['#8B5CF6', '#c4b5fd'],
+  ['#10b981', '#6ee7b7'],
+  ['#F97316', '#fdba74'],
+  ['#0EA5E9', '#7dd3fc'],
+];
+
+const avatarGradient = (seed: number) => {
+  const [from, to] = AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
+  return `linear-gradient(140deg, ${from}, ${to})`;
+};
+
 function formatDate(ts: bigint | null): string {
   if (!ts) return '—';
   return new Date(Number(ts) * 1000).toLocaleDateString('vi-VN');
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+function calculateAge(ts: bigint | null): number | null {
+  if (!ts) return null;
+  const birth = new Date(Number(ts) * 1000);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
 }
 
 function statusLabel(s: string): string {
@@ -76,69 +67,6 @@ function relationshipLabel(r: string): string {
   }
 }
 
-// ─── Icons ───
-const UserIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
-
-const SwapIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 3 21 3 21 8"/>
-    <line x1="4" y1="20" x2="21" y2="3"/>
-    <polyline points="21 16 21 21 16 21"/>
-    <line x1="15" y1="15" x2="21" y2="21"/>
-    <line x1="4" y1="4" x2="9" y2="9"/>
-  </svg>
-);
-
-const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="19" y1="12" x2="5" y2="12"/>
-    <polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"/>
-    <line x1="5" y1="12" x2="19" y2="12"/>
-  </svg>
-);
-
-const AlertIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="12" y1="8" x2="12" y2="12"/>
-    <line x1="12" y1="16" x2="12.01" y2="16"/>
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.19h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-  </svg>
-);
-
-const IDCardIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="5" width="20" height="14" rx="2"/>
-    <line x1="2" y1="10" x2="22" y2="10"/>
-  </svg>
-);
-
-// ─── Main Component ───
 interface StudentDetailProps {
   studentId: string;
 }
@@ -147,7 +75,7 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromClass = searchParams?.get('from') === 'class';
-  
+
   const [student, setStudent] = useState<StudentDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,152 +104,146 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
   if (error) return <Container><ErrorText>{error}</ErrorText></Container>;
   if (!student) return null;
 
+  const age = calculateAge(student.dateOfBirth);
+
   return (
     <Container>
-      <TopBackButton onClick={() => {
-        if (fromClass) {
-          router.back();
-        } else {
-          router.push('/students');
-        }
-      }} title="Quay lại">
-        <BackIcon />
-        Quay lại
-      </TopBackButton>
+      <HeaderActions>
+        <BtnGhost onClick={() => (fromClass ? router.back() : router.push('/students'))}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+          Quay lại danh sách
+        </BtnGhost>
+        <BtnBrand>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+          Chỉnh sửa hồ sơ
+        </BtnBrand>
+      </HeaderActions>
 
-      {/* ─── Header Card ─── */}
-      <HeaderCard>
-        <AvatarWrapper>
-          {student.avatarUrl ? (
-            <img src={student.avatarUrl} alt={student.fullName} />
-          ) : (
-            <InitialsText>{getInitials(student.fullName)}</InitialsText>
-          )}
-        </AvatarWrapper>
-
-        <HeaderInfo>
-          <StudentName>{student.fullName}</StudentName>
-          <BadgeRow>
-            {/* Mã học sinh */}
-            <Badge $variant="code">
-              <IDCardIcon />
-              HS-{String(student.id).padStart(4, '0')}
-            </Badge>
-            {/* Lớp */}
+      <Hero>
+        <HeroBg />
+        <HeroAvatar>
+          {student.avatarUrl ? <HeroAvatarImg src={student.avatarUrl} alt={student.fullName} /> : getInitials(student.fullName)}
+        </HeroAvatar>
+        <HeroMain>
+          <HeroName>{student.fullName}</HeroName>
+          <HeroMeta>
+            <Pill $variant="code">HS-{String(student.id).padStart(4, '0')}</Pill>
             {student.className && (
-              <Badge $variant="class">
+              <Pill $variant="cls">
+                <Cdot />
                 {student.className}
-              </Badge>
+              </Pill>
             )}
-            {/* Trạng thái */}
-            <Badge $variant="status">
+            <Pill $variant="on">
+              <Cdot />
               {statusLabel(student.status)}
-            </Badge>
-          </BadgeRow>
-        </HeaderInfo>
+            </Pill>
+          </HeroMeta>
+        </HeroMain>
+      </Hero>
 
-
-      </HeaderCard>
-
-      {/* ─── Thông tin cá nhân ─── */}
-      <SectionCard>
-        <SectionHeader>
-          <SectionIcon><UserIcon /></SectionIcon>
-          <SectionTitle>Thông tin cá nhân</SectionTitle>
-        </SectionHeader>
-
+      <CardPad>
+        <CardHead style={{ marginBottom: 22 }}>
+          <CardTitle>
+            <TitleIcon>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+            </TitleIcon>
+            Thông tin cá nhân
+          </CardTitle>
+        </CardHead>
         <InfoGrid>
-          <InfoItem>
-            <InfoLabel>Họ và tên</InfoLabel>
-            <InfoValue>{student.fullName}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Ngày sinh</InfoLabel>
-            <InfoValue>{formatDate(student.dateOfBirth)}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Giới tính</InfoLabel>
-            <InfoValue>{student.gender === 'Male' ? 'Nam' : student.gender === 'Female' ? 'Nữ' : '—'}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Ngày nhập học</InfoLabel>
-            <InfoValue>{formatDate(student.admissionDate)}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Lớp hiện tại</InfoLabel>
-            <InfoValue>{student.className || 'Chưa xếp lớp'}</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Nhóm máu</InfoLabel>
-            <InfoValue>—</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>Mã định danh</InfoLabel>
-            <InfoValue>—</InfoValue>
-          </InfoItem>
+          <Field><FieldLabel>Họ và tên</FieldLabel><FieldValue>{student.fullName}</FieldValue></Field>
+          <Field>
+            <FieldLabel>Ngày sinh</FieldLabel>
+            <FieldValue>
+              {formatDate(student.dateOfBirth)}
+              {age !== null && <span style={{ color: '#9ca3af', fontWeight: 500 }}> · {age} tuổi</span>}
+            </FieldValue>
+          </Field>
+          <Field><FieldLabel>Giới tính</FieldLabel><FieldValue>{student.gender || '—'}</FieldValue></Field>
+          <Field><FieldLabel>Ngày nhập học</FieldLabel><FieldValue $muted={!student.admissionDate}>{formatDate(student.admissionDate)}</FieldValue></Field>
+          <Field><FieldLabel>Lớp hiện tại</FieldLabel><FieldValue $muted={!student.className}>{student.className || 'Chưa xếp lớp'}</FieldValue></Field>
 
-          {/* Ghi chú dị ứng — full width */}
           <AllergyNote $hasContent={!!student.allergies}>
-            <AlertIcon />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <span>
-              <strong>Dị ứng / Bệnh lý:</strong>{' '}
-              {student.allergies || 'Không có ghi nhận'}
+              <strong>Dị ứng / Bệnh lý:</strong> {student.allergies || 'Không có ghi nhận'}
             </span>
           </AllergyNote>
         </InfoGrid>
-      </SectionCard>
+      </CardPad>
 
-      {/* ─── Thông tin phụ huynh & người thân ─── */}
-      <SectionCard>
-        <SectionHeader>
-          <SectionIcon><UsersIcon /></SectionIcon>
-          <SectionTitle>Thông tin phụ huynh &amp; người thân</SectionTitle>
-          <AddButton
-            onClick={() => setShowAddParent(true)}
-            style={{ marginLeft: 'auto' }}
-          >
-            <PlusIcon />
+      <CardPad style={{ marginBottom: 0 }}>
+        <CardHead>
+          <CardTitle>
+            <TitleIcon>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" /></svg>
+            </TitleIcon>
+            Thông tin phụ huynh &amp; người thân
+          </CardTitle>
+          <BtnBrand onClick={() => setShowAddParent(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
             Thêm người thân
-          </AddButton>
-        </SectionHeader>
+          </BtnBrand>
+        </CardHead>
 
         {student.parents && student.parents.length > 0 ? (
-          student.parents.map(parent => (
-            <ParentCard key={parent.parentId}>
-              <ParentHeader>
-                <ParentName>
-                  {parent.fullName}
-                  <ParentRelationship>
-                    {relationshipLabel(parent.relationship)}
-                  </ParentRelationship>
-                  {parent.isPrimary && <PrimaryBadge>Liên hệ chính</PrimaryBadge>}
-                </ParentName>
-                <ActionButton>
-                  <PhoneIcon />
-                  {parent.phoneNumber}
-                </ActionButton>
-              </ParentHeader>
+          <Parents>
+            {student.parents.map((parent, index) => (
+              <ParentCard key={parent.parentId}>
+                <ParentCardHead>
+                  <ParentAvatar $bg={avatarGradient(index)}>
+                    {getInitials(parent.fullName)}
+                  </ParentAvatar>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <ParentName>
+                      {parent.fullName}
+                      {parent.isPrimary && (
+                        <PrimaryTag>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                          Liên hệ chính
+                        </PrimaryTag>
+                      )}
+                    </ParentName>
+                    <ParentRel>{relationshipLabel(parent.relationship)}</ParentRel>
+                  </div>
+                </ParentCardHead>
 
-              <InfoGrid>
-                <InfoItem>
-                  <InfoLabel>Số điện thoại</InfoLabel>
-                  <InfoValue>{parent.phoneNumber}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Email</InfoLabel>
-                  <InfoValue>{parent.email || '—'}</InfoValue>
-                </InfoItem>
-                <InfoItem>
-                  <InfoLabel>Nghề nghiệp</InfoLabel>
-                  <InfoValue>{parent.occupation || '—'}</InfoValue>
-                </InfoItem>
-              </InfoGrid>
-            </ParentCard>
-          ))
+                <ParentGrid>
+                  <Field>
+                    <FieldLabel>Số điện thoại</FieldLabel>
+                    <ContactLine>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+                      {parent.phoneNumber}
+                    </ContactLine>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Nghề nghiệp</FieldLabel>
+                    <FieldValue $muted={!parent.occupation}>{parent.occupation || 'Chưa cập nhật'}</FieldValue>
+                  </Field>
+                  <Field $full>
+                    <FieldLabel>Email</FieldLabel>
+                    {parent.email ? (
+                      <ContactLine>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 6 10-6" /></svg>
+                        {parent.email}
+                      </ContactLine>
+                    ) : (
+                      <FieldValue $muted>Chưa cập nhật</FieldValue>
+                    )}
+                  </Field>
+                  <Field $full>
+                    <FieldLabel>Địa chỉ</FieldLabel>
+                    <FieldValue $muted={!parent.address}>{parent.address || 'Chưa cập nhật'}</FieldValue>
+                  </Field>
+                </ParentGrid>
+              </ParentCard>
+            ))}
+          </Parents>
         ) : (
           <EmptyText>Chưa có thông tin phụ huynh / người thân</EmptyText>
         )}
-      </SectionCard>
+      </CardPad>
 
       {showAddParent && (
         <AddParentModal

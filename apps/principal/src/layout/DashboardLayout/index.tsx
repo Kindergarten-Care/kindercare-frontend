@@ -219,6 +219,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </>
                 );
               }
+              if (pathname.startsWith('/accounts/parent/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts')}>Tài khoản & Hồ sơ</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts?role=parent')}>Phụ huynh</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết Phụ huynh</BreadcrumbItem>
+                  </>
+                );
+              }
               if (pathname.startsWith('/accounts/teacher/')) {
                 if (searchParams.get('from') === 'class') {
                   return (

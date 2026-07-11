@@ -1,14 +1,14 @@
 import React from 'react';
 import { AccountDomainModel } from '@/config/types/account';
 import {
-  ModalOverlay,
-  ModalContent,
-  ModalTitle,
-  ModalDescription,
-  ModalActions,
-  CancelButton,
-  ConfirmButton
-} from './ConfirmationModal.styles';
+  Modal,
+  ModalHeader,
+  ModalBody,
+  KmCallout,
+  KmFoot,
+  KmBtn,
+  LockIcon,
+} from '@/components/Modal';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -29,26 +29,33 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 }) => {
   if (!isOpen || !account || !action) return null;
 
+  const isLock = action === 'lock';
+  const roleLabel = role === 'parent' ? 'Phụ huynh' : role === 'teacher' ? 'Giáo viên' : 'Nhân viên';
+
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
-        <ModalTitle>
-          {action === 'lock' ? 'Xác nhận khóa tài khoản' : 'Xác nhận mở khóa tài khoản'}
-        </ModalTitle>
-        <ModalDescription>
-          Bạn có chắc chắn muốn {action === 'lock' ? 'khóa' : 'mở khóa'} tài khoản của 
-          <strong> {role === 'parent' ? 'Phụ huynh' : role === 'teacher' ? 'Giáo viên' : 'Nhân viên'} {account.fullName} </strong> 
-          không?
-        </ModalDescription>
-        <ModalActions>
-          <CancelButton onClick={onClose}>
-            Hủy
-          </CancelButton>
-          <ConfirmButton $danger={action === 'lock'} onClick={onConfirm}>
-            {action === 'lock' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
-          </ConfirmButton>
-        </ModalActions>
-      </ModalContent>
-    </ModalOverlay>
+    <Modal size="sm" onClose={isLock ? undefined : onClose} closeOnOverlayClick={!isLock}>
+      <ModalHeader
+        icon={<LockIcon />}
+        iconVariant={isLock ? 'red' : 'amber'}
+        title={isLock ? 'Xác nhận khóa tài khoản' : 'Xác nhận mở khóa tài khoản'}
+        onClose={isLock ? undefined : onClose}
+      />
+      <ModalBody>
+        <KmCallout $variant={isLock ? 'red' : 'amber'}>
+          <span>
+            Bạn có chắc chắn muốn {isLock ? 'khóa' : 'mở khóa'} tài khoản của{' '}
+            <b>{roleLabel} {account.fullName}</b> không?
+          </span>
+        </KmCallout>
+      </ModalBody>
+      <KmFoot $tight={isLock}>
+        <KmBtn $variant="ghost" onClick={onClose}>
+          Hủy
+        </KmBtn>
+        <KmBtn $variant={isLock ? 'danger' : 'brand'} onClick={onConfirm}>
+          {isLock ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+        </KmBtn>
+      </KmFoot>
+    </Modal>
   );
 };

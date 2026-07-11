@@ -2,145 +2,26 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Dropdown } from '@kindercare/ui';
 import { accountService } from '@/services/account/AccountService';
 import { studentService } from '@/services/Student/StudentService';
+import {
+  Modal, ModalHeader, ModalBody, KmField, KmLabel, KmInput, KmFoot, KmBtn,
+  KmCallout, UserPlusIcon, AlertCircleIcon,
+} from '@/components/Modal';
 
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContainer = styled.div`
-  background: white;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-`;
-
-const ModalHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-`;
-
-const CloseBtn = styled.button.attrs({ type: 'button' })`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #6b7280;
-  &:hover { color: #111827; }
-`;
-
-const ModalBody = styled.div`
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-`;
-
-const ModalFooter = styled.div`
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-`;
-
-const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean, $variant?: 'outline' | 'text' }>`
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  border: ${props => props.$variant === 'text' ? 'none' : `1px solid ${props.$primary ? (props.theme.colors.primary || '#047857') : (props.theme.colors.border || '#d1d5db')}`};
-  background: ${props => props.$variant === 'text' ? 'transparent' : props.$primary ? (props.theme.colors.primary || '#047857') : 'white'};
-  color: ${props => props.$primary ? 'white' : (props.theme.colors.fg || '#374151')};
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${props => props.$variant === 'text' ? (props.theme.colors.neutralLight || '#f3f4f6') : props.$primary ? (props.theme.colors.greenDark || '#1a5c2d') : (props.theme.colors.neutralLighter || '#f9fafb')};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 6px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
-  border-radius: 10px;
-  font-size: 0.875rem;
-  outline: none;
-  background: white;
-  color: ${({ theme }) => theme.colors.fg || '#111827'};
-  transition: border-color 0.2s, box-shadow 0.2s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
-    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
-  }
-
-  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
-  border-radius: 10px;
-  font-size: 0.875rem;
-  background: white;
-  outline: none;
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.fg || '#111827'};
-  transition: border-color 0.2s, box-shadow 0.2s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
-    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
-  }
-`;
+const RELATIONSHIP_OPTIONS = [
+  { value: 'Phụ huynh', label: 'Phụ huynh (Cha/Mẹ)' },
+  { value: 'Ông bà', label: 'Ông bà' },
+  { value: 'Người giám hộ', label: 'Người giám hộ' },
+  { value: 'Anh chị em', label: 'Anh chị em' },
+];
 
 const SearchBox = styled.div`
   display: flex;
   gap: 12px;
   margin-bottom: 16px;
-  background: ${({ theme }) => theme.colors.neutralLight || '#f3f4f6'};
+  background: #f4f8f5;
   padding: 16px;
   border-radius: 10px;
 `;
@@ -162,7 +43,7 @@ const NewParentToggle = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   span {
     font-size: 0.875rem;
     color: #6b7280;
@@ -188,7 +69,7 @@ export default function AddParentModal({ studentId, onClose, onSuccess }: AddPar
   // Form Data
   const [relationship, setRelationship] = useState('Phụ huynh');
   const [isPrimary, setIsPrimary] = useState(false);
-  
+
   const [newParent, setNewParent] = useState({
     fullName: '',
     phoneNumber: '',
@@ -203,7 +84,7 @@ export default function AddParentModal({ studentId, onClose, onSuccess }: AddPar
       setSearchLoading(true);
       setError(null);
       const res = await accountService.searchParents(searchPhone);
-      
+
       if (res) {
         setFoundParent(res);
       } else {
@@ -239,7 +120,7 @@ export default function AddParentModal({ studentId, onClose, onSuccess }: AddPar
         payload.parent = newParent;
         payload.account = {
           username: newParent.phoneNumber,
-          password: `KinderCare_${newParent.phoneNumber}`
+          password: '123456'
         };
       }
 
@@ -254,147 +135,153 @@ export default function AddParentModal({ studentId, onClose, onSuccess }: AddPar
   };
 
   return (
-    <Overlay onClick={onClose}>
-      <ModalContainer onClick={e => e.stopPropagation()}>
-        <ModalHeader>
-          <Title>Thêm Người Thân / Phụ Huynh</Title>
-          <CloseBtn onClick={onClose}>&times;</CloseBtn>
-        </ModalHeader>
-        
-        <ModalBody>
-          {error && <Alert $type="error">{error}</Alert>}
+    <Modal size="lg" onClose={onClose}>
+      <ModalHeader
+        icon={<UserPlusIcon />}
+        iconVariant="brand"
+        title="Thêm Người Thân / Phụ Huynh"
+        subtitle="Liên kết phụ huynh đã có hoặc tạo mới hồ sơ cho học sinh"
+        onClose={onClose}
+      />
 
-          {mode === 'search' ? (
-            <>
-              <SearchBox>
-                <div style={{ flex: 1 }}>
-                  <Label>Tìm kiếm phụ huynh đã có trên hệ thống</Label>
-                  <Input 
-                    placeholder="Nhập số điện thoại..." 
-                    value={searchPhone}
-                    onChange={e => setSearchPhone(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && handleSearchParent()}
-                  />
-                </div>
-                <Button 
-                  $primary 
-                  style={{ alignSelf: 'flex-end' }}
-                  onClick={handleSearchParent}
-                  disabled={searchLoading}
-                >
-                  {searchLoading ? 'Đang tìm...' : 'Tìm kiếm'}
-                </Button>
-              </SearchBox>
+      <ModalBody>
+        {error && (
+          <KmCallout $variant="red" style={{ marginBottom: 16 }}>
+            <AlertCircleIcon />
+            <span>{error}</span>
+          </KmCallout>
+        )}
 
-              {foundParent && (
-                <div style={{ background: '#ecfdf5', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #34d399' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#065f46' }}>Đã tìm thấy phụ huynh:</h4>
-                  <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>Họ tên:</strong> {foundParent.fullName}</p>
-                  <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>SĐT:</strong> {foundParent.phoneNumber}</p>
-                  <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>Email:</strong> {foundParent.email || 'N/A'}</p>
-                </div>
-              )}
-
-              <NewParentToggle>
-                <span>Chưa có hồ sơ phụ huynh?</span>
-                <Button $variant="outline" onClick={() => { setMode('new'); setFoundParent(null); setError(null); }}>
-                  Thêm mới ngay
-                </Button>
-              </NewParentToggle>
-            </>
-          ) : (
-            <>
-              <Alert $type="info">
-                Hệ thống sẽ tạo mới thông tin phụ huynh và tự động tạo tài khoản App với Username là SĐT.
-              </Alert>
-              <FormGroup>
-                <Label>Họ và tên phụ huynh *</Label>
-                <Input 
-                  value={newParent.fullName} 
-                  onChange={e => setNewParent({...newParent, fullName: e.target.value})} 
+        {mode === 'search' ? (
+          <>
+            <SearchBox>
+              <div style={{ flex: 1 }}>
+                <KmLabel>Tìm kiếm phụ huynh đã có trên hệ thống</KmLabel>
+                <KmInput
+                  placeholder="Nhập số điện thoại..."
+                  value={searchPhone}
+                  onChange={e => setSearchPhone(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && handleSearchParent()}
                 />
-              </FormGroup>
-              <FormGroup>
-                <Label>Số điện thoại *</Label>
-                <Input 
-                  value={newParent.phoneNumber} 
-                  onChange={e => setNewParent({...newParent, phoneNumber: e.target.value})} 
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>Email</Label>
-                <Input 
-                  type="email"
-                  value={newParent.email} 
-                  onChange={e => setNewParent({...newParent, email: e.target.value})} 
-                />
-              </FormGroup>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Nghề nghiệp</Label>
-                  <Input 
-                    value={newParent.occupation} 
-                    onChange={e => setNewParent({...newParent, occupation: e.target.value})} 
-                  />
-                </FormGroup>
-                <FormGroup style={{ flex: 2 }}>
-                  <Label>Địa chỉ</Label>
-                  <Input 
-                    value={newParent.address} 
-                    onChange={e => setNewParent({...newParent, address: e.target.value})} 
-                  />
-                </FormGroup>
               </div>
-
-              <NewParentToggle>
-                <span>Đã có hồ sơ trên hệ thống?</span>
-                <Button $variant="outline" onClick={() => { setMode('search'); setError(null); }}>
-                  Quay lại tìm kiếm
-                </Button>
-              </NewParentToggle>
-            </>
-          )}
-
-          <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-            <FormGroup style={{ flex: 1 }}>
-              <Label>Mối quan hệ *</Label>
-              <Select 
-                value={relationship} 
-                onChange={e => setRelationship(e.target.value)}
+              <KmBtn
+                type="button"
+                $variant="brand"
+                style={{ alignSelf: 'flex-end' }}
+                onClick={handleSearchParent}
+                disabled={searchLoading}
               >
-                <option value="Phụ huynh">Phụ huynh (Cha/Mẹ)</option>
-                <option value="Ông bà">Ông bà</option>
-                <option value="Người giám hộ">Người giám hộ</option>
-                <option value="Anh chị em">Anh chị em</option>
-              </Select>
-            </FormGroup>
-            
-            <FormGroup style={{ display: 'flex', alignItems: 'center', marginTop: '26px' }}>
-              <input 
-                type="checkbox" 
-                id="isPrimary" 
-                checked={isPrimary}
-                onChange={e => setIsPrimary(e.target.checked)}
-                style={{ marginRight: '8px', width: '16px', height: '16px' }}
+                {searchLoading ? 'Đang tìm...' : 'Tìm kiếm'}
+              </KmBtn>
+            </SearchBox>
+
+            {foundParent && (
+              <Alert $type="success">
+                <h4 style={{ margin: '0 0 8px 0', color: '#065f46' }}>Đã tìm thấy phụ huynh:</h4>
+                <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>Họ tên:</strong> {foundParent.fullName}</p>
+                <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>SĐT:</strong> {foundParent.phoneNumber}</p>
+                <p style={{ margin: '4px 0', fontSize: '0.875rem' }}><strong>Email:</strong> {foundParent.email || 'N/A'}</p>
+              </Alert>
+            )}
+
+            <NewParentToggle>
+              <span>Chưa có hồ sơ phụ huynh?</span>
+              <KmBtn type="button" $variant="ghost" onClick={() => { setMode('new'); setFoundParent(null); setError(null); }}>
+                Thêm mới ngay
+              </KmBtn>
+            </NewParentToggle>
+          </>
+        ) : (
+          <>
+            <Alert $type="info">
+              Hệ thống sẽ tạo mới thông tin phụ huynh và tự động tạo tài khoản App với Username là SĐT.
+            </Alert>
+            <KmField>
+              <KmLabel>Họ và tên phụ huynh *</KmLabel>
+              <KmInput
+                value={newParent.fullName}
+                onChange={e => setNewParent({...newParent, fullName: e.target.value})}
               />
-              <label htmlFor="isPrimary" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                Là người liên lạc chính
-              </label>
-            </FormGroup>
-          </div>
-        </ModalBody>
-        
-        <ModalFooter>
-          <Button onClick={onClose}>Hủy bỏ</Button>
-          <Button 
-            $primary 
-            onClick={handleSubmit} 
-            disabled={loading || (mode === 'search' && !foundParent)}
-          >
-            {loading ? 'Đang lưu...' : (mode === 'search' ? 'Liên kết ngay' : 'Tạo mới & Liên kết')}
-          </Button>
-        </ModalFooter>
-      </ModalContainer>
-    </Overlay>
+            </KmField>
+            <KmField>
+              <KmLabel>Số điện thoại *</KmLabel>
+              <KmInput
+                value={newParent.phoneNumber}
+                onChange={e => setNewParent({...newParent, phoneNumber: e.target.value})}
+              />
+            </KmField>
+            <KmField>
+              <KmLabel>Email</KmLabel>
+              <KmInput
+                type="email"
+                value={newParent.email}
+                onChange={e => setNewParent({...newParent, email: e.target.value})}
+              />
+            </KmField>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Nghề nghiệp</KmLabel>
+                <KmInput
+                  value={newParent.occupation}
+                  onChange={e => setNewParent({...newParent, occupation: e.target.value})}
+                />
+              </KmField>
+              <KmField style={{ flex: 2 }}>
+                <KmLabel>Địa chỉ</KmLabel>
+                <KmInput
+                  value={newParent.address}
+                  onChange={e => setNewParent({...newParent, address: e.target.value})}
+                />
+              </KmField>
+            </div>
+
+            <NewParentToggle>
+              <span>Đã có hồ sơ trên hệ thống?</span>
+              <KmBtn type="button" $variant="ghost" onClick={() => { setMode('search'); setError(null); }}>
+                Quay lại tìm kiếm
+              </KmBtn>
+            </NewParentToggle>
+          </>
+        )}
+
+        <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+          <KmField style={{ flex: 1 }}>
+            <KmLabel>Mối quan hệ *</KmLabel>
+            <Dropdown
+              value={relationship}
+              onChange={setRelationship}
+              options={RELATIONSHIP_OPTIONS}
+              fullWidth
+              ariaLabel="Mối quan hệ"
+            />
+          </KmField>
+
+          <KmField style={{ display: 'flex', alignItems: 'center', marginTop: '26px' }}>
+            <input
+              type="checkbox"
+              id="isPrimary"
+              checked={isPrimary}
+              onChange={e => setIsPrimary(e.target.checked)}
+              style={{ marginRight: '8px', width: '16px', height: '16px' }}
+            />
+            <label htmlFor="isPrimary" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              Là người liên lạc chính
+            </label>
+          </KmField>
+        </div>
+      </ModalBody>
+
+      <KmFoot>
+        <KmBtn type="button" $variant="ghost" onClick={onClose}>Hủy bỏ</KmBtn>
+        <KmBtn
+          type="button"
+          $variant="brand"
+          onClick={handleSubmit}
+          disabled={loading || (mode === 'search' && !foundParent)}
+        >
+          {loading ? 'Đang lưu...' : (mode === 'search' ? 'Liên kết ngay' : 'Tạo mới & Liên kết')}
+        </KmBtn>
+      </KmFoot>
+    </Modal>
   );
 }

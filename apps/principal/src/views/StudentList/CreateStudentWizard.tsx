@@ -2,90 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { Dropdown } from '@kindercare/ui';
 import { accountService } from '@/services/account/AccountService';
 import { studentService } from '@/services/Student/StudentService';
+import {
+  Modal, ModalHeader, ModalBody,
+  KmField, KmLabel, KmInput, KmTextArea, KmFoot, KmBtn,
+  UsersIcon,
+} from '@/components/Modal';
 
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContainer = styled.div`
-  background: white;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-`;
-
-const ModalHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text || '#111827'};
-`;
-
-const CloseBtn = styled.button.attrs({ type: 'button' })`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.muted || '#6b7280'};
-  &:hover { color: ${({ theme }) => theme.colors.text || '#111827'}; }
-`;
-
-const ModalBody = styled.div`
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-`;
-
-const ModalFooter = styled.div`
-  padding: 16px 24px;
-  border-top: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-`;
-
-const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean }>`
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid ${props => props.$primary ? (props.theme.colors.primary || '#047857') : (props.theme.colors.border || '#d1d5db')};
-  background: ${props => props.$primary ? (props.theme.colors.primary || '#047857') : 'white'};
-  color: ${props => props.$primary ? 'white' : (props.theme.colors.fg || '#374151')};
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${props => props.$primary ? (props.theme.colors.greenDark || '#1a5c2d') : (props.theme.colors.neutralLighter || '#f9fafb')};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+const GENDER_OPTIONS = [
+  { value: 'Nam', label: 'Nam' },
+  { value: 'Nữ', label: 'Nữ' },
+];
 
 const StepIndicator = styled.div`
   display: flex;
@@ -101,82 +30,6 @@ const Step = styled.div<{ $active: boolean; $completed: boolean }>`
   color: ${props => props.$active || props.$completed ? (props.theme.colors.primary || '#047857') : (props.theme.colors.muted || '#9ca3af')};
   font-weight: 500;
   font-size: 0.875rem;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.fg || '#374151'};
-  margin-bottom: 6px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
-  border-radius: 10px;
-  font-size: 0.875rem;
-  outline: none;
-  background: white;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  color: ${({ theme }) => theme.colors.fg || '#111827'};
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
-    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
-  }
-
-  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
-
-  &:disabled {
-    background: ${({ theme }) => theme.colors.neutralLight || '#f3f4f6'};
-    color: ${({ theme }) => theme.colors.muted || '#6b7280'};
-    cursor: not-allowed;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
-  border-radius: 10px;
-  font-size: 0.875rem;
-  background: white;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.fg || '#111827'};
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
-    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
-  }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
-  border-radius: 10px;
-  font-size: 0.875rem;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-  background: white;
-  color: ${({ theme }) => theme.colors.fg || '#111827'};
-  transition: border-color 0.2s, box-shadow 0.2s;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
-    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
-  }
-
-  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
 `;
 
 const SearchBox = styled.div`
@@ -207,7 +60,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [paymentConfigs, setPaymentConfigs] = useState<{ packages: any[], baseFee: any }>({ packages: [], baseFee: null });
   const [packageId, setPackageId] = useState<number | ''>('');
 
@@ -242,7 +95,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
     occupation: '',
     address: ''
   });
-  
+
   const [isNewParent, setIsNewParent] = useState(true);
   const [searchPhone, setSearchPhone] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
@@ -253,7 +106,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
       setSearchLoading(true);
       setError(null);
       const foundParent = await accountService.searchParents(searchPhone);
-      
+
       if (foundParent) {
         setIsNewParent(false);
         setParent({
@@ -307,7 +160,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
         isNewParent,
         account: isNewParent ? {
           username: parent.phoneNumber,
-          password: `KinderCare_${parent.phoneNumber}`
+          password: '123456'
         } : null,
         packageId: packageId === '' ? null : packageId
       };
@@ -323,208 +176,210 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
   };
 
   return (
-    <Overlay onClick={onClose}>
-      <ModalContainer onClick={e => e.stopPropagation()}>
-        <ModalHeader>
-          <Title>Thêm Hồ Sơ Học Sinh Mới</Title>
-          <CloseBtn onClick={onClose}>&times;</CloseBtn>
-        </ModalHeader>
-        
-        <ModalBody>
-          <StepIndicator>
-            <Step $active={step === 1} $completed={step > 1}>1. Thông tin Học sinh</Step>
-            <Step $active={step === 2} $completed={step > 2}>2. Thông tin Phụ huynh</Step>
-            <Step $active={step === 3} $completed={step > 3}>3. Cấu hình Tài khoản</Step>
-          </StepIndicator>
+    <Modal size="lg" onClose={onClose}>
+      <ModalHeader
+        icon={<UsersIcon />}
+        iconVariant="brand"
+        title="Thêm Hồ Sơ Học Sinh Mới"
+        onClose={onClose}
+      />
 
-          {error && <Alert $type={step === 2 && error.includes('Không tìm thấy') ? 'info' : 'error'}>{error}</Alert>}
+      <ModalBody>
+        <StepIndicator>
+          <Step $active={step === 1} $completed={step > 1}>1. Thông tin Học sinh</Step>
+          <Step $active={step === 2} $completed={step > 2}>2. Thông tin Phụ huynh</Step>
+          <Step $active={step === 3} $completed={step > 3}>3. Cấu hình Tài khoản</Step>
+        </StepIndicator>
 
-          {step === 1 && (
-            <>
-              <FormGroup>
-                <Label>Họ và tên học sinh *</Label>
-                <Input 
-                  value={student.fullName} 
-                  onChange={e => setStudent({...student, fullName: e.target.value})} 
-                  placeholder="Nhập họ và tên..."
+        {error && <Alert $type={step === 2 && error.includes('Không tìm thấy') ? 'info' : 'error'}>{error}</Alert>}
+
+        {step === 1 && (
+          <>
+            <KmField>
+              <KmLabel>Họ và tên học sinh *</KmLabel>
+              <KmInput
+                value={student.fullName}
+                onChange={e => setStudent({...student, fullName: e.target.value})}
+                placeholder="Nhập họ và tên..."
+              />
+            </KmField>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Ngày sinh *</KmLabel>
+                <KmInput
+                  type="date"
+                  value={student.dateOfBirth}
+                  onChange={e => setStudent({...student, dateOfBirth: e.target.value})}
                 />
-              </FormGroup>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Ngày sinh *</Label>
-                  <Input 
-                    type="date" 
-                    value={student.dateOfBirth} 
-                    onChange={e => setStudent({...student, dateOfBirth: e.target.value})} 
-                  />
-                </FormGroup>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Giới tính</Label>
-                  <Select 
-                    value={student.gender} 
-                    onChange={e => setStudent({...student, gender: e.target.value})}
-                  >
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                  </Select>
-                </FormGroup>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Ngày nhập học</Label>
-                  <Input 
-                    type="date" 
-                    value={student.admissionDate} 
-                    onChange={e => setStudent({...student, admissionDate: e.target.value})} 
-                  />
-                </FormGroup>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Gói học phí</Label>
-                  <Select 
-                    value={packageId} 
-                    onChange={e => setPackageId(Number(e.target.value))}
-                  >
-                    {paymentConfigs.packages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} ({pkg.duration} tháng - Giảm {pkg.discount}%)
-                      </option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              </div>
-              <FormGroup>
-                <Label>Ghi chú dị ứng / bệnh lý (Nếu có)</Label>
-                <Textarea 
-                  value={student.allergies} 
-                  onChange={e => setStudent({...student, allergies: e.target.value})} 
-                  placeholder="Ví dụ: Dị ứng đậu phộng, hen suyễn..."
+              </KmField>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Giới tính</KmLabel>
+                <Dropdown
+                  value={student.gender}
+                  onChange={(val) => setStudent({...student, gender: val})}
+                  options={GENDER_OPTIONS}
+                  fullWidth
+                  ariaLabel="Giới tính"
                 />
-              </FormGroup>
-            </>
-          )}
+              </KmField>
+            </div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Ngày nhập học</KmLabel>
+                <KmInput
+                  type="date"
+                  value={student.admissionDate}
+                  onChange={e => setStudent({...student, admissionDate: e.target.value})}
+                />
+              </KmField>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Gói học phí</KmLabel>
+                <Dropdown
+                  value={packageId === '' ? null : String(packageId)}
+                  onChange={(val) => setPackageId(Number(val))}
+                  options={paymentConfigs.packages.map(pkg => ({
+                    value: String(pkg.id),
+                    label: `${pkg.name} (${pkg.duration} tháng - Giảm ${pkg.discount}%)`,
+                  }))}
+                  fullWidth
+                  ariaLabel="Gói học phí"
+                />
+              </KmField>
+            </div>
+            <KmField>
+              <KmLabel>Ghi chú dị ứng / bệnh lý (Nếu có)</KmLabel>
+              <KmTextArea
+                value={student.allergies}
+                onChange={e => setStudent({...student, allergies: e.target.value})}
+                placeholder="Ví dụ: Dị ứng đậu phộng, hen suyễn..."
+              />
+            </KmField>
+          </>
+        )}
 
-          {step === 2 && (
-            <>
-              <SearchBox>
-                <div style={{ flex: 1 }}>
-                  <Label>Tìm kiếm phụ huynh đã có con học tại trường</Label>
-                  <Input 
-                    placeholder="Nhập số điện thoại..." 
-                    value={searchPhone}
-                    onChange={e => setSearchPhone(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSearchParent()}
-                  />
-                </div>
-                <Button 
-                  $primary 
-                  style={{ alignSelf: 'flex-end' }}
-                  onClick={handleSearchParent}
-                  disabled={searchLoading}
-                >
-                  {searchLoading ? 'Đang tìm...' : 'Tìm kiếm'}
-                </Button>
-              </SearchBox>
+        {step === 2 && (
+          <>
+            <SearchBox>
+              <div style={{ flex: 1 }}>
+                <KmLabel>Tìm kiếm phụ huynh đã có con học tại trường</KmLabel>
+                <KmInput
+                  placeholder="Nhập số điện thoại..."
+                  value={searchPhone}
+                  onChange={e => setSearchPhone(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearchParent()}
+                />
+              </div>
+              <KmBtn
+                $variant="brand"
+                type="button"
+                style={{ alignSelf: 'flex-end' }}
+                onClick={handleSearchParent}
+                disabled={searchLoading}
+              >
+                {searchLoading ? 'Đang tìm...' : 'Tìm kiếm'}
+              </KmBtn>
+            </SearchBox>
 
-              <FormGroup>
-                <Label>Họ và tên phụ huynh *</Label>
-                <Input 
-                  value={parent.fullName} 
-                  onChange={e => setParent({...parent, fullName: e.target.value})} 
+            <KmField>
+              <KmLabel>Họ và tên phụ huynh *</KmLabel>
+              <KmInput
+                value={parent.fullName}
+                onChange={e => setParent({...parent, fullName: e.target.value})}
+                disabled={!isNewParent}
+              />
+            </KmField>
+            <KmField>
+              <KmLabel>Số điện thoại *</KmLabel>
+              <KmInput
+                value={parent.phoneNumber}
+                onChange={e => setParent({...parent, phoneNumber: e.target.value})}
+                disabled={!isNewParent}
+              />
+            </KmField>
+            <KmField>
+              <KmLabel>Email</KmLabel>
+              <KmInput
+                type="email"
+                value={parent.email}
+                onChange={e => setParent({...parent, email: e.target.value})}
+                disabled={!isNewParent}
+              />
+            </KmField>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <KmField style={{ flex: 1 }}>
+                <KmLabel>Nghề nghiệp</KmLabel>
+                <KmInput
+                  value={parent.occupation}
+                  onChange={e => setParent({...parent, occupation: e.target.value})}
                   disabled={!isNewParent}
                 />
-              </FormGroup>
-              <FormGroup>
-                <Label>Số điện thoại *</Label>
-                <Input 
-                  value={parent.phoneNumber} 
-                  onChange={e => setParent({...parent, phoneNumber: e.target.value})} 
+              </KmField>
+              <KmField style={{ flex: 2 }}>
+                <KmLabel>Địa chỉ</KmLabel>
+                <KmInput
+                  value={parent.address}
+                  onChange={e => setParent({...parent, address: e.target.value})}
                   disabled={!isNewParent}
                 />
-              </FormGroup>
-              <FormGroup>
-                <Label>Email</Label>
-                <Input 
-                  type="email"
-                  value={parent.email} 
-                  onChange={e => setParent({...parent, email: e.target.value})} 
-                  disabled={!isNewParent}
-                />
-              </FormGroup>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <FormGroup style={{ flex: 1 }}>
-                  <Label>Nghề nghiệp</Label>
-                  <Input 
-                    value={parent.occupation} 
-                    onChange={e => setParent({...parent, occupation: e.target.value})} 
-                    disabled={!isNewParent}
-                  />
-                </FormGroup>
-                <FormGroup style={{ flex: 2 }}>
-                  <Label>Địa chỉ</Label>
-                  <Input 
-                    value={parent.address} 
-                    onChange={e => setParent({...parent, address: e.target.value})} 
-                    disabled={!isNewParent}
-                  />
-                </FormGroup>
-              </div>
-            </>
-          )}
+              </KmField>
+            </div>
+          </>
+        )}
 
-          {step === 3 && (
-            <>
-              {!isNewParent ? (
-                <Alert $type="success">
-                  Học sinh sẽ được liên kết với tài khoản phụ huynh đã tồn tại (SĐT: {parent.phoneNumber}). Không cần tạo tài khoản mới.
+        {step === 3 && (
+          <>
+            {!isNewParent ? (
+              <Alert $type="success">
+                Học sinh sẽ được liên kết với tài khoản phụ huynh đã tồn tại (SĐT: {parent.phoneNumber}). Không cần tạo tài khoản mới.
+              </Alert>
+            ) : (
+              <>
+                <Alert $type="info">
+                  Hệ thống sẽ tự động tạo tài khoản đăng nhập KinderCare App cho phụ huynh mới.
                 </Alert>
-              ) : (
-                <>
-                  <Alert $type="info">
-                    Hệ thống sẽ tự động tạo tài khoản đăng nhập KinderCare App cho phụ huynh mới.
-                  </Alert>
-                  <FormGroup>
-                    <Label>Tên đăng nhập (Username)</Label>
-                    <Input value={parent.phoneNumber} disabled />
-                    <small style={{ color: '#6b7280', marginTop: '4px', display: 'block' }}>Sử dụng Số điện thoại làm tên đăng nhập</small>
-                  </FormGroup>
-                  <FormGroup>
-                    <Label>Mật khẩu mặc định</Label>
-                    <Input value={`KinderCare_${parent.phoneNumber}`} disabled />
-                  </FormGroup>
-                </>
-              )}
-            </>
-          )}
-        </ModalBody>
-        
-        <ModalFooter>
-          {step > 1 ? (
-            <Button onClick={() => { setError(null); setStep(step - 1); }}>Quay lại</Button>
-          ) : (
-            <Button onClick={onClose}>Hủy bỏ</Button>
-          )}
-          
-          {step < 3 ? (
-            <Button 
-              $primary 
-              onClick={() => {
-                setError(null);
-                if (step === 1 && (!student.fullName || !student.dateOfBirth)) {
-                  setError('Vui lòng điền đủ họ tên và ngày sinh');
-                  return;
-                }
-                setStep(step + 1);
-              }}
-            >
-              Tiếp tục
-            </Button>
-          ) : (
-            <Button $primary onClick={handleSubmit} disabled={loading}>
-              {loading ? 'Đang lưu...' : 'Hoàn thành & Lưu'}
-            </Button>
-          )}
-        </ModalFooter>
-      </ModalContainer>
-    </Overlay>
+                <KmField>
+                  <KmLabel>Tên đăng nhập (Username)</KmLabel>
+                  <KmInput value={parent.phoneNumber} disabled />
+                  <small style={{ color: '#6b7280', marginTop: '4px', display: 'block' }}>Sử dụng Số điện thoại làm tên đăng nhập</small>
+                </KmField>
+                <KmField>
+                  <KmLabel>Mật khẩu mặc định</KmLabel>
+                  <KmInput value="123456" disabled />
+                </KmField>
+              </>
+            )}
+          </>
+        )}
+      </ModalBody>
+
+      <KmFoot $spread>
+        {step > 1 ? (
+          <KmBtn $variant="ghost" type="button" onClick={() => { setError(null); setStep(step - 1); }}>Quay lại</KmBtn>
+        ) : (
+          <KmBtn $variant="ghost" type="button" onClick={onClose}>Hủy bỏ</KmBtn>
+        )}
+
+        {step < 3 ? (
+          <KmBtn
+            $variant="brand"
+            type="button"
+            onClick={() => {
+              setError(null);
+              if (step === 1 && (!student.fullName || !student.dateOfBirth)) {
+                setError('Vui lòng điền đủ họ tên và ngày sinh');
+                return;
+              }
+              setStep(step + 1);
+            }}
+          >
+            Tiếp tục
+          </KmBtn>
+        ) : (
+          <KmBtn $variant="brand" type="button" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Đang lưu...' : 'Hoàn thành & Lưu'}
+          </KmBtn>
+        )}
+      </KmFoot>
+    </Modal>
   );
 }

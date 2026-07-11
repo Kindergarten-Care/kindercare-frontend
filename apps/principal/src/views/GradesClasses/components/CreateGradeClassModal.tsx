@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import {
-  ModalOverlay,
-  ModalContent,
+  Modal,
   ModalHeader,
-  ModalTitle,
-  CloseButton,
-  Form,
-  FormGroup,
-  Label,
-  RequiredStar,
-  Input,
-  ErrorText,
-  ButtonGroup,
-  CancelBtn,
-  SubmitBtn,
+  ModalBody,
+  KmField,
+  KmLabel,
+  KmInput,
+  KmHint,
+  KmFoot,
+  KmBtn,
+  KmErrorText,
+  BuildingIcon
+} from '@/components/Modal';
+import {
   ClassRow,
   RemoveBtn,
   AddClassBtn,
@@ -49,7 +48,7 @@ export const CreateGradeClassModal: React.FC<CreateGradeClassModalProps> = ({ ex
     const newClasses = [...classes];
     newClasses[index] = value;
     setClasses(newClasses);
-    
+
     // Clear error for this specific class if any
     if (errors[`class_${index}`]) {
       setErrors(prev => ({ ...prev, [`class_${index}`]: '' }));
@@ -63,7 +62,7 @@ export const CreateGradeClassModal: React.FC<CreateGradeClassModalProps> = ({ ex
     } else if (selectedGrade === 'NEW' && !customGradeName.trim()) {
       newErrors.customGradeName = 'Tên Khối học mới là bắt buộc';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,17 +93,18 @@ export const CreateGradeClassModal: React.FC<CreateGradeClassModalProps> = ({ ex
   };
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>Thêm Khối / Lớp học</ModalTitle>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </ModalHeader>
+    <Modal size="md" onClose={onClose}>
+      <ModalHeader
+        icon={<BuildingIcon />}
+        iconVariant="brand"
+        title="Thêm Khối / Lớp học"
+        onClose={onClose}
+      />
 
-        <Form onSubmit={handleSubmit}>
-          
-          <FormGroup>
-            <Label>Tên Khối học <RequiredStar>*</RequiredStar></Label>
+      <form onSubmit={handleSubmit}>
+        <ModalBody>
+          <KmField>
+            <KmLabel>Tên Khối học <span className="opt">*</span></KmLabel>
             <Dropdown
               value={selectedGrade}
               onChange={(val) => {
@@ -117,35 +117,33 @@ export const CreateGradeClassModal: React.FC<CreateGradeClassModalProps> = ({ ex
               ]}
               placeholder="Chọn Khối học..."
             />
-            {errors.gradeName && <ErrorText>{errors.gradeName}</ErrorText>}
-            
+            {errors.gradeName && <KmErrorText>{errors.gradeName}</KmErrorText>}
+
             {selectedGrade === 'NEW' && (
               <div style={{ marginTop: '12px' }}>
-                <Input 
+                <KmInput
                   value={customGradeName}
                   onChange={(e) => {
                     setCustomGradeName(e.target.value);
                     if (errors.customGradeName) setErrors(prev => ({ ...prev, customGradeName: '' }));
                   }}
-                  $hasError={!!errors.customGradeName}
                   placeholder="Nhập tên Khối mới (VD: Khối Mầm)"
+                  style={errors.customGradeName ? { borderColor: '#ef4444' } : undefined}
                 />
-                {errors.customGradeName && <ErrorText>{errors.customGradeName}</ErrorText>}
+                {errors.customGradeName && <KmErrorText>{errors.customGradeName}</KmErrorText>}
               </div>
             )}
-            
-            <span style={{ fontSize: '0.8rem', color: '#666', marginTop: '6px' }}>
-              Chọn Khối cũ để gộp lớp, hoặc chọn "Tạo Khối mới".
-            </span>
-          </FormGroup>
+
+            <KmHint>Chọn Khối cũ để gộp lớp, hoặc chọn "Tạo Khối mới".</KmHint>
+          </KmField>
 
           <SectionDivider />
-          
-          <FormGroup>
-            <Label>Các Lớp học (Tùy chọn)</Label>
+
+          <KmField>
+            <KmLabel>Các Lớp học (Tùy chọn)</KmLabel>
             {classes.map((cls, index) => (
               <ClassRow key={index}>
-                <Input 
+                <KmInput
                   style={{ flex: 1 }}
                   value={cls}
                   onChange={(e) => handleClassChange(index, e.target.value)}
@@ -159,16 +157,16 @@ export const CreateGradeClassModal: React.FC<CreateGradeClassModalProps> = ({ ex
             <AddClassBtn type="button" onClick={handleAddClass}>
               + Thêm lớp học
             </AddClassBtn>
-          </FormGroup>
+          </KmField>
+        </ModalBody>
 
-          <ButtonGroup>
-            <CancelBtn type="button" onClick={onClose} disabled={isSubmitting}>Hủy</CancelBtn>
-            <SubmitBtn type="submit" $isLoading={isSubmitting} disabled={isSubmitting}>
-              {isSubmitting ? 'Đang xử lý...' : 'Lưu thông tin'}
-            </SubmitBtn>
-          </ButtonGroup>
-        </Form>
-      </ModalContent>
-    </ModalOverlay>
+        <KmFoot>
+          <KmBtn type="button" $variant="ghost" onClick={onClose} disabled={isSubmitting}>Hủy</KmBtn>
+          <KmBtn type="submit" $variant="brand" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang xử lý...' : 'Lưu thông tin'}
+          </KmBtn>
+        </KmFoot>
+      </form>
+    </Modal>
   );
 };

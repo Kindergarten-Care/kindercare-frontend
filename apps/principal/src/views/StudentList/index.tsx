@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@kindercare/core';
+import { Dropdown } from '@kindercare/ui';
 import { useStudentList } from './hooks/useStudentList';
 import StudentTable from './components/StudentTable';
 import CreateStudentWizard from './CreateStudentWizard';
@@ -19,11 +19,6 @@ import {
   SearchWrapper,
   SearchIcon,
   SearchInput,
-  Select,
-  Breadcrumb,
-  BreadcrumbLink,
-  BreadcrumbSep,
-  BreadcrumbCurrent,
   StatsGrid,
   StatCard,
   StatIconWrap,
@@ -34,7 +29,6 @@ import {
 
 export default function StudentListView() {
   const { isLoading: authLoading } = useAuth();
-  const router = useRouter();
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -68,23 +62,19 @@ export default function StudentListView() {
 
   return (
     <Container>
-      <Breadcrumb>
-        <BreadcrumbLink onClick={() => router.push('/home')}>Trang chủ</BreadcrumbLink>
-        <BreadcrumbSep>/</BreadcrumbSep>
-        <BreadcrumbCurrent>Danh sách học sinh</BreadcrumbCurrent>
-      </Breadcrumb>
-
       <PageHeader>
         <Title>
-          Danh sách Học sinh
-          <StatBadge>| Tìm kiếm &amp; quản lý hồ sơ</StatBadge>
+          Danh sách học sinh
+          <StatBadge>Tìm kiếm &amp; quản lý hồ sơ học sinh toàn trường</StatBadge>
         </Title>
         <ActionGroup>
           <SecondaryButton onClick={() => setShowImportModal(true)}>
-            ↑ Import CSV
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M8 11l4 4 4-4" /><path d="M4 21h16" /></svg>
+            Import CSV
           </SecondaryButton>
           <PrimaryButton onClick={() => setShowCreateWizard(true)}>
-            + Thêm học sinh
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            Thêm học sinh
           </PrimaryButton>
         </ActionGroup>
       </PageHeader>
@@ -92,37 +82,34 @@ export default function StudentListView() {
       <StatsGrid>
         <StatCard>
           <StatIconWrap $variant="green">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21a8 8 0 0 1 16 0" />
             </svg>
           </StatIconWrap>
           <StatInfo>
             <StatValue>{total}</StatValue>
-            <StatLabel>Tổng số học sinh</StatLabel>
+            <StatLabel>Tổng học sinh</StatLabel>
           </StatInfo>
         </StatCard>
 
         <StatCard>
           <StatIconWrap $variant="blue">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
             </svg>
           </StatIconWrap>
           <StatInfo>
             <StatValue>{assigned}</StatValue>
-            <StatLabel>Đã xếp lớp</StatLabel>
+            <StatLabel>Lớp đang hoạt động</StatLabel>
           </StatInfo>
         </StatCard>
 
         <StatCard>
           <StatIconWrap $variant="amber">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 8v4l3 2" />
+              <circle cx="12" cy="12" r="9" />
             </svg>
           </StatIconWrap>
           <StatInfo>
@@ -133,9 +120,9 @@ export default function StudentListView() {
 
         <StatCard>
           <StatIconWrap $variant="default">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
           </StatIconWrap>
           <StatInfo>
@@ -148,29 +135,37 @@ export default function StudentListView() {
       <FilterBar>
         <SearchWrapper>
           <SearchIcon>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
             </svg>
           </SearchIcon>
           <SearchInput
-            placeholder="Tìm theo tên hoặc mã học sinh..."
+            placeholder="Tìm theo tên hoặc mã học sinh…"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
         </SearchWrapper>
 
-        <Select value={classFilter} onChange={e => setClassFilter(e.target.value)}>
-          <option value="all">Tất cả lớp học</option>
-          {classes.map(cls => (
-            <option key={cls} value={cls}>{cls}</option>
-          ))}
-        </Select>
+        <Dropdown
+          value={classFilter}
+          onChange={setClassFilter}
+          options={[
+            { value: 'all', label: 'Tất cả lớp học' },
+            ...classes.map(cls => ({ value: cls, label: cls })),
+          ]}
+          ariaLabel="Lọc theo lớp học"
+        />
 
-        <Select value={sortBy} onChange={e => setSortBy(e.target.value as 'name_asc' | 'name_desc')}>
-          <option value="name_asc">Tên (A → Z)</option>
-          <option value="name_desc">Tên (Z → A)</option>
-        </Select>
+        <Dropdown<'name_asc' | 'name_desc'>
+          value={sortBy}
+          onChange={setSortBy}
+          options={[
+            { value: 'name_asc', label: 'Tên (A → Z)' },
+            { value: 'name_desc', label: 'Tên (Z → A)' },
+          ]}
+          ariaLabel="Sắp xếp"
+        />
       </FilterBar>
 
       <StudentTable
@@ -183,6 +178,7 @@ export default function StudentListView() {
         onViewProfile={handleViewProfile}
         onPrevPage={() => setCurrentPage(p => p - 1)}
         onNextPage={() => setCurrentPage(p => p + 1)}
+        onGoToPage={(page) => setCurrentPage(page)}
       />
 
       {showCreateWizard && (

@@ -1,212 +1,391 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  padding: 32px;
+  padding: 24px;
   width: 100%;
   box-sizing: border-box;
-  margin: 0 auto;
   min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 `;
 
 export const PageHeader = styled.div`
-  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
 `;
+
+export const HeaderText = styled.div``;
 
 export const Title = styled.h1`
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1f2937;
   margin: 0 0 4px 0;
 `;
 
 export const PageSubtitle = styled.p`
-  font-size: 0.875rem;
+  font-size: 13.5px;
   color: #6b7280;
   margin: 0;
 `;
 
-export const SplitView = styled.div`
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0;
-  flex: 1;
-  align-items: stretch;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f3f4f6;
-  overflow: hidden;
-`;
-
-export const Panel = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 500px;
-`;
-
-export const PanelHeader = styled.div`
-  padding: 18px 20px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
-`;
-
-export const PanelLabel = styled.div<{ $muted?: boolean }>`
-  font-size: 0.75rem;
-  font-weight: ${({ $muted }) => ($muted ? 400 : 700)};
-  color: ${({ $muted }) => ($muted ? '#6b7280' : '#111827')};
-  margin-bottom: ${({ $muted }) => ($muted ? '2px' : '8px')};
-  text-transform: ${({ $muted }) => ($muted ? 'uppercase' : 'none')};
-  letter-spacing: ${({ $muted }) => ($muted ? '0.05em' : 'normal')};
-`;
-
-export const PanelSelect = styled.select`
-  width: 100%;
-  padding: 10px 36px 10px 14px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  outline: none;
-  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-
-  &:focus { border-color: #047857; }
-`;
-
-export const PanelMeta = styled.div`
-  margin-top: 10px;
-  font-size: 0.8125rem;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-export const SelectionCount = styled.span<{ $active?: boolean }>`
+export const SaveButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: ${({ $active }) => ($active ? '#dcfce7' : '#f3f4f6')};
-  color: ${({ $active }) => ($active ? '#15803d' : '#6b7280')};
-`;
-
-export const ListContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-`;
-
-export const StudentItem = styled.div<{ $selected?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? '#047857' : '#f3f4f6')};
-  background: ${({ $selected }) => ($selected ? '#f0fdf4' : 'white')};
-  border-radius: 10px;
-  margin-bottom: 8px;
-  cursor: ${({ $selected }) => ($selected ? 'pointer' : 'pointer')};
-  transition: all 0.15s;
-  box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px rgba(4, 120, 87, 0.1)' : 'none')};
-
-  &:hover {
-    border-color: ${({ $selected }) => ($selected ? '#047857' : '#d1d5db')};
-    background: ${({ $selected }) => ($selected ? '#f0fdf4' : '#fafafa')};
-  }
-`;
-
-export const StudentInfo = styled.div``;
-
-export const StudentName = styled.div`
-  font-weight: 600;
-  color: #111827;
-  font-size: 0.875rem;
-`;
-
-export const StudentMeta = styled.div`
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 2px;
-`;
-
-export const Checkbox = styled.div<{ $checked?: boolean }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  border: 2px solid ${({ $checked }) => ($checked ? '#047857' : '#d1d5db')};
-  background: ${({ $checked }) => ($checked ? '#047857' : 'white')};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s;
-`;
-
-export const ActionCenter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-`;
-
-export const MoveButton = styled.button`
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  background: #047857;
+  gap: 8px;
+  background: #237a3c;
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13.5px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.4);
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  box-shadow: 0 8px 18px -8px rgba(35, 122, 60, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover:not(:disabled) {
-    background: #065f46;
-    transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(4, 120, 87, 0.5);
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.97);
+    background: #1a5c2d;
+    transform: scale(1.02);
   }
 
   &:disabled {
-    background: #e5e7eb;
+    background: #e6eee9;
     color: #9ca3af;
     cursor: not-allowed;
     box-shadow: none;
   }
 `;
 
-export const EmptyState = styled.div`
+export const SaveBadge = styled.span`
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-size: 12px;
+  margin-left: 4px;
+`;
+
+export const ErrorBanner = styled.div`
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+`;
+
+export const SplitView = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 76px 1fr;
+  gap: 0;
+  flex: 1;
+  align-items: stretch;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+`;
+
+export const Panel = styled.div`
+  background: #ffffff;
+  border: 1px solid #e6eee9;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 640px;
+
+  @media (max-width: 1000px) {
+    height: auto;
+    max-height: 520px;
+  }
+`;
+
+export const PanelHead = styled.div`
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid #eef4f0;
+  flex-shrink: 0;
+`;
+
+export const PanelTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+`;
+
+export const PanelTitle = styled.h3`
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #1f2937;
+`;
+
+export const PanelTitleIcon = styled.span<{ $variant?: 'src' | 'dst' }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: ${({ $variant }) => ($variant === 'dst' ? '#e8f5ed' : '#fff0d8')};
+  color: ${({ $variant }) => ($variant === 'dst' ? '#237a3c' : '#92400e')};
+`;
+
+export const SearchBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #ffffff;
+  border: 1px solid #e6eee9;
+  border-radius: 11px;
+  padding: 0 12px;
+  height: 40px;
+  margin-top: 10px;
+  color: #9ca3af;
+`;
+
+export const SearchInput = styled.input`
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+  color: #1f2937;
+  width: 100%;
+  background: none;
+
+  &::placeholder { color: #9ca3af; }
+`;
+
+export const SubBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 12.5px;
+`;
+
+export const SelectionCount = styled.span<{ $active?: boolean }>`
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? '#374151' : '#9ca3af')};
+
+  b { color: #237a3c; }
+`;
+
+export const LinkBtn = styled.button`
+  border: none;
+  background: none;
+  color: #237a3c;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover { text-decoration: underline; }
+
+  &:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+`;
+
+export const PanelMeta = styled.div`
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const ListContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+`;
+
+export const ListGroupLabel = styled.div`
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  padding: 10px 12px 6px;
+`;
+
+export const StudentRow = styled.div<{ $selected?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+  user-select: none;
+  background: ${({ $selected }) => ($selected ? '#e8f5ed' : 'transparent')};
+
+  &:hover { background: ${({ $selected }) => ($selected ? '#e8f5ed' : '#f7fbf8')}; }
+`;
+
+export const Checkbox = styled.span<{ $checked?: boolean }>`
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid ${({ $checked }) => ($checked ? '#237a3c' : '#e6eee9')};
+  background: ${({ $checked }) => ($checked ? '#237a3c' : 'transparent')};
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  transition: all 0.12s;
+`;
+
+export const StudentAvatar = styled.span<{ $bg: string; $size?: number }>`
+  width: ${({ $size }) => $size ?? 36}px;
+  height: ${({ $size }) => $size ?? 36}px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: ${({ $bg }) => $bg};
+`;
+
+export const StudentAvatarImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+export const StudentInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const StudentName = styled.div`
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: #1f2937;
+`;
+
+export const StudentMeta = styled.div`
+  font-size: 11.5px;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+`;
+
+export const AgeChip = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #eef4f0;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+`;
+
+export const NewTag = styled.span`
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #237a3c;
+  background: #e8f5ed;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+`;
+
+export const RemoveBtn = styled.button`
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+
+  &:hover { background: #fee2e2; color: #dc2626; }
+`;
+
+export const MidCol = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  padding: 40px 20px;
+  gap: 14px;
+
+  @media (max-width: 1000px) {
+    flex-direction: row;
+  }
+`;
+
+export const MoveButton = styled.button<{ $primary?: boolean }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid ${({ $primary }) => ($primary ? '#237a3c' : '#e6eee9')};
+  background: ${({ $primary }) => ($primary ? '#237a3c' : '#ffffff')};
+  color: ${({ $primary }) => ($primary ? '#fff' : '#6b7280')};
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: ${({ $primary }) =>
+    $primary ? '0 10px 22px -8px rgba(35,122,60,.5)' : '0 4px 18px -4px rgba(0,90,54,0.06)'};
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    ${({ $primary }) => ($primary ? 'transform: scale(1.06);' : 'border-color: #cfe0d5; color: #1f2937;')}
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+export const EmptyState = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9ca3af;
   text-align: center;
+  padding: 30px;
 `;
 
 export const EmptyIcon = styled.div`
   font-size: 2.5rem;
-  margin-bottom: 10px;
   opacity: 0.5;
 `;
 
 export const EmptyText = styled.div`
-  font-size: 0.875rem;
-  color: #9ca3af;
+  font-size: 13px;
   line-height: 1.5;
+  color: #9ca3af;
 `;

@@ -104,20 +104,6 @@ export const SearchInput = styled.input`
   &::placeholder { color: #9ca3af; }
 `;
 
-export const FilterSelect = styled.select`
-  padding: 10px 36px 10px 14px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  outline: none;
-  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-
-  &:focus { border-color: #047857; }
-`;
-
 export const TableCard = styled.div`
   background: white;
   border-radius: 12px;

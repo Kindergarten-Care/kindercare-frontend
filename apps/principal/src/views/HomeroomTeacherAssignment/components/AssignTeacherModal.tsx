@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Overlay, ModalContainer, ModalHeader, Title, CloseButton, 
-  ModalBody, Label, Select, ModalFooter, Button,
-  CustomSelectContainer, CustomSelectTrigger, CustomSelectDropdown, 
-  CustomSelectOption, TeacherAvatar, TeacherAvatarPlaceholder, 
-  TeacherInfo, TeacherName, TeacherUsername
-} from './modalStyles';
+import React, { useState, useEffect } from 'react';
+import {
+  Modal, ModalHeader, ModalBody, KmField, KmLabel, KmFoot, KmBtn, KmErrorText,
+  UserPlusIcon,
+} from '@/components/Modal';
+import { Dropdown } from '@kindercare/ui';
 import { accountService } from '@/services/account/AccountService';
 import { assignmentService } from '@/services/Principal/AssignmentService';
 import { gradeService } from '@/services/grade/GradeService';
@@ -22,27 +20,16 @@ interface Props {
 export default function AssignTeacherModal({ classId, className, onClose, onSuccess }: Props) {
   const [teachers, setTeachers] = useState<AccountDomainModel[]>([]);
   const [grades, setGrades] = useState<GradeDomainModel[]>([]);
-  
+
   const [selectedClassId, setSelectedClassId] = useState<string>(classId.toString());
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [role, setRole] = useState<string>('Giáo viên chủ nhiệm');
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState(false);
-  
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchData();
-    
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsTeacherDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchData = async () => {
@@ -67,7 +54,7 @@ export default function AssignTeacherModal({ classId, className, onClose, onSucc
       setError('Vui lòng chọn giáo viên.');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -81,109 +68,75 @@ export default function AssignTeacherModal({ classId, className, onClose, onSucc
     }
   };
 
-  const selectedTeacher = teachers.find(t => t.id.toString() === selectedTeacherId);
+  const classOptions = grades.flatMap(grade =>
+    grade.classes.map(c => ({
+      value: c.classId.toString(),
+      label: c.className,
+      group: grade.gradeName,
+    }))
+  );
+
+  const teacherOptions = teachers.map(t => ({
+    value: t.id.toString(),
+    label: `${t.fullName} (@${t.username})`,
+  }));
+
+  const roleOptions: { value: string; label: string }[] = [
+    { value: 'Giáo viên chủ nhiệm', label: 'Giáo viên chủ nhiệm' },
+    { value: 'Giáo viên phụ', label: 'Giáo viên phụ' },
+  ];
 
   return (
-    <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <Title>Bổ nhiệm Giáo viên</Title>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </ModalHeader>
-        
-        <ModalBody>
-          {error && <div style={{ color: '#ef4444', fontSize: '0.875rem' }}>{error}</div>}
-          
-          <div>
-            <Label>Chọn Lớp học</Label>
-            <Select value={selectedClassId} onChange={(e) => setSelectedClassId(e.target.value)}>
-              <option value="">-- Chọn một lớp học --</option>
-              {grades.map(grade => (
-                <optgroup key={grade.gradeId} label={grade.gradeName}>
-                  {grade.classes.map(c => (
-                    <option key={c.classId} value={c.classId}>
-                      {c.className}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </Select>
-          </div>
+    <Modal size="md" onClose={onClose}>
+      <ModalHeader
+        icon={<UserPlusIcon />}
+        iconVariant="brand"
+        title="Bổ nhiệm Giáo viên"
+        onClose={onClose}
+      />
 
-          <div>
-            <Label>Chọn Giáo viên</Label>
-            <CustomSelectContainer ref={dropdownRef}>
-              <CustomSelectTrigger 
-                $isOpen={isTeacherDropdownOpen} 
-                onClick={() => setIsTeacherDropdownOpen(!isTeacherDropdownOpen)}
-              >
-                {selectedTeacher ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {selectedTeacher.avatarUrl ? (
-                      <TeacherAvatar src={selectedTeacher.avatarUrl} alt={selectedTeacher.fullName} style={{ width: 24, height: 24 }} />
-                    ) : (
-                      <TeacherAvatarPlaceholder style={{ width: 24, height: 24, fontSize: '0.7rem' }}>
-                        {selectedTeacher.fullName.charAt(0)}
-                      </TeacherAvatarPlaceholder>
-                    )}
-                    <span>{selectedTeacher.fullName}</span>
-                  </div>
-                ) : (
-                  <span style={{ color: '#6b7280' }}>-- Chọn một giáo viên --</span>
-                )}
-                <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>▼</span>
-              </CustomSelectTrigger>
-              
-              {isTeacherDropdownOpen && (
-                <CustomSelectDropdown>
-                  {teachers.map(teacher => (
-                    <CustomSelectOption 
-                      key={teacher.id} 
-                      $selected={selectedTeacherId === teacher.id.toString()}
-                      onClick={() => {
-                        setSelectedTeacherId(teacher.id.toString());
-                        setIsTeacherDropdownOpen(false);
-                      }}
-                    >
-                      {teacher.avatarUrl ? (
-                        <TeacherAvatar src={teacher.avatarUrl} alt={teacher.fullName} />
-                      ) : (
-                        <TeacherAvatarPlaceholder>
-                          {teacher.fullName.charAt(0)}
-                        </TeacherAvatarPlaceholder>
-                      )}
-                      <TeacherInfo>
-                        <TeacherName>{teacher.fullName}</TeacherName>
-                        <TeacherUsername>{teacher.username}</TeacherUsername>
-                      </TeacherInfo>
-                    </CustomSelectOption>
-                  ))}
-                  {teachers.length === 0 && (
-                    <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280' }}>
-                      Không có dữ liệu giáo viên
-                    </div>
-                  )}
-                </CustomSelectDropdown>
-              )}
-            </CustomSelectContainer>
-          </div>
+      <ModalBody $padTop>
+        {error && <KmErrorText>{error}</KmErrorText>}
 
-          <div>
-            <Label>Vai trò trong lớp</Label>
-            <Select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="Giáo viên chủ nhiệm">Giáo viên chủ nhiệm</option>
-              <option value="Giáo viên phụ">Giáo viên phụ</option>
-            </Select>
-          </div>
-        </ModalBody>
-        
-        <ModalFooter>
-          <Button onClick={onClose} disabled={loading}>Hủy</Button>
-          <Button $primary onClick={handleSubmit} disabled={loading || !selectedTeacherId || !selectedClassId}>
-            {loading ? 'Đang lưu...' : 'Xác nhận Bổ nhiệm'}
-          </Button>
-        </ModalFooter>
-      </ModalContainer>
-    </Overlay>
+        <KmField>
+          <KmLabel>Chọn Lớp học</KmLabel>
+          <Dropdown
+            value={selectedClassId === '' ? null : selectedClassId}
+            onChange={(val) => setSelectedClassId(val)}
+            options={classOptions}
+            placeholder="-- Chọn một lớp học --"
+            fullWidth
+          />
+        </KmField>
+
+        <KmField>
+          <KmLabel>Chọn Giáo viên</KmLabel>
+          <Dropdown
+            value={selectedTeacherId === '' ? null : selectedTeacherId}
+            onChange={(val) => setSelectedTeacherId(val)}
+            options={teacherOptions}
+            placeholder="-- Chọn một giáo viên --"
+            fullWidth
+          />
+        </KmField>
+
+        <KmField>
+          <KmLabel>Vai trò trong lớp</KmLabel>
+          <Dropdown
+            value={role}
+            onChange={(val) => setRole(val)}
+            options={roleOptions}
+            fullWidth
+          />
+        </KmField>
+      </ModalBody>
+
+      <KmFoot>
+        <KmBtn $variant="ghost" onClick={onClose} disabled={loading}>Hủy</KmBtn>
+        <KmBtn $variant="brand" onClick={handleSubmit} disabled={loading || !selectedTeacherId || !selectedClassId}>
+          {loading ? 'Đang lưu...' : 'Xác nhận Bổ nhiệm'}
+        </KmBtn>
+      </KmFoot>
+    </Modal>
   );
 }
