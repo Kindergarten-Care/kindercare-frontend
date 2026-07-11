@@ -8,16 +8,7 @@ import type {
   HealthLogDomainModel,
   SubmitHealthMeasurementPayload,
 } from '@/config/types/health';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fixImageUrl(url?: string): string | undefined {
-  if (!url) return undefined;
-  if (url.startsWith('http') || url.startsWith('data:')) return url;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
-  const host = apiBase.split('/api')[0];
-  return `${host}/${url.replace(/^\//, '')}`;
-}
+import { fixImageUrl } from '@/utils/imageUrl';
 
 function mapAllergy(raw: AllergyApiDto): AllergyDomainModel {
   return { ...raw };

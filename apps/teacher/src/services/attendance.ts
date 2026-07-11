@@ -1,5 +1,6 @@
 import { Student, LeaveRequest, AttendanceStatus, LeaveRequestStatus } from '@/config/types/attendance';
 import { apiClient } from '@kindercare/core';
+import { fixImageUrl } from '@/utils/imageUrl';
 
 export interface TeacherClass {
   classId: number;
@@ -67,7 +68,7 @@ function mapApiStudentToDomain(raw: any): Student {
   return {
     id: String(raw.studentId),
     name: raw.fullName,
-    avatar: raw.avatarUrl || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
+    avatar: fixImageUrl(raw.avatarUrl) || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
     attendanceStatus: domainStatus,
     arrivalTime: formatTimestampToTimeStr(raw.checkInTime),
     healthNote: raw.healthNote || '',
@@ -96,6 +97,7 @@ export class AttendanceService {
 
   /**
    * Fetch daily student attendance records for a class on a target date.
+   * Endpoint: `GET /teacher/classes/:classId/students?date=:ts`
    */
   public static async getDailyAttendance(classId: number | string, date: string): Promise<Student[]> {
     const dateTimestamp = getUtcTimestampInSeconds(date);
@@ -104,6 +106,34 @@ export class AttendanceService {
     });
     const list = res.data?.data || [];
     return list.map(mapApiStudentToDomain);
+  }
+
+  /**
+   * Lấy danh sách học sinh cơ bản của 1 lớp (không có attendance cho ngày cụ thể).
+   * Endpoint: `GET /teacher/classes/:classId/students` (không có `date` param).
+   *
+   * Dùng làm FALLBACK khi `getDailyAttendance` fail vì BE query `FROM students` (lowercase)
+   * nhưng DB chỉ có bảng `Students` (PascalCase) — gây lỗi 500 trên môi trường
+   * `lower_case_table_names = 0` (Linux/macOS/Docker).
+   *
+   * @see Bug ticket: BE phải fix query → `FROM Students` (PascalCase) khớp schema SQL dump.
+   *
+   * Trả về shape tối thiểu: chỉ có id/name/avatar (map về `StudentLite`).
+   */
+  public static async getClassStudentsLite(
+    classId: number | string
+  ): Promise<Array<{ id: string | number; name: string; avatar?: string }>> {
+    const res = await apiClient.get(`/teacher/classes/${classId}/students`);
+    const list = res.data?.data || [];
+    // Response shape từ BE có thể là:
+    //   - array trực tiếp:     [ { studentId, fullName, avatarUrl, ... }, ... ]
+    //   - object wrap:         { students: [...] } hoặc { data: [...] }
+    const arr = Array.isArray(list) ? list : (list?.students || list?.data || []);
+    return (Array.isArray(arr) ? arr : []).map((s: any) => ({
+      id: s.studentId ?? s.id,
+      name: s.fullName ?? s.name ?? 'Học sinh',
+      avatar: fixImageUrl(s.avatarUrl ?? s.avatar),
+    }));
   }
 
 
