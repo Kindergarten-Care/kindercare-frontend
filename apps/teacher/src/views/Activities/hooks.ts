@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, ParticipationStatus, WeeklyScheduleResponse, WeeklyMenuResponse } from '@/config/types/activities';
+import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, participationStatus, WeeklyScheduleResponse, WeeklyMenuResponse } from '@/config/types/activities';
 import { ActivitiesService } from '@/services/activities';
 import { classService } from '@/services/class/ClassService';
 import type { TeacherClassDomainModel } from '@/config/types/class';
@@ -167,7 +167,7 @@ export function useActivities() {
     );
   };
 
-  const handleActivityParticipationChange = (studentId: string, participation: ParticipationStatus) => {
+  const handleActivityParticipationChange = (studentId: string, participation: participationStatus) => {
     setActivityRecords(prev =>
       prev.map(record =>
         record.studentId === studentId ? { ...record, participation } : record

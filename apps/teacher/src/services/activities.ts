@@ -428,7 +428,7 @@ export class ActivitiesService {
               studentName: s.name,
               studentAvatar: s.avatar || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60',
               nap: nap as NapStatus,
-              participation: participation as ParticipationStatus,
+              participation: participation as participationStatus,
               activityStatus: (s as any).activityStatus,
               note: note.trim(),
               photoUrl: s.photoUrl || undefined
