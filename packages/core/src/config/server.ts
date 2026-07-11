@@ -77,6 +77,10 @@ export const SERVER = {
     postNewsfeed:            '/teacher/classes/:classId/newsfeeds',
     workHistory:             '/teacher/work-history',
     settings:                '/teacher/settings',
+    // Đánh giá định kỳ học sinh (6 tiêu chí)
+    getClassAssessments:     '/teacher/classes/:classId/student-health/assessments',
+    upsertClassAssessments:  '/teacher/classes/:classId/student-health/assessments',
+    getStudentAssessmentHistory: '/teacher/classes/:classId/student-health/assessments/history',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

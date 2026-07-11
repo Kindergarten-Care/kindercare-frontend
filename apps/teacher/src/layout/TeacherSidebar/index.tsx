@@ -5,12 +5,11 @@ import {
   CheckSquare, 
   Calendar, 
   Users,
-  BookOpen,
   Heart,
-  Star,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BarChart3
 } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +53,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const isWeeklyScheduleActive = pathname === '/weekly-schedule';
   const isProfileActive = pathname === '/profile';
   const isHealthActive = pathname === '/health';
+  const isAssessmentActive = pathname === '/assessment';
 
   // Extract user initials
   const getInitials = (name?: string) => {
@@ -62,10 +62,10 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
     return parts[parts.length - 1].charAt(0).toUpperCase();
   };
 
-  // Helper to handle placeholder features
-  const handleFeatureNotImplemented = (featureName: string) => {
-    alert(`Tính năng "${featureName}" đang được phát triển.`);
-  };
+  // Helper to handle placeholder features (kept for future menus that aren't ready)
+  // const handleFeatureNotImplemented = (featureName: string) => {
+  //   alert(`Tính năng "${featureName}" đang được phát triển.`);
+  // };
 
   return (
     <S.SidebarContainer $isOpen={isOpen} $isCollapsed={isCollapsed}>
@@ -141,9 +141,10 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
 
-        <S.NavItem $isCollapsed={isCollapsed} onClick={() => handleFeatureNotImplemented('Đánh giá hằng tháng')}>
-          <S.NavIcon style={{ color: '#FBBF24' }}><Star size={20} strokeWidth={1.8} /></S.NavIcon>
-          <S.NavLabel $isCollapsed={isCollapsed}>Đánh giá hằng tháng</S.NavLabel>
+        <S.NavItem $active={isAssessmentActive} $isCollapsed={isCollapsed} onClick={() => router.push('/assessment')}>
+          {isAssessmentActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon style={{ color: '#8B5CF6' }}><BarChart3 size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Đánh giá định kỳ</S.NavLabel>
           <S.NavBadge $isCollapsed={isCollapsed} $urgent>MỚI</S.NavBadge>
         </S.NavItem>
       </S.NavSection>
