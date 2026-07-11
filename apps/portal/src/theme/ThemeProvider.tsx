@@ -28,8 +28,8 @@ export const portalTheme: DefaultTheme = {
     background: '#F8FAFC',
   },
   fonts: {
-    display: "'Montserrat', sans-serif",
-    body: "'Montserrat', sans-serif",
+    display: "'Inter', system-ui, sans-serif",
+    body: "'Inter', system-ui, sans-serif",
   },
   radius: {
     sm: '8px',

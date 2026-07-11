@@ -1,360 +1,508 @@
 'use client';
 
-import styled, { css, keyframes } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 /* ─── Animations ─── */
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+const kcPop = keyframes`
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: none; }
 `;
 
-const shimmer = keyframes`
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+const kcBob = keyframes`
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-12px) rotate(3deg); }
 `;
 
-const float = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+const kcFloat2 = keyframes`
+  0%, 100% { transform: translateY(0) rotate(4deg); }
+  50%      { transform: translateY(-9px) rotate(-3deg); }
 `;
 
-/* ─── Layout ─── */
-export const Container = styled.div`
+const kcChipIn = keyframes`
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+`;
+
+const kcTwinkle = keyframes`
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+`;
+
+const kcShake = keyframes`
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+`;
+
+const kcSpin = keyframes`to { transform: rotate(360deg); }`;
+
+const kcBlob = keyframes`
+  0%, 100% { transform: translate(0, 0)   scale(1); }
+  33%      { transform: translate(24px, -20px) scale(1.12); }
+  66%      { transform: translate(-18px, 14px) scale(0.94); }
+`;
+
+const kcToastPop = kcPop;
+
+/* ─── Page wrapper ─── */
+export const PageWrap = styled.div`
+  min-height: 100vh;
   display: flex;
-  width: 100vw;
-  height: 100vh;
-  background-color: ${props => props.theme.colors.background};
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: radial-gradient(900px 500px at 15% 10%, #EAF6EF 0%, #E9F1EC 55%);
+  font-family: 'Inter', system-ui, sans-serif;
+`;
+
+export const Card = styled.div`
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  width: 100%;
+  max-width: 1040px;
+  min-height: 600px;
+  border-radius: 28px;
   overflow: hidden;
-  font-family: ${props => props.theme.fonts.body};
+  box-shadow: 0 30px 80px -30px rgba(0, 90, 54, 0.4);
+  background: #FFFFFF;
+  animation: ${kcPop} 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
 
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-export const InteractionPane = styled.div`
-  width: 42%;
-  background-color: ${props => props.theme.colors.white};
-  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 48px;
-  box-sizing: border-box;
-  z-index: 10;
-  animation: ${fadeIn} 0.5s ease-out;
-
-  @media (max-width: ${props => props.theme.breakpoints.lg}) {
-    width: 48%;
-    padding: 36px;
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    width: 100%;
-    min-height: 100vh;
-    padding: 32px 24px;
-    justify-content: center;
-    gap: 32px;
-  }
-`;
-
-export const InteractionContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-`;
-
-/* ─── Brand ─── */
-export const BrandHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 40px;
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    margin-bottom: 24px;
-  }
-`;
-
-export const BrandLogo = styled.img`
-  height: 38px;
-  object-fit: contain;
-`;
-
-/* ─── Role Tabs ─── */
-export const TabGroup = styled.div`
-  display: flex;
-  background-color: ${props => props.theme.colors.neutralLight};
-  border-radius: 9999px;
-  padding: 4px;
-  margin-bottom: 32px;
-  width: 100%;
-  box-sizing: border-box;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
-`;
-
-export const TabButtonWrapper = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-`;
-
-/* ─── Form Titles ─── */
-export const FormTitleBlock = styled.div`
-  margin-bottom: 28px;
-  animation: ${fadeIn} 0.35s ease-out;
-`;
-
-export const FormTitle = styled.h1`
-  font-size: 26px;
-  font-weight: 700;
-  color: ${props => props.theme.colors.text};
-  margin: 0 0 6px 0;
-  line-height: 1.25;
-  letter-spacing: -0.3px;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 22px;
-  }
-`;
-
-export const FormSubtitle = styled.p`
-  font-size: 14px;
-  color: ${props => props.theme.colors.textSecondary};
-  margin: 0;
-  line-height: 1.5;
-`;
-
-/* ─── Form ─── */
-export const LoginForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-`;
-
-export const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-export const FormOptionsRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-top: 4px;
-`;
-
-export const PasswordLabel = styled.label`
-  font-size: 12px;
-  font-weight: 600;
-  color: ${props => props.theme.colors.text};
-`;
-
-export const ForgotPasswordLink = styled.a`
-  font-size: 12px;
-  font-weight: 600;
-  color: ${props => props.theme.colors.accent};
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  &:hover {
-    text-decoration: underline;
-    color: #004d73;
-  }
-`;
-
-/* ─── Footer ─── */
-export const FooterLinks = styled.div`
-  display: flex;
-  gap: 24px;
-  border-top: 1px solid ${props => props.theme.colors.neutralLight};
-  padding-top: 20px;
-  margin-top: 40px;
-  font-size: 12px;
-
-  a {
-    color: ${props => props.theme.colors.textSecondary};
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: ${props => props.theme.colors.text};
-    }
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    margin-top: 24px;
-    justify-content: center;
-  }
-`;
-
-/* ─── Right Pane (Visualization) ─── */
-export const VisualizationPane = styled.div`
-  width: 58%;
-  height: 100%;
-  background: linear-gradient(
-    145deg,
-    rgba(45, 106, 34, 0.08) 0%,
-    rgba(134, 239, 172, 0.18) 30%,
-    rgba(147, 197, 253, 0.12) 60%,
-    rgba(253, 224, 71, 0.15) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px;
-  box-sizing: border-box;
+/* ─── Brand Pane (left) ─── */
+export const BrandPane = styled.div`
   position: relative;
   overflow: hidden;
+  background: linear-gradient(155deg, #00432A 0%, #005A36 48%, #0A8A57 100%);
+  padding: 44px 46px;
+  display: flex;
+  flex-direction: column;
 
-  &::before {
-    content: '';
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(4, 110, 30, 0.06) 0%, transparent 70%);
-    top: -100px;
-    right: -100px;
-    border-radius: 50%;
-    animation: ${float} 8s ease-in-out infinite;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(253, 224, 71, 0.08) 0%, transparent 70%);
-    bottom: -80px;
-    left: -60px;
-    border-radius: 50%;
-    animation: ${float} 10s ease-in-out infinite reverse;
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.lg}) {
-    width: 52%;
-    padding: 32px;
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
+  @media (max-width: 900px) {
     display: none;
   }
 `;
 
-/* ─── Glass Card ─── */
-export const GlassCard = styled.div`
-  background-color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  padding: 40px;
-  max-width: 460px;
-  width: 100%;
-  box-sizing: border-box;
-  text-align: left;
+export const BlobGreen = styled.span`
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(52, 211, 153, 0.55), rgba(52, 211, 153, 0) 70%);
+  filter: blur(6px);
+  animation: ${kcBlob} 14s ease-in-out infinite;
+  pointer-events: none;
+`;
+
+export const BlobAmber = styled.span`
+  position: absolute;
+  bottom: -70px;
+  left: -50px;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.4), rgba(251, 191, 36, 0) 70%);
+  filter: blur(6px);
+  animation: ${kcBlob} 18s ease-in-out infinite reverse;
+  pointer-events: none;
+`;
+
+const TwinkleBase = styled.span`
+  position: absolute;
+  font-size: 16px;
+  pointer-events: none;
+  animation: ${kcTwinkle} 3s ease-in-out infinite;
+`;
+
+export const Twinkle1 = styled(TwinkleBase)`
+  top: 24%;
+  left: 16%;
+  font-size: 16px;
+  color: #FBBF24;
+`;
+
+export const Twinkle2 = styled(TwinkleBase)`
+  top: 64%;
+  right: 20%;
+  font-size: 12px;
+  color: #A7F3D0;
+  animation-duration: 3.6s;
+  animation-delay: 0.6s;
+`;
+
+export const Twinkle3 = styled(TwinkleBase)`
+  top: 14%;
+  right: 30%;
+  font-size: 10px;
+  color: #FFFFFF;
+  animation-duration: 2.8s;
+  animation-delay: 0.3s;
+`;
+
+export const BrandLogoBanner = styled.img`
+  display: block;
+  width: 300px;
+  height: auto;
+  max-width: 100%;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+`;
+
+export const HeroBlock = styled.div`
   position: relative;
-  z-index: 1;
-  animation: ${fadeIn} 0.6s ease-out 0.2s both;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 24px 64px rgba(0, 0, 0, 0.07),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  }
+  margin-top: auto;
 `;
 
-export const GlassTitle = styled.h2`
-  font-size: 22px;
-  font-weight: 700;
-  color: ${props => props.theme.colors.text};
-  margin: 0 0 4px 0;
-  letter-spacing: -0.4px;
+export const EmojiStage = styled.div`
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 26px;
 `;
 
-export const GlassSubtitle = styled.p`
-  font-size: 11px;
-  font-weight: 700;
-  color: ${props => props.theme.colors.primary};
-  margin: 0 0 28px 0;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+export const EmojiCard = styled.span`
+  position: absolute;
+  inset: 0;
+  border-radius: 38px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
 `;
 
-export const GlassItem = styled.div`
-  background-color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 16px;
-  padding: 16px 18px;
-  margin-bottom: 12px;
-  transition: all 0.25s ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.7);
-    transform: translateX(4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-  }
-`;
-
-export const GlassItemIcon = styled.span`
-  font-size: 18px;
-  margin-right: 10px;
-`;
-
-export const GlassItemTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 700;
-  color: ${props => props.theme.colors.text};
-  margin: 0 0 3px 0;
+export const EmojiMain = styled.span`
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 78px;
+  line-height: 1;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.3));
+  animation: ${kcBob} 4s ease-in-out infinite;
 `;
 
-export const GlassItemDesc = styled.p`
-  font-size: 12px;
-  color: ${props => props.theme.colors.textSecondary};
-  margin: 0;
-  line-height: 1.55;
-  padding-left: 28px;
+export const EmojiApple = styled.span`
+  position: absolute;
+  top: -14px;
+  right: -16px;
+  font-size: 40px;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.25));
+  animation: ${kcFloat2} 4.4s ease-in-out infinite 0.4s;
 `;
 
-/* ─── Loading Shimmer ─── */
-export const SubmitButtonShimmer = styled.div`
-  position: relative;
-  overflow: hidden;
+export const EmojiStar = styled.span`
+  position: absolute;
+  bottom: -10px;
+  left: -16px;
+  font-size: 30px;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.25));
+  animation: ${kcFloat2} 5s ease-in-out infinite 0.8s;
+`;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: ${shimmer} 1.5s infinite;
+export const HeroTitle = styled.div`
+  font-family: 'Inter', sans-serif;
+  font-size: 31px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+`;
+
+export const HeroDesc = styled.p`
+  font-size: 14px;
+  color: #CDEBDC;
+  line-height: 1.6;
+  margin: 12px 0 0;
+  max-width: 340px;
+`;
+
+export const FeatureChips = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+  max-width: 320px;
+`;
+
+export const FeatureChip = styled.div<{ $delay?: number }>`
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  animation: ${kcChipIn} 0.5s ease both ${(p) => p.$delay ?? 0}s;
+`;
+
+export const ChipIconBox = styled.span<{ $color?: string }>`
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.9);
+  color: ${(p) => p.$color || '#005A36'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const ChipLabel = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+`;
+
+/* ─── Form Pane (right) ─── */
+export const FormPane = styled.div`
+  padding: 48px 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  @media (max-width: 600px) {
+    padding: 32px 24px;
   }
+`;
+
+export const FormTitle = styled.div`
+  font-family: 'Inter', sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1F2937;
+`;
+
+export const FormSubtitle = styled.div`
+  font-size: 13.5px;
+  color: #9CA3AF;
+  font-weight: 500;
+  margin-top: 5px;
+`;
+
+export const LoginForm = styled.form<{ $shake?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 26px;
+  ${(p) =>
+    p.$shake &&
+    `animation: ${kcShake} 0.4s ease;`}
+`;
+
+export const FieldLabel = styled.div`
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9CA3AF;
+  margin-bottom: 8px;
+`;
+
+export const FieldLabelRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+`;
+
+export const ForgotLink = styled.a`
+  font-size: 12px;
+  font-weight: 700;
+  color: #005A36;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+`;
+
+export const InputWrap = styled.div<{ $hasError?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 50px;
+  padding: 0 15px;
+  border-radius: 13px;
+  background: #F8FBF9;
+  border: 1px solid ${(p) => (p.$hasError ? '#FCA5A5' : '#E6EEE9')};
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: #005A36;
+    box-shadow: 0 0 0 3px rgba(0, 90, 54, 0.12);
+  }
+`;
+
+export const InputIcon = styled.span`
+  flex: none;
+  display: flex;
+  width: 18px;
+  height: 18px;
+  color: #9CA3AF;
+`;
+
+export const FieldInput = styled.input`
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1F2937;
+
+  &::placeholder { color: #B3BEC9; }
+`;
+
+export const TogglePassBtn = styled.button`
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #9CA3AF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+
+  &:hover { color: #005A36; }
+`;
+
+export const ErrorBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #DC2626;
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  border-radius: 11px;
+  padding: 10px 13px;
+`;
+
+export const RememberRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 2px;
+`;
+
+export const CheckBox = styled.button<{ $checked: boolean }>`
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid ${(p) => (p.$checked ? '#005A36' : '#CBD5D1')};
+  background: ${(p) => (p.$checked ? '#005A36' : '#FFFFFF')};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: padding: 0;
+  padding: 0;
+  transition: all 0.15s ease;
+`;
+
+export const CheckTick = styled.span`
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 800;
+`;
+
+export const RememberLabel = styled.span`
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 500;
+`;
+
+export const SubmitBtn = styled.button`
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 52px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #00794A 0%, #005A36 100%);
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 12px 26px -10px rgba(0, 90, 54, 0.5);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover:not(:disabled) {
+    transform: scale(1.02);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+  }
+`;
+
+export const Spinner = styled.span`
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: ${kcSpin} 0.7s linear infinite;
+`;
+
+export const FooterNote = styled.div`
+  text-align: center;
+  font-size: 12.5px;
+  color: #9CA3AF;
+  font-weight: 500;
+  margin-top: 26px;
+
+  a {
+    color: #005A36;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+`;
+
+/* ─── Toast ─── */
+export const ToastStack = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  pointer-events: none;
+`;
+
+export const Toast = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: 13px;
+  background: #005A36;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.4);
+  animation: ${kcToastPop} 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+  max-width: 380px;
 `;
