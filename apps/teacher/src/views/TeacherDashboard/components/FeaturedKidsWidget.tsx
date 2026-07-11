@@ -1,5 +1,6 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
+import { useRouter } from '@/i18n/routing';
 
 export interface FeaturedKid {
   id: string;
@@ -178,11 +179,19 @@ const FooterBtn = styled.span`
 `;
 
 export const FeaturedKidsWidget: React.FC<FeaturedKidsProps> = ({ kids, onViewAll }) => {
+  const router = useRouter();
+  const handleOpenAssessment = () => {
+    if (onViewAll) {
+      onViewAll();
+      return;
+    }
+    router.push('/assessment');
+  };
   return (
     <Wrapper>
       <HeaderRow>
-        <Title>Bé ngoan nổi bật tuần</Title>
-        {onViewAll && <ViewMoreLink onClick={onViewAll}>Xem thêm</ViewMoreLink>}
+        <Title>Đánh giá định kỳ</Title>
+        <ViewMoreLink onClick={handleOpenAssessment}>Xem chi tiết</ViewMoreLink>
       </HeaderRow>
       <Grid>
         {kids.map(k => (

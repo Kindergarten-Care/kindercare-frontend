@@ -15,12 +15,6 @@ interface RoleContent {
 }
 
 const ROLE_CONTENT: Record<UserRole, RoleContent> = {
-  principal: {
-    title: 'Đăng nhập quyền Hiệu Trưởng',
-    subtitle: 'Vui lòng nhập thông tin tài khoản Hiệu trưởng nhà trường.',
-    inputLabel: 'Email / Số điện thoại',
-    inputPlaceholder: 'Nhập email hoặc số điện thoại...',
-  },
   teacher: {
     title: 'Đăng nhập quyền Giáo Viên',
     subtitle: 'Vui lòng nhập thông tin tài khoản Giáo viên.',
@@ -30,7 +24,6 @@ const ROLE_CONTENT: Record<UserRole, RoleContent> = {
 };
 
 const ROLE_TABS: { key: UserRole; label: string }[] = [
-  { key: 'principal', label: 'Hiệu Trưởng' },
   { key: 'teacher', label: 'Giáo Viên' },
 ];
 
@@ -54,13 +47,11 @@ const GLASS_ITEMS = [
 
 export const LoginView: React.FC = () => {
   const {
-    role,
     username,
     password,
     rememberMe,
     errors,
     isSubmitting,
-    handleRoleChange,
     handleUsernameChange,
     handlePasswordChange,
     handleRememberMeChange,
@@ -70,14 +61,12 @@ export const LoginView: React.FC = () => {
   useEffect(() => {
     const session = getSession();
     if (session) {
-      const nextUrl = session.role === 'teacher'
-        ? (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher'
-        : (process.env.NEXT_PUBLIC_PRINCIPAL_APP_URL || 'http://localhost:3002') + '/principal';
+      const nextUrl = (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher';
       window.location.href = nextUrl;
     }
   }, []);
 
-  const content = ROLE_CONTENT[role];
+  const content = ROLE_CONTENT.teacher;
 
 
   return (
@@ -93,24 +82,8 @@ export const LoginView: React.FC = () => {
             />
           </S.BrandHeader>
 
-          {/* Role Tabs */}
-          <S.TabGroup>
-            {ROLE_TABS.map(tab => (
-              <S.TabButtonWrapper key={tab.key}>
-                <Button
-                  type="button"
-                  variant={role === tab.key ? 'activeTab' : 'tab'}
-                  onClick={() => handleRoleChange(tab.key)}
-                  fullWidth
-                >
-                  {tab.label}
-                </Button>
-              </S.TabButtonWrapper>
-            ))}
-          </S.TabGroup>
-
-          {/* Titles with animation key */}
-          <S.FormTitleBlock key={role}>
+          {/* Titles */}
+          <S.FormTitleBlock>
             <S.FormTitle>{content.title}</S.FormTitle>
             <S.FormSubtitle>{content.subtitle}</S.FormSubtitle>
           </S.FormTitleBlock>

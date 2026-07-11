@@ -139,7 +139,8 @@ export function validateUpsertBody(input: unknown): {
 
       // Build payload: chứa 3 score bắt buộc + 2 score optional (nếu có) + 1 text (nếu có).
       // Field local-only (aesthetic/lifeSkill) KHÔNG được gửi.
-      const cleaned: UpsertAssessmentItem = { studentId };
+      // Cast `as UpsertAssessmentItem` ở đây — các field được gán từng bước bên dưới.
+      const cleaned = { studentId } as UpsertAssessmentItem;
       for (const k of BE_REQUIRED_SCORE_KEYS) {
         (cleaned as any)[k] = (it as any)[k];
       }

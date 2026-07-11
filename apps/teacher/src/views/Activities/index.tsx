@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivities } from './hooks';
-import { MealStatus, NapStatus, ParticipationStatus } from '@/config/types/activities';
+import { MealStatus, NapStatus, participationStatus } from '@/config/types/activities';
 import { 
   Utensils, 
   Moon, 
