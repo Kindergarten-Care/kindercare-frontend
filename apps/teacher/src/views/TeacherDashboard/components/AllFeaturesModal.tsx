@@ -5,7 +5,7 @@ import { X, Grid } from 'lucide-react';
 interface AllFeaturesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectFeature: (featureName: string) => void;
+  onSelectFeature: (featureId: string) => void;
 }
 
 const fadeIn = keyframes`
@@ -110,7 +110,7 @@ const Content = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  
+
   @media (max-width: 600px) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -156,17 +156,24 @@ const FeatureName = styled.span`
   color: #1F2937;
 `;
 
+/**
+ * Danh sách phím tắt → trang/chức năng.
+ * `id` dùng để switch ở dashboard (KHÔNG dùng tên hiển thị vì dễ vỡ khi đổi label).
+ * Xóa: 'students' (Hồ sơ bé) theo yêu cầu anh.
+ */
 const features = [
-  { id: '1', name: 'Điểm danh QR', icon: '✓', bg: '#E6F3ED', color: '#005A36' },
-  { id: '2', name: 'Danh sách lớp', icon: '👥', bg: '#EEF2FF', color: '#4338CA' },
-  { id: '3', name: 'Hồ sơ bé', icon: '👦', bg: '#FFEDD5', color: '#C2410C' },
-  { id: '4', name: 'Thực đơn & Lịch học', icon: '📅', bg: '#F3E8FF', color: '#7E22CE' },
-  { id: '5', name: 'Soạn giáo án', icon: '📝', bg: '#ECFDF5', color: '#047857' },
-  { id: '6', name: 'Y tế & Sức khỏe', icon: '💊', bg: '#FEE2E2', color: '#DC2626' },
-  { id: 'leave', name: 'Đơn xin nghỉ', icon: '📬', bg: '#FEF9C3', color: '#854D0E' },
-  { id: '7', name: 'Đánh giá hằng tháng', icon: '⭐', bg: '#FEF3C7', color: '#D97706' },
-  { id: '8', name: 'Nhật ký lớp', icon: '📸', bg: '#DBEAFE', color: '#1D4ED8' },
-  { id: '9', name: 'Hồ sơ & Cài đặt', icon: '⚙️', bg: '#F3F4F6', color: '#4B5563' },
+  { id: 'qr',            name: 'Điểm danh QR',     icon: '✓',  bg: '#E6F3ED', color: '#005A36' },
+  { id: 'attendance',    name: 'Điểm danh',        icon: '📋', bg: '#EEF2FF', color: '#4338CA' },
+  { id: 'students',      name: 'Danh sách lớp',    icon: '👥', bg: '#DBEAFE', color: '#1D4ED8' },
+  { id: 'schedule',      name: 'Thời khoá biểu',   icon: '📅', bg: '#F3E8FF', color: '#7E22CE' },
+  { id: 'lesson-plan',   name: 'Soạn giáo án',     icon: '📝', bg: '#ECFDF5', color: '#047857' },
+  { id: 'activities',    name: 'Hoạt động',        icon: '🎨', bg: '#FCE7F3', color: '#BE185D' },
+  { id: 'health',        name: 'Y tế & Sức khỏe',  icon: '💊', bg: '#FEE2E2', color: '#DC2626' },
+  { id: 'leave',         name: 'Đơn xin nghỉ',     icon: '📬', bg: '#FEF9C3', color: '#854D0E' },
+  { id: 'assessment',    name: 'Đánh giá định kỳ', icon: '📊', bg: '#FEF3C7', color: '#D97706' },
+  { id: 'newsfeed',      name: 'Nhật ký lớp',      icon: '📸', bg: '#E0E7FF', color: '#4338CA' },
+  { id: 'weekly-schedule', name: 'Lịch tuần',      icon: '🗓️', bg: '#FEF3C7', color: '#B45309' },
+  { id: 'profile',       name: 'Hồ sơ cá nhân',    icon: '👤', bg: '#F3F4F6', color: '#4B5563' },
 ];
 
 export const AllFeaturesModal: React.FC<AllFeaturesModalProps> = ({ isOpen, onClose, onSelectFeature }) => {
@@ -189,10 +196,10 @@ export const AllFeaturesModal: React.FC<AllFeaturesModalProps> = ({ isOpen, onCl
             <X size={20} strokeWidth={2} />
           </CloseBtn>
         </Header>
-        
+
         <Content>
           {features.map(f => (
-            <FeatureCard key={f.id} onClick={() => { onSelectFeature(f.name); onClose(); }}>
+            <FeatureCard key={f.id} onClick={() => { onSelectFeature(f.id); onClose(); }}>
               <IconBox $bg={f.bg} $color={f.color}>{f.icon}</IconBox>
               <FeatureName>{f.name}</FeatureName>
             </FeatureCard>

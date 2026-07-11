@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
 import { HeroBannerWidget } from './components/HeroBannerWidget';
 import { QuickCategoriesWidget } from './components/QuickCategoriesWidget';
-import { FeaturedKidsWidget, FeaturedKid } from './components/FeaturedKidsWidget';
-import { AllKidsModal } from './components/AllKidsModal';
-import { TopKidWidget } from './components/TopKidWidget';
+import { TodayKidsWidget, TodayKid } from './components/TodayKidsWidget';
+import { KidQuickActionModal } from './components/KidQuickActionModal';
+import { PeriodicAssessmentWidget } from './components/GoodBehaviorWidget';
 import { AttendanceProgressWidget } from './components/AttendanceProgressWidget';
 import { TaskListWidget, TaskItem } from './components/TaskListWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
@@ -14,7 +14,6 @@ import { QrScannerModal } from '@/components/QrScannerModal';
 
 import { LeaveRequestModal } from './components/LeaveRequestModal';
 import { MedicalNoteModal } from './components/MedicalNoteModal';
-import { GoodKidModal } from './components/GoodKidModal';
 import { TimelineModal } from './components/TimelineModal';
 import { AllFeaturesModal } from './components/AllFeaturesModal';
 import { RequestListModal } from './components/RequestListModal';
@@ -30,16 +29,16 @@ const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidg
 import { AttendanceService } from '@/services/attendance';
 import { LeaveRequestService } from '@/services/leave-requests';
 import { Student } from '@/config/types/attendance';
+import { fixImageUrl } from '@/utils/imageUrl';
 
 import { 
-  useDashboardStats, 
-  useNotifications, 
+  useDashboardStats,
+  useNotifications,
   useLeaveRequests,
   useUpdateLeaveRequest,
   useMonthlyGoodKids,
   useMedicalRequests,
   useUpdateMedicalRequest,
-  useAwardWeeklyRewards
 } from '@/hooks/useTeacherQueries';
 
 // Helper to calculate current week number
@@ -75,29 +74,28 @@ export const TeacherDashboardView: React.FC = () => {
   // Modal States
   const [selectedLeave, setSelectedLeave] = useState<any>(null);
   const [selectedMedical, setSelectedMedical] = useState<any>(null);
-  const [selectedGoodKid, setSelectedGoodKid] = useState<any>(null);
+  const [selectedQuickKid, setSelectedQuickKid] = useState<TodayKid | null>(null);
   const [isTimelineModalOpen, setTimelineModalOpen] = useState(false);
   const [allFeaturesOpen, setAllFeaturesOpen] = useState(false);
-  const [isAllKidsModalOpen, setIsAllKidsModalOpen] = useState(false);
   const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'all' | null>(null);
 
-
-
   // API Hooks integration
-  // Fetch ALL requests (not just Pending) to show processed ones with faded style
+  // Fetch ALL requests (not just pending) to show processed ones with faded style
   const { data: allLeaveRequests = [] } = useLeaveRequests();
   const { data: pendingLeaves = [] } = useLeaveRequests('Pending');
   const updateLeaveReq = useUpdateLeaveRequest();
   const { data: rawMedicalReqs = [] } = useMedicalRequests(activeClassId || undefined);
   const updateMedicalReq = useUpdateMedicalRequest();
-  const awardRewards = useAwardWeeklyRewards();
 
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const currentWeek = getWeekNumber(now);
+  const termPeriod = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
+  // Hook vẫn giữ để tương thích ngược với các modal khác; không dùng trong dashboard chính.
   const { data: rawMonthlyKids = [] } = useMonthlyGoodKids(currentYear, currentMonth);
+  void rawMonthlyKids;
 
   const qrScannerRef = useRef<any>(null);
 
@@ -266,43 +264,9 @@ export const TeacherDashboardView: React.FC = () => {
     { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
     { id: '2', label: 'Hoạt động', icon: '🧩', iconBg: '#E0E7FF', iconColor: '#4338CA', onClick: () => setTimelineModalOpen(true) },
     { id: '3', label: 'Y tế', icon: '💊', iconBg: '#FCE7F3', iconColor: '#BE185D', onClick: () => setRequestListType('medical') },
-    { id: '4', label: 'Đánh giá hằng tháng', icon: '⭐', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => setIsAllKidsModalOpen(true) },
+    { id: '4', label: 'Đánh giá định kỳ', icon: '📊', iconBg: '#FEF3C7', iconColor: '#D97706', onClick: () => router.push('/assessment') },
     { id: '5', label: 'Đơn phép', icon: '📝', iconBg: '#F3E8FF', iconColor: '#7E22CE', onClick: () => setRequestListType('leave') },
   ];
-
-  const sourceKids = rawMonthlyKids.length > 0 ? rawMonthlyKids : studentsList.map(s => ({
-    studentId: s.id, 
-    studentName: s.name,
-    avatarUrl: s.avatar,
-    attendancePoints: 0,
-    eatSleepPoints: 0,
-    violationPoints: 0
-  }));
-
-  // Map Real Monthly Rewards API or Fallback to FeaturedKids
-  const allFeaturedKids: FeaturedKid[] = sourceKids.map((r: any, idx: number) => {
-    const colors = ['#FEF3C7', '#E0E7FF', '#FCE7F3', '#E6F3ED'];
-    const names = r.studentName ? r.studentName.split(' ') : ['Bé'];
-    const initial = names[names.length - 1].charAt(0).toUpperCase();
-    return {
-      id: String(r.studentId || idx),
-      name: r.studentName || 'Bé ngoan',
-      initial,
-      color: colors[idx % colors.length],
-      avatarUrl: r.avatarUrl,
-      attendancePoints: r.attendancePoints || 0,
-      eatSleepPoints: r.eatSleepPoints || 0,
-      violationPoints: r.violationPoints || 0,
-      justAwarded: false 
-    };
-  });
-  
-  // Only highlight top 1 if they actually have points
-  if (allFeaturedKids.length > 0 && (allFeaturedKids[0].attendancePoints > 0 || allFeaturedKids[0].eatSleepPoints > 0 || allFeaturedKids[0].violationPoints !== 0)) {
-    allFeaturedKids[0].justAwarded = true;
-  }
-  
-  const featuredKids = allFeaturedKids.slice(0, 4);
 
   // Map Real Leave Requests to TaskList - show ALL requests, not just pending
   const leaveTasks: TaskItem[] = allLeaveRequests.map((leave: any) => {
@@ -398,19 +362,30 @@ export const TeacherDashboardView: React.FC = () => {
     return a.isDone ? 1 : -1;
   });
 
-  // Define Top Kid data
-  const topKid = featuredKids[0] || { name: 'Chưa có', initial: '?', avatarUrl: '', attendancePoints: 0, eatSleepPoints: 0, violationPoints: 0 };
+  /**
+   * Map studentsList (từ getDailyAttendance) → TodayKid cho widget "Tình trạng hôm nay".
+   * Giáo viên click vào thẻ → mở modal KidQuickActionModal để sửa nhanh điểm danh.
+   */
+  const todayDate = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
 
-  const handleOpenGoodKid = (kid: any) => {
-    setSelectedGoodKid({
-      id: kid.id,
-      studentName: kid.name,
-      avatarUrl: kid.avatarUrl,
-      attendancePoints: kid.attendancePoints || 0,
-      eatSleepPoints: kid.eatSleepPoints || 0,
-      violationPoints: kid.violationPoints || 0
-    });
-  };
+  const todayKids: TodayKid[] = studentsList.map(s => {
+    const parts = s.name?.split(' ') || ['Bé'];
+    const initial = parts[parts.length - 1].charAt(0).toUpperCase();
+    return {
+      id: String(s.id),
+      name: s.name || 'Học sinh',
+      initial,
+      avatarUrl: fixImageUrl(s.avatar),
+      attendanceStatus: (s.attendanceStatus as any) || 'NOT_MARKED',
+      arrivalTime: s.arrivalTime,
+      teacherNote: s.teacherNote,
+    };
+  });
+
+  const openQuickActionFor = (kid: TodayKid) => setSelectedQuickKid(kid);
 
   return (
     <S.DashboardContainer>
@@ -444,12 +419,28 @@ export const TeacherDashboardView: React.FC = () => {
             onViewAll={() => setAllFeaturesOpen(true)}
           />
 
-          <FeaturedKidsWidget kids={featuredKids} onViewAll={() => setIsAllKidsModalOpen(true)} />
+          <TodayKidsWidget
+            kids={todayKids}
+            date={todayDate}
+            onKidClick={openQuickActionFor}
+            onViewAll={() => router.push('/attendance')}
+          />
 
-          <AttendanceProgressWidget 
+          <AttendanceProgressWidget
             presentCount={presentCount}
             totalCount={studentsList.length || 42}
             onScanMore={() => setScannerOpen(true)}
+          />
+
+          <PeriodicAssessmentWidget
+            classId={activeClassId}
+            termPeriod={termPeriod}
+            studentNames={Object.fromEntries(
+              studentsList.map((s: any) => [String(s.id), String(s.name ?? '')]).filter(([, n]) => n)
+            ) as Record<string, string>}
+            studentAvatars={Object.fromEntries(
+              studentsList.map((s: any) => [String(s.id), String(fixImageUrl(s.avatar) ?? '')]).filter(([, v]) => v)
+            ) as Record<string, string>}
           />
 
           <div style={{ marginTop: '8px' }}>
@@ -461,18 +452,6 @@ export const TeacherDashboardView: React.FC = () => {
         <S.RightColumn>
           {/* Real API-driven Tasks List */}
           <TaskListWidget tasks={tasks.slice(0, 3)} onViewAll={() => setRequestListType('all')} />
-          
-          <div onClick={() => handleOpenGoodKid(topKid)} style={{ cursor: 'pointer' }}>
-            <TopKidWidget 
-              name={topKid.name} 
-              initial={topKid.initial} 
-              avatarUrl={topKid.avatarUrl}
-              attendancePoints={topKid.attendancePoints}
-              eatSleepPoints={topKid.eatSleepPoints}
-              violationPoints={topKid.violationPoints}
-              onView={() => handleOpenGoodKid(topKid)}
-            />
-          </div>
         </S.RightColumn>
       </S.BodyLayout>
 
@@ -521,39 +500,68 @@ export const TeacherDashboardView: React.FC = () => {
         onMarkDone={(id) => { addToast('✅ Đã cho uống thuốc thành công!'); setSelectedMedical(null); }}
       />
 
-      <GoodKidModal 
-        isOpen={!!selectedGoodKid}
-        data={selectedGoodKid}
-        onClose={() => setSelectedGoodKid(null)}
-        onAward={(id, note) => { 
-          if (!activeClassId) return;
-          awardRewards.mutate({
-            classId: activeClassId,
-            rewards: [{ studentId: Number(id), badge: 'star', reason: note }]
-          }, {
-            onSuccess: () => {
-              addToast(`🎁 Đã cấp phiếu bé ngoan cho bé thành công!`); 
-              setSelectedGoodKid(null);
-            },
-            onError: () => addToast('❌ Có lỗi xảy ra khi cấp phiếu bé ngoan')
-          });
+      <KidQuickActionModal
+        isOpen={!!selectedQuickKid}
+        kid={selectedQuickKid ? {
+          id: selectedQuickKid.id,
+          name: selectedQuickKid.name,
+          avatarUrl: selectedQuickKid.avatarUrl,
+          attendanceStatus: selectedQuickKid.attendanceStatus,
+          arrivalTime: selectedQuickKid.arrivalTime,
+          teacherNote: selectedQuickKid.teacherNote,
+        } : null}
+        classId={activeClassId}
+        date={todayDate}
+        onClose={() => setSelectedQuickKid(null)}
+        onSaved={() => {
+          addToast('✅ Đã cập nhật điểm danh!');
+          loadDashboardData();
         }}
       />
 
-      <AllFeaturesModal 
+      <AllFeaturesModal
         isOpen={allFeaturesOpen}
         onClose={() => setAllFeaturesOpen(false)}
-        onSelectFeature={(feature) => {
-          if (feature === 'Nhật ký lớp') {
-            setNewsfeedModalOpen(true);
-          } else if (feature === 'Đơn xin nghỉ') {
-            setRequestListType('leave');
-          } else if (feature === 'Y tế & Sức khỏe') {
-            setRequestListType('medical');
-          } else if (feature === 'Soạn giáo án') {
-            router.push('/lesson-plan');
-          } else {
-            addToast(`Đang mở: ${feature}`);
+        onSelectFeature={(featureId) => {
+          switch (featureId) {
+            case 'qr':
+              setScannerOpen(true);
+              break;
+            case 'attendance':
+              router.push('/attendance');
+              break;
+            case 'students':
+              router.push('/students');
+              break;
+            case 'schedule':
+              router.push('/schedule');
+              break;
+            case 'lesson-plan':
+              router.push('/lesson-plan');
+              break;
+            case 'activities':
+              setTimelineModalOpen(true);
+              break;
+            case 'health':
+              setRequestListType('medical');
+              break;
+            case 'leave':
+              setRequestListType('leave');
+              break;
+            case 'assessment':
+              router.push('/assessment');
+              break;
+            case 'newsfeed':
+              setNewsfeedModalOpen(true);
+              break;
+            case 'weekly-schedule':
+              router.push('/weekly-schedule');
+              break;
+            case 'profile':
+              router.push('/profile');
+              break;
+            default:
+              addToast(`Đang mở: ${featureId}`);
           }
         }}
       />
@@ -573,13 +581,7 @@ export const TeacherDashboardView: React.FC = () => {
         }))}
       />
       
-      <AllKidsModal 
-        isOpen={isAllKidsModalOpen}
-        onClose={() => setIsAllKidsModalOpen(false)}
-        kids={allFeaturedKids}
-      />
-
-      <TimelineModal 
+      <TimelineModal
         isOpen={isTimelineModalOpen}
         onClose={() => setTimelineModalOpen(false)}
         classId={activeClassId}
