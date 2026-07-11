@@ -37,9 +37,14 @@ export function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
 export class LeaveRequestService {
   /**
    * Fetch all leave requests for the logged-in teacher.
+   * @param status - Optional filter: 'Pending', 'Approved', 'Rejected'
    */
-  public static async getAllLeaveRequests(): Promise<LeaveRequest[]> {
-    const res = await apiClient.get('/teacher/leave-requests');
+  public static async getAllLeaveRequests(status?: string): Promise<LeaveRequest[]> {
+    const params: Record<string, string> = {};
+    if (status) {
+      params.status = status;
+    }
+    const res = await apiClient.get('/teacher/leave-requests', { params });
     const list = res.data?.data || [];
     return list.map(mapApiLeaveRequestToDomain);
   }
@@ -56,11 +61,14 @@ export class LeaveRequestService {
 
   /**
    * Process (approve/reject) a student's leave request.
+   * @param status - Either 'Approved'/'Rejected' or 'APPROVED'/'REJECTED'
    */
-  public static async processLeaveRequest(requestId: string, status: LeaveRequestStatus): Promise<boolean> {
+  public static async processLeaveRequest(requestId: string, status: string): Promise<boolean> {
+    // Normalize status to backend format (Backend expects 'Approved' or 'Rejected')
     let dbStatus = 'Pending';
-    if (status === 'APPROVED') dbStatus = 'Approved';
-    if (status === 'REJECTED') dbStatus = 'Rejected';
+    const upperStatus = status.toUpperCase();
+    if (upperStatus === 'APPROVED' || upperStatus === 'APPROVE') dbStatus = 'Approved';
+    if (upperStatus === 'REJECTED' || upperStatus === 'REJECT') dbStatus = 'Rejected';
 
     await apiClient.put(`/teacher/leave-requests/${requestId}/status`, {
       status: dbStatus

@@ -13,6 +13,7 @@ interface LeaveRequestDetails {
   parentNotes?: string;
   attachmentUrl?: string;
   avatarUrl?: string;
+  status?: string; // PENDING, APPROVED, Approved, REJECTED, Rejected
 }
 
 interface LeaveRequestModalProps {
@@ -224,10 +225,58 @@ const formatDate = (val: string | number) => {
   return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 };
 
+const StatusBadge = styled.div<{ $status: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  background: ${props => {
+    const s = props.$status.toUpperCase();
+    if (s === 'APPROVED' || s === 'APPROVE') return '#D1FAE5';
+    if (s === 'REJECTED' || s === 'REJECT') return '#FEE2E2';
+    return '#FEF3C7';
+  }};
+  color: ${props => {
+    const s = props.$status.toUpperCase();
+    if (s === 'APPROVED' || s === 'APPROVE') return '#059669';
+    if (s === 'REJECTED' || s === 'REJECT') return '#DC2626';
+    return '#B45309';
+  }};
+`;
+
+const CloseButton = styled.button`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  color: #374151;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.15);
+  }
+`;
+
 export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, data, onClose, onApprove, onReject }) => {
   if (!isOpen || !data) return null;
 
   const initial = data.studentName.split(' ').pop()?.charAt(0).toUpperCase() || '?';
+  const status = data.status || 'PENDING';
+  const isProcessed = status !== 'PENDING';
+  const statusLabel = status === 'APPROVED' || status === 'Approved' ? 'Đã duyệt' :
+                      status === 'REJECTED' || status === 'Rejected' ? 'Đã từ chối' : 'Chờ duyệt';
 
   return (
     <Overlay onClick={onClose}>
@@ -253,6 +302,20 @@ export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, da
               </StClass>
             </InfoCol>
           </StudentInfoCard>
+
+          {/* Status Badge - Hiển thị trạng thái */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <StatusBadge $status={status}>
+              {status === 'APPROVED' || status === 'Approved' ? (
+                <CheckCircle size={16} />
+              ) : status === 'REJECTED' || status === 'Rejected' ? (
+                <XCircle size={16} />
+              ) : (
+                <FileText size={16} />
+              )}
+              {statusLabel}
+            </StatusBadge>
+          </div>
 
           <FieldRow>
             <Label><Calendar size={15} /> Thời gian nghỉ</Label>
@@ -281,16 +344,25 @@ export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, da
           )}
         </Content>
 
-        <Footer>
-          <ActionBtn $type="reject" onClick={() => { onReject(data.id); onClose(); }}>
-            <XCircle size={18} />
-            Từ chối
-          </ActionBtn>
-          <ActionBtn $type="approve" onClick={() => { onApprove(data.id); onClose(); }}>
-            <CheckCircle size={18} />
-            Duyệt đơn
-          </ActionBtn>
-        </Footer>
+        {isProcessed ? (
+          <Footer>
+            <CloseButton onClick={onClose}>
+              <X size={18} />
+              Đóng
+            </CloseButton>
+          </Footer>
+        ) : (
+          <Footer>
+            <ActionBtn $type="reject" onClick={() => { onReject(data.id); onClose(); }}>
+              <XCircle size={18} />
+              Từ chối
+            </ActionBtn>
+            <ActionBtn $type="approve" onClick={() => { onApprove(data.id); onClose(); }}>
+              <CheckCircle size={18} />
+              Duyệt đơn
+            </ActionBtn>
+          </Footer>
+        )}
       </ModalBox>
     </Overlay>
   );

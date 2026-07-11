@@ -34,7 +34,8 @@ interface LeaveApprovalWidgetProps {
 }
 
 export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onAction, onRefresh }) => {
-  const { data, isLoading } = useLeaveRequests('Pending');
+  // Fetch ALL requests (not just Pending) to show processed ones with faded style
+  const { data, isLoading } = useLeaveRequests();
   const updateLeaveRequest = useUpdateLeaveRequest();
 
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
@@ -44,7 +45,13 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
 
   useEffect(() => {
     if (data) {
-      setRequests(data as any);
+      // Mark requests that are already processed (from API response)
+      const processedData = data.map(r => ({
+        ...r,
+        isProcessed: r.status !== 'PENDING',
+        processedStatus: r.status
+      })) as any;
+      setRequests(processedData);
     }
   }, [data]);
 
@@ -65,13 +72,13 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
   };
 
   const handleAction = async (id: string, name: string, approve: boolean) => {
-    // Set removing flag locally to trigger transition
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, removing: true } as any : r));
+    // Mark as processed locally (fade out effect, don't remove from list)
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, isProcessed: true, processedStatus: approve ? 'APPROVED' : 'REJECTED' } as any : r));
 
     try {
       const status = approve ? 'Approved' : 'Rejected';
       await updateLeaveRequest.mutateAsync({ requestId: Number(id), status });
-      
+
       // Update attendance status in database to sync
       const targetRequest = requests.find(r => r.id === id);
       if (targetRequest) {
@@ -81,7 +88,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
         const day = String(today.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
         const newDomainStatus = approve ? 'PERMISSION_ABSENCE' : 'UNEXCUSED_ABSENCE';
-        
+
         await AttendanceService.updateAttendance(
           targetRequest.classId || 'MN1',
           dateStr,
@@ -94,21 +101,19 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
         );
       }
 
-      setTimeout(() => {
-        setRequests(prev => prev.filter(r => r.id !== id));
-        onAction(
-          approve 
-            ? `Đã duyệt đơn nghỉ học của ${name} thành công!` 
-            : `Đã từ chối đơn nghỉ học của ${name}.`
-        );
-        if (onRefresh) {
-          onRefresh();
-        }
-      }, 320);
+      onAction(
+        approve
+          ? `Đã duyệt đơn nghỉ học của ${name} thành công!`
+          : `Đã từ chối đơn nghỉ học của ${name}.`
+      );
+      if (onRefresh) {
+        onRefresh();
+      }
     } catch (e) {
       console.warn('Failed to process leave request:', e);
+      // Revert the processed status on failure
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, isProcessed: false, processedStatus: undefined } as any : r));
       onAction('Gặp lỗi khi xử lý đơn nghỉ học.');
-      if (data) setRequests(data as any); // Revert on failure
     }
   };
 
@@ -149,6 +154,8 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     );
   }
 
+  const pendingCount = requests.filter(r => !(r as any).isProcessed).length;
+
   return (
     <>
       <S.WidgetContainer>
@@ -160,18 +167,22 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
             </svg>
           </S.HeaderIconWrapper>
           <S.WidgetTitle>Đơn chờ duyệt</S.WidgetTitle>
-          <S.CounterBadge>{requests.length}</S.CounterBadge>
+          <S.CounterBadge>{pendingCount}</S.CounterBadge>
         </S.HeaderRow>
 
         <S.RequestList>
-          {requests.length === 0 ? (
+          {pendingCount === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', flex: 1, padding: '30px 10px', textAlign: 'center', color: '#9CA3AF' }}>
               <span style={{ fontSize: '36px' }}>✅</span>
-              <span style={{ fontSize: '13px', fontWeight: 600 }}>Đã xử lý hết đơn!</span>
+              <span style={{ fontSize: '13px', fontWeight: 600 }}>Không có đơn chờ duyệt!</span>
             </div>
           ) : (
-            requests.map(r => (
-              <S.RequestRow key={r.id} $removing={(r as any).removing}>
+            requests.map(r => {
+              const isProcessed = (r as any).isProcessed;
+              const processedStatus = (r as any).processedStatus || r.status;
+              const isReallyProcessed = isProcessed || (r.status !== 'PENDING');
+              return (
+              <S.RequestRow key={r.id} $removing={false} style={isReallyProcessed ? { opacity: 0.5, filter: 'grayscale(60%)' } : undefined}>
                 <S.StudentRow style={{ cursor: 'pointer' }} onClick={() => handleOpenLeaveRequest(r)}>
                   <S.AvatarCircle $background={getGradColor(r.studentName)}>
                     {getInitial(r.studentName)}
@@ -179,24 +190,45 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
                   <S.InfoCol>
                     <S.ChildName>{r.studentName}</S.ChildName>
                     <S.RequestDetails>{r.reason} · {formatDate(r.fromDate)} - {formatDate(r.toDate)}</S.RequestDetails>
+                    {isReallyProcessed && (
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        color: processedStatus === 'APPROVED' || processedStatus === 'Approved' ? '#10B981' : '#EF4444',
+                        background: processedStatus === 'APPROVED' || processedStatus === 'Approved' ? '#D1FAE5' : '#FEE2E2',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        marginTop: '2px',
+                        display: 'inline-block'
+                      }}>
+                        {processedStatus === 'APPROVED' || processedStatus === 'Approved' ? 'Đã duyệt' : 'Đã từ chối'}
+                      </span>
+                    )}
                   </S.InfoCol>
                 </S.StudentRow>
                 <S.ActionButtons>
-                  <S.ApproveButton onClick={() => handleAction(r.id, r.studentName, true)}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Duyệt
-                  </S.ApproveButton>
-                  <S.RejectButton onClick={() => handleAction(r.id, r.studentName, false)}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </S.RejectButton>
+                  {isReallyProcessed ? (
+                    <span style={{ fontSize: '12px', color: '#9CA3AF', padding: '6px 12px' }}>Đã xử lý</span>
+                  ) : (
+                    <>
+                      <S.ApproveButton onClick={() => handleAction(r.id, r.studentName, true)}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Duyệt
+                      </S.ApproveButton>
+                      <S.RejectButton onClick={() => handleAction(r.id, r.studentName, false)}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </S.RejectButton>
+                    </>
+                  )}
                 </S.ActionButtons>
               </S.RequestRow>
-            ))
+              );
+            })
           )}
         </S.RequestList>
       </S.WidgetContainer>
@@ -291,8 +323,11 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
             )}
             
             <S.ModalActionRow>
-              {((leaveReqDetail && leaveReqDetail.status === 'PENDING') ||
-                 (!leaveReqDetail && selectedLeaveRequest.status === 'PENDING')) ? (
+              {leaveReqDetail && leaveReqDetail.status !== 'PENDING' ? (
+                <S.ModalCloseBtn onClick={() => setSelectedLeaveRequest(null)}>Đóng</S.ModalCloseBtn>
+              ) : !leaveReqDetail && selectedLeaveRequest.status === 'APPROVED' || selectedLeaveRequest.status === 'REJECTED' ? (
+                <S.ModalCloseBtn onClick={() => setSelectedLeaveRequest(null)}>Đóng</S.ModalCloseBtn>
+              ) : (selectedLeaveRequest.status === 'PENDING' && !leaveReqDetail) || (leaveReqDetail && leaveReqDetail.status === 'PENDING') ? (
                 <>
                   <S.ModalRejectBtn onClick={() => { setSelectedLeaveRequest(null); handleAction(selectedLeaveRequest.id, selectedLeaveRequest.studentName, false); }}>Từ chối</S.ModalRejectBtn>
                   <S.ModalApproveBtn onClick={() => { setSelectedLeaveRequest(null); handleAction(selectedLeaveRequest.id, selectedLeaveRequest.studentName, true); }}>Xác nhận & Duyệt</S.ModalApproveBtn>

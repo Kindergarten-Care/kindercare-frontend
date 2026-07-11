@@ -3,10 +3,10 @@ import { LeaveRequestService } from '../../services/leave-requests';
 import { MedicalRequestService, MedicalRequest } from '../../services/medical-requests';
 import { LeaveRequest, LeaveRequestStatus } from '@/config/types/attendance';
 
-export const useLeaveRequests = () => {
+export const useLeaveRequests = (status?: string) => {
   return useQuery<LeaveRequest[]>({
-    queryKey: ['leaveRequests'],
-    queryFn: () => LeaveRequestService.getAllLeaveRequests(),
+    queryKey: ['leaveRequests', status],
+    queryFn: () => LeaveRequestService.getAllLeaveRequests(status),
   });
 };
 
