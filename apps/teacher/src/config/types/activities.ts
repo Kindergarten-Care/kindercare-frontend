@@ -1,6 +1,6 @@
 export type MealStatus = 'ALL' | 'HALF' | 'NONE'; // Ăn hết, Ăn 1/2, Không ăn
 export type NapStatus = 'GOOD' | 'POOR' | 'NONE'; // Ngủ tốt, Ngủ ít, Không ngủ
-export type ParticipationStatus = 'Hòa đồng' | 'Thụ động' | 'Năng động' | 'Không tham gia' | 'Bình thường' | 'ACTIVE' | 'NORMAL' | 'TIRED'; // New dropdown options + old ones
+export type participationStatus = 'Hòa đồng' | 'Thụ động' | 'Năng động' | 'Không tham gia' | 'Bình thường' | 'ACTIVE' | 'NORMAL' | 'TIRED'; // New dropdown options + old ones
 
 export interface StudentMealRecord {
   studentId: string;
@@ -18,7 +18,7 @@ export interface StudentActivityRecord {
   studentName: string;
   studentAvatar?: string;
   nap: NapStatus;
-  participation: ParticipationStatus;
+  participation: participationStatus;
   activityStatus?: string; // Tích hợp cột mới
   note?: string;
   photoUrl?: string;
@@ -28,6 +28,34 @@ export interface MenuOfTheDay {
   breakfastMenu: string;
   lunchMenu: string;
   afternoonSnackMenu: string;
+}
+
+// Real menu types from database
+export interface MenuDetail {
+  menuDetailId?: number;
+  menuId?: number;
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  mealType: 'Breakfast' | 'Lunch' | 'Snack';
+  dishName: string;
+  calories?: number;
+  nutritionalDetails?: string;
+}
+
+export interface ClassMenu {
+  menuId: number;
+  classId: number;
+  weekNumber: number;
+  year: number;
+  menuName?: string;
+  details: MenuDetail[];
+}
+
+// Extended MenuOfTheDay with detailed dishes
+export interface DetailedMenuOfTheDay extends MenuOfTheDay {
+  breakfastDishes?: MenuDetail[];
+  lunchDishes?: MenuDetail[];
+  snackDishes?: MenuDetail[];
+  menuName?: string;
 }
 
 export interface ScheduleItem {
@@ -53,4 +81,27 @@ export interface WeeklyScheduleResponse {
   monthTheme: string;
   weekTheme: string;
   details: WeeklyScheduleDetail[];
+}
+
+export type DayOfWeek =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export interface WeeklyMenuDay {
+  dayOfWeek: DayOfWeek;
+  breakfast: MenuDetail[];
+  lunch: MenuDetail[];
+  snack: MenuDetail[];
+}
+
+export interface WeeklyMenuResponse {
+  menuName?: string;
+  weekNumber?: number;
+  year?: number;
+  days: WeeklyMenuDay[];
 }

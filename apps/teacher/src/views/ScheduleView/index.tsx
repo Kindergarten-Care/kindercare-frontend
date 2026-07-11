@@ -88,7 +88,13 @@ export const ScheduleView: React.FC = () => {
     setEditedMenu,
     handleSaveMenu,
     currentDate,
-    setCurrentDate
+    setCurrentDate,
+    weeklyMenu,
+    classId,
+    className,
+    availableClasses,
+    classOptionsLoaded,
+    handleSelectClass,
   } = useActivities();
 
   const [selectedActId, setSelectedActId] = useState<string | null>(null);
@@ -252,7 +258,39 @@ export const ScheduleView: React.FC = () => {
         <S.HeroBgOverlay />
         <S.HeroContent>
           <S.HeroTextContainer>
-            <S.HeroSubtitle>Lớp Mầm 1</S.HeroSubtitle>
+            <S.HeroSubtitle>
+              {classOptionsLoaded && availableClasses.length > 1 ? (
+                <select
+                  aria-label="Chọn lớp"
+                  value={classId ?? ''}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    const next = availableClasses.find(c => String(c.classId) === nextId);
+                    handleSelectClass(nextId, next?.className);
+                  }}
+                  style={{
+                    background: 'rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.35)',
+                    borderRadius: 999,
+                    padding: '6px 14px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  {availableClasses.map(c => (
+                    <option key={c.classId} value={String(c.classId)} style={{ color: '#111' }}>
+                      Lớp {c.className}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                `Lớp ${className ?? 'Chồi 1'}`
+              )}
+            </S.HeroSubtitle>
             <S.DateNavigator>
               <S.NavBtn onClick={() => changeDate(-1)} title="Ngày hôm trước">
                 <ChevronLeft size={18} />
@@ -291,11 +329,17 @@ export const ScheduleView: React.FC = () => {
         <S.MenuHeader>
           <S.MenuIconBox><Utensils size={22} /></S.MenuIconBox>
           <S.MenuHeaderText>
-            <div>Thực đơn hôm nay</div>
-            <div>Bếp ăn lớp Mầm 1 · đã duyệt dinh dưỡng</div>
+            <div>{weeklyMenu ? 'Thực đơn cả tuần' : 'Thực đơn hôm nay'}</div>
+            <div>
+              {weeklyMenu?.menuName
+                ? weeklyMenu.menuName
+                : className
+                  ? `Bếp ăn lớp ${className} · đã duyệt dinh dưỡng`
+                  : 'Bếp ăn lớp · đã duyệt dinh dưỡng'}
+            </div>
           </S.MenuHeaderText>
           <S.MenuTag style={{ marginRight: 'auto' }}>🥗 Cân bằng 4 nhóm chất</S.MenuTag>
-          
+
           {!isMenuEditing && (
             <S.EditMenuBtn onClick={() => { setEditedMenu(menu); setIsMenuEditing(true); }}>
               {(!menu.breakfastMenu && !menu.lunchMenu && !menu.afternoonSnackMenu) ? (
@@ -306,36 +350,157 @@ export const ScheduleView: React.FC = () => {
             </S.EditMenuBtn>
           )}
         </S.MenuHeader>
-        <S.MenuGrid>
-          {[
-            { key: 'breakfastMenu', meal: 'Bữa sáng', time: '08:00', icon: '🥣', bg: '#FEF3C7', color: '#D97706' },
-            { key: 'lunchMenu', meal: 'Bữa trưa', time: '11:00', icon: '🍱', bg: '#E6F3ED', color: '#005A36' },
-            { key: 'afternoonSnackMenu', meal: 'Bữa xế', time: '14:30', icon: '🍮', bg: '#E3EDFD', color: '#2563EB' }
-          ].map(m => (
-            <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
-              <S.MenuCardHeader>
-                <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
-                <S.MenuCardTitle $timeColor={m.color}>
-                  <div>{m.meal}</div>
-                  <div>{m.time}</div>
-                </S.MenuCardTitle>
-              </S.MenuCardHeader>
-              <div>
-                {!isMenuEditing ? (
-                  <div style={{ fontSize: 13, fontWeight: 500, color: '#374151', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                    {menu[m.key as keyof typeof menu] || '(Chưa có thực đơn)'}
+
+        {/* Weekly menu overview - shows all 7 days in a compact grid */}
+        {weeklyMenu && weeklyMenu.days && weeklyMenu.days.some(d => d.breakfast.length + d.lunch.length + d.snack.length > 0) && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            gap: '10px',
+            marginBottom: '16px'
+          }}>
+            {weeklyMenu.days.map((d) => {
+              const breakfastNames = d.breakfast.map(x => x.dishName).join(', ');
+              const lunchNames = d.lunch.map(x => x.dishName).join(', ');
+              const snackNames = d.snack.map(x => x.dishName).join(', ');
+              const totalDishes = d.breakfast.length + d.lunch.length + d.snack.length;
+              const dayShort = d.dayOfWeek === 'Monday' ? 'T2'
+                : d.dayOfWeek === 'Tuesday' ? 'T3'
+                : d.dayOfWeek === 'Wednesday' ? 'T4'
+                : d.dayOfWeek === 'Thursday' ? 'T5'
+                : d.dayOfWeek === 'Friday' ? 'T6'
+                : d.dayOfWeek === 'Saturday' ? 'T7' : 'CN';
+              const today = new Date();
+              const todayDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today.getDay()];
+              const isToday = d.dayOfWeek === todayDayName;
+              return (
+                <div key={d.dayOfWeek} style={{
+                  border: isToday ? '2px solid #005A36' : '1px solid #E6EEE9',
+                  borderRadius: '12px',
+                  padding: '10px',
+                  background: isToday ? '#E6F3ED' : '#F9FAFB',
+                  fontSize: '11.5px'
+                }}>
+                  <div style={{
+                    fontWeight: 800,
+                    color: isToday ? '#005A36' : '#1F2937',
+                    marginBottom: '6px',
+                    fontSize: '12.5px'
+                  }}>
+                    {dayShort} {isToday && '· hôm nay'}
                   </div>
-                ) : (
+                  {totalDishes === 0 ? (
+                    <div style={{ color: '#9CA3AF', fontStyle: 'italic' }}>—</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#374151', lineHeight: 1.35 }}>
+                      {breakfastNames && (
+                        <div><span style={{ color: '#D97706', fontWeight: 700 }}>🥣 </span>{breakfastNames}</div>
+                      )}
+                      {lunchNames && (
+                        <div><span style={{ color: '#005A36', fontWeight: 700 }}>🍚 </span>{lunchNames}</div>
+                      )}
+                      {snackNames && (
+                        <div><span style={{ color: '#2563EB', fontWeight: 700 }}>🍮 </span>{snackNames}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Display real menu with dishes (today's focus, fall back to current date) */}
+        {!isMenuEditing ? (
+          <S.MenuGrid>
+            {[
+              { 
+                key: 'breakfastMenu', 
+                meal: 'Bữa sáng', 
+                time: '08:00', 
+                icon: '🥣', 
+                bg: '#FEF3C7', 
+                color: '#D97706',
+                dishes: menu.breakfastMenu ? menu.breakfastMenu.split('\n') : []
+              },
+              { 
+                key: 'lunchMenu', 
+                meal: 'Bữa trưa', 
+                time: '11:00', 
+                icon: '🍱', 
+                bg: '#E6F3ED', 
+                color: '#005A36',
+                dishes: menu.lunchMenu ? menu.lunchMenu.split('\n') : []
+              },
+              { 
+                key: 'afternoonSnackMenu', 
+                meal: 'Bữa xế', 
+                time: '14:30', 
+                icon: '🍮', 
+                bg: '#E3EDFD', 
+                color: '#2563EB',
+                dishes: menu.afternoonSnackMenu ? menu.afternoonSnackMenu.split('\n') : []
+              }
+            ].map(m => (
+              <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
+                <S.MenuCardHeader>
+                  <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
+                  <S.MenuCardTitle $timeColor={m.color}>
+                    <div>{m.meal}</div>
+                    <div>{m.time}</div>
+                  </S.MenuCardTitle>
+                </S.MenuCardHeader>
+                <div>
+                  {m.dishes.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {m.dishes.map((dish, idx) => (
+                        <div key={idx} style={{ 
+                          fontSize: '13px', 
+                          fontWeight: 500, 
+                          color: '#374151', 
+                          lineHeight: 1.4,
+                          padding: '4px 0',
+                          borderBottom: idx < m.dishes.length - 1 ? '1px dashed #E5E7EB' : 'none'
+                        }}>
+                          {dish}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '13px', color: '#9CA3AF', fontStyle: 'italic' }}>
+                      (Chưa có thực đơn)
+                    </div>
+                  )}
+                </div>
+              </S.MenuCard>
+            ))}
+          </S.MenuGrid>
+        ) : (
+          <S.MenuGrid>
+            {[
+              { key: 'breakfastMenu', meal: 'Bữa sáng', time: '08:00', icon: '🥣', bg: '#FEF3C7', color: '#D97706' },
+              { key: 'lunchMenu', meal: 'Bữa trưa', time: '11:00', icon: '🍱', bg: '#E6F3ED', color: '#005A36' },
+              { key: 'afternoonSnackMenu', meal: 'Bữa xế', time: '14:30', icon: '🍮', bg: '#E3EDFD', color: '#2563EB' }
+            ].map(m => (
+              <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
+                <S.MenuCardHeader>
+                  <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
+                  <S.MenuCardTitle $timeColor={m.color}>
+                    <div>{m.meal}</div>
+                    <div>{m.time}</div>
+                  </S.MenuCardTitle>
+                </S.MenuCardHeader>
+                <div>
                   <S.MenuTextarea 
                     value={editedMenu[m.key as keyof typeof editedMenu]}
                     onChange={e => setEditedMenu({...editedMenu, [m.key]: e.target.value})}
                     placeholder={`Nhập ${m.meal.toLowerCase()}...`}
                   />
-                )}
-              </div>
-            </S.MenuCard>
-          ))}
-        </S.MenuGrid>
+                </div>
+              </S.MenuCard>
+            ))}
+          </S.MenuGrid>
+        )}
         
         {isMenuEditing && (
           <S.MenuActionRow>

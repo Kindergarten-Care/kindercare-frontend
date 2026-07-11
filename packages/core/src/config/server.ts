@@ -55,6 +55,7 @@ export const SERVER = {
   },
   teacher: {
     scanAttendance:          '/teacher/attendance/scan',
+    getMyActiveClass:        '/teacher/my-class',
     getClasses:              '/teacher/classes',
     getStudents:             '/teacher/classes/:classId/students',
     getDetailedStudents:     '/teacher/classes/:classId/detailed-students',

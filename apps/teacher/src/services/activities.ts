@@ -1,12 +1,18 @@
-import { 
-  StudentMealRecord, 
-  StudentActivityRecord, 
+import {
+  StudentMealRecord,
+  StudentActivityRecord,
   MenuOfTheDay,
   ScheduleItem,
+  WeeklyScheduleDetail,
   NapStatus,
-  ParticipationStatus,
+  participationStatus,
   WeeklyScheduleResponse,
-  MealStatus
+  MealStatus,
+  ClassMenu,
+  MenuDetail,
+  WeeklyMenuResponse,
+  WeeklyMenuDay,
+  DayOfWeek
 } from '@/config/types/activities';
 import { scheduleService } from './schedule/ScheduleService';
 import { AttendanceService } from './attendance';
@@ -35,11 +41,55 @@ let mockMenuState: MenuOfTheDay = {
   afternoonSnackMenu: 'Sữa tươi tiệt trùng và bánh bông lan trứng muối mềm.'
 };
 
+// Menu mẫu theo ngày trong tuần (fallback khi API lỗi)
+const WEEKLY_MOCK_MENUS: Record<string, MenuOfTheDay> = {
+  Monday: {
+    breakfastMenu: '🍳 Bánh mì bơ tỏi\n🥛 Sữa tươi không đường',
+    lunchMenu: '🍚 Cơm tẻ\n🍖 Thịt kho trứng\n🥬 Canh rau muống nấu tôm\n🍌 Trái cây theo mùa',
+    afternoonSnackMenu: '🧀 Bánh flan sữa tươi'
+  },
+  Tuesday: {
+    breakfastMenu: '🥣 Cháo gà hạt sen\n🥛 Sữa đậu nành',
+    lunchMenu: '🍚 Cơm tẻ\n🐟 Cá thu sốt cà\n🥬 Rau luộc\n🍵 Canh khổ qua',
+    afternoonSnackMenu: '🍵 Sữa đậu nành'
+  },
+  Wednesday: {
+    breakfastMenu: '🍝 Nui xào thịt bằm\n🥛 Sữa tươi',
+    lunchMenu: '🍚 Cơm tẻ\n🍗 Đùi gà chiên giòn\n🥗 Salad rau trộn\n🦀 Súp cua',
+    afternoonSnackMenu: '🍮 Bánh flan'
+  },
+  Thursday: {
+    breakfastMenu: '🍜 Phở bò\n🥛 Sữa tươi',
+    lunchMenu: '🍚 Cơm tẻ\n🦐 Tôm hùm hấp\n🥬 Rau xào\n🍲 Canh cải thịt bằm',
+    afternoonSnackMenu: '🍊 Nước ép cam'
+  },
+  Friday: {
+    breakfastMenu: '🥟 Bánh bao nhân thịt\n🥛 Sữa tươi',
+    lunchMenu: '🍚 Cơm tẻ\n🍖 Sườn non nấu sả\n🍳 Trứng chiên\n🥬 Canh bắp cải',
+    afternoonSnackMenu: '🥮 Bánh pía'
+  },
+  Saturday: {
+    breakfastMenu: '🍳 Trứng chiên\n🍞 Bánh mì\n🥛 Sữa',
+    lunchMenu: '🍚 Cơm tẻ\n🍗 Gà hấp\n🥬 Rau luộc\n🍲 Canh rau',
+    afternoonSnackMenu: '🍎 Trái cây'
+  },
+  Sunday: {
+    breakfastMenu: '🥣 Cháo trứng\n🥛 Sữa',
+    lunchMenu: '🍚 Cơm tẻ\n🐟 Cá chiên\n🥬 Rau xào\n🍲 Canh',
+    afternoonSnackMenu: '🍮 Bánh ngọt'
+  }
+};
+
 const menuByDate: Record<string, MenuOfTheDay> = {};
 
 export class ActivitiesService {
   /**
-   * Fetch the general menu of the day.
+   * Fetch the menu of the day from database.
+   * The backend has historically returned several envelopes:
+   *   1) `{ details: MenuDetail[] }` (current contract)
+   *   2) `MenuDetail[]` (legacy / unboxed)
+   *   3) `{ menuName, weekNumber, year, days: WeeklyMenuDay[] }` (new weekly shape)
+   * We normalise all three into a flat list of MenuDetail grouped by mealType.
    */
   public static async getMenuOfTheDay(classId: string, date: string): Promise<MenuOfTheDay> {
     try {
@@ -48,23 +98,187 @@ export class ActivitiesService {
         const now = new Date();
         realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       }
-      
+
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const res = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
-      if (res.data?.data) {
+      const raw = res.data?.data;
+
+      const todayDetails = ActivitiesService.extractMenuDetailsForDate(raw, year, month, day);
+
+      if (todayDetails.length > 0) {
+        const breakfastDishes = todayDetails
+          .filter((d: any) => d.mealType === 'Breakfast')
+          .map((d: any) => `🍳 ${d.dishName}${d.calories ? ` (${d.calories} kcal)` : ''}`)
+          .join('\n');
+
+        const lunchDishes = todayDetails
+          .filter((d: any) => d.mealType === 'Lunch')
+          .map((d: any) => `🍚 ${d.dishName}${d.calories ? ` (${d.calories} kcal)` : ''}`)
+          .join('\n');
+
+        const snackDishes = todayDetails
+          .filter((d: any) => d.mealType === 'Snack')
+          .map((d: any) => `🍮 ${d.dishName}${d.calories ? ` (${d.calories} kcal)` : ''}`)
+          .join('\n');
+
         return {
-          breakfastMenu: res.data.data.breakfastMenu || '',
-          lunchMenu: res.data.data.lunchMenu || '',
-          afternoonSnackMenu: res.data.data.afternoonSnackMenu || ''
+          breakfastMenu: breakfastDishes || '🍳 (Chưa có thực đơn sáng)',
+          lunchMenu: lunchDishes || '🍚 (Chưa có thực đơn trưa)',
+          afternoonSnackMenu: snackDishes || '🍮 (Chưa có thực đơn xế chiều)'
+        };
+      }
+
+      // Try the simple string format as a last resort.
+      if (raw && typeof raw === 'object' && (raw.breakfastMenu || raw.lunchMenu || raw.afternoonSnackMenu)) {
+        return {
+          breakfastMenu: raw.breakfastMenu || '',
+          lunchMenu: raw.lunchMenu || '',
+          afternoonSnackMenu: raw.afternoonSnackMenu || ''
         };
       }
       return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
     } catch (error: any) {
       console.warn('Backend API not ready yet (Menu):', error?.message || 'Unknown error');
-      return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
+
+      // Fallback: Sử dụng menu mock theo ngày trong tuần
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const currentDay = dayNames[new Date().getDay()];
+
+      return WEEKLY_MOCK_MENUS[currentDay] || {
+        breakfastMenu: '🍳 (Đang tải thực đơn...)',
+        lunchMenu: '🍚 (Đang tải thực đơn...)',
+        afternoonSnackMenu: '🍮 (Đang tải thực đơn...)'
+      };
     }
+  }
+
+  /**
+   * Fetch the weekly menu (Mon-Sun) for the week that contains the given date.
+   * Returns grouped data ready for rendering the weekly grid.
+   * Tolerates the same response shapes as `getMenuOfTheDay`.
+   */
+  public static async getWeeklyMenu(classId: string, date: string): Promise<WeeklyMenuResponse | null> {
+    try {
+      let realDate = date;
+      if (date === 'today' || !date) {
+        const now = new Date();
+        realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+
+      const [year, month, day] = realDate.split('-').map(Number);
+      const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
+
+      const res = await apiClient.get(`/teacher/classes/${classId}/menu/weekly?date=${dateSeconds}`);
+      const raw = res.data?.data;
+
+      const flat = ActivitiesService.flattenMenuResponse(raw);
+      if (!flat || flat.length === 0) return null;
+
+      // Propagate menu-level metadata if the response wraps it.
+      const meta = raw && !Array.isArray(raw)
+        ? { menuName: raw.menuName, weekNumber: raw.weekNumber, year: raw.year }
+        : {};
+      (flat as any).__meta = meta;
+
+      return ActivitiesService.groupMenuDetailsByDay(flat);
+    } catch (error: any) {
+      console.warn('Backend API not ready yet (WeeklyMenu):', error?.message || 'Unknown error');
+      return null;
+    }
+  }
+
+  /**
+   * Flatten any of the supported backend envelope shapes into a list of MenuDetail.
+   *  - Array of MenuDetail
+   *  - { details: MenuDetail[] }
+   *  - { days: WeeklyMenuDay[] } → expand each meal group
+   */
+  public static flattenMenuResponse(raw: any): MenuDetail[] | null {
+    if (!raw) return null;
+    if (Array.isArray(raw)) {
+      return raw as MenuDetail[];
+    }
+    if (Array.isArray(raw.details) && raw.details.length > 0) {
+      return raw.details as MenuDetail[];
+    }
+    if (Array.isArray(raw.days) && raw.days.length > 0) {
+      const out: MenuDetail[] = [];
+      for (const d of raw.days) {
+        if (!d) continue;
+        const pushAll = (arr: any[], mealType: MenuDetail['mealType']) => {
+          for (const item of arr || []) {
+            out.push({
+              menuDetailId: item.menuDetailId ?? item.id,
+              menuId: item.menuId,
+              dayOfWeek: d.dayOfWeek,
+              mealType,
+              dishName: item.dishName ?? item.name,
+              calories: item.calories,
+              nutritionalDetails: item.nutritionalDetails ?? item.details,
+            });
+          }
+        };
+        pushAll(d.breakfast, 'Breakfast');
+        pushAll(d.lunch, 'Lunch');
+        pushAll(d.snack, 'Snack');
+      }
+      return out.length > 0 ? out : null;
+    }
+    return null;
+  }
+
+  /**
+   * Extract MenuDetails matching the target date from any of the supported shapes.
+   */
+  public static extractMenuDetailsForDate(raw: any, year: number, month: number, day: number): MenuDetail[] {
+    const flat = ActivitiesService.flattenMenuResponse(raw);
+    if (!flat || flat.length === 0) return [];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDay = dayNames[new Date(year, month - 1, day).getDay()];
+    return flat.filter((d: any) => d.dayOfWeek === currentDay);
+  }
+
+  /**
+   * Group a flat list of menu details by day of week and meal type.
+   */
+  public static groupMenuDetailsByDay(data: any[]): WeeklyMenuResponse {
+    const dayOrder: DayOfWeek[] = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+
+    const days: WeeklyMenuDay[] = dayOrder.map(dayOfWeek => ({
+      dayOfWeek,
+      breakfast: [],
+      lunch: [],
+      snack: []
+    }));
+
+    data.forEach((item: any) => {
+      const dayIndex = dayOrder.indexOf(item.dayOfWeek);
+      if (dayIndex < 0) return;
+      const target = days[dayIndex];
+      if (item.mealType === 'Breakfast') target.breakfast.push(item);
+      else if (item.mealType === 'Lunch') target.lunch.push(item);
+      else if (item.mealType === 'Snack') target.snack.push(item);
+    });
+
+    // Prefer top-level metadata if available on the raw payload, else from first item.
+    const meta = (data as any).__meta ?? data[0] ?? {};
+
+    return {
+      menuName: meta.menuName,
+      weekNumber: meta.weekNumber,
+      year: meta.year,
+      days
+    };
   }
 
   /**
@@ -150,25 +364,24 @@ export class ActivitiesService {
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const mealData = records.map(r => {
-        let breakfastStatus = 'Ăn hết suất';
-        if (r.breakfast === 'HALF') breakfastStatus = 'Ăn chậm';
-        if (r.breakfast === 'NONE') breakfastStatus = 'Bỏ bữa';
+        const breakfastStatus = r.breakfast === 'HALF' ? 'Ăn chậm' : r.breakfast === 'NONE' ? 'Bỏ bữa' : 'Ăn hết suất';
+        const lunchStatus     = r.lunch === 'HALF' ? 'Ăn chậm' : r.lunch === 'NONE' ? 'Bỏ bữa' : 'Ăn hết suất';
+        const snackStatus     = r.afternoonSnack === 'HALF' ? 'Ăn chậm' : r.afternoonSnack === 'NONE' ? 'Bỏ bữa' : 'Ăn hết suất';
 
-        let lunchStatus = 'Ăn hết suất';
-        if (r.lunch === 'HALF') lunchStatus = 'Ăn chậm';
-        if (r.lunch === 'NONE') lunchStatus = 'Bỏ bữa';
-
-        let snackStatus = 'Ăn hết suất';
-        if (r.afternoonSnack === 'HALF') snackStatus = 'Ăn chậm';
-        if (r.afternoonSnack === 'NONE') snackStatus = 'Bỏ bữa';
+        // BE expects a single combined status per student/meal. Take the worst
+        // (NONE > HALF > ALL) across the three meals of the day.
+        const rank = (s: string) => (s === 'Bỏ bữa' ? 3 : s === 'Ăn chậm' ? 2 : 1);
+        const best = [breakfastStatus, lunchStatus, snackStatus].sort((a, b) => rank(b) - rank(a))[0];
+        const teacherNote = (r.note ?? '').trim();
 
         return {
           studentId: Number(r.studentId),
           breakfastStatus,
           lunchStatus,
           snackStatus,
-          teacherNote: r.note?.trim() || undefined,
-          photoUrl: r.photoUrl
+          eatingStatus: best,
+          teacherNote: teacherNote || undefined,
+          photoUrl: r.photoUrl || undefined
         };
       });
 
@@ -247,26 +460,37 @@ export class ActivitiesService {
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const activityData = records.map(r => {
-        let napStatus = 'Ngủ ngoan';
-        if (r.nap === 'POOR') napStatus = 'Khó ngủ';
-        if (r.nap === 'NONE') napStatus = 'Không ngủ';
+        const napStatus = r.nap === 'POOR' ? 'Khó ngủ' : r.nap === 'NONE' ? 'Không ngủ' : 'Ngủ ngoan';
+        const hygieneStatus = 'Bình thường';
 
-        let hygieneStatus = 'Bình thường';
+        // Map participation enum (legacy / new) into the activityStatus string
+        // the backend stores in DailyActivities.ActivityStatus.
+        let activityStatus = 'Bình thường';
+        switch (r.participation) {
+          case 'ACTIVE':
+          case 'Năng động':
+            activityStatus = 'Năng động'; break;
+          case 'TIRED':
+          case 'Thụ động':
+            activityStatus = 'Thụ động'; break;
+          case 'NORMAL':
+          case 'Bình thường':
+            activityStatus = 'Bình thường'; break;
+          case 'Hòa đồng':
+            activityStatus = 'Hòa đồng'; break;
+          case 'Không tham gia':
+            activityStatus = 'Không tham gia'; break;
+        }
 
-        let teacherNote = r.note ? r.note.trim() : '';
-
-        // Legacy mapping backwards compatibility
-        if (r.participation === 'ACTIVE') r.participation = 'Năng động';
-        if (r.participation === 'NORMAL') r.participation = 'Bình thường';
-        if (r.participation === 'TIRED') r.participation = 'Thụ động';
+        const teacherNote = (r.note ?? '').trim();
 
         return {
           studentId: Number(r.studentId),
           napStatus,
           hygieneStatus,
-          activityStatus: r.participation || 'Bình thường', // Send to backend
-          teacherNote: teacherNote.trim(),
-          photoUrl: r.photoUrl
+          activityStatus,
+          teacherNote: teacherNote || undefined,
+          photoUrl: r.photoUrl || undefined
         };
       });
 
@@ -292,19 +516,79 @@ export class ActivitiesService {
         const now = new Date();
         realDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       }
-      
+
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
       const res = await apiClient.get(`/teacher/classes/${classId}/schedule/weekly?date=${dateSeconds}`);
-      if (res.data?.data) {
-        return res.data.data;
-      }
-      return null;
+      const payload = res.data?.data;
+      if (!payload) return null;
+
+      // Normalize BE shape { month, year, monthTheme, weeks: [{ weekOrder, weekTheme, days: {Monday: [...]}}] }
+      // into FE shape { monthTheme, weekTheme, details: WeeklyScheduleDetail[] }.
+      return ActivitiesService.normalizeWeeklySchedule(payload, dateSeconds);
     } catch (e: any) {
       console.warn('Backend API not ready yet (Weekly Schedule):', e?.message || 'Unknown error');
       return null;
     }
+  }
+
+  /**
+   * Convert the nested BE weekly schedule payload into the flat shape the FE expects.
+   * Picks the week that contains the target date (uses Monday of that ISO week).
+   */
+  private static normalizeWeeklySchedule(payload: any, dateSeconds: number): WeeklyScheduleResponse | null {
+    if (!payload) return null;
+
+    // Already in FE shape? (legacy / mocked)
+    if (Array.isArray(payload.details)) {
+      return payload as WeeklyScheduleResponse;
+    }
+
+    const weeks: any[] = Array.isArray(payload.weeks) ? payload.weeks : [];
+    if (weeks.length === 0) return null;
+
+    // Find which week contains the target date (Monday of that week).
+    const target = new Date(dateSeconds * 1000);
+    const targetDayOfWeek = target.getUTCDay(); // 0=Sun..6=Sat
+    const mondayOffset = targetDayOfWeek === 0 ? -6 : 1 - targetDayOfWeek;
+    const monday = new Date(target);
+    monday.setUTCDate(monday.getUTCDate() + mondayOffset);
+    monday.setUTCHours(0, 0, 0, 0);
+
+    const selectedWeek = weeks.find((w: any) => {
+      // weekOrder is 1-based (1 = first week of month). Approximate Monday = first day of month + 7*(order-1) days.
+      const weekStart = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), 1));
+      weekStart.setUTCDate(weekStart.getUTCDate() + 7 * ((w.weekOrder ?? 1) - 1));
+      const weekEnd = new Date(weekStart);
+      weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+      return monday >= weekStart && monday <= weekEnd;
+    }) ?? weeks[0];
+
+    const details: WeeklyScheduleDetail[] = [];
+    const daysMap: Record<string, any[]> = selectedWeek?.days || {};
+    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    for (const day of dayOrder) {
+      const slots = daysMap[day] || [];
+      slots.forEach((slot: any, idx: number) => {
+        details.push({
+          id: `${selectedWeek.weekOrder}-${day}-${idx}`,
+          dayOfWeek: day as WeeklyScheduleDetail['dayOfWeek'],
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          activityName: slot.activityName,
+          details: slot.details,
+          location: undefined,
+          activityType: (slot.activityType as WeeklyScheduleDetail['activityType']) ?? 'other'
+        });
+      });
+    }
+
+    return {
+      monthTheme: payload.monthTheme ?? '',
+      weekTheme: selectedWeek?.weekTheme ?? '',
+      details
+    };
   }
 
   /**
