@@ -1,310 +1,201 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from '@/i18n/routing';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@kindercare/core';
-import { studentService } from '@/services/Student/StudentService';
-import { ViewIcon } from '@/icons/ViewIcon';
-import {
-  Container,
-  Title,
-  HeaderActions,
-  SearchContainer,
-  SearchInput,
-  Select,
-  TableCard,
-  Table,
-  Th,
-  Tr,
-  Td,
-  AvatarWrapper,
-  AvatarImg,
-  AvatarText,
-  IconBtn,
-  LoadingText,
-  ErrorText,
-  PaginationContainer,
-  PaginationText,
-  PaginationGroup,
-  PageButton
-} from './styles';
-import { getInitials } from '../AccountList/utils/getInitials';
+import { useStudentList } from './hooks/useStudentList';
+import StudentTable from './components/StudentTable';
 import CreateStudentWizard from './CreateStudentWizard';
 import StudentImportModal from './StudentImportModal';
-import styled from 'styled-components';
-
-const PrimaryButton = styled.button`
-  padding: 10px 16px;
-  background-color: #047857;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    background-color: #065f46;
-  }
-`;
-
-const SecondaryButton = styled.button`
-  padding: 10px 16px;
-  background-color: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    background-color: #f3f4f6;
-  }
-`;
+import {
+  Container,
+  PageHeader,
+  Title,
+  StatBadge,
+  ActionGroup,
+  PrimaryButton,
+  SecondaryButton,
+  FilterBar,
+  SearchWrapper,
+  SearchIcon,
+  SearchInput,
+  Select,
+  Breadcrumb,
+  BreadcrumbLink,
+  BreadcrumbSep,
+  BreadcrumbCurrent,
+  StatsGrid,
+  StatCard,
+  StatIconWrap,
+  StatInfo,
+  StatValue,
+  StatLabel,
+} from './styles';
 
 export default function StudentListView() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
   const router = useRouter();
-  
-  const [students, setStudents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [classFilter, setClassFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('name_asc');
-  const [classes, setClasses] = useState<string[]>([]);
-  
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      fetchStudents();
-    }
-  }, [isAuthenticated, authLoading]);
-
-  const fetchStudents = async () => {
-    try {
-      setLoading(true);
-      const data = await studentService.getAllStudents();
-      setStudents(data);
-      
-      // Extract unique classes for filter
-      const uniqueClasses = Array.from(new Set(data.map(s => s.currentClass).filter(Boolean))) as string[];
-      setClasses(uniqueClasses.sort());
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Lỗi khi tải danh sách học sinh');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewProfile = (studentId: number) => {
-    router.push(`/students/${studentId}`);
-  };
-
-  const getFirstName = (fullName: string) => {
-    if (!fullName) return '';
-    const parts = fullName.trim().split(' ');
-    return parts[parts.length - 1];
-  };
-
-  const getLastName = (fullName: string) => {
-    if (!fullName) return '';
-    const parts = fullName.trim().split(' ');
-    parts.pop();
-    return parts.join(' ');
-  };
-
-  // Filter
-  const filteredStudents = students.filter(student => {
-    if (classFilter !== 'all' && student.currentClass !== classFilter) {
-      return false;
-    }
-    
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      const name = student.fullName?.toLowerCase() || '';
-      const id = String(student.id);
-      return name.includes(term) || id.includes(term);
-    }
-    
-    return true;
-  });
-
-  // Sort
-  const sortedStudents = [...filteredStudents].sort((a, b) => {
-    const nameA = getFirstName(a.fullName).toLowerCase();
-    const nameB = getFirstName(b.fullName).toLowerCase();
-    
-    if (sortBy === 'name_asc') {
-      return nameA.localeCompare(nameB, 'vi-VN');
-    } else if (sortBy === 'name_desc') {
-      return nameB.localeCompare(nameA, 'vi-VN');
-    }
-    return 0;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = sortedStudents.slice(startIndex, startIndex + itemsPerPage);
-
-  // Reset page when filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, classFilter, sortBy]);
-
-  const formatDate = (timestamp: number) => {
-    if (!timestamp) return 'Chưa cập nhật';
-    return new Date(timestamp * 1000).toLocaleDateString('vi-VN');
-  };
+  const {
+    loading,
+    searchTerm,
+    classFilter,
+    sortBy,
+    classes,
+    currentPage,
+    totalPages,
+    currentData,
+    students,
+    setSearchTerm,
+    setClassFilter,
+    setSortBy,
+    setCurrentPage,
+    handleViewProfile,
+    fetchStudents,
+  } = useStudentList();
 
   if (authLoading) return null;
 
+  const total = students.length;
+  const assigned = students.filter(s => s.className).length;
+  const pending = total - assigned;
+  const male = students.filter(s => s.gender === 'Nam').length;
+  const female = students.filter(s => s.gender === 'Nữ').length;
+
+  const startIndex = (currentPage - 1) * 10;
+
   return (
     <Container>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <Title style={{ marginBottom: 0 }}>Danh sách Học sinh</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <SecondaryButton onClick={() => setShowImportModal(true)}>Import CSV</SecondaryButton>
-          <PrimaryButton onClick={() => setShowCreateWizard(true)}>+ Thêm mới</PrimaryButton>
-        </div>
-      </div>
-      
-      <HeaderActions>
-        <SearchContainer>
-          <SearchInput 
-            placeholder="Tìm kiếm theo tên hoặc mã học sinh..."
+      <Breadcrumb>
+        <BreadcrumbLink onClick={() => router.push('/home')}>Trang chủ</BreadcrumbLink>
+        <BreadcrumbSep>/</BreadcrumbSep>
+        <BreadcrumbCurrent>Danh sách học sinh</BreadcrumbCurrent>
+      </Breadcrumb>
+
+      <PageHeader>
+        <Title>
+          Danh sách Học sinh
+          <StatBadge>| Tìm kiếm &amp; quản lý hồ sơ</StatBadge>
+        </Title>
+        <ActionGroup>
+          <SecondaryButton onClick={() => setShowImportModal(true)}>
+            ↑ Import CSV
+          </SecondaryButton>
+          <PrimaryButton onClick={() => setShowCreateWizard(true)}>
+            + Thêm học sinh
+          </PrimaryButton>
+        </ActionGroup>
+      </PageHeader>
+
+      <StatsGrid>
+        <StatCard>
+          <StatIconWrap $variant="green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </StatIconWrap>
+          <StatInfo>
+            <StatValue>{total}</StatValue>
+            <StatLabel>Tổng số học sinh</StatLabel>
+          </StatInfo>
+        </StatCard>
+
+        <StatCard>
+          <StatIconWrap $variant="blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </StatIconWrap>
+          <StatInfo>
+            <StatValue>{assigned}</StatValue>
+            <StatLabel>Đã xếp lớp</StatLabel>
+          </StatInfo>
+        </StatCard>
+
+        <StatCard>
+          <StatIconWrap $variant="amber">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </StatIconWrap>
+          <StatInfo>
+            <StatValue>{pending}</StatValue>
+            <StatLabel>Chờ xếp lớp</StatLabel>
+          </StatInfo>
+        </StatCard>
+
+        <StatCard>
+          <StatIconWrap $variant="default">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </StatIconWrap>
+          <StatInfo>
+            <StatValue>{male} / {female}</StatValue>
+            <StatLabel>Nam / Nữ</StatLabel>
+          </StatInfo>
+        </StatCard>
+      </StatsGrid>
+
+      <FilterBar>
+        <SearchWrapper>
+          <SearchIcon>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </SearchIcon>
+          <SearchInput
+            placeholder="Tìm theo tên hoặc mã học sinh..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
-        </SearchContainer>
-        
-        <Select value={classFilter} onChange={(e) => setClassFilter(e.target.value)}>
+        </SearchWrapper>
+
+        <Select value={classFilter} onChange={e => setClassFilter(e.target.value)}>
           <option value="all">Tất cả lớp học</option>
           {classes.map(cls => (
             <option key={cls} value={cls}>{cls}</option>
           ))}
         </Select>
 
-        <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="name_asc">Tên (A-Z)</option>
-          <option value="name_desc">Tên (Z-A)</option>
+        <Select value={sortBy} onChange={e => setSortBy(e.target.value as 'name_asc' | 'name_desc')}>
+          <option value="name_asc">Tên (A → Z)</option>
+          <option value="name_desc">Tên (Z → A)</option>
         </Select>
-      </HeaderActions>
+      </FilterBar>
 
-      <TableCard>
-        <Table>
-          <thead>
-            <Tr>
-              <Th style={{ width: '60px', textAlign: 'center' }}>STT</Th>
-              <Th style={{ width: '60px' }}></Th>
-              <Th>Họ và tên đệm</Th>
-              <Th>Tên</Th>
-              <Th>Mã HS</Th>
-              <Th>Ngày sinh</Th>
-              <Th>Giới tính</Th>
-              <Th>Lớp hiện tại</Th>
-              <Th style={{ textAlign: 'center' }}>Thao tác</Th>
-            </Tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <Tr><Td colSpan={9}><LoadingText>Đang tải dữ liệu...</LoadingText></Td></Tr>
-            ) : error ? (
-              <Tr><Td colSpan={9}><ErrorText>{error}</ErrorText></Td></Tr>
-            ) : currentData.length === 0 ? (
-              <Tr><Td colSpan={9}><LoadingText>Không tìm thấy học sinh nào.</LoadingText></Td></Tr>
-            ) : (
-              currentData.map((student, index) => (
-                <Tr key={student.id}>
-                  <Td style={{ textAlign: 'center' }}>{startIndex + index + 1}</Td>
-                  <Td>
-                    <AvatarWrapper>
-                      {student.avatarUrl ? (
-                        <AvatarImg src={student.avatarUrl} alt={student.fullName} />
-                      ) : (
-                        <AvatarText>{getInitials(student.fullName)}</AvatarText>
-                      )}
-                    </AvatarWrapper>
-                  </Td>
-                  <Td style={{ fontWeight: 500, color: '#111827' }}>{getLastName(student.fullName)}</Td>
-                  <Td style={{ fontWeight: 500, color: '#111827' }}>{getFirstName(student.fullName)}</Td>
-                  <Td>{student.id}</Td>
-                  <Td>{formatDate(student.dateOfBirth)}</Td>
-                  <Td>{student.gender || 'Chưa cập nhật'}</Td>
-                  <Td>
-                    {student.currentClass ? (
-                      <span style={{ color: '#047857', fontWeight: 500 }}>{student.currentClass}</span>
-                    ) : (
-                      <span style={{ color: '#6b7280' }}>Chờ xếp lớp</span>
-                    )}
-                  </Td>
-                  <Td style={{ textAlign: 'center' }}>
-                    <IconBtn 
-                      title="Xem hồ sơ" 
-                      onClick={() => handleViewProfile(student.id)}
-                      style={{ margin: '0 auto' }}
-                    >
-                      <ViewIcon width={20} height={20} />
-                    </IconBtn>
-                  </Td>
-                </Tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-
-        {!loading && !error && filteredStudents.length > 0 && (
-          <PaginationContainer>
-            <PaginationText>
-              Hiển thị {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedStudents.length)} của {sortedStudents.length} học sinh
-            </PaginationText>
-            <PaginationGroup>
-              <PageButton 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(p => p - 1)}
-              >
-                Trước
-              </PageButton>
-              <PageButton 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(p => p + 1)}
-              >
-                Sau
-              </PageButton>
-            </PaginationGroup>
-          </PaginationContainer>
-        )}
-      </TableCard>
+      <StudentTable
+        students={currentData}
+        loading={loading}
+        error={null}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        startIndex={startIndex}
+        onViewProfile={handleViewProfile}
+        onPrevPage={() => setCurrentPage(p => p - 1)}
+        onNextPage={() => setCurrentPage(p => p + 1)}
+      />
 
       {showCreateWizard && (
-        <CreateStudentWizard 
-          onClose={() => setShowCreateWizard(false)} 
-          onSuccess={() => {
-            setShowCreateWizard(false);
-            fetchStudents(); // Refresh data
-          }} 
+        <CreateStudentWizard
+          onClose={() => setShowCreateWizard(false)}
+          onSuccess={() => { setShowCreateWizard(false); fetchStudents(); }}
         />
       )}
 
       {showImportModal && (
-        <StudentImportModal 
+        <StudentImportModal
           onClose={() => setShowImportModal(false)}
-          onSuccess={() => {
-            setShowImportModal(false);
-            fetchStudents(); // Refresh data
-          }}
+          onSuccess={() => { setShowImportModal(false); fetchStudents(); }}
         />
       )}
     </Container>

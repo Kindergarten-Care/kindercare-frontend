@@ -22,6 +22,19 @@ export const theme: AppTheme = {
     footerBg: '#0f1a0b',
     techBg: '#111d0d',
     white: '#ffffff',
+
+    // UI legacy theme colors (required by shared UI Kit components)
+    primary: '#237A3C',
+    secondary: '#2f9e4f',
+    accent: '#2f9e4f',
+    background: '#f8fffe',
+    text: '#111827',
+    textSecondary: '#6b7280',
+    neutralLight: '#f3f4f6',
+    neutralLighter: '#f9fafb',
+    borderMuted: '#e5e7eb',
+    successLight: '#dcfce7',
+    success: '#15803d',
   },
   fonts: {
     display: "'Baloo 2', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",

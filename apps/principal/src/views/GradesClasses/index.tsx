@@ -1,28 +1,43 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from '@/i18n/routing';
 import { GradeDomainModel } from '@/config/types/grade';
 import { gradeService } from '@/services/grade/GradeService';
-import { useRouter } from '@/i18n/routing';
+import { CreateGradeClassModal } from './components/CreateGradeClassModal';
 import {
   Container,
+  PageHeader,
   Title,
-  TreeContainer,
-  TreeList,
-  TreeItem,
-  GradeNode,
+  StatBadge,
+  PageSubtitle,
+  PrimaryButton,
+  TreeCard,
+  TreeHeader,
+  TreeTitle,
+  TreeBody,
+  GradeItem,
+  GradeRow,
+  GradeIcon,
+  GradeInfo,
+  GradeName,
+  GradeMeta,
   ChevronIcon,
   ClassListWrapper,
-  ClassListInner,
   ClassList,
-  ClassNode,
-  FolderIcon,
-  FileIcon,
+  ClassRow,
+  ClassIcon,
+  ClassInfo,
+  ClassName,
+  ClassYear,
+  ArrowIcon,
+  EmptyClass,
   LoadingText,
-  ErrorText,
-  EmptyText
+  EmptyState,
+  EmptyIcon,
+  EmptyTitle,
+  EmptySubtitle,
 } from './styles';
-import { CreateGradeClassModal } from './components/CreateGradeClassModal';
 
 export default function GradesClassesView() {
   const [grades, setGrades] = useState<GradeDomainModel[]>([]);
@@ -32,34 +47,26 @@ export default function GradesClassesView() {
   const [expandedGrades, setExpandedGrades] = useState<Record<number, boolean>>({});
   const router = useRouter();
 
-  useEffect(() => {
-    fetchGradesAndClasses();
-  }, []);
-
   const fetchGradesAndClasses = async () => {
     try {
       setLoading(true);
       const data = await gradeService.getGradesAndClasses();
       setGrades(data);
-      // Auto expand all by default
-      const initialExpanded: Record<number, boolean> = {};
-      data.forEach(g => {
-        initialExpanded[g.gradeId] = true;
-      });
-      setExpandedGrades(initialExpanded);
+      const initial: Record<number, boolean> = {};
+      data.forEach(g => { initial[g.gradeId] = true; });
+      setExpandedGrades(initial);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Lỗi khi tải dữ liệu khối học và lớp học');
+    } catch (err: unknown) {
+      setError((err as Error)?.message ?? 'Lỗi khi tải dữ liệu');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => { fetchGradesAndClasses(); }, []);
+
   const toggleExpand = (gradeId: number) => {
-    setExpandedGrades(prev => ({
-      ...prev,
-      [gradeId]: !prev[gradeId]
-    }));
+    setExpandedGrades(prev => ({ ...prev, [gradeId]: !prev[gradeId] }));
   };
 
   const totalGrades = grades.length;
@@ -67,94 +74,93 @@ export default function GradesClassesView() {
 
   return (
     <Container>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <Title style={{ marginBottom: 0 }}>
-          Khối học và Lớp học 
-          {totalGrades > 0 && (
-            <span style={{ fontSize: '1.1rem', color: '#64748b', fontWeight: 'normal', marginLeft: '12px' }}>
-              ({totalGrades} Khối • {totalClasses} Lớp)
-            </span>
-          )}
-        </Title>
-        <button 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#047857',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s',
-          }}
-          onClick={() => setShowCreateModal(true)}
-        >
+      <PageHeader>
+        <div>
+          <Title>
+            Khối học & Lớp học
+            {totalGrades > 0 && (
+              <StatBadge>{totalGrades} khối • {totalClasses} lớp</StatBadge>
+            )}
+          </Title>
+          <PageSubtitle>Xem cấu trúc khối - lớp của trường</PageSubtitle>
+        </div>
+        <PrimaryButton onClick={() => setShowCreateModal(true)}>
           + Thêm Khối / Lớp
-        </button>
-      </div>
+        </PrimaryButton>
+      </PageHeader>
 
-      {loading && <LoadingText>Đang tải dữ liệu...</LoadingText>}
-      {error && <ErrorText>{error}</ErrorText>}
-      {!loading && !error && grades.length === 0 && (
-        <EmptyText>Chưa có dữ liệu Khối học và Lớp học.</EmptyText>
-      )}
+      <TreeCard>
+        <TreeHeader>
+          <TreeTitle>Cấu trúc Khối - Lớp</TreeTitle>
+        </TreeHeader>
 
-      {!loading && !error && grades.length > 0 && (
-        <TreeContainer>
-          <TreeList>
-            {grades.map(grade => (
-              <TreeItem key={grade.gradeId}>
-                <GradeNode onClick={() => toggleExpand(grade.gradeId)}>
-                  <ChevronIcon $isExpanded={!!expandedGrades[grade.gradeId]}>
-                    ▶
+        <TreeBody>
+          {loading ? (
+            <LoadingText>Đang tải dữ liệu...</LoadingText>
+          ) : error ? (
+            <EmptyState>
+              <EmptyIcon>⚠️</EmptyIcon>
+              <EmptyTitle>Đã xảy ra lỗi</EmptyTitle>
+              <EmptySubtitle>{error}</EmptySubtitle>
+            </EmptyState>
+          ) : grades.length === 0 ? (
+            <EmptyState>
+              <EmptyIcon>🏫</EmptyIcon>
+              <EmptyTitle>Chưa có dữ liệu</EmptyTitle>
+              <EmptySubtitle>Nhấn "Thêm Khối / Lớp" để bắt đầu.</EmptySubtitle>
+            </EmptyState>
+          ) : (
+            grades.map(grade => (
+              <GradeItem key={grade.gradeId}>
+                <GradeRow onClick={() => toggleExpand(grade.gradeId)}>
+                  <ChevronIcon $expanded={!!expandedGrades[grade.gradeId]}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
                   </ChevronIcon>
-                  <FolderIcon>🏫</FolderIcon>
-                  {grade.gradeName} 
-                  <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'normal' }}>
-                    ({grade.classes.length} Lớp học)
-                  </span>
-                </GradeNode>
-                
-                <ClassListWrapper $isExpanded={!!expandedGrades[grade.gradeId]}>
-                  <ClassListInner>
-                    <ClassList>
-                      {grade.classes.length > 0 ? (
-                        grade.classes.map(cls => (
-                          <ClassNode 
-                            key={cls.classId}
-                            onClick={() => router.push(`/classes/${cls.classId}`)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <FileIcon>📚</FileIcon>
-                            {cls.className} {cls.yearName && <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'normal', marginLeft: '4px' }}>({cls.yearName})</span>}
-                          </ClassNode>
-                        ))
-                      ) : (
-                        <ClassNode style={{ color: '#94a3b8', fontStyle: 'italic' }}>
-                          Chưa có lớp học nào
-                        </ClassNode>
-                      )}
-                    </ClassList>
-                  </ClassListInner>
+                  <GradeIcon>🏫</GradeIcon>
+                  <GradeInfo>
+                    <GradeName>{grade.gradeName}</GradeName>
+                    <GradeMeta>{grade.classes.length} lớp học</GradeMeta>
+                  </GradeInfo>
+                </GradeRow>
+
+                <ClassListWrapper $expanded={!!expandedGrades[grade.gradeId]}>
+                  <ClassList>
+                    {grade.classes.length > 0 ? (
+                      grade.classes.map(cls => (
+                        <ClassRow
+                          key={cls.classId}
+                          onClick={() => router.push(`/classes/${cls.classId}`)}
+                        >
+                          <ClassIcon>📚</ClassIcon>
+                          <ClassInfo>
+                            <ClassName>{cls.className}</ClassName>
+                            {cls.yearName && <ClassYear>{cls.yearName}</ClassYear>}
+                          </ClassInfo>
+                          <ArrowIcon>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                          </ArrowIcon>
+                        </ClassRow>
+                      ))
+                    ) : (
+                      <EmptyClass>Chưa có lớp học nào</EmptyClass>
+                    )}
+                  </ClassList>
                 </ClassListWrapper>
-              </TreeItem>
-            ))}
-          </TreeList>
-        </TreeContainer>
-      )}
+              </GradeItem>
+            ))
+          )}
+        </TreeBody>
+      </TreeCard>
 
       {showCreateModal && (
         <CreateGradeClassModal
           existingGrades={grades}
           onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            fetchGradesAndClasses();
-          }}
+          onSuccess={() => { setShowCreateModal(false); fetchGradesAndClasses(); }}
         />
       )}
     </Container>

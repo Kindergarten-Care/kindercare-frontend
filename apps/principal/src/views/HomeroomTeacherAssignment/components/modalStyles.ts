@@ -37,7 +37,7 @@ export const Title = styled.h3`
   color: #111827;
 `;
 
-export const CloseButton = styled.button`
+export const CloseButton = styled.button.attrs({ type: 'button' })`
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -86,7 +86,7 @@ export const ModalFooter = styled.div`
   background: #f9fafb;
 `;
 
-export const Button = styled.button<{ $primary?: boolean }>`
+export const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean }>`
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: 500;
@@ -109,4 +109,90 @@ export const Button = styled.button<{ $primary?: boolean }>`
     opacity: 0.5;
     cursor: not-allowed;
   }
+`;
+
+export const CustomSelectContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+export const CustomSelectTrigger = styled.div<{ $isOpen: boolean }>`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid ${({ $isOpen }) => ($isOpen ? '#0284c7' : '#d1d5db')};
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: ${({ $isOpen }) => ($isOpen ? '0 0 0 1px #0284c7' : 'none')};
+  
+  &:hover {
+    border-color: #9ca3af;
+  }
+`;
+
+export const CustomSelectDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 50;
+`;
+
+export const CustomSelectOption = styled.div<{ $selected?: boolean }>`
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  background: ${({ $selected }) => ($selected ? '#f0f9ff' : 'transparent')};
+  
+  &:hover {
+    background: ${({ $selected }) => ($selected ? '#e0f2fe' : '#f9fafb')};
+  }
+`;
+
+export const TeacherAvatar = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f3f4f6;
+`;
+
+export const TeacherAvatarPlaceholder = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+`;
+
+export const TeacherInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const TeacherName = styled.span`
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.95rem;
+`;
+
+export const TeacherUsername = styled.span`
+  color: #6b7280;
+  font-size: 0.8125rem;
 `;

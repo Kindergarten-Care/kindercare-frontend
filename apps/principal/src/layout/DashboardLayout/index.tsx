@@ -196,12 +196,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 );
               }
               if (pathname.startsWith('/students/')) {
+                if (searchParams.get('from') === 'class') {
+                  return (
+                    <>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem $clickable onClick={() => router.push('/grades-classes')}>Khối học và Lớp học</BreadcrumbItem>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem $clickable onClick={() => router.back()}>Chi tiết Lớp học</BreadcrumbItem>
+                      <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                      <BreadcrumbItem className="active">Hồ sơ Học sinh</BreadcrumbItem>
+                    </>
+                  );
+                }
                 return (
                   <>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
-                    <BreadcrumbItem $clickable onClick={() => router.push('/grades-classes')}>Khối học và Lớp học</BreadcrumbItem>
+                    <BreadcrumbItem className="active">Tài khoản & Hồ sơ</BreadcrumbItem>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
-                    <BreadcrumbItem $clickable onClick={() => router.back()}>Chi tiết Lớp học</BreadcrumbItem>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/students')}>Học sinh</BreadcrumbItem>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
                     <BreadcrumbItem className="active">Hồ sơ Học sinh</BreadcrumbItem>
                   </>
@@ -223,11 +235,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 return (
                   <>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
-                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts')}>Tài khoản & Hồ sơ</BreadcrumbItem>
+                    <BreadcrumbItem className="active">Tài khoản & Hồ sơ</BreadcrumbItem>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
-                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts/teachers')}>Giáo viên</BreadcrumbItem>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts?role=teacher')}>Giáo viên</BreadcrumbItem>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
                     <BreadcrumbItem className="active">Chi tiết Giáo viên</BreadcrumbItem>
+                  </>
+                );
+              }
+              if (pathname.startsWith('/accounts/parent/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Tài khoản & Hồ sơ</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/accounts?role=parent')}>Phụ huynh</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết Phụ huynh</BreadcrumbItem>
                   </>
                 );
               }

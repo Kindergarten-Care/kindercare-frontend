@@ -77,8 +77,8 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
       
-      // Auto-generate username if fullName changes and username hasn't been manually touched
-      if (name === 'fullName' && !isUsernameTouched) {
+      // Auto-generate username if fullName changes and username hasn't been manually touched (only for teachers)
+      if (role === 'teacher' && name === 'fullName' && !isUsernameTouched) {
         newData.username = generateUsername(value);
       }
       
@@ -93,7 +93,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.username.trim()) newErrors.username = 'Tên đăng nhập là bắt buộc';
+    if (role === 'teacher' && !formData.username.trim()) newErrors.username = 'Tên đăng nhập là bắt buộc';
     if (!formData.fullName.trim()) newErrors.fullName = 'Họ và tên là bắt buộc';
     
     if (role === 'parent' && !formData.phoneNumber.trim()) {
@@ -108,9 +108,14 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     e.preventDefault();
     if (!validate()) return;
 
+    const payload = { ...formData };
+    if (role === 'parent') {
+      payload.username = formData.phoneNumber;
+    }
+
     setIsSubmitting(true);
     try {
-      await accountService.createAccount(role, formData);
+      await accountService.createAccount(role, payload);
       kcToast.success('Tạo tài khoản thành công!');
       onSuccess();
     } catch (error: any) {
@@ -129,19 +134,25 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
         </ModalHeader>
 
         <Form onSubmit={handleSubmit}>
-          <NoteText>Mật khẩu mặc định của tài khoản sẽ là <strong>123456</strong>.</NoteText>
+          {role === 'teacher' ? (
+            <NoteText>Mật khẩu mặc định của tài khoản sẽ là <strong>123456</strong>.</NoteText>
+          ) : (
+            <NoteText>Hệ thống sẽ dùng Số điện thoại làm Tên đăng nhập. Mật khẩu mặc định là <strong>123456</strong>.</NoteText>
+          )}
           
-          <FormGroup>
-            <Label>Tên đăng nhập <RequiredStar>*</RequiredStar></Label>
-            <Input 
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              $hasError={!!errors.username}
-              placeholder="Nhập tên đăng nhập (VD: nguyenvan_a)"
-            />
-            {errors.username && <ErrorText>{errors.username}</ErrorText>}
-          </FormGroup>
+          {role === 'teacher' && (
+            <FormGroup>
+              <Label>Tên đăng nhập <RequiredStar>*</RequiredStar></Label>
+              <Input 
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                $hasError={!!errors.username}
+                placeholder="Nhập tên đăng nhập (VD: nguyenvan_a)"
+              />
+              {errors.username && <ErrorText>{errors.username}</ErrorText>}
+            </FormGroup>
+          )}
 
           <FormGroup>
             <Label>Họ và tên <RequiredStar>*</RequiredStar></Label>

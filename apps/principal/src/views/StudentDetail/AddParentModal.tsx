@@ -44,7 +44,7 @@ const Title = styled.h2`
   color: #111827;
 `;
 
-const CloseBtn = styled.button`
+const CloseBtn = styled.button.attrs({ type: 'button' })`
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -67,19 +67,18 @@ const ModalFooter = styled.div`
   gap: 12px;
 `;
 
-const Button = styled.button<{ $primary?: boolean, $variant?: 'outline' | 'text' }>`
+const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean, $variant?: 'outline' | 'text' }>`
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  border: ${props => props.$variant === 'text' ? 'none' : props.$primary ? '1px solid #047857' : '1px solid #d1d5db'};
-  background: ${props => props.$variant === 'text' ? 'transparent' : props.$primary ? '#047857' : 'white'};
-  color: ${props => props.$primary && props.$variant !== 'outline' ? 'white' : props.$primary ? '#047857' : '#374151'};
+  border: ${props => props.$variant === 'text' ? 'none' : `1px solid ${props.$primary ? (props.theme.colors.primary || '#047857') : (props.theme.colors.border || '#d1d5db')}`};
+  background: ${props => props.$variant === 'text' ? 'transparent' : props.$primary ? (props.theme.colors.primary || '#047857') : 'white'};
+  color: ${props => props.$primary ? 'white' : (props.theme.colors.fg || '#374151')};
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.$variant === 'text' ? '#f3f4f6' : props.$primary ? '#065f46' : '#f9fafb'};
-    color: ${props => props.$primary && props.$variant !== 'outline' ? 'white' : props.$primary ? '#065f46' : '#111827'};
+    background: ${props => props.$variant === 'text' ? (props.theme.colors.neutralLight || '#f3f4f6') : props.$primary ? (props.theme.colors.greenDark || '#1a5c2d') : (props.theme.colors.neutralLighter || '#f9fafb')};
   }
   
   &:disabled {
@@ -102,30 +101,48 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   font-size: 0.875rem;
-  &:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 2px rgba(4,120,87,0.1); }
+  outline: none;
+  background: white;
+  color: ${({ theme }) => theme.colors.fg || '#111827'};
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
+  }
+
+  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   font-size: 0.875rem;
   background: white;
-  &:focus { outline: none; border-color: #047857; }
+  outline: none;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.fg || '#111827'};
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
+  }
 `;
 
 const SearchBox = styled.div`
   display: flex;
   gap: 12px;
   margin-bottom: 16px;
-  background: #f3f4f6;
+  background: ${({ theme }) => theme.colors.neutralLight || '#f3f4f6'};
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
 `;
 
 const Alert = styled.div<{ $type: 'success' | 'error' | 'info' }>`
@@ -237,8 +254,8 @@ export default function AddParentModal({ studentId, onClose, onSuccess }: AddPar
   };
 
   return (
-    <Overlay>
-      <ModalContainer>
+    <Overlay onClick={onClose}>
+      <ModalContainer onClick={e => e.stopPropagation()}>
         <ModalHeader>
           <Title>Thêm Người Thân / Phụ Huynh</Title>
           <CloseBtn onClick={onClose}>&times;</CloseBtn>

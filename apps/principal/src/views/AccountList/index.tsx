@@ -8,38 +8,36 @@ import { Dropdown } from '@kindercare/ui';
 import { AccountDomainModel } from '@/config/types/account';
 import { useAccountList } from './hooks/useAccountList';
 import { useAccountModal } from './hooks/useAccountModal';
-import { getInitials } from './utils/getInitials';
+import Avatar from '@/components/Avatar';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
-import { ViewIcon } from '@/icons/ViewIcon';
-import { LockIcon } from '@/icons/LockIcon';
-import { UnlockIcon } from '@/icons/UnlockIcon';
 import {
   Container,
+  PageHeader,
+  TitleBlock,
   Title,
+  StatBadge,
+  ActionGroup,
+  PrimaryButton,
+  FilterBar,
+  SearchWrapper,
+  SearchIcon,
+  SearchInput,
+  FilterSelect,
   TableCard,
   Table,
   Th,
   Tr,
   Td,
-  LoadingText,
-  ErrorText,
-  ActionGroup,
-  IconBtn,
-  PaginationContainer,
-  PaginationText,
-  PaginationGroup,
-  PageButton,
-  UserInfoCell,
-  AvatarWrapper,
-  AvatarImg,
-  AvatarText,
-  SearchContainer,
-  SearchInput,
-  SearchButton,
+  FullName,
   StatusBadge,
-  HeaderActions,
-  CreateButton
+  ActionGroupBtns,
+  IconBtn,
+  LoadingText,
+  EmptyState,
+  EmptyIcon,
+  EmptyTitle,
+  EmptySubtitle,
 } from './styles';
 
 export default function AccountListView() {
@@ -51,168 +49,148 @@ export default function AccountListView() {
   const { accounts, loading, error, fetchAccounts } = useAccountList(role, isAuthenticated, authLoading);
   const { modalConfig, handleActionClick: handleModalClick, closeModal, confirmModalAction } = useAccountModal(fetchAccounts);
 
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterText, setFilterText] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setActiveDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const displayTitle = role === 'teacher' ? 'Danh sách Giáo viên' : role === 'parent' ? 'Danh sách Phụ huynh' : 'Danh sách Tài khoản';
 
-  const handleActionClick = (account: AccountDomainModel, action: string) => {
-    setActiveDropdown(null);
-    if (action === 'view') {
-      router.push(`/accounts/${role}/${account.id}`);
-    } else if (action === 'lock' || action === 'unlock') {
-      handleModalClick(account, action);
-    }
-  };
-
   const filteredAccounts = accounts.filter(acc => {
-    // Status Filter
     if (statusFilter !== 'all') {
       const accStatus = acc.status?.toLowerCase() || 'inactive';
       if (statusFilter !== accStatus) return false;
     }
-
-    // Text Filter
-    if (!filterText) return true;
-    const term = filterText.toLowerCase();
-    const fullName = acc.fullName?.toLowerCase() || '';
-    const email = acc.email?.toLowerCase() || '';
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    const fullName = (acc.fullName ?? '').toLowerCase();
+    const email = (acc.email ?? '').toLowerCase();
     const phone = acc.phoneNumber || '';
-    
     return fullName.includes(term) || email.includes(term) || phone.includes(term);
   });
 
   return (
     <Container>
-      <Title>{displayTitle}</Title>
-
-      <HeaderActions>
-        <SearchContainer>
-          <SearchInput 
-            placeholder="Tìm theo tên, email, SĐT..." 
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-          />
-          <SearchButton>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </SearchButton>
-        </SearchContainer>
-        <div style={{ width: '200px' }}>
-          <Dropdown 
-            value={statusFilter} 
-            onChange={(val) => setStatusFilter(val as string)}
-            options={[
-              { value: 'all', label: 'Tất cả trạng thái' },
-              { value: 'active', label: 'Đang hoạt động' },
-              { value: 'inactive', label: 'Đã khóa' }
-            ]}
-          />
-        </div>
+      <PageHeader>
+        <TitleBlock>
+          <Title>
+            {displayTitle}
+            <StatBadge>| Quản lý tài khoản người dùng</StatBadge>
+          </Title>
+        </TitleBlock>
         {(role === 'teacher' || role === 'parent') && (
-          <CreateButton onClick={() => setShowCreateModal(true)}>
-            + Thêm tài khoản
-          </CreateButton>
+          <ActionGroup>
+            <PrimaryButton onClick={() => setShowCreateModal(true)}>
+              + Thêm tài khoản
+            </PrimaryButton>
+          </ActionGroup>
         )}
-      </HeaderActions>
+      </PageHeader>
 
-      {loading && <LoadingText>Đang tải dữ liệu...</LoadingText>}
-      {error && <ErrorText>{error}</ErrorText>}
+      <FilterBar>
+        <SearchWrapper>
+          <SearchIcon>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </SearchIcon>
+          <SearchInput
+            placeholder="Tìm theo tên, email, SĐT..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </SearchWrapper>
 
-      {!loading && !error && (
+        <FilterSelect value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="all">Tất cả trạng thái</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Đã khóa</option>
+        </FilterSelect>
+      </FilterBar>
+
+      {loading ? (
+        <LoadingText>Đang tải dữ liệu...</LoadingText>
+      ) : error ? (
+        <EmptyState>
+          <EmptyIcon>⚠️</EmptyIcon>
+          <EmptyTitle>Đã xảy ra lỗi</EmptyTitle>
+          <EmptySubtitle>{error}</EmptySubtitle>
+        </EmptyState>
+      ) : (
         <TableCard>
           <Table>
             <thead>
-              <Tr>
+              <tr>
                 <Th>ID</Th>
                 <Th>Họ Tên</Th>
                 <Th>Tên Đăng Nhập</Th>
                 <Th>Email</Th>
                 <Th>Trạng thái</Th>
-                <Th style={{ width: '150px', textAlign: 'center' }}>Thao tác</Th>
-              </Tr>
+                <Th style={{ width: 140, textAlign: 'center' }}>Thao tác</Th>
+              </tr>
             </thead>
             <tbody>
               {filteredAccounts.length === 0 ? (
-                <Tr>
+                <tr>
                   <Td colSpan={6}>
-                    <div style={{ textAlign: 'center', color: '#6b7280', padding: '40px 0' }}>
-                      Không có dữ liệu
-                    </div>
+                    <EmptyState>
+                      <EmptyIcon>🔍</EmptyIcon>
+                      <EmptyTitle>Không tìm thấy</EmptyTitle>
+                      <EmptySubtitle>Không có tài khoản nào phù hợp với điều kiện lọc.</EmptySubtitle>
+                    </EmptyState>
                   </Td>
-                </Tr>
+                </tr>
               ) : (
-                filteredAccounts.map((acc) => (
+                filteredAccounts.map(acc => (
                   <Tr key={acc.id}>
-                    <Td style={{ color: '#9CA3AF' }}>{acc.id || '—'}</Td>
-                    <Td style={{ fontWeight: 600, color: '#111827' }}>
-                      <UserInfoCell>
-                        <AvatarWrapper>
-                          {acc.avatarUrl ? (
-                            <AvatarImg src={acc.avatarUrl} alt={acc.fullName} />
-                          ) : (
-                            <AvatarText>{getInitials(acc.fullName)}</AvatarText>
-                          )}
-                        </AvatarWrapper>
-                        <span>{acc.fullName || '—'}</span>
-                      </UserInfoCell>
+                    <Td style={{ color: '#9ca3af', fontWeight: 500 }}>#{acc.id}</Td>
+                    <Td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Avatar src={acc.avatarUrl ?? undefined} name={acc.fullName ?? ''} size={40} />
+                        <FullName>{acc.fullName || '—'}</FullName>
+                      </div>
                     </Td>
-                    <Td>{acc.username || '—'}</Td>
-                    <Td>{acc.email || '—'}</Td>
+                    <Td style={{ color: '#6b7280' }}>{acc.username || '—'}</Td>
+                    <Td style={{ color: '#6b7280' }}>{acc.email || '—'}</Td>
                     <Td>
                       <StatusBadge $status={acc.status?.toLowerCase() === 'active' ? 'active' : 'inactive'}>
-                        {acc.status?.toLowerCase() === 'active' ? 'Hoạt động' : acc.status?.toLowerCase() === 'inactive' ? 'Đã khóa' : (acc.status || 'Đã khóa')}
+                        {acc.status?.toLowerCase() === 'active' ? '● Hoạt động' : '● Đã khóa'}
                       </StatusBadge>
                     </Td>
                     <Td>
-                      <ActionGroup>
-                        <IconBtn onClick={() => handleActionClick(acc, 'view')} title="Xem">
-                          <ViewIcon />
+                      <ActionGroupBtns>
+                        <IconBtn
+                          title="Xem chi tiết"
+                          onClick={() => router.push(`/accounts/${role}/${acc.id}`)}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
                         </IconBtn>
-                        {acc.status?.toLowerCase() === 'active' ? (
-                          <IconBtn onClick={() => handleActionClick(acc, 'lock')} title="Khóa">
-                            <LockIcon />
-                          </IconBtn>
-                        ) : (
-                          <IconBtn onClick={() => handleActionClick(acc, 'unlock')} title="Mở khóa">
-                            <UnlockIcon />
-                          </IconBtn>
-                        )}
-                      </ActionGroup>
+                        <IconBtn
+                          title={acc.status?.toLowerCase() === 'active' ? 'Khóa tài khoản' : 'Mở khóa'}
+                          onClick={() => handleModalClick(acc, acc.status?.toLowerCase() === 'active' ? 'lock' : 'unlock')}
+                        >
+                          {acc.status?.toLowerCase() === 'active' ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="11" width="18" height="11" rx="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          ) : (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="11" width="18" height="11" rx="2" />
+                              <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                            </svg>
+                          )}
+                        </IconBtn>
+                      </ActionGroupBtns>
                     </Td>
                   </Tr>
                 ))
               )}
             </tbody>
           </Table>
-          
-          {filteredAccounts.length > 0 && (
-            <PaginationContainer>
-              <PaginationText>Hiển thị 1–{filteredAccounts.length} trong {filteredAccounts.length} tài khoản</PaginationText>
-              <PaginationGroup>
-                <PageButton>&larr;</PageButton>
-                <PageButton $active>1</PageButton>
-                <PageButton>&rarr;</PageButton>
-              </PaginationGroup>
-            </PaginationContainer>
-          )}
         </TableCard>
       )}
 
@@ -231,10 +209,7 @@ export default function AccountListView() {
         <CreateAccountModal
           role={role}
           onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            fetchAccounts();
-          }}
+          onSuccess={() => { setShowCreateModal(false); fetchAccounts(); }}
         />
       )}
     </Container>

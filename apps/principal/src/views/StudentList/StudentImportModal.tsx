@@ -29,7 +29,7 @@ const ModalContainer = styled.div`
 
 const ModalHeader = styled.div`
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -39,16 +39,16 @@ const Title = styled.h2`
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text || '#111827'};
 `;
 
-const CloseBtn = styled.button`
+const CloseBtn = styled.button.attrs({ type: 'button' })`
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
-  &:hover { color: #111827; }
+  color: ${({ theme }) => theme.colors.muted || '#6b7280'};
+  &:hover { color: ${({ theme }) => theme.colors.text || '#111827'}; }
 `;
 
 const ModalBody = styled.div`
@@ -57,24 +57,24 @@ const ModalBody = styled.div`
 
 const ModalFooter = styled.div`
   padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
   display: flex;
   justify-content: flex-end;
   gap: 12px;
 `;
 
-const Button = styled.button<{ $primary?: boolean }>`
+const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean }>`
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid ${props => props.$primary ? '#047857' : '#d1d5db'};
-  background: ${props => props.$primary ? '#047857' : 'white'};
-  color: ${props => props.$primary ? 'white' : '#374151'};
+  border: 1px solid ${props => props.$primary ? (props.theme.colors.primary || '#047857') : (props.theme.colors.border || '#d1d5db')};
+  background: ${props => props.$primary ? (props.theme.colors.primary || '#047857') : 'white'};
+  color: ${props => props.$primary ? 'white' : (props.theme.colors.fg || '#374151')};
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.$primary ? '#065f46' : '#f9fafb'};
+    background: ${props => props.$primary ? (props.theme.colors.greenDark || '#1a5c2d') : (props.theme.colors.neutralLighter || '#f9fafb')};
   }
   
   &:disabled {
@@ -84,16 +84,17 @@ const Button = styled.button<{ $primary?: boolean }>`
 `;
 
 const UploadArea = styled.div`
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
+  border: 2px dashed ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   padding: 32px;
   text-align: center;
-  background: #f9fafb;
+  background: ${({ theme }) => theme.colors.neutralLighter || '#f9fafb'};
   cursor: pointer;
   transition: all 0.2s;
+
   &:hover {
-    border-color: #047857;
-    background: #ecfdf5;
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    background: ${({ theme }) => theme.colors.greenXLight || '#ecfdf5'};
   }
 `;
 
@@ -102,7 +103,7 @@ const Alert = styled.div<{ $type: 'success' | 'error' | 'info' }>`
   border-radius: 8px;
   margin-bottom: 16px;
   font-size: 0.875rem;
-  background: ${props => props.$type === 'error' ? '#fef2f2' : props.$type === 'success' ? '#ecfdf5' : '#eff6ff'};
+  background: ${props => props.$type === 'error' ? '#fef2f2' : props.$type === 'success' ? (props.theme.colors.successLight || '#ecfdf5') : '#eff6ff'};
   color: ${props => props.$type === 'error' ? '#991b1b' : props.$type === 'success' ? '#065f46' : '#1e40af'};
   border: 1px solid ${props => props.$type === 'error' ? '#f87171' : props.$type === 'success' ? '#34d399' : '#93c5fd'};
 `;
@@ -159,8 +160,8 @@ export default function StudentImportModal({ onClose, onSuccess }: ModalProps) {
   };
 
   return (
-    <Overlay>
-      <ModalContainer>
+    <Overlay onClick={onClose}>
+      <ModalContainer onClick={e => e.stopPropagation()}>
         <ModalHeader>
           <Title>Import Học sinh từ CSV</Title>
           <CloseBtn onClick={onClose}>&times;</CloseBtn>

@@ -1,59 +1,159 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { studentService } from '@/services/Student/StudentService';
 import { StudentDetailDomainModel } from '@/config/types/student';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Container,
-  Header,
-  BackButton,
   LoadingText,
   ErrorText,
-  Title,
-  Card,
-  CardTitle,
+  HeaderCard,
+  AvatarWrapper,
+  InitialsText,
+  HeaderInfo,
+  StudentName,
+  BadgeRow,
+  Badge,
+  HeaderActions,
+  ChangeClassButton,
+  BackButton,
+  TopBackButton,
+  SectionCard,
+  SectionHeader,
+  SectionIcon,
+  SectionTitle,
   InfoGrid,
   InfoItem,
   InfoLabel,
   InfoValue,
-  Avatar,
-  Badge,
-  AvatarWrapper,
-  InitialsText
+  EmptyText,
+  ParentCard,
+  ParentHeader,
+  ParentName,
+  ParentRelationship,
+  PrimaryBadge,
+  ActionButton,
+  AddButton,
+  AllergyNote,
 } from './styles';
-import { getInitials } from '../AccountList/utils/getInitials';
 import AddParentModal from './AddParentModal';
-import styled from 'styled-components';
 
-const PrimaryButton = styled.button`
-  padding: 8px 16px;
-  background-color: #047857;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
+// ─── Helpers ───
+function formatDate(ts: bigint | null): string {
+  if (!ts) return '—';
+  return new Date(Number(ts) * 1000).toLocaleDateString('vi-VN');
+}
 
-  &:hover {
-    background-color: #065f46;
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function statusLabel(s: string): string {
+  switch (s) {
+    case 'Studying': return 'Đang học';
+    case 'Graduated': return 'Đã tốt nghiệp';
+    case 'Transferred': return 'Đã chuyển trường';
+    case 'Dropout': return 'Nghỉ học';
+    default: return s;
   }
-`;
+}
 
+function relationshipLabel(r: string): string {
+  switch (r) {
+    case 'Father': return 'Bố';
+    case 'Mother': return 'Mẹ';
+    case 'Grandfather': return 'Ông';
+    case 'Grandmother': return 'Bà';
+    case 'Guardian': return 'Người giám hộ';
+    case 'Sibling': return 'Anh/Chị/Em';
+    default: return r;
+  }
+}
+
+// ─── Icons ───
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+
+const SwapIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 3 21 3 21 8"/>
+    <line x1="4" y1="20" x2="21" y2="3"/>
+    <polyline points="21 16 21 21 16 21"/>
+    <line x1="15" y1="15" x2="21" y2="21"/>
+    <line x1="4" y1="4" x2="9" y2="9"/>
+  </svg>
+);
+
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const AlertIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+);
+
+const PhoneIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.19h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+);
+
+const IDCardIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <line x1="2" y1="10" x2="22" y2="10"/>
+  </svg>
+);
+
+// ─── Main Component ───
 interface StudentDetailProps {
   studentId: string;
 }
 
 export default function StudentDetailView({ studentId }: StudentDetailProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromClass = searchParams?.get('from') === 'class';
+  
   const [student, setStudent] = useState<StudentDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddParent, setShowAddParent] = useState(false);
 
-  const fetchStudentDetail = React.useCallback(async () => {
+  const fetchStudentDetail = useCallback(async () => {
     try {
       setLoading(true);
       const data = await studentService.getStudentDetail(studentId);
@@ -78,17 +178,19 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
 
   return (
     <Container>
-      <Header>
-        <BackButton onClick={() => router.back()} title="Quay lại">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </BackButton>
-        <Title>Hồ sơ học sinh</Title>
-      </Header>
+      <TopBackButton onClick={() => {
+        if (fromClass) {
+          router.back();
+        } else {
+          router.push('/students');
+        }
+      }} title="Quay lại">
+        <BackIcon />
+        Quay lại
+      </TopBackButton>
 
-      <Card>
+      {/* ─── Header Card ─── */}
+      <HeaderCard>
         <AvatarWrapper>
           {student.avatarUrl ? (
             <img src={student.avatarUrl} alt={student.fullName} />
@@ -96,7 +198,38 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
             <InitialsText>{getInitials(student.fullName)}</InitialsText>
           )}
         </AvatarWrapper>
-        <CardTitle>Thông tin cá nhân</CardTitle>
+
+        <HeaderInfo>
+          <StudentName>{student.fullName}</StudentName>
+          <BadgeRow>
+            {/* Mã học sinh */}
+            <Badge $variant="code">
+              <IDCardIcon />
+              HS-{String(student.id).padStart(4, '0')}
+            </Badge>
+            {/* Lớp */}
+            {student.className && (
+              <Badge $variant="class">
+                {student.className}
+              </Badge>
+            )}
+            {/* Trạng thái */}
+            <Badge $variant="status">
+              {statusLabel(student.status)}
+            </Badge>
+          </BadgeRow>
+        </HeaderInfo>
+
+
+      </HeaderCard>
+
+      {/* ─── Thông tin cá nhân ─── */}
+      <SectionCard>
+        <SectionHeader>
+          <SectionIcon><UserIcon /></SectionIcon>
+          <SectionTitle>Thông tin cá nhân</SectionTitle>
+        </SectionHeader>
+
         <InfoGrid>
           <InfoItem>
             <InfoLabel>Họ và tên</InfoLabel>
@@ -104,88 +237,94 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày sinh</InfoLabel>
-            <InfoValue>
-              {student.dateOfBirth ? new Date(Number(student.dateOfBirth) * 1000).toLocaleDateString('vi-VN') : '—'}
-            </InfoValue>
+            <InfoValue>{formatDate(student.dateOfBirth)}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Giới tính</InfoLabel>
-            <InfoValue>{student.gender || 'N/A'}</InfoValue>
+            <InfoValue>{student.gender === 'Male' ? 'Nam' : student.gender === 'Female' ? 'Nữ' : '—'}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Ngày nhập học</InfoLabel>
-            <InfoValue>
-              {student.admissionDate ? new Date(Number(student.admissionDate) * 1000).toLocaleDateString('vi-VN') : '—'}
-            </InfoValue>
+            <InfoValue>{formatDate(student.admissionDate)}</InfoValue>
           </InfoItem>
           <InfoItem>
             <InfoLabel>Lớp hiện tại</InfoLabel>
             <InfoValue>{student.className || 'Chưa xếp lớp'}</InfoValue>
           </InfoItem>
           <InfoItem>
-            <InfoLabel>Trạng thái</InfoLabel>
-            <InfoValue>
-              <Badge $status={student.status}>{student.status === 'Studying' ? 'Đang học' : student.status}</Badge>
-            </InfoValue>
+            <InfoLabel>Nhóm máu</InfoLabel>
+            <InfoValue>—</InfoValue>
           </InfoItem>
-          <InfoItem style={{ gridColumn: '1 / -1' }}>
-            <InfoLabel>Ghi chú dị ứng / Bệnh lý</InfoLabel>
-            <InfoValue>{student.allergies || 'Không có'}</InfoValue>
+          <InfoItem>
+            <InfoLabel>Mã định danh</InfoLabel>
+            <InfoValue>—</InfoValue>
           </InfoItem>
-        </InfoGrid>
-      </Card>
 
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <CardTitle style={{ marginBottom: 0 }}>Thông tin phụ huynh</CardTitle>
-          <PrimaryButton onClick={() => setShowAddParent(true)}>+ Thêm phụ huynh / người thân</PrimaryButton>
-        </div>
-        
+          {/* Ghi chú dị ứng — full width */}
+          <AllergyNote $hasContent={!!student.allergies}>
+            <AlertIcon />
+            <span>
+              <strong>Dị ứng / Bệnh lý:</strong>{' '}
+              {student.allergies || 'Không có ghi nhận'}
+            </span>
+          </AllergyNote>
+        </InfoGrid>
+      </SectionCard>
+
+      {/* ─── Thông tin phụ huynh & người thân ─── */}
+      <SectionCard>
+        <SectionHeader>
+          <SectionIcon><UsersIcon /></SectionIcon>
+          <SectionTitle>Thông tin phụ huynh &amp; người thân</SectionTitle>
+          <AddButton
+            onClick={() => setShowAddParent(true)}
+            style={{ marginLeft: 'auto' }}
+          >
+            <PlusIcon />
+            Thêm người thân
+          </AddButton>
+        </SectionHeader>
+
         {student.parents && student.parents.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {student.parents.map(parent => (
-              <div key={parent.parentId} style={{ paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>
-                  {parent.fullName} 
-                  <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 400, marginLeft: '8px' }}>
-                    ({parent.relationship === 'Father' ? 'Bố' : parent.relationship === 'Mother' ? 'Mẹ' : parent.relationship})
-                  </span>
-                  {parent.isPrimary && (
-                    <span style={{ fontSize: '12px', background: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: '12px', marginLeft: '8px' }}>
-                      Liên hệ chính
-                    </span>
-                  )}
-                </div>
-                <InfoGrid>
-                  <InfoItem>
-                    <InfoLabel>Số điện thoại</InfoLabel>
-                    <InfoValue>{parent.phoneNumber}</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>Email</InfoLabel>
-                    <InfoValue>{parent.email || 'N/A'}</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>Nghề nghiệp</InfoLabel>
-                    <InfoValue>{parent.occupation || 'N/A'}</InfoValue>
-                  </InfoItem>
-                  <InfoItem style={{ gridColumn: '1 / -1' }}>
-                    <InfoLabel>Địa chỉ</InfoLabel>
-                    <InfoValue>{parent.address || 'N/A'}</InfoValue>
-                  </InfoItem>
-                </InfoGrid>
-              </div>
-            ))}
-          </div>
+          student.parents.map(parent => (
+            <ParentCard key={parent.parentId}>
+              <ParentHeader>
+                <ParentName>
+                  {parent.fullName}
+                  <ParentRelationship>
+                    {relationshipLabel(parent.relationship)}
+                  </ParentRelationship>
+                  {parent.isPrimary && <PrimaryBadge>Liên hệ chính</PrimaryBadge>}
+                </ParentName>
+                <ActionButton>
+                  <PhoneIcon />
+                  {parent.phoneNumber}
+                </ActionButton>
+              </ParentHeader>
+
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>Số điện thoại</InfoLabel>
+                  <InfoValue>{parent.phoneNumber}</InfoValue>
+                </InfoItem>
+                <InfoItem>
+                  <InfoLabel>Email</InfoLabel>
+                  <InfoValue>{parent.email || '—'}</InfoValue>
+                </InfoItem>
+                <InfoItem>
+                  <InfoLabel>Nghề nghiệp</InfoLabel>
+                  <InfoValue>{parent.occupation || '—'}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+            </ParentCard>
+          ))
         ) : (
-          <div style={{ color: '#64748b' }}>
-            <p>Chưa có thông tin phụ huynh</p>
-          </div>
+          <EmptyText>Chưa có thông tin phụ huynh / người thân</EmptyText>
         )}
-      </Card>
+      </SectionCard>
 
       {showAddParent && (
-        <AddParentModal 
+        <AddParentModal
           studentId={Number(studentId)}
           onClose={() => setShowAddParent(false)}
           onSuccess={() => {

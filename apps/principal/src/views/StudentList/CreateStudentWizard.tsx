@@ -31,7 +31,7 @@ const ModalContainer = styled.div`
 
 const ModalHeader = styled.div`
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -41,16 +41,16 @@ const Title = styled.h2`
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${({ theme }) => theme.colors.text || '#111827'};
 `;
 
-const CloseBtn = styled.button`
+const CloseBtn = styled.button.attrs({ type: 'button' })`
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
-  &:hover { color: #111827; }
+  color: ${({ theme }) => theme.colors.muted || '#6b7280'};
+  &:hover { color: ${({ theme }) => theme.colors.text || '#111827'}; }
 `;
 
 const ModalBody = styled.div`
@@ -61,24 +61,24 @@ const ModalBody = styled.div`
 
 const ModalFooter = styled.div`
   padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${({ theme }) => theme.colors.border || '#e5e7eb'};
   display: flex;
   justify-content: space-between;
   gap: 12px;
 `;
 
-const Button = styled.button<{ $primary?: boolean }>`
+const Button = styled.button.attrs({ type: 'button' })<{ $primary?: boolean }>`
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid ${props => props.$primary ? '#047857' : '#d1d5db'};
-  background: ${props => props.$primary ? '#047857' : 'white'};
-  color: ${props => props.$primary ? 'white' : '#374151'};
+  border: 1px solid ${props => props.$primary ? (props.theme.colors.primary || '#047857') : (props.theme.colors.border || '#d1d5db')};
+  background: ${props => props.$primary ? (props.theme.colors.primary || '#047857') : 'white'};
+  color: ${props => props.$primary ? 'white' : (props.theme.colors.fg || '#374151')};
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.$primary ? '#065f46' : '#f9fafb'};
+    background: ${props => props.$primary ? (props.theme.colors.greenDark || '#1a5c2d') : (props.theme.colors.neutralLighter || '#f9fafb')};
   }
   
   &:disabled {
@@ -97,8 +97,8 @@ const Step = styled.div<{ $active: boolean; $completed: boolean }>`
   flex: 1;
   text-align: center;
   padding-bottom: 8px;
-  border-bottom: 3px solid ${props => props.$active ? '#047857' : props.$completed ? '#34d399' : '#e5e7eb'};
-  color: ${props => props.$active || props.$completed ? '#047857' : '#9ca3af'};
+  border-bottom: 3px solid ${props => props.$active ? (props.theme.colors.primary || '#047857') : props.$completed ? '#34d399' : (props.theme.colors.border || '#e5e7eb')};
+  color: ${props => props.$active || props.$completed ? (props.theme.colors.primary || '#047857') : (props.theme.colors.muted || '#9ca3af')};
   font-weight: 500;
   font-size: 0.875rem;
 `;
@@ -111,47 +111,81 @@ const Label = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.fg || '#374151'};
   margin-bottom: 6px;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   font-size: 0.875rem;
-  &:focus { outline: none; border-color: #047857; box-shadow: 0 0 0 2px rgba(4,120,87,0.1); }
+  outline: none;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: ${({ theme }) => theme.colors.fg || '#111827'};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
+  }
+
+  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
+
+  &:disabled {
+    background: ${({ theme }) => theme.colors.neutralLight || '#f3f4f6'};
+    color: ${({ theme }) => theme.colors.muted || '#6b7280'};
+    cursor: not-allowed;
+  }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   font-size: 0.875rem;
   background: white;
-  &:focus { outline: none; border-color: #047857; }
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.fg || '#111827'};
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
+  }
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid ${({ theme }) => theme.colors.border || '#d1d5db'};
+  border-radius: 10px;
   font-size: 0.875rem;
   resize: vertical;
   min-height: 80px;
-  &:focus { outline: none; border-color: #047857; }
+  outline: none;
+  background: white;
+  color: ${({ theme }) => theme.colors.fg || '#111827'};
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary || '#047857'};
+    box-shadow: 0 0 0 3px rgba(35, 122, 60, 0.12);
+  }
+
+  &::placeholder { color: ${({ theme }) => theme.colors.muted || '#9ca3af'}; }
 `;
 
 const SearchBox = styled.div`
   display: flex;
   gap: 12px;
   margin-bottom: 24px;
-  background: #f3f4f6;
+  background: ${({ theme }) => theme.colors.neutralLight || '#f3f4f6'};
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
 `;
 
 const Alert = styled.div<{ $type: 'success' | 'error' | 'info' }>`
@@ -159,7 +193,7 @@ const Alert = styled.div<{ $type: 'success' | 'error' | 'info' }>`
   border-radius: 8px;
   margin-bottom: 16px;
   font-size: 0.875rem;
-  background: ${props => props.$type === 'error' ? '#fef2f2' : props.$type === 'success' ? '#ecfdf5' : '#eff6ff'};
+  background: ${props => props.$type === 'error' ? '#fef2f2' : props.$type === 'success' ? (props.theme.colors.successLight || '#ecfdf5') : '#eff6ff'};
   color: ${props => props.$type === 'error' ? '#991b1b' : props.$type === 'success' ? '#065f46' : '#1e40af'};
   border: 1px solid ${props => props.$type === 'error' ? '#f87171' : props.$type === 'success' ? '#34d399' : '#93c5fd'};
 `;
@@ -174,7 +208,6 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Config Data
   const [paymentConfigs, setPaymentConfigs] = useState<{ packages: any[], baseFee: any }>({ packages: [], baseFee: null });
   const [packageId, setPackageId] = useState<number | ''>('');
 
@@ -184,7 +217,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
         const configs = await studentService.getPaymentConfigs();
         setPaymentConfigs(configs);
         if (configs.packages.length > 0) {
-          setPackageId(configs.packages[0].id); // Default to first package
+          setPackageId(configs.packages[0].id);
         }
       } catch (err) {
         console.error('Error fetching payment configs', err);
@@ -193,7 +226,6 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
     fetchConfigs();
   }, []);
 
-  // Step 1 Data
   const [student, setStudent] = useState({
     fullName: '',
     dateOfBirth: '',
@@ -202,7 +234,6 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
     allergies: ''
   });
 
-  // Step 2 & 3 Data
   const [parent, setParent] = useState({
     id: null as number | null,
     fullName: '',
@@ -257,7 +288,6 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
       setLoading(true);
       setError(null);
 
-      // Validate
       if (!student.fullName || !student.dateOfBirth) {
         throw new Error('Vui lòng nhập đủ tên và ngày sinh học sinh');
       }
@@ -293,8 +323,8 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
   };
 
   return (
-    <Overlay>
-      <ModalContainer>
+    <Overlay onClick={onClose}>
+      <ModalContainer onClick={e => e.stopPropagation()}>
         <ModalHeader>
           <Title>Thêm Hồ Sơ Học Sinh Mới</Title>
           <CloseBtn onClick={onClose}>&times;</CloseBtn>
@@ -382,7 +412,7 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
                     placeholder="Nhập số điện thoại..." 
                     value={searchPhone}
                     onChange={e => setSearchPhone(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && handleSearchParent()}
+                    onKeyDown={e => e.key === 'Enter' && handleSearchParent()}
                   />
                 </div>
                 <Button 
@@ -454,12 +484,12 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
                   </Alert>
                   <FormGroup>
                     <Label>Tên đăng nhập (Username)</Label>
-                    <Input value={parent.phoneNumber} disabled style={{ background: '#f3f4f6' }} />
-                    <small style={{ color: '#6b7280' }}>Sử dụng Số điện thoại làm tên đăng nhập</small>
+                    <Input value={parent.phoneNumber} disabled />
+                    <small style={{ color: '#6b7280', marginTop: '4px', display: 'block' }}>Sử dụng Số điện thoại làm tên đăng nhập</small>
                   </FormGroup>
                   <FormGroup>
                     <Label>Mật khẩu mặc định</Label>
-                    <Input value={`KinderCare_${parent.phoneNumber}`} disabled style={{ background: '#f3f4f6' }} />
+                    <Input value={`KinderCare_${parent.phoneNumber}`} disabled />
                   </FormGroup>
                 </>
               )}

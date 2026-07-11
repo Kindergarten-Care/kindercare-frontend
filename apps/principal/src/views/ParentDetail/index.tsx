@@ -5,136 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@kindercare/core';
 import { accountService } from '@/services/account/AccountService';
 import { ParentDetailDomainModel } from '@/config/types/account';
-import styled from 'styled-components';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const BackButton = styled.button`
-  background: ${({ theme }) => theme.colors?.surface || '#fff'};
-  border: 1px solid ${({ theme }) => theme.colors?.border || '#e5e7eb'};
-  color: ${({ theme }) => theme.colors?.muted || '#6b7280'};
-  font-weight: 500;
-  font-size: 0.9rem;
-  padding: 8px 16px;
-  border-radius: 9999px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    background: ${({ theme }) => theme.colors?.greenLight || '#e8f5ed'};
-    color: ${({ theme }) => theme.colors?.green || '#237A3C'};
-    border-color: ${({ theme }) => theme.colors?.greenLight || '#e8f5ed'};
-    transform: translateX(-2px);
-  }
-`;
-
-const Card = styled.div`
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-`;
-
-const HeaderRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid #E5E7EB;
-  padding-bottom: 16px;
-`;
-
-const AvatarWrapper = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: #E0E7FF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const AvatarImg = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const AvatarText = styled.span`
-  color: #4F46E5;
-  font-weight: 600;
-  font-size: 1.5rem;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const InfoLabel = styled.span`
-  font-size: 0.875rem;
-  color: #6B7280;
-`;
-
-const InfoValue = styled.span`
-  font-size: 1rem;
-  color: #111827;
-  font-weight: 500;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4b5563;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-`;
-
-const Td = styled.td`
-  padding: 12px 16px;
-  font-size: 0.875rem;
-  color: #1f2937;
-  border-bottom: 1px solid #e5e7eb;
-`;
-
-const Badge = styled.span<{ $primary?: boolean }>`
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background-color: ${({ $primary }) => ($primary ? '#DEF7EC' : '#F3F4F6')};
-  color: ${({ $primary }) => ($primary ? '#03543F' : '#374151')};
-`;
+import {
+  Container, TopActions, BackButton, HeaderCard, HeaderLeft, BigAvatar, BigAvatarImg,
+  ParentName, ParentMeta, UsernameTag, RoleTag, EditButton,
+  SectionCard, SectionHeader, SectionIconWrapper, SectionTitle, CountBadge,
+  InfoGrid, InfoItem, InfoLabel, InfoValue,
+  Table, Th, Td, Tr, StudentInfoCell, SmallAvatar, SmallAvatarImg, Badge,
+  ModalOverlay, ModalContent, ModalActions, ModalButton
+} from './styles';
 
 const formatDate = (bigintDate: bigint | null) => {
   if (!bigintDate) return '—';
@@ -148,49 +26,14 @@ const getInitials = (name?: string) => {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 };
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  width: 400px;
-  max-width: 90%;
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-`;
-
-const Button = styled.button<{ $danger?: boolean, $primary?: boolean }>`
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  background-color: ${({ $danger, $primary }) => ($danger ? '#EF4444' : $primary ? '#4F46E5' : '#E5E7EB')};
-  color: ${({ $danger, $primary }) => ($danger || $primary ? 'white' : '#374151')};
-  
-  &:hover {
-    opacity: 0.9;
+const getAvatarBg = (name: string) => {
+  const colors = ['#f472b6', '#818cf8', '#10b981', '#fb923c', '#3b82f6', '#f43f5e'];
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) {
+    sum += name.charCodeAt(i);
   }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+  return colors[sum % colors.length];
+};
 
 export default function ParentDetailView() {
   const { id } = useParams();
@@ -210,7 +53,7 @@ export default function ParentDetailView() {
     setResetError('');
     try {
       await accountService.resetAccountPassword(Number(id));
-      alert('Reset mật khẩu thành công (Mặc định: 123456)');
+      alert('Khôi phục mật khẩu thành công (Mặc định: 123456)');
       setShowResetModal(false);
     } catch (err: any) {
       setResetError(err.message || 'Có lỗi xảy ra');
@@ -245,33 +88,50 @@ export default function ParentDetailView() {
 
   return (
     <Container>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <BackButton onClick={() => router.back()} style={{ marginBottom: 0 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <TopActions>
+        <BackButton onClick={() => router.back()}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          Quay lại danh sách
+          Quay lại danh sách phụ huynh
         </BackButton>
-        <Button $danger onClick={() => setShowResetModal(true)}>
-          Khôi phục mật khẩu
-        </Button>
-      </div>
+      </TopActions>
 
-      <Card>
-        <HeaderRow>
-          <AvatarWrapper>
-            {parent.avatarUrl ? (
-              <AvatarImg src={parent.avatarUrl} alt={parent.fullName} />
-            ) : (
-              <AvatarText>{getInitials(parent.fullName)}</AvatarText>
-            )}
-          </AvatarWrapper>
+      <HeaderCard>
+        <HeaderLeft>
+          {parent.avatarUrl ? (
+            <BigAvatarImg src={parent.avatarUrl} alt={parent.fullName} />
+          ) : (
+            <BigAvatar $color="#f97316">{getInitials(parent.fullName)}</BigAvatar>
+          )}
           <div>
-            <Title>Thông tin cá nhân (Phụ huynh)</Title>
-            <div style={{ color: '#6B7280', fontSize: '0.875rem', marginTop: '4px' }}>{parent.fullName}</div>
+            <ParentName>{parent.fullName}</ParentName>
+            <ParentMeta>
+              <UsernameTag>@{parent.username}</UsernameTag>
+              <RoleTag>Phụ huynh - {parent.children.length} con đang học</RoleTag>
+            </ParentMeta>
           </div>
-        </HeaderRow>
+        </HeaderLeft>
+        <EditButton onClick={() => setShowResetModal(true)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          Chỉnh sửa
+        </EditButton>
+      </HeaderCard>
+
+      <SectionCard>
+        <SectionHeader>
+          <SectionIconWrapper>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </SectionIconWrapper>
+          <SectionTitle>Thông tin cá nhân</SectionTitle>
+        </SectionHeader>
         <InfoGrid>
           <InfoItem><InfoLabel>Họ Tên</InfoLabel><InfoValue>{parent.fullName}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Tên đăng nhập</InfoLabel><InfoValue>{parent.username}</InfoValue></InfoItem>
@@ -279,23 +139,37 @@ export default function ParentDetailView() {
           <InfoItem><InfoLabel>Số điện thoại</InfoLabel><InfoValue>{parent.phoneNumber || '—'}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Ngày sinh</InfoLabel><InfoValue>{formatDate(parent.dateOfBirth)}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Nghề nghiệp</InfoLabel><InfoValue>{parent.job || '—'}</InfoValue></InfoItem>
-          <InfoItem><InfoLabel>CMND/CCCD</InfoLabel><InfoValue>{parent.idCard || '—'}</InfoValue></InfoItem>
+          <InfoItem><InfoLabel>CMND / CCCD</InfoLabel><InfoValue>{parent.idCard || '—'}</InfoValue></InfoItem>
           <InfoItem><InfoLabel>Địa chỉ</InfoLabel><InfoValue>{parent.address || '—'}</InfoValue></InfoItem>
         </InfoGrid>
-      </Card>
+      </SectionCard>
 
-      <Card>
-        <Title>Danh sách con ({parent.children.length})</Title>
+      <SectionCard>
+        <SectionHeader>
+          <SectionIconWrapper>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </SectionIconWrapper>
+          <SectionTitle>
+            Danh sách con
+            <CountBadge>{parent.children.length}</CountBadge>
+          </SectionTitle>
+        </SectionHeader>
+        
         <Table>
           <thead>
             <tr>
-              <Th>ID Học sinh</Th>
-              <Th>Họ tên con</Th>
-              <Th>Lớp</Th>
-              <Th>Ngày sinh</Th>
-              <Th>Giới tính</Th>
-              <Th>Quan hệ</Th>
-              <Th>Đại diện chính</Th>
+              <Th>MÃ HS</Th>
+              <Th>HỌ TÊN CON</Th>
+              <Th>LỚP</Th>
+              <Th>NGÀY SINH</Th>
+              <Th>GIỚI TÍNH</Th>
+              <Th>QUAN HỆ</Th>
+              <Th>ĐẠI DIỆN CHÍNH</Th>
             </tr>
           </thead>
           <tbody>
@@ -304,37 +178,59 @@ export default function ParentDetailView() {
                 <Td colSpan={7} style={{ textAlign: 'center' }}>Không có học sinh nào</Td>
               </tr>
             ) : (
-              parent.children.map(c => (
-                <tr key={c.studentId}>
-                  <Td>{c.studentId}</Td>
-                  <Td style={{ fontWeight: 500 }}>{c.fullName}</Td>
-                  <Td>{c.className || '—'}</Td>
+              parent.children.map((c, index) => (
+                <Tr key={c.studentId}>
+                  <Td style={{ color: '#9ca3af' }}>HS-{String(c.studentId).padStart(4, '0')}</Td>
+                  <Td>
+                    <StudentInfoCell>
+                      {(c as any).avatarUrl ? (
+                        <SmallAvatarImg src={(c as any).avatarUrl} alt={c.fullName} />
+                      ) : (
+                        <SmallAvatar $bg={getAvatarBg(c.fullName)}>{getInitials(c.fullName)}</SmallAvatar>
+                      )}
+                      <span style={{ fontWeight: 600 }}>{c.fullName}</span>
+                    </StudentInfoCell>
+                  </Td>
+                  <Td><Badge $type="class">{c.className || '—'}</Badge></Td>
                   <Td>{formatDate(c.dateOfBirth)}</Td>
-                  <Td>{c.gender || '—'}</Td>
+                  <Td>
+                    <Badge $type={c.gender === 'Nữ' ? 'genderF' : c.gender === 'Nam' ? 'genderM' : undefined}>
+                      {c.gender || '—'}
+                    </Badge>
+                  </Td>
                   <Td>{c.relationship || '—'}</Td>
                   <Td>
-                    {c.isPrimary ? <Badge $primary>Có</Badge> : <Badge>Không</Badge>}
+                    {c.isPrimary ? (
+                      <Badge $type="primary">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Có
+                      </Badge>
+                    ) : (
+                      '—'
+                    )}
                   </Td>
-                </tr>
+                </Tr>
               ))
             )}
           </tbody>
         </Table>
-      </Card>
+      </SectionCard>
 
       {showResetModal && (
         <ModalOverlay onClick={() => !resetting && setShowResetModal(false)}>
           <ModalContent onClick={e => e.stopPropagation()}>
-            <Title>Xác nhận khôi phục mật khẩu</Title>
+            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Xác nhận thay đổi</h2>
             <p style={{ color: '#4B5563', marginTop: '12px', fontSize: '0.9rem' }}>
-              Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản <b>{parent.username}</b> về mặc định (123456) không?
+              Chức năng cập nhật phụ huynh đang được phát triển. Bạn có muốn đặt lại mật khẩu của tài khoản <b>{parent.username}</b> về mặc định (123456) không?
             </p>
             {resetError && <p style={{ color: '#EF4444', fontSize: '0.875rem', marginTop: '8px' }}>{resetError}</p>}
             <ModalActions>
-              <Button onClick={() => setShowResetModal(false)} disabled={resetting}>Hủy bỏ</Button>
-              <Button $danger onClick={handleResetPassword} disabled={resetting}>
-                {resetting ? 'Đang xử lý...' : 'Xác nhận'}
-              </Button>
+              <ModalButton onClick={() => setShowResetModal(false)} disabled={resetting}>Hủy bỏ</ModalButton>
+              <ModalButton $danger onClick={handleResetPassword} disabled={resetting}>
+                {resetting ? 'Đang xử lý...' : 'Khôi phục mật khẩu'}
+              </ModalButton>
             </ModalActions>
           </ModalContent>
         </ModalOverlay>

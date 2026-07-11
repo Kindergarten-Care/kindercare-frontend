@@ -280,7 +280,7 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
                             <Td>{student.admissionDate ? new Date(Number(student.admissionDate) * 1000).toLocaleDateString('vi-VN') : '—'}</Td>
                             <Td style={{ textAlign: 'center' }}>
                               <button 
-                                onClick={() => router.push(`/students/${student.studentId}`)}
+                                onClick={() => router.push(`/students/${student.studentId}?from=class`)}
                                 style={{
                                   padding: '6px 12px',
                                   backgroundColor: '#f1f5f9',

@@ -20,6 +20,7 @@ export interface StudentDetailApiDto {
   avatarUrl: string | null;
   classId: number | null;
   className: string | null;
+  currentClass: string | null;
   parents: StudentParentApiDto[];
 }
 

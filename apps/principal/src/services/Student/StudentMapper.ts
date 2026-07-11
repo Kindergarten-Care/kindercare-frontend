@@ -12,7 +12,7 @@ export class StudentMapper {
       status: api.status,
       avatarUrl: api.avatarUrl,
       classId: api.classId,
-      className: api.className,
+      className: api.currentClass ?? api.className,
       parents: api.parents?.map(p => ({
         parentId: p.parentId,
         fullName: p.fullName,

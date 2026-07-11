@@ -7,7 +7,16 @@ export const getFormattedDate = () => {
     });
     return formatter.format(new Date()) + ' (GMT +07:00)';
   } catch (e) {
-    // Fallback
     return new Date().toISOString().replace('T', ' ').substring(0, 19) + ' (GMT +00:00)';
   }
+};
+
+export const formatTimestamp = (ts: bigint | number | null | undefined): string => {
+  if (!ts) return 'Chưa cập nhật';
+  return new Date(Number(ts) * 1000).toLocaleDateString('vi-VN');
+};
+
+export const formatTimestampMs = (ms: number | null | undefined): string => {
+  if (!ms) return 'Chưa cập nhật';
+  return new Date(Number(ms)).toLocaleDateString('vi-VN');
 };
