@@ -410,29 +410,36 @@ export const TeacherDashboardView: React.FC = () => {
         <S.BodyLayout>
           {/* MAIN COLUMN (LEFT) */}
           <S.MainColumn>
-            <HeroBannerWidget 
-              className={activeClassName || 'Lớp Mầm 1'}
-              presentCount={presentCount}
-              totalCount={studentsList.length || 42}
-              onOpenScanner={() => setScannerOpen(true)}
-            />
+            {/*
+             * LAYOUT MỚI:
+             *  1. AttendanceStrip  = HeroBannerWidget + AttendanceProgressWidget (1 hàng, 2 cột)
+             *  2. QuickCategoriesWidget (thu gọn)
+             *  3. Danh sách điểm danh hôm nay (TodayKidsWidget) ở trên → sẽ chuyển sang RightColumn
+             *     ở đây giữ nguyên để không phá cấu trúc SidebarTeacher
+             *  4. Lich học / Schedule widget → bỏ wrap riêng
+             *  5. Assessment widget → bỏ wrap riêng
+             *  6. Newsfeed
+             */}
 
-            <QuickCategoriesWidget 
-              categories={cats} 
+            {/* [1] STRIP: Hero + Attendance Stats */}
+            <S.AttendanceStrip>
+              <HeroBannerWidget
+                className={activeClassName || 'Lớp Mầm 1'}
+                presentCount={presentCount}
+                totalCount={studentsList.length || 42}
+                onOpenScanner={() => setScannerOpen(true)}
+              />
+              <AttendanceProgressWidget
+                presentCount={presentCount}
+                totalCount={studentsList.length || 42}
+                onScanMore={() => setScannerOpen(true)}
+              />
+            </S.AttendanceStrip>
+
+            {/* [2] Quick Actions */}
+            <QuickCategoriesWidget
+              categories={cats}
               onViewAll={() => setAllFeaturesOpen(true)}
-            />
-
-            <TodayKidsWidget
-              kids={todayKids}
-              date={todayDate}
-              onKidClick={openQuickActionFor}
-              onViewAll={() => router.push('/attendance')}
-            />
-
-            <AttendanceProgressWidget
-              presentCount={presentCount}
-              totalCount={studentsList.length || 42}
-              onScanMore={() => setScannerOpen(true)}
             />
 
             <PeriodicAssessmentWidget
@@ -446,15 +453,26 @@ export const TeacherDashboardView: React.FC = () => {
               ) as Record<string, string>}
             />
 
-            <div style={{ marginTop: '8px' }}>
+            {/* [6] Newsfeed */}
+            <div>
               <ClassNewsfeedWidget classId={activeClassId} />
             </div>
           </S.MainColumn>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT COLUMN: Danh sách điểm danh + Tasks */}
           <S.RightColumn>
-            {/* Real API-driven Tasks List */}
-            <TaskListWidget tasks={tasks.slice(0, 3)} onViewAll={() => setRequestListType('all')} />
+            {/*
+             * RighColumn mới: Tasks + lịch sử xử lý đơn
+             * TodayKidsWidget chuyển sang đây trên màn lớn (>1180px)
+             */}
+            <TodayKidsWidget
+              kids={todayKids}
+              date={todayDate}
+              onKidClick={openQuickActionFor}
+              onViewAll={() => router.push('/attendance')}
+            />
+
+            <TaskListWidget tasks={tasks.slice(0, 5)} onViewAll={() => setRequestListType('all')} />
           </S.RightColumn>
         </S.BodyLayout>
       )}

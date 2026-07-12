@@ -277,18 +277,33 @@ export const MainColumn = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
 `;
 
 export const RightColumn = styled.div`
-  width: 336px;
+  width: 360px;
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 
   @media (max-width: 1180px) {
     width: 100%;
+  }
+`;
+
+/**
+ * Top strip: attendance progress bar (hero + stats).
+ * Collapses HeroBannerWidget + AttendanceProgressWidget into one compact row.
+ */
+export const AttendanceStrip = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: stretch;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
   }
 `;
 
