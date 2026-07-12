@@ -569,7 +569,7 @@ export const TeacherDashboardView: React.FC = () => {
         data={selectedProxy}
         onClose={() => setSelectedProxy(null)}
         onApprove={(id) => {
-          updateProxyReq.mutate({ authorizationId: Number(id), status: 'Approved' }, {
+          updateProxyReq.mutate({ authorizationId: Number(id) }, {
             onSuccess: () => {
               addToast('✅ Đã duyệt đơn đón hộ!');
               setSelectedProxy(null);

@@ -137,15 +137,16 @@ export const ChartCard = styled.section`
   background: #fff;
   border-radius: 20px;
   border: 1px solid #E6EEE9;
-  padding: 24px;
+  padding: 16px;
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
+  height: 100%;
 `;
 
 export const ChartTitle = styled.h2`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #1F2937;
   margin: 0;
@@ -154,7 +155,7 @@ export const ChartTitle = styled.h2`
 export const DonutRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 40px;
   flex-wrap: wrap;
 `;
 
@@ -184,7 +185,7 @@ export const DonutInner = styled.div`
 `;
 
 export const DonutRate = styled.span`
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 800;
   color: #005A36;
   letter-spacing: -0.02em;
@@ -229,7 +230,7 @@ export const LegendText = styled.span`
 `;
 
 export const LegendCount = styled.span<{ $color: string }>`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: ${props => props.$color};
 `;
@@ -275,7 +276,7 @@ export const ListHeader = styled.div`
 `;
 
 export const ListTitle = styled.h2`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #1F2937;
   margin: 0;
@@ -383,7 +384,7 @@ export const StudentAvatar = styled.div<{ $grad: string }>`
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   position: relative;
 `;
 
@@ -528,7 +529,7 @@ export const PopoverSaveButton = styled.button`
 `;
 
 export const ModalTitle = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: ${props => props.theme.colors.fg};
   margin-bottom: 16px;
@@ -860,8 +861,8 @@ export const KpiValue = styled.div<{ $color?: string }>`
 export const ChartCalendarGrid = styled.div`
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  gap: 18px;
-  align-items: start;
+  gap: 14px;
+  align-items: stretch;
 
   @media (max-width: 1140px) {
     grid-template-columns: 1fr;
@@ -869,9 +870,9 @@ export const ChartCalendarGrid = styled.div`
 `;
 
 export const WeeklyTrendContainer = styled.div`
-  margin-top: 22px;
+  margin-top: 12px;
   border-top: 1px solid #EEF4F0;
-  padding-top: 18px;
+  padding-top: 12px;
 `;
 
 export const WeeklyTrendHeader = styled.div`
@@ -898,7 +899,7 @@ export const WeeklyTrendBars = styled.div`
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px;
-  height: 110px;
+  height: 140px;
 `;
 
 export const WeeklyBarCol = styled.div`
@@ -940,7 +941,8 @@ export const CalendarCard = styled.section`
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: 16px;
   box-shadow: 0 4px 18px -4px rgba(0, 90, 54, 0.06);
-  padding: 22px;
+  padding: 16px;
+  height: 100%;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
 
   &:hover {
@@ -953,13 +955,13 @@ export const CalendarHeaderRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 `;
 
 export const CalendarMonthLabel = styled.span`
   font-family: ${props => props.theme.fonts.display};
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   color: ${props => props.theme.colors.fg};
 `;
 
@@ -989,7 +991,7 @@ export const CalendarNavBtn = styled.button`
 export const CalendarDowsHeader = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 3px;
   margin-bottom: 6px;
 `;
 
@@ -1003,7 +1005,7 @@ export const CalendarDowLabel = styled.span`
 export const CalendarDaysGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 3px;
 `;
 
 export const CalendarDayCell = styled.div<{ $isToday?: boolean; $isFuture?: boolean; $weekend?: boolean }>`
@@ -1012,8 +1014,6 @@ export const CalendarDayCell = styled.div<{ $isToday?: boolean; $isFuture?: bool
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
-  font-weight: ${props => props.$isToday ? '800' : '600'};
   border-radius: 9px;
   background: ${props => props.$isToday ? props.theme.colors.green : props.theme.colors.surface};
   color: ${props => {
@@ -1024,6 +1024,8 @@ export const CalendarDayCell = styled.div<{ $isToday?: boolean; $isFuture?: bool
   }};
   font-variant-numeric: tabular-nums;
   cursor: ${props => props.$isFuture ? 'default' : 'pointer'};
+  font-size: 11px;
+  font-weight: ${props => props.$isToday ? '800' : '600'};
   transition: background 0.15s;
 
   &:hover {
@@ -1049,9 +1051,9 @@ export const CalendarDayDot = styled.span<{ $color: string }>`
 export const CalendarLegend = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 11px;
-  margin-top: 16px;
-  padding-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid #EEF4F0;
   font-size: 11px;
   font-weight: 600;
@@ -1061,12 +1063,12 @@ export const CalendarLegend = styled.div`
 export const CalendarLegendItem = styled.span`
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
 `;
 
 export const CalendarLegendDot = styled.span<{ $color: string }>`
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: ${props => props.$color};
 `;
@@ -1173,7 +1175,7 @@ export const LeaveStudentAvatar = styled.span<{ $grad: string }>`
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
 `;
 
 export const LeaveStudentAvatarImg = styled.img`
@@ -1441,4 +1443,4 @@ export const LightboxCloseBtn = styled.button`
   &:hover {
     background: ${props => props.theme.colors.greenDark};
   }
-`;
+`;
