@@ -90,8 +90,14 @@ export const useLoginState = (): UseLoginStateReturn => {
     // Nếu thiếu env, fallback về portal (cùng port) để tránh lỗi localhost.
     const teacherBase =
       process.env.NEXT_PUBLIC_TEACHER_APP_URL || '';
-    const redirectUrl = teacherBase
-      ? new URL(teacherBase)
+    
+    // Thêm /teacher để khớp với basePath của teacher application
+    const teacherUrlWithBasePath = teacherBase
+      ? (teacherBase.endsWith('/teacher') ? teacherBase : `${teacherBase.replace(/\/$/, '')}/teacher`)
+      : '';
+
+    const redirectUrl = teacherUrlWithBasePath
+      ? new URL(teacherUrlWithBasePath)
       : (typeof window !== 'undefined' ? new URL('/teacher', window.location.origin) : new URL('http://localhost:3000/teacher'));
 
     redirectUrl.searchParams.set('token', token);
