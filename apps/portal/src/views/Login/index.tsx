@@ -127,7 +127,12 @@ export const LoginView: React.FC = () => {
   useEffect(() => {
     const session = getSession();
     if (session) {
-      const nextUrl = (process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001') + '/teacher';
+      const teacherBase = process.env.NEXT_PUBLIC_TEACHER_APP_URL || '';
+      const nextUrl = teacherBase
+        ? `${teacherBase}/teacher`
+        : (typeof window !== 'undefined'
+            ? `${window.location.origin}/teacher`
+            : 'http://localhost:3000/teacher');
       window.location.href = nextUrl;
     }
   }, []);
