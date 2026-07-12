@@ -23,13 +23,6 @@ export interface ScheduleItem {
   activityType: ActivityType;
 }
 
-export interface FeeInfo {
-  title: string;
-  deadline: string;
-  amount: number;
-  daysLeft: number;
-}
-
 export interface AttendanceStats {
   percentage: number;
   present: number;

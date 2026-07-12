@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { MessageInfo } from '@/config/types/dashboard';
 import { IconChat, IconClose, IconSend } from '@/assets/icons/dashboard';
@@ -24,6 +25,7 @@ const getInitials = (name: string): string => {
 };
 
 const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadCount = 2, classroom }) => {
+  const t = useTranslations('Dashboard');
   const [open, setOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessageInfo[]>(initialMessages);
   const [draft, setDraft] = useState<string>('');
@@ -42,7 +44,7 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadC
       ...prev,
       {
         id: Date.now().toString(),
-        sender: 'Phụ huynh',
+        sender: t('chat.parentSenderLabel'),
         avatar: '👩',
         preview: text,
         time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -59,7 +61,7 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadC
 
   return (
     <>
-      <S.Fab $hidden={open} onClick={() => setOpen(true)} aria-label="Nhắn tin với giáo viên">
+      <S.Fab $hidden={open} onClick={() => setOpen(true)} aria-label={t('alerts.messageTeacher')}>
         <IconChat size={22} color="#fff" />
         {unreadCount > 0 && <S.FabBadge>{unreadCount}</S.FabBadge>}
       </S.Fab>
@@ -69,9 +71,9 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadC
           <S.PanelHead>
             <S.TeacherAv>{getInitials(teacherName)}</S.TeacherAv>
             <S.TeacherInfo>
-              <S.TeacherName>{teacherName} - GV Lớp {classroom}</S.TeacherName>
+              <S.TeacherName>{t('chat.headerTitle', { teacherName, classroom: classroom ?? '' })}</S.TeacherName>
               <S.TeacherStatus>
-                Đang hoạt động
+                {t('chat.onlineStatus')}
               </S.TeacherStatus>
             </S.TeacherInfo>
             <S.CloseBtn onClick={() => setOpen(false)}>
@@ -93,7 +95,7 @@ const ChatFab: React.FC<ChatFabProps> = ({ teacherName, initialMessages, unreadC
 
           <S.InputRow>
             <S.Input
-              placeholder="Nhắn tin cho cô..."
+              placeholder={t('chat.inputPlaceholder')}
               value={draft}
               onChange={e => setDraft(e.target.value)}
               onKeyDown={handleKey}

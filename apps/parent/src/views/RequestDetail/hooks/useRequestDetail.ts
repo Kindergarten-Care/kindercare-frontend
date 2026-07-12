@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTopLoader } from 'nextjs-toploader';
 import { useRequestList } from '@/views/RequestList/hooks/useRequestList';
 import { RequestItem } from '@/views/RequestList/types';

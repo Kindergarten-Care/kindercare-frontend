@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
 import { IconChart } from '@/assets/icons/dashboard';
 import { useGrowthData } from './hooks/useGrowthData';
 import { getDiffLabel } from '@/utils/Student/Health';
 
 const GrowthWidget: React.FC = () => {
+  const t = useTranslations('Dashboard');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const {
@@ -34,11 +36,11 @@ const GrowthWidget: React.FC = () => {
         <S.CardHead>
           <S.CardTitle>
             <IconChart size={18} color="var(--brand)" />
-            Chỉ số phát triển
+            {t('growth.title')}
           </S.CardTitle>
         </S.CardHead>
         <div style={{ padding: '60px 40px', textAlign: 'center', color: 'var(--muted)' }}>
-          Đang tải dữ liệu phát triển...
+          {t('growth.loading')}
         </div>
       </S.Card>
     );
@@ -50,11 +52,11 @@ const GrowthWidget: React.FC = () => {
         <S.CardHead>
           <S.CardTitle>
             <IconChart size={18} color="var(--brand)" />
-            Chỉ số phát triển
+            {t('growth.title')}
           </S.CardTitle>
         </S.CardHead>
         <div style={{ padding: '60px 40px', textAlign: 'center', color: 'var(--muted)' }}>
-          Chưa có dữ liệu chỉ số phát triển cho bé.
+          {t('growth.empty')}
         </div>
       </S.Card>
     );
@@ -80,20 +82,20 @@ const GrowthWidget: React.FC = () => {
       <S.CardHead>
         <S.CardTitle>
           <IconChart size={18} color="var(--brand)" />
-          Chỉ số phát triển <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal', marginLeft: '6px' }}>(Cập nhật: {formattedLatestUpdate})</span>
+          {t('growth.title')} <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal', marginLeft: '6px' }}>{t('growth.updatedOn', { date: formattedLatestUpdate })}</span>
         </S.CardTitle>
         <S.LegendRow>
-          <S.LegendItem $color="var(--brand)">Cân nặng</S.LegendItem>
-          <S.LegendItem $color="#2563eb">Chiều cao</S.LegendItem>
+          <S.LegendItem $color="var(--brand)">{t('growth.weight')}</S.LegendItem>
+          <S.LegendItem $color="#2563eb">{t('growth.height')}</S.LegendItem>
         </S.LegendRow>
       </S.CardHead>
 
       {/* Stats Summary Card Row */}
       <S.StatsGrid>
         <S.StatCard $type="green">
-          <S.StatLabel>Cân nặng</S.StatLabel>
+          <S.StatLabel>{t('growth.weight')}</S.StatLabel>
           <S.StatValue>
-            {latest.weight} <span>kg</span>
+            {latest.weight} <span>{t('growth.kgAxis')}</span>
           </S.StatValue>
           <S.StatBadge $type={weightDiff === null || weightDiff >= 0 ? 'success' : 'warn'}>
             {getDiffLabel(weightDiff, true, latest.shortMonth)}
@@ -101,9 +103,9 @@ const GrowthWidget: React.FC = () => {
         </S.StatCard>
 
         <S.StatCard $type="blue">
-          <S.StatLabel>Chiều cao</S.StatLabel>
+          <S.StatLabel>{t('growth.height')}</S.StatLabel>
           <S.StatValue>
-            {latest.height} <span>cm</span>
+            {latest.height} <span>{t('growth.cmAxis')}</span>
           </S.StatValue>
           <S.StatBadge $type={heightDiff === null || heightDiff >= 0 ? 'success' : 'warn'}>
             {getDiffLabel(heightDiff, false, latest.shortMonth)}
@@ -111,7 +113,7 @@ const GrowthWidget: React.FC = () => {
         </S.StatCard>
 
         <S.StatCard $type="purple">
-          <S.StatLabel>Chỉ số BMI</S.StatLabel>
+          <S.StatLabel>{t('growth.bmi')}</S.StatLabel>
           <S.StatValue>{latest.bmi}</S.StatValue>
           <S.StatBadge $type={bmiStatus.type}>{bmiStatus.label}</S.StatBadge>
         </S.StatCard>
@@ -137,13 +139,13 @@ const GrowthWidget: React.FC = () => {
           <line x1="26" y1="75" x2="274" y2="75" stroke="#e2e8f0" strokeWidth="1" />
 
           {/* Left Y-axis labels (Weight - Green) */}
-          <S.AxisLabel x="20" y="8" textAnchor="end" style={{ fill: 'var(--brand)', fontSize: '7.5px' }}>kg</S.AxisLabel>
+          <S.AxisLabel x="20" y="8" textAnchor="end" style={{ fill: 'var(--brand)', fontSize: '7.5px' }}>{t('growth.kgAxis')}</S.AxisLabel>
           <S.AxisLabel x="20" y="18" textAnchor="end" style={{ fill: '#4b5563', fontSize: '8px' }}>{(weightMin + weightRange).toFixed(1)}</S.AxisLabel>
           <S.AxisLabel x="20" y="48" textAnchor="end" style={{ fill: '#4b5563', fontSize: '8px' }}>{(weightMin + weightRange / 2).toFixed(1)}</S.AxisLabel>
           <S.AxisLabel x="20" y="78" textAnchor="end" style={{ fill: '#4b5563', fontSize: '8px' }}>{weightMin.toFixed(1)}</S.AxisLabel>
 
           {/* Right Y-axis labels (Height - Blue) */}
-          <S.AxisLabel x="280" y="8" textAnchor="start" style={{ fill: '#2563eb', fontSize: '7.5px' }}>cm</S.AxisLabel>
+          <S.AxisLabel x="280" y="8" textAnchor="start" style={{ fill: '#2563eb', fontSize: '7.5px' }}>{t('growth.cmAxis')}</S.AxisLabel>
           <S.AxisLabel x="280" y="18" textAnchor="start" style={{ fill: '#4b5563', fontSize: '8px' }}>{Math.round(heightMin + heightRange)}</S.AxisLabel>
           <S.AxisLabel x="280" y="48" textAnchor="start" style={{ fill: '#4b5563', fontSize: '8px' }}>{Math.round(heightMin + heightRange / 2)}</S.AxisLabel>
           <S.AxisLabel x="280" y="78" textAnchor="start" style={{ fill: '#4b5563', fontSize: '8px' }}>{Math.round(heightMin)}</S.AxisLabel>
@@ -258,10 +260,10 @@ const GrowthWidget: React.FC = () => {
               {chartData[hoveredIdx].month}
             </strong>
             <div style={{ color: '#4ade80', fontSize: '10.5px', fontWeight: 600 }}>
-              Cân nặng: {chartData[hoveredIdx].weight} kg
+              {t('growth.tooltipWeight', { value: chartData[hoveredIdx].weight })}
             </div>
             <div style={{ color: '#60a5fa', fontSize: '10.5px', fontWeight: 600, marginTop: 2 }}>
-              Chiều cao: {chartData[hoveredIdx].height} cm
+              {t('growth.tooltipHeight', { value: chartData[hoveredIdx].height })}
             </div>
           </S.ChartTooltip>
         )}

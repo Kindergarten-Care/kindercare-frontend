@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import * as S from './styles';
 import { ScheduleItem } from '@/config/types/dashboard';
 import { ActivityType } from '@/config/types/dailySchedule';
@@ -53,6 +55,9 @@ interface LiveScheduleWidgetProps {
 }
 
 const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, className, todayAttendanceStatus }) => {
+  const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations('Dashboard');
   const [nowMin, setNowMin] = useState(() => {
     const d = new Date();
     return d.getHours() * 60 + d.getMinutes();
@@ -88,7 +93,7 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
           </svg>
         </S.HeadIco>
         <S.HeadText>
-          <S.CardTitle>Thời khóa biểu hôm nay</S.CardTitle>
+          <S.CardTitle>{t('schedule.title')}</S.CardTitle>
           {className && <S.CardSub>{className}</S.CardSub>}
         </S.HeadText>
         <S.ClockBadge>{clock}</S.ClockBadge>
@@ -102,8 +107,8 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
                 <MoonIcon />
               </svg>
             </S.EmptyIcon>
-            <S.EmptyTitle>Hôm nay là ngày nghỉ của bé</S.EmptyTitle>
-            <S.EmptySub>Bé không đến trường hôm nay</S.EmptySub>
+            <S.EmptyTitle>{t('schedule.offTitle')}</S.EmptyTitle>
+            <S.EmptySub>{t('schedule.offSub')}</S.EmptySub>
           </S.EmptyState>
         ) : (
           <S.EmptyState>
@@ -112,8 +117,8 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
                 <ClockIcon />
               </svg>
             </S.EmptyIcon>
-            <S.EmptyTitle>Chưa có thời khóa biểu hôm nay</S.EmptyTitle>
-            <S.EmptySub>Các hoạt động của bé sẽ được<br />cập nhật sớm nhất</S.EmptySub>
+            <S.EmptyTitle>{t('schedule.emptyTitle')}</S.EmptyTitle>
+            <S.EmptySub dangerouslySetInnerHTML={{ __html: t.raw('emptyActivitiesSub') }} />
           </S.EmptyState>
         )
       ) : (
@@ -123,7 +128,7 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <HomeIcon />
               </svg>
-              Đã tan học
+              {t('schedule.done')}
             </S.DoneBanner>
           )}
           <S.Stage>
@@ -155,11 +160,11 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
                       <S.SlotName $active={isActive}>{item.title}</S.SlotName>
                       {item.note && <S.SlotDesc>{item.note}</S.SlotDesc>}
                     </S.SlotBody>
-                    {isActive && isLive       && <S.LiveBadge><S.LiveDot />Đang diễn ra</S.LiveBadge>}
-                    {isActive && isBeforeFirst && <S.Tag $type="soon">Sắp tới</S.Tag>}
-                    {isDone                    && <S.Tag $type="done">Xong</S.Tag>}
+                    {isActive && isLive       && <S.LiveBadge><S.LiveDot />{t('schedule.ongoing')}</S.LiveBadge>}
+                    {isActive && isBeforeFirst && <S.Tag $type="soon">{t('schedule.upcoming')}</S.Tag>}
+                    {isDone                    && <S.Tag $type="done">{t('schedule.finished')}</S.Tag>}
                     {isNext && (isLive || (!isBeforeFirst && !isAfterLast)) && (
-                      <S.Tag $type="next">Tiếp theo</S.Tag>
+                      <S.Tag $type="next">{t('schedule.next')}</S.Tag>
                     )}
                   </S.Slot>
                 );
@@ -170,8 +175,8 @@ const LiveScheduleWidget: React.FC<LiveScheduleWidgetProps> = ({ schedule, class
       )}
 
       {!(emptyState && isAbsent) && (
-        <S.ViewBtn onClick={() => alert('Xem thời khóa biểu đầy đủ')}>
-          Xem thời khóa biểu
+        <S.ViewBtn onClick={() => router.push(`/${locale}/schedule`)}>
+          {t('schedule.viewFull')}
           <ArrowIcon size={16} />
         </S.ViewBtn>
       )}

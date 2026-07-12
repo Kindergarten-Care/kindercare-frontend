@@ -5,6 +5,7 @@ export class ParentMapper {
     return {
       parentId: dto.parentId,
       fullName: dto.fullName,
+      dateOfBirth: dto.dateOfBirth,
       phoneNumber: dto.phoneNumber,
       email: dto.email,
       idCard: dto.idCard,

@@ -14,12 +14,6 @@ interface RoleContent {
 }
 
 const ROLE_CONTENT: Record<UserRole, RoleContent> = {
-  admin: {
-    title: 'Đăng nhập quyền IT Admin',
-    subtitle: 'Vui lòng nhập thông tin xác thực hệ thống.',
-    inputLabel: 'Tên đăng nhập / Mã nhân viên',
-    inputPlaceholder: 'Nhập mã nhân viên...',
-  },
   principal: {
     title: 'Đăng nhập quyền Hiệu Trưởng',
     subtitle: 'Vui lòng nhập thông tin tài khoản Hiệu trưởng nhà trường.',
@@ -35,7 +29,6 @@ const ROLE_CONTENT: Record<UserRole, RoleContent> = {
 };
 
 const ROLE_TABS: { key: UserRole; label: string }[] = [
-  { key: 'admin', label: 'IT Admin' },
   { key: 'principal', label: 'Hiệu Trưởng' },
   { key: 'teacher', label: 'Giáo Viên' },
 ];

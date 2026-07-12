@@ -1,97 +1,106 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
+import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import * as S from './styles';
-import { initPushNotification } from '@kindercare/core';
 
 import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
 import LiveScheduleWidget from './components/LiveScheduleWidget';
-import DevelopmentalDomainsWidget from './components/DevelopmentalDomainsWidget';
+import MiniGrowthWidget from './components/MiniGrowthWidget';
 import CameraWidget from './components/CameraWidget';
-import DailyLessonWidget from './components/DailyLessonWidget';
+import DailyMenuWidget from './components/DailyMenuWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
-import GrowthWidget from './components/GrowthWidget';
-import LeaveRequestPopup from './components/LeaveRequestPopup';
-import MedicationRequestPopup from './components/MedicationRequestPopup';
-import AttendanceQrPopup from './components/AttendanceQrPopup';
+import UrgentNoticeBanner from './components/UrgentNoticeBanner';
 import { useParentDashboard } from './hooks/useParentDashboard';
+import { useRouter } from '@/i18n/routing';
+
+const LeaveRequestPopup      = dynamic(() => import('./components/LeaveRequestPopup'),      { ssr: false });
+const MedicationRequestPopup = dynamic(() => import('./components/MedicationRequestPopup'), { ssr: false });
+const ProxyRequestPopup      = dynamic(() => import('./components/ProxyRequestPopup'),      { ssr: false });
+const AttendanceQrPopup      = dynamic(() => import('./components/AttendanceQrPopup'),      { ssr: false });
 
 export function ParentDashboard(): React.ReactElement {
-  useEffect(() => {
-    initPushNotification();
-  }, []);
-
+  const router = useRouter();
+  const t = useTranslations('Dashboard');
   const {
     loading,
     activeStudent,
     schedule,
-    lessons,
     photos,
     calendarDays,
     attendanceStats,
     latestAssessment,
+    urgentNotices,
     childHero,
+    todayCalendarStatus,
     avatarGradient,
     avatarInitial,
     viewYear,
     viewMonth,
     prevMonth,
     nextMonth,
-    isLeavePopupOpen, setIsLeavePopupOpen,
-    isMedicationPopupOpen, setIsMedicationPopupOpen,
-    isQrPopupOpen, setIsQrPopupOpen,
+    isLeavePopupOpen,     openLeavePopup,  closeLeavePopup,
+    isMedicationPopupOpen, openMedicPopup, closeMedicPopup,
+    isProxyPopupOpen,      openProxyPopup,  closeProxyPopup,
+    isQrPopupOpen,        openQrPopup,     closeQrPopup,
+    unpaidCount,
+    dailyMenu,
   } = useParentDashboard();
 
   if (loading || !activeStudent || !childHero) {
     return (
       <S.DashboardContainer>
-        <div style={{ padding: 40, color: 'var(--muted)' }}>Đang tải dữ liệu...</div>
+        <div style={{ padding: 40, color: 'var(--muted)' }}>{t('loading')}</div>
       </S.DashboardContainer>
     );
   }
 
+  const handleMonthChange = (direction: 'prev' | 'next'): void => {
+    if (direction === 'prev') prevMonth();
+    else nextMonth();
+  };
+
   return (
     <S.DashboardContainer>
+      {urgentNotices.length > 0 && <UrgentNoticeBanner notices={urgentNotices} />}
+
       <ChildHeroWidget
         data={childHero}
         avatarGradient={avatarGradient}
         avatarInitial={avatarInitial}
         avatarUrl={activeStudent.avatarUrl}
-        onAbsence={() => setIsLeavePopupOpen(true)}
-        onMessage={() => alert('Nhắn tin với giáo viên')}
-        onCheckinQr={() => setIsQrPopupOpen(true)}
+        onAbsence={openLeavePopup}
+        onMessage={() => alert(t('alerts.messageTeacher'))}
+        onCheckinQr={openQrPopup}
       />
 
       <S.MainGrid>
         <S.LeftColumn>
-          <S.LeftTopGrid>
-            <S.ColumnStack>
-              <QuickActionsStrip
-                onAbsence={() => setIsLeavePopupOpen(true)}
-                onMedication={() => setIsMedicationPopupOpen(true)}
-                onFee={() => alert('Đóng học phí')}
-                onDiary={() => alert('Nhật ký')}
-                onPickup={() => alert('Đăng ký người đón hộ')}
-              />
-              <DevelopmentalDomainsWidget assessment={latestAssessment} />
-            </S.ColumnStack>
-
-            <GrowthWidget />
-          </S.LeftTopGrid>
+          <QuickActionsStrip
+            onAbsence={openLeavePopup}
+            onMedication={openMedicPopup}
+            onFee={() => router.push('/billing')}
+            onDiary={() => router.push('/diary')}
+            onPickup={openProxyPopup}
+            unpaidCount={unpaidCount}
+          />
 
           <S.BottomGrid>
-            <LiveScheduleWidget
-              schedule={schedule}
-              className={activeStudent.className}
-              todayAttendanceStatus={calendarDays.find(d => d.day === new Date().getDate())?.status}
-            />
             <S.ColumnStack>
+              <LiveScheduleWidget
+                schedule={schedule}
+                className={activeStudent.className}
+                todayAttendanceStatus={todayCalendarStatus}
+              />
               <AlbumStripWidget photos={photos} />
-              <DailyLessonWidget lessons={lessons} />
             </S.ColumnStack>
+            <DailyMenuWidget menu={dailyMenu} />
           </S.BottomGrid>
+
+          <MiniGrowthWidget assessment={latestAssessment} />
         </S.LeftColumn>
 
         <S.RightColumn>
@@ -112,21 +121,28 @@ export function ParentDashboard(): React.ReactElement {
 
       <LeaveRequestPopup
         isOpen={isLeavePopupOpen}
-        onClose={() => setIsLeavePopupOpen(false)}
+        onClose={closeLeavePopup}
         studentName={activeStudent.fullName}
         className={activeStudent.className}
       />
 
       <MedicationRequestPopup
         isOpen={isMedicationPopupOpen}
-        onClose={() => setIsMedicationPopupOpen(false)}
+        onClose={closeMedicPopup}
+        studentName={activeStudent.fullName}
+        className={activeStudent.className}
+      />
+
+      <ProxyRequestPopup
+        isOpen={isProxyPopupOpen}
+        onClose={closeProxyPopup}
         studentName={activeStudent.fullName}
         className={activeStudent.className}
       />
 
       <AttendanceQrPopup
         isOpen={isQrPopupOpen}
-        onClose={() => setIsQrPopupOpen(false)}
+        onClose={closeQrPopup}
         student={{
           studentId: activeStudent.studentId,
           fullName: activeStudent.fullName,

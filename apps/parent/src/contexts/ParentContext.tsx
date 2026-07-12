@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@kindercare/core';
-import { ParentProfileDomainModel } from '@/config/types/parent';
+import { ParentProfileDomainModel, UpdateParentProfileDto } from '@/config/types/parent';
 import { parentService } from '@/services/Parent/ParentService';
 
 interface ParentContextValue {
@@ -10,6 +10,7 @@ interface ParentContextValue {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
+  updateProfile: (dto: UpdateParentProfileDto) => Promise<ParentProfileDomainModel>;
 }
 
 const ParentContext = createContext<ParentContextValue | null>(null);
@@ -44,11 +45,18 @@ export function ParentProvider({ children }: { children: React.ReactNode }): Rea
     }
   }, [isAuthenticated, authLoading, fetchProfile]);
 
+  const updateProfile = useCallback(async (dto: UpdateParentProfileDto) => {
+    const updated = await parentService.updateProfile(dto);
+    setParentProfile(updated);
+    return updated;
+  }, []);
+
   const value: ParentContextValue = {
     parentProfile,
     loading,
     error,
     refreshProfile: fetchProfile,
+    updateProfile,
   };
 
   return (
