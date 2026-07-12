@@ -5,7 +5,7 @@ FROM node:20-alpine AS base
 FROM base AS pruner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-RUN npm install -g turbo
+RUN npm install -g turbo@^2.9.18
 COPY . .
 ARG APP_NAME
 RUN turbo prune @kindercare/${APP_NAME} --docker
