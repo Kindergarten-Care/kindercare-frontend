@@ -54,6 +54,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const isProfileActive = pathname === '/profile';
   const isHealthActive = pathname === '/health';
   const isAssessmentActive = pathname === '/assessment';
+  const isProxyActive = pathname === '/proxy-approvals';
 
   // Extract user initials
   const getInitials = (name?: string) => {
@@ -116,6 +117,11 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           {isScheduleActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Calendar size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Thực đơn & Lịch học</S.NavLabel>
+        </S.NavItem>
+        <S.NavItem $active={isProxyActive} $isCollapsed={isCollapsed} onClick={() => router.push('/proxy-approvals')}>
+          {isProxyActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
+          <S.NavIcon><Users size={20} strokeWidth={1.8} /></S.NavIcon>
+          <S.NavLabel $isCollapsed={isCollapsed}>Duyệt đón hộ</S.NavLabel>
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>LỚP & HỌC TẬP</S.SectTitle>

@@ -6,6 +6,7 @@ import { TeacherSidebar } from '../TeacherSidebar';
 import { TopAppBar } from '../TopAppBar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useTeacherNotifications } from '@/hooks/useTeacherNotifications';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -20,6 +21,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  // Enable smart notifications polling
+  const { renderDetailModal } = useTeacherNotifications();
 
   return (
     <S.LayoutContainer $isCollapsed={isCollapsed}>
@@ -45,6 +49,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </S.PageContent>
       </S.MainContent>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      {renderDetailModal()}
     </S.LayoutContainer>
   );
 };
