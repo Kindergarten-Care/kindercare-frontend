@@ -241,7 +241,7 @@ export const useUpdateLeaveRequest = () => {
       status,
     }: {
       requestId: number;
-      status: 'Approved' | 'Rejected';
+      status: LeaveRequestStatus;
     }) => {
       return LeaveRequestService.processLeaveRequest(String(requestId), status);
     },

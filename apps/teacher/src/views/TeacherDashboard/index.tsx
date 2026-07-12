@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
+import { LeaveRequestStatus } from '@/config/types/attendance';
 import { HeroBannerWidget } from './components/HeroBannerWidget';
 import { QuickCategoriesWidget } from './components/QuickCategoriesWidget';
 import { TodayKidsWidget, TodayKid } from './components/TodayKidsWidget';
@@ -175,14 +176,14 @@ export const TeacherDashboardView: React.FC = () => {
 
   // MOCK DATA FOR NEW WIDGETS
   const handleApproveLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Approved' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'APPROVED' as LeaveRequestStatus }, {
       onSuccess: () => addToast('🎉 Đã duyệt đơn xin phép!'),
       onError: () => addToast('❌ Lỗi khi duyệt đơn')
     });
   };
 
   const handleRejectLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Rejected' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'REJECTED' as LeaveRequestStatus }, {
       onSuccess: () => addToast('Đã từ chối đơn!'),
       onError: () => addToast('❌ Lỗi khi từ chối đơn')
     });

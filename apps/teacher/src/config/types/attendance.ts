@@ -38,4 +38,6 @@ export interface LeaveRequest {
   createdAt?: number;
   className?: string;
   studentAvatar?: string;
+  approverId?: number; // TeacherID who approved/rejected
+  updatedTime?: number;
 }

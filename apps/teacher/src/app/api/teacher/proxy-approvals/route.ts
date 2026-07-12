@@ -23,11 +23,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ ok: false, error: 'Không tìm thấy đơn đăng ký' }, { status: 404 });
     }
 
+    // Guard: only Pending records can be processed
     if (authItem.Status !== 'Pending') {
-      return NextResponse.json({ ok: false, error: 'Đơn đăng ký này đã được xử lý hoặc hủy trước đó' }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: 'Đơn đăng ký này đã được xử lý hoặc hủy trước đó' },
+        { status: 409 } // 409 Conflict is more accurate for state transition errors
+      );
     }
 
-    const success = updateProxyStatus(Number(authorizationId), status);
+    // Extract mock teacher ID from header (real BE extracts from JWT)
+    const teacherId = Number(request.headers.get('x-teacher-id') || 5);
+
+    const success = updateProxyStatus(Number(authorizationId), status, teacherId);
     if (success) {
       console.log(`[Proxy API] Successfully updated Authorization ${authorizationId} to ${status}`);
       

@@ -76,7 +76,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     setRequests(prev => prev.map(r => r.id === id ? { ...r, isProcessed: true, processedStatus: approve ? 'APPROVED' : 'REJECTED' } as any : r));
 
     try {
-      const status = approve ? 'Approved' : 'Rejected';
+      const status = approve ? 'APPROVED' : 'REJECTED';
       await updateLeaveRequest.mutateAsync({ requestId: Number(id), status });
 
       // Update attendance status in database to sync

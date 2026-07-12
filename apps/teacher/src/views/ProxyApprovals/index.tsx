@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { ShieldCheck, UserCheck, X, FileText, Phone, CreditCard, Calendar, Clock } from 'lucide-react';
 import * as S from './styles';
 
+export type ProxyStatus = 'Pending' | 'Approved' | 'Rejected';
+
 export interface ProxyAuthorization {
   AuthorizationID: number;
   StudentID: number;
@@ -17,8 +19,18 @@ export interface ProxyAuthorization {
   ProxyIDCard: string;
   ProxyPhotoURL: string;
   Notes: string;
-  Status: 'Pending' | 'Approved' | 'Rejected';
+  Status: ProxyStatus;
   CreatedAt: number;
+  ProcessedBy?: number; // teacher ID who processed
+}
+
+function normalizePhotoUrl(url: string | null | undefined): string {
+  if (!url) return 'https://ui-avatars.com/api/?name=Unknown&background=e5e7eb&color=374151&size=150';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  // Relative path → prepend media host
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+  const host = apiBase.split('/api')[0];
+  return `${host}/${url.replace(/^\//, '')}`;
 }
 
 export const ProxyApprovalList: React.FC = () => {
@@ -26,14 +38,23 @@ export const ProxyApprovalList: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<ProxyAuthorization | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
-  // Fetch all authorizations with 3-second smart polling interval
+  // Fetch all authorizations — pass status=Pending to BE for server-side filtering
+  // (mock ignores it; real BE should filter)
   const { data: requests, isLoading } = useQuery<ProxyAuthorization[]>({
-    queryKey: ['proxyApprovals'],
+    queryKey: ['proxyApprovals', activeTab],
     queryFn: async () => {
-      const res = await apiClient.get('/teacher/proxy-approvals');
-      return res.data?.data || [];
+      // Only fetch Pending for the pending tab; for history, fetch all
+      const params: Record<string, string> = {};
+      if (activeTab === 'pending') {
+        params.status = 'Pending';
+      }
+      const res = await apiClient.get('/teacher/proxy-approvals', { params });
+      return (res.data?.data || []).map((item: ProxyAuthorization) => ({
+        ...item,
+        ProxyPhotoURL: normalizePhotoUrl(item.ProxyPhotoURL),
+      }));
     },
-    refetchInterval: 3000, // 3 seconds polling
+    refetchInterval: 3000,
   });
 
   // Re-usable Mutation to Approve or Reject
@@ -41,7 +62,7 @@ export const ProxyApprovalList: React.FC = () => {
     mutationFn: async ({ id, status }: { id: number; status: 'Approved' | 'Rejected' }) => {
       const res = await apiClient.patch('/teacher/proxy-approvals', {
         authorizationId: id,
-        status: status
+        status: status,
       });
       return res.data;
     },
@@ -52,20 +73,22 @@ export const ProxyApprovalList: React.FC = () => {
           : 'Đã từ chối yêu cầu đón hộ.'
       );
       setSelectedRequest(null);
-      // Invalidate query to refresh list
       queryClient.invalidateQueries({ queryKey: ['proxyApprovals'] });
     },
     onError: (err: any) => {
-      const errMsg = err?.response?.data?.error || 'Có lỗi xảy ra khi xử lý yêu cầu';
+      const errMsg =
+        err?.response?.data?.error ||
+        err?.data?.error ||
+        'Có lỗi xảy ra khi xử lý yêu cầu';
       toast.error(errMsg);
-    }
+    },
   });
 
   const handleProcess = (status: 'Approved' | 'Rejected') => {
     if (!selectedRequest) return;
     updateStatusMutation.mutate({
       id: selectedRequest.AuthorizationID,
-      status: status
+      status: status,
     });
   };
 
@@ -80,9 +103,14 @@ export const ProxyApprovalList: React.FC = () => {
   }
 
   const allRequests = requests || [];
-  const pendingRequests = allRequests.filter(r => r.Status === 'Pending');
-  const historyRequests = allRequests.filter(r => r.Status === 'Approved' || r.Status === 'Rejected');
-  
+  // For history tab, filter client-side since BE may not support status=Approved+Rejected combined
+  const pendingRequests =
+    activeTab === 'pending' ? allRequests.filter((r) => r.Status === 'Pending') : [];
+  const historyRequests =
+    activeTab === 'history'
+      ? allRequests.filter((r) => r.Status === 'Approved' || r.Status === 'Rejected')
+      : [];
+
   const currentList = activeTab === 'pending' ? pendingRequests : historyRequests;
 
   return (
@@ -104,11 +132,11 @@ export const ProxyApprovalList: React.FC = () => {
       {/* Tabs Selector */}
       <S.TabRow>
         <S.TabButton $active={activeTab === 'pending'} onClick={() => setActiveTab('pending')}>
-          Chờ duyệt 
+          Chờ duyệt
           <S.TabBadge $active={activeTab === 'pending'}>{pendingRequests.length}</S.TabBadge>
         </S.TabButton>
         <S.TabButton $active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
-          Lịch sử duyệt 
+          Lịch sử duyệt
           <S.TabBadge $active={activeTab === 'history'}>{historyRequests.length}</S.TabBadge>
         </S.TabButton>
       </S.TabRow>
@@ -119,8 +147,8 @@ export const ProxyApprovalList: React.FC = () => {
           <UserCheck size={40} color="#9CA3AF" />
           <h3>{activeTab === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Lịch sử trống'}</h3>
           <p>
-            {activeTab === 'pending' 
-              ? 'Tất cả các yêu cầu đăng ký đón hộ đã được xử lý hoàn tất.' 
+            {activeTab === 'pending'
+              ? 'Tất cả các yêu cầu đăng ký đón hộ đã được xử lý hoàn tất.'
               : 'Chưa có yêu cầu đón hộ nào được phê duyệt hay từ chối.'}
           </p>
         </S.EmptyState>
@@ -141,7 +169,7 @@ export const ProxyApprovalList: React.FC = () => {
                   </S.HistoryStatusBadge>
                 )}
               </S.CardHeader>
-              
+
               <S.CardBody>
                 <S.AvatarBox>
                   <img src={req.ProxyPhotoURL} alt={req.ProxyName} />
@@ -177,7 +205,7 @@ export const ProxyApprovalList: React.FC = () => {
                 <X size={20} />
               </S.CloseBtn>
             </S.ModalHeader>
-            
+
             <S.ModalBody>
               {/* Photo */}
               <S.LargePhoto>
@@ -218,7 +246,9 @@ export const ProxyApprovalList: React.FC = () => {
                     {selectedRequest.Status === 'Pending' ? (
                       <span style={{ color: '#D97706', fontWeight: 800 }}>⏳ Đang chờ duyệt</span>
                     ) : selectedRequest.Status === 'Approved' ? (
-                      <span style={{ color: '#059669', fontWeight: 800 }}>✅ Đã phê duyệt</span>
+                      <span style={{ color: '#059669', fontWeight: 800 }}>
+                        ✅ Đã phê duyệt
+                      </span>
                     ) : (
                       <span style={{ color: '#DC2626', fontWeight: 800 }}>❌ Đã từ chối</span>
                     )}
@@ -238,13 +268,13 @@ export const ProxyApprovalList: React.FC = () => {
             <S.ModalFooter>
               {selectedRequest.Status === 'Pending' ? (
                 <>
-                  <S.RejectBtn 
+                  <S.RejectBtn
                     onClick={() => handleProcess('Rejected')}
                     disabled={updateStatusMutation.isPending}
                   >
                     {updateStatusMutation.isPending ? 'Đang xử lý...' : 'Từ chối'}
                   </S.RejectBtn>
-                  <S.ApproveBtn 
+                  <S.ApproveBtn
                     onClick={() => handleProcess('Approved')}
                     disabled={updateStatusMutation.isPending}
                   >
@@ -252,9 +282,7 @@ export const ProxyApprovalList: React.FC = () => {
                   </S.ApproveBtn>
                 </>
               ) : (
-                <S.ApproveBtn onClick={() => setSelectedRequest(null)}>
-                  Đóng lại
-                </S.ApproveBtn>
+                <S.ApproveBtn onClick={() => setSelectedRequest(null)}>Đóng lại</S.ApproveBtn>
               )}
             </S.ModalFooter>
           </S.ModalBox>
