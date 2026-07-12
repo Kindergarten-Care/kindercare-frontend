@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, socketService } from '@kindercare/core';
+import { apiClient, socketService, notificationService, type NotificationDto } from '@kindercare/core';
 import { toast } from 'react-toastify';
 import { X, Calendar, FileText, Check, AlertCircle } from 'lucide-react';
 import styled, { keyframes } from 'styled-components';
