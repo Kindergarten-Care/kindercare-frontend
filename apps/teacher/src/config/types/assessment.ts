@@ -53,6 +53,8 @@ export const BE_REQUIRED_SCORE_KEYS: AssessmentCriterionKey[] = [
 export const BE_OPTIONAL_SCORE_KEYS: ReadonlyArray<string> = [
   'emotionalScore',
   'socialScore',
+  'aestheticScore',
+  'lifeSkillScore',
 ] as const;
 
 /**
@@ -82,10 +84,7 @@ export const BE_SUPPORTED_FIELDS: ReadonlyArray<string> = [
  * Hiện có 2 tiêu chí: Thẩm mỹ + Kỹ năng sống (DB `DevelopmentAssessments` không có cột).
  * FE vẫn hiển thị cho user nhập, lưu localStorage để sau này BE mở rộng có sẵn data.
  */
-export const LOCAL_ONLY_FIELDS: AssessmentCriterionKey[] = [
-  'aestheticScore',   // DB chưa có cột
-  'lifeSkillScore',   // DB chưa có cột
-];
+export const LOCAL_ONLY_FIELDS: AssessmentCriterionKey[] = [];
 
 /** Body payload gửi lên BE khi tạo/cập nhật. */
 export interface UpsertAssessmentItem {
@@ -130,6 +129,8 @@ export interface AssessmentHistoryPoint {
   /** ✅ BE đã hỗ trợ (sau TASK 1). */
   emotionalScore: number;
   socialScore: number;
+  aestheticScore: number;
+  lifeSkillScore: number;
   /** Có thể null/undefined nếu record cũ chưa có. */
   overallNote?: string;
   createdAt?: number;

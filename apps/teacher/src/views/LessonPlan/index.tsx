@@ -17,6 +17,7 @@ import { useTeacherClasses } from '@/hooks/useTeacherQueries';
 import { DAYS, SUBJECTS, getSubjectMeta } from './constants';
 import { useLessonPlan } from './hooks/useLessonPlan';
 import { LessonModal } from './components/LessonModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import * as S from './styles';
 import type { DayKey } from '@/config/types/lessonPlan';
 import {
@@ -42,6 +43,7 @@ function statusColor(s: LessonPlanStatus): { fg: string; bg: string } {
 }
 
 export const LessonPlanView: React.FC = () => {
+  const [itemToDeleteId, setItemToDeleteId] = React.useState<string | null>(null);
   const { data: classes } = useTeacherClasses();
   const activeClass = classes && classes.length > 0 ? classes[0] : null;
   const className = activeClass?.displayName ?? 'Lớp Mầm 1';
@@ -334,7 +336,7 @@ export const LessonPlanView: React.FC = () => {
                               type="button"
                               $danger
                               title="Xoá"
-                              onClick={() => removeLesson(lesson.id)}
+                              onClick={() => setItemToDeleteId(lesson.id)}
                             >
                               <Trash2 size={13} strokeWidth={2} />
                             </S.IconBtn>
@@ -383,6 +385,23 @@ export const LessonPlanView: React.FC = () => {
           <S.ToastItem key={toast.id}>{toast.text}</S.ToastItem>
         ))}
       </S.ToastStack>
+
+      {itemToDeleteId && (
+        <ConfirmDialog
+          title="Xóa tiết học?"
+          message="Bạn có chắc chắn muốn xóa tiết học này khỏi kế hoạch giảng dạy tuần? Hành động này không thể hoàn tác."
+          confirmText="Xóa"
+          cancelText="Hủy"
+          variant="danger"
+          onConfirm={() => {
+            if (itemToDeleteId) {
+              removeLesson(itemToDeleteId);
+            }
+            setItemToDeleteId(null);
+          }}
+          onCancel={() => setItemToDeleteId(null)}
+        />
+      )}
     </S.Container>
   );
 };

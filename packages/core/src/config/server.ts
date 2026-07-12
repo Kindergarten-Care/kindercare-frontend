@@ -81,6 +81,11 @@ export const SERVER = {
     getClassAssessments:     '/teacher/classes/:classId/student-health/assessments',
     upsertClassAssessments:  '/teacher/classes/:classId/student-health/assessments',
     getStudentAssessmentHistory: '/teacher/classes/:classId/student-health/assessments/history',
+    
+    // Quản lý thông tin học sinh
+    getStudentAttendanceHistory: '/students/:studentId/attendance-history',
+    getStudentMedicationsToday:  '/students/:studentId/medications/today',
+    updateStudentInfo:           '/students/:studentId',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

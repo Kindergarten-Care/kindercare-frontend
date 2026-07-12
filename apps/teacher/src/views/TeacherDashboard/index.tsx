@@ -19,6 +19,7 @@ import { AllFeaturesModal } from './components/AllFeaturesModal';
 import { RequestListModal } from './components/RequestListModal';
 
 
+import { AlertTriangle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
@@ -64,6 +65,7 @@ export const TeacherDashboardView: React.FC = () => {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
 
   // Deep Link Search Params
   const searchParams = useSearchParams();
@@ -110,6 +112,7 @@ export const TeacherDashboardView: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoadingDashboard(true);
+      setDashboardError(null);
       const classes = (dashboardData as any)?.classes || await AttendanceService.getTeacherClasses();
       if (classes && classes.length > 0) {
         const firstClass = classes[0];
@@ -123,8 +126,9 @@ export const TeacherDashboardView: React.FC = () => {
         const present = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
         setPresentCount(present.length);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn('Failed to load dashboard data:', e);
+      setDashboardError(e?.response?.data?.message || e?.message || 'Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại đường truyền mạng.');
     } finally {
       setIsLoadingDashboard(false);
     }
@@ -136,19 +140,7 @@ export const TeacherDashboardView: React.FC = () => {
     }
   }, [isLoadingDashboardQuery, dashboardData]);
 
-  // HTML5 QR code scanner dependency loading
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const existingScript = document.getElementById('html5-qrcode-cdn');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.id = 'html5-qrcode-cdn';
-        script.src = 'https://unpkg.com/html5-qrcode';
-        script.async = true;
-        document.body.appendChild(script);
-      }
-    }
-  }, []);
+
 
   const addToast = (text: string) => {
     const id = 'toast-' + Date.now() + Math.random();
@@ -404,56 +396,67 @@ export const TeacherDashboardView: React.FC = () => {
         ))}
       </S.ConfettiContainer>
 
-      <S.BodyLayout>
-        {/* MAIN COLUMN (LEFT) */}
-        <S.MainColumn>
-          <HeroBannerWidget 
-            className={activeClassName || 'Lớp Mầm 1'}
-            presentCount={presentCount}
-            totalCount={studentsList.length || 42}
-            onOpenScanner={() => setScannerOpen(true)}
-          />
+      {dashboardError ? (
+        <S.ErrorContainer>
+          <AlertTriangle size={48} color="#DC2626" />
+          <S.ErrorTitle>Không thể tải dữ liệu lớp học</S.ErrorTitle>
+          <S.ErrorDesc>{dashboardError}</S.ErrorDesc>
+          <S.RetryButton onClick={loadDashboardData}>
+            Thử lại
+          </S.RetryButton>
+        </S.ErrorContainer>
+      ) : (
+        <S.BodyLayout>
+          {/* MAIN COLUMN (LEFT) */}
+          <S.MainColumn>
+            <HeroBannerWidget 
+              className={activeClassName || 'Lớp Mầm 1'}
+              presentCount={presentCount}
+              totalCount={studentsList.length || 42}
+              onOpenScanner={() => setScannerOpen(true)}
+            />
 
-          <QuickCategoriesWidget 
-            categories={cats} 
-            onViewAll={() => setAllFeaturesOpen(true)}
-          />
+            <QuickCategoriesWidget 
+              categories={cats} 
+              onViewAll={() => setAllFeaturesOpen(true)}
+            />
 
-          <TodayKidsWidget
-            kids={todayKids}
-            date={todayDate}
-            onKidClick={openQuickActionFor}
-            onViewAll={() => router.push('/attendance')}
-          />
+            <TodayKidsWidget
+              kids={todayKids}
+              date={todayDate}
+              onKidClick={openQuickActionFor}
+              onViewAll={() => router.push('/attendance')}
+            />
 
-          <AttendanceProgressWidget
-            presentCount={presentCount}
-            totalCount={studentsList.length || 42}
-            onScanMore={() => setScannerOpen(true)}
-          />
+            <AttendanceProgressWidget
+              presentCount={presentCount}
+              totalCount={studentsList.length || 42}
+              onScanMore={() => setScannerOpen(true)}
+            />
 
-          <PeriodicAssessmentWidget
-            classId={activeClassId}
-            termPeriod={termPeriod}
-            studentNames={Object.fromEntries(
-              studentsList.map((s: any) => [String(s.id), String(s.name ?? '')]).filter(([, n]) => n)
-            ) as Record<string, string>}
-            studentAvatars={Object.fromEntries(
-              studentsList.map((s: any) => [String(s.id), String(fixImageUrl(s.avatar) ?? '')]).filter(([, v]) => v)
-            ) as Record<string, string>}
-          />
+            <PeriodicAssessmentWidget
+              classId={activeClassId}
+              termPeriod={termPeriod}
+              studentNames={Object.fromEntries(
+                studentsList.map((s: any) => [String(s.id), String(s.name ?? '')]).filter(([, n]) => n)
+              ) as Record<string, string>}
+              studentAvatars={Object.fromEntries(
+                studentsList.map((s: any) => [String(s.id), String(fixImageUrl(s.avatar) ?? '')]).filter(([, v]) => v)
+              ) as Record<string, string>}
+            />
 
-          <div style={{ marginTop: '8px' }}>
-            <ClassNewsfeedWidget classId={activeClassId} />
-          </div>
-        </S.MainColumn>
+            <div style={{ marginTop: '8px' }}>
+              <ClassNewsfeedWidget classId={activeClassId} />
+            </div>
+          </S.MainColumn>
 
-        {/* RIGHT COLUMN */}
-        <S.RightColumn>
-          {/* Real API-driven Tasks List */}
-          <TaskListWidget tasks={tasks.slice(0, 3)} onViewAll={() => setRequestListType('all')} />
-        </S.RightColumn>
-      </S.BodyLayout>
+          {/* RIGHT COLUMN */}
+          <S.RightColumn>
+            {/* Real API-driven Tasks List */}
+            <TaskListWidget tasks={tasks.slice(0, 3)} onViewAll={() => setRequestListType('all')} />
+          </S.RightColumn>
+        </S.BodyLayout>
+      )}
 
       {/* FLOATING TOAST NOTIFICATIONS */}
       <S.ToastsContainer>

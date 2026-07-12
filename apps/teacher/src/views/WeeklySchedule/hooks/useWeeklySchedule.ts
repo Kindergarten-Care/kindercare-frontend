@@ -305,7 +305,10 @@ export const useWeeklySchedule = (activeClassId?: number) => {
     (day: SchoolDay, item: Omit<WeeklyScheduleDetail, 'scheduleDetailId' | 'weeklyScheduleId'>) => {
       const ws = weeks.find((w) => w.weekOrder === selectedWeek);
       const existing = ws?.items || [];
-      const newItem: WeeklyScheduleDetail = { ...item };
+      const newItem: WeeklyScheduleDetail = {
+        ...item,
+        scheduleDetailId: -Math.floor(Math.random() * 1000000) - 1,
+      };
       const updatedWs: WeeklySchedule = {
         weeklyScheduleId: ws?.weeklyScheduleId,
         monthlyScheduleId: monthlySchedule?.monthlyScheduleId || 0,

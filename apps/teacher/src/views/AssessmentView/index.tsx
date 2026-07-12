@@ -387,8 +387,8 @@ export const AssessmentView: React.FC = () => {
       currentRecord?.emotionalScore,
       currentRecord?.socialScore,
     ),
-    aestheticScore: 0, // DB chưa có cột → 0
-    lifeSkillScore: 0, // DB chưa có cột → 0
+    aestheticScore: currentRecord?.aestheticScore || 0,
+    lifeSkillScore: currentRecord?.lifeSkillScore || 0,
   }), [currentRecord]);
 
   /**
@@ -410,8 +410,8 @@ export const AssessmentView: React.FC = () => {
           previousRecord.emotionalScore,
           previousRecord.socialScore,
         ),
-        aestheticScore: 0,
-        lifeSkillScore: 0,
+        aestheticScore: previousRecord.aestheticScore || 0,
+        lifeSkillScore: previousRecord.lifeSkillScore || 0,
       },
     };
   }, [previousRecord]);
@@ -442,6 +442,8 @@ export const AssessmentView: React.FC = () => {
       physicalScore: item.physicalScore,
       cognitiveScore: item.cognitiveScore,
       languageScore: item.languageScore,
+      aestheticScore: item.aestheticScore,
+      lifeSkillScore: item.lifeSkillScore,
       ...(typeof socE === 'number' ? { emotionalScore: socE } : {}),
       ...(typeof socS === 'number' ? { socialScore: socS } : {}),
       ...(item.overallNote ? { overallNote: item.overallNote } : {}),
@@ -475,6 +477,8 @@ export const AssessmentView: React.FC = () => {
           physicalScore: item.physicalScore,
           cognitiveScore: item.cognitiveScore,
           languageScore: item.languageScore,
+          aestheticScore: item.aestheticScore || 0,
+          lifeSkillScore: item.lifeSkillScore || 0,
           emotionalScore: typeof socE === 'number' ? socE : 0,
           socialScore: typeof socS === 'number' ? socS : 0,
           overallNote: item.overallNote || item.teacherComment,
@@ -603,8 +607,8 @@ export const AssessmentView: React.FC = () => {
                       currentRecord.socialScore,
                     ),
                     /** DB chưa có cột → undefined, form sẽ dùng default 3. */
-                    aestheticScore: undefined,
-                    lifeSkillScore: undefined,
+                    aestheticScore: currentRecord.aestheticScore,
+                    lifeSkillScore: currentRecord.lifeSkillScore,
                     /** Tương thích ngược: form/validation cũ dùng `teacherComment`. */
                     teacherComment: currentRecord.overallNote,
                   }
