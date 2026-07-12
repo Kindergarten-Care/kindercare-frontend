@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { css, keyframes } from 'styled-components';
 import '../theme/types';
 
@@ -8,6 +9,8 @@ export interface DropdownOption<T extends string = string> {
   value: T;
   label: string;
   disabled?: boolean;
+  /** Nhãn nhóm (vd tên khối học) — các option liên tiếp cùng group sẽ được gộp dưới 1 tiêu đề nhóm. */
+  group?: string;
 }
 
 export interface DropdownProps<T extends string = string> {
@@ -83,12 +86,12 @@ const panelFade = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-const Panel = styled.ul`
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 80;
+const Panel = styled.ul<{ $top: number; $left: number; $width: number }>`
+  position: fixed;
+  top: ${({ $top }) => $top}px;
+  left: ${({ $left }) => $left}px;
+  width: ${({ $width }) => $width}px;
+  z-index: 1001;
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -99,6 +102,23 @@ const Panel = styled.ul`
   max-height: 240px;
   overflow-y: auto;
   animation: ${panelFade} 0.16s ease-out;
+`;
+
+const GroupLabel = styled.li`
+  padding: 0.5rem 0.85rem 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.muted};
+  list-style: none;
+  pointer-events: none;
+
+  &:not(:first-child) {
+    margin-top: 0.25rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+  }
 `;
 
 const Item = styled.li<{ $active: boolean; $selected: boolean; $disabled?: boolean }>`
@@ -179,8 +199,10 @@ export function Dropdown<T extends string = string>({
 
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [panelRect, setPanelRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLUListElement | null>(null);
 
   const selectedIndex = useMemo(
     () => options.findIndex((option) => option.value === value),
@@ -229,12 +251,36 @@ export function Dropdown<T extends string = string>({
   useEffect(() => {
     if (!open) return;
     const handler = (event: MouseEvent): void => {
+      const target = event.target as Node;
       const root = rootRef.current;
-      if (root && !root.contains(event.target as Node)) close();
+      const panel = panelRef.current;
+      if (root?.contains(target) || panel?.contains(target)) return;
+      close();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open, close]);
+
+  const updatePanelRect = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    setPanelRect({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPanelRect(null);
+      return;
+    }
+    updatePanelRect();
+    window.addEventListener('scroll', updatePanelRect, true);
+    window.addEventListener('resize', updatePanelRect);
+    return () => {
+      window.removeEventListener('scroll', updatePanelRect, true);
+      window.removeEventListener('resize', updatePanelRect);
+    };
+  }, [open, updatePanelRect]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
     if (disabled) return;
@@ -305,33 +351,45 @@ export function Dropdown<T extends string = string>({
         </Chevron>
       </Trigger>
 
-      {open && (
-        <Panel id={listboxId} role="listbox" aria-labelledby={triggerId}>
+      {open && panelRect && typeof document !== 'undefined' && createPortal(
+        <Panel
+          ref={panelRef}
+          id={listboxId}
+          role="listbox"
+          aria-labelledby={triggerId}
+          $top={panelRect.top}
+          $left={panelRect.left}
+          $width={panelRect.width}
+        >
           {options.map((option, index) => {
             const isSelected = index === selectedIndex;
             const isActive = index === activeIndex;
+            const showGroupLabel = !!option.group && option.group !== options[index - 1]?.group;
             return (
-              <Item
-                key={option.value}
-                role="option"
-                aria-selected={isSelected}
-                aria-disabled={option.disabled}
-                $active={isActive}
-                $selected={isSelected}
-                $disabled={option.disabled}
-                onMouseEnter={() => !option.disabled && setActiveIndex(index)}
-                onClick={() => selectAt(index)}
-              >
-                <span>{option.label}</span>
-                {isSelected && (
-                  <CheckIcon>
-                    <CheckGlyph />
-                  </CheckIcon>
-                )}
-              </Item>
+              <React.Fragment key={option.value}>
+                {showGroupLabel && <GroupLabel>{option.group}</GroupLabel>}
+                <Item
+                  role="option"
+                  aria-selected={isSelected}
+                  aria-disabled={option.disabled}
+                  $active={isActive}
+                  $selected={isSelected}
+                  $disabled={option.disabled}
+                  onMouseEnter={() => !option.disabled && setActiveIndex(index)}
+                  onClick={() => selectAt(index)}
+                >
+                  <span>{option.label}</span>
+                  {isSelected && (
+                    <CheckIcon>
+                      <CheckGlyph />
+                    </CheckIcon>
+                  )}
+                </Item>
+              </React.Fragment>
             );
           })}
-        </Panel>
+        </Panel>,
+        document.body,
       )}
     </Root>
   );

@@ -3,9 +3,16 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import { SocketProvider } from '@/contexts/SocketContext';
-import LanguageSwitcher from '@/layout/LanguageSwitcher';
+import { AuthProvider } from '@kindercare/core';
+import { PrincipalProvider } from '@/contexts/PrincipalContext';
+import { ToastContainer } from '@kindercare/ui';
+import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
+
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  display: 'swap',
+});
 
 export async function generateMetadata({
   params
@@ -54,15 +61,17 @@ export default async function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
+      <body className={inter.className} style={{ margin: 0, padding: 0, boxSizing: 'border-box' }}>
         <NextIntlClientProvider messages={messages}>
           <StyledComponentsRegistry>
-            <SocketProvider>
-              <LanguageSwitcher />
-              {children}
-            </SocketProvider>
+            <AuthProvider>
+              <PrincipalProvider>
+                {children}
+              </PrincipalProvider>
+            </AuthProvider>
           </StyledComponentsRegistry>
         </NextIntlClientProvider>
+        <ToastContainer />
       </body>
     </html>
   );
