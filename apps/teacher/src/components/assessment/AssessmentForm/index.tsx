@@ -392,11 +392,6 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         })}
       </BentoGrid>
 
-      <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#075985', borderRadius: 14, padding: '10px 14px', fontSize: 12, lineHeight: 1.5 }}>
-        ✅ BE đã hỗ trợ 5 tiêu chí (Thể chất, Nhận thức, Ngôn ngữ, Cảm xúc, Xã hội) + lời phê.
-        2 tiêu chí <b>Thẩm mỹ</b> và <b>Kỹ năng sống</b> vẫn được lưu cục bộ (DB chưa có cột) — sẽ gửi BE khi schema nâng cấp.
-      </div>
-
       <div>
         <TextareaLabel htmlFor="teacherComment">Lời phê của giáo viên</TextareaLabel>
         <Textarea

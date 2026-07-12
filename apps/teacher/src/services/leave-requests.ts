@@ -31,6 +31,7 @@ export function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
     createdAt: raw.createdAt || undefined,
     className: raw.className || undefined,
     studentAvatar: raw.studentAvatar || undefined,
+    approverId: raw.approverId || undefined,
   };
 }
 
@@ -38,12 +39,16 @@ export class LeaveRequestService {
   /**
    * Fetch all leave requests for the logged-in teacher.
    * @param status - Optional filter: 'Pending', 'Approved', 'Rejected'
+   *                  (FE maps 'PENDING'/'APPROVED'/'REJECTED' to 'Pending'/'Approved'/'Rejected')
    */
   public static async getAllLeaveRequests(status?: string): Promise<LeaveRequest[]> {
     const params: Record<string, string> = {};
+    // Normalize FE domain status → BE status for query param
     if (status) {
-      params.status = status;
+      const upper = status.toUpperCase();
+      params.status = upper === 'PENDING' ? 'Pending' : upper === 'APPROVED' ? 'Approved' : 'Rejected';
     }
+
     const res = await apiClient.get('/teacher/leave-requests', { params });
     const list = res.data?.data || [];
     return list.map(mapApiLeaveRequestToDomain);
@@ -61,17 +66,20 @@ export class LeaveRequestService {
 
   /**
    * Process (approve/reject) a student's leave request.
-   * @param status - Either 'Approved'/'Rejected' or 'APPROVED'/'REJECTED'
+   * Teacher ID (ApproverID) is extracted from auth token by the BE — FE does NOT send it.
+   *
+   * @param requestId - Leave request ID
+   * @param status - 'APPROVED' | 'REJECTED' (FE domain values)
    */
-  public static async processLeaveRequest(requestId: string, status: string): Promise<boolean> {
-    // Normalize status to backend format (Backend expects 'Approved' or 'Rejected')
-    let dbStatus = 'Pending';
-    const upperStatus = status.toUpperCase();
-    if (upperStatus === 'APPROVED' || upperStatus === 'APPROVE') dbStatus = 'Approved';
-    if (upperStatus === 'REJECTED' || upperStatus === 'REJECT') dbStatus = 'Rejected';
+  public static async processLeaveRequest(
+    requestId: string,
+    status: LeaveRequestStatus
+  ): Promise<boolean> {
+    const upper = status.toUpperCase();
+    const dbStatus = upper === 'APPROVED' ? 'Approved' : 'Rejected';
 
     await apiClient.put(`/teacher/leave-requests/${requestId}/status`, {
-      status: dbStatus
+      status: dbStatus,
     });
     return true;
   }

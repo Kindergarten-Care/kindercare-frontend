@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LeaveRequestService } from '../../services/leave-requests';
-import { MedicalRequestService, MedicalRequest } from '../../services/medical-requests';
+import { MedicalRequestService, MedicalRequest, MedicationRequestStatus } from '../../services/medical-requests';
 import { LeaveRequest, LeaveRequestStatus } from '@/config/types/attendance';
 
 export const useLeaveRequests = (status?: string) => {
@@ -43,7 +43,7 @@ export const useProcessMedicalRequest = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ requestId, status, teacherNote }: { requestId: string; status: string; teacherNote?: string }) => 
+    mutationFn: ({ requestId, status, teacherNote }: { requestId: string; status: MedicationRequestStatus; teacherNote?: string }) =>
       MedicalRequestService.processMedicalRequest(requestId, status, teacherNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });

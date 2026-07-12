@@ -17,6 +17,7 @@ export interface TaskItem {
   rowStyle?: React.CSSProperties;
   createdAt?: number;
   avatarUrl?: string;
+  status?: string;
 }
 
 interface TaskListProps {

@@ -16,7 +16,7 @@ function mapAllergy(raw: AllergyApiDto): AllergyDomainModel {
 
 function mapMedication(raw: MedicationApiDto): MedicationDomainModel {
   return {
-    medRequestId: raw.medRequestId,
+    medRequestId: raw.medRequestId ?? (raw as any).requestId,
     studentId: raw.studentId,
     studentName: raw.studentName,
     parentName: raw.parentName || 'Phụ huynh',
@@ -91,10 +91,10 @@ export class HealthService {
     return (Array.isArray(raw) ? raw : []).map(mapMedication);
   }
 
-  // PATCH /teacher/classes/:classId/student-health/medications/item/:medicationId/status
+  // PUT /teacher/medical-requests/:requestId
   async updateMedicationStatus(classId: number | string, medicationId: number, status: string, teacherNote?: string): Promise<void> {
-    const url = `/teacher/classes/${classId}/student-health/medications/item/${medicationId}/status`;
-    await apiClient.patch(url, { status, teacherNote });
+    const url = `/teacher/medical-requests/${medicationId}`;
+    await apiClient.put(url, { status, teacherNote });
   }
 
   // POST /teacher/classes/:classId/student-health/medications

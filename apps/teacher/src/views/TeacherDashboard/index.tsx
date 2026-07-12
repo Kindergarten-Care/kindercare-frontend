@@ -2,18 +2,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
+import { LeaveRequestStatus } from '@/config/types/attendance';
 import { HeroBannerWidget } from './components/HeroBannerWidget';
 import { QuickCategoriesWidget } from './components/QuickCategoriesWidget';
 import { TodayKidsWidget, TodayKid } from './components/TodayKidsWidget';
 import { KidQuickActionModal } from './components/KidQuickActionModal';
 import { PeriodicAssessmentWidget } from './components/GoodBehaviorWidget';
-import { AttendanceProgressWidget } from './components/AttendanceProgressWidget';
 import { TaskListWidget, TaskItem } from './components/TaskListWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { QrScannerModal } from '@/components/QrScannerModal';
 
 import { LeaveRequestModal } from './components/LeaveRequestModal';
 import { MedicalNoteModal } from './components/MedicalNoteModal';
+import { ProxyDetailModal } from './components/ProxyDetailModal';
 import { TimelineModal } from './components/TimelineModal';
 import { AllFeaturesModal } from './components/AllFeaturesModal';
 import { RequestListModal } from './components/RequestListModal';
@@ -40,6 +41,8 @@ import {
   useMonthlyGoodKids,
   useMedicalRequests,
   useUpdateMedicalRequest,
+  useProxyApprovals,
+  useUpdateProxyApproval,
 } from '@/hooks/useTeacherQueries';
 
 // Helper to calculate current week number
@@ -76,6 +79,7 @@ export const TeacherDashboardView: React.FC = () => {
   // Modal States
   const [selectedLeave, setSelectedLeave] = useState<any>(null);
   const [selectedMedical, setSelectedMedical] = useState<any>(null);
+  const [selectedProxy, setSelectedProxy] = useState<any>(null);
   const [selectedQuickKid, setSelectedQuickKid] = useState<TodayKid | null>(null);
   const [isTimelineModalOpen, setTimelineModalOpen] = useState(false);
   const [allFeaturesOpen, setAllFeaturesOpen] = useState(false);
@@ -88,6 +92,9 @@ export const TeacherDashboardView: React.FC = () => {
   const updateLeaveReq = useUpdateLeaveRequest();
   const { data: rawMedicalReqs = [] } = useMedicalRequests(activeClassId || undefined);
   const updateMedicalReq = useUpdateMedicalRequest();
+  
+  const { data: rawProxyReqs = [] } = useProxyApprovals();
+  const updateProxyReq = useUpdateProxyApproval();
 
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
@@ -128,7 +135,7 @@ export const TeacherDashboardView: React.FC = () => {
       }
     } catch (e: any) {
       console.warn('Failed to load dashboard data:', e);
-      setDashboardError(e?.response?.data?.message || e?.message || 'Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại đường truyền mạng.');
+      setDashboardError('Không thể tải dữ liệu lớp học. Vui lòng kiểm tra kết nối và thử lại.');
     } finally {
       setIsLoadingDashboard(false);
     }
@@ -175,14 +182,14 @@ export const TeacherDashboardView: React.FC = () => {
 
   // MOCK DATA FOR NEW WIDGETS
   const handleApproveLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Approved' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'APPROVED' as LeaveRequestStatus }, {
       onSuccess: () => addToast('🎉 Đã duyệt đơn xin phép!'),
       onError: () => addToast('❌ Lỗi khi duyệt đơn')
     });
   };
 
   const handleRejectLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'Rejected' }, {
+    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'REJECTED' as LeaveRequestStatus }, {
       onSuccess: () => addToast('Đã từ chối đơn!'),
       onError: () => addToast('❌ Lỗi khi từ chối đơn')
     });
@@ -292,6 +299,7 @@ export const TeacherDashboardView: React.FC = () => {
       },
       rowStyle: isDone ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
       isDone, // For sorting - processed items go to bottom
+      status: String(leave.status).toUpperCase(),
       createdAt: leave.createdAt ? new Date(leave.createdAt).getTime() : Date.now(),
       onRowClick: () => setSelectedLeave({
         id: String(leave.requestId || leave.id),
@@ -312,7 +320,7 @@ export const TeacherDashboardView: React.FC = () => {
   const medicalTasks: TaskItem[] = rawMedicalReqs.map((med: any) => {
     const names = med.studentName ? med.studentName.split(' ') : ['?'];
     const initial = names[names.length - 1].charAt(0).toUpperCase();
-    const isDone = med.status === 'Completed';
+    const isDone = med.status === 'Done' || med.status === 'Completed';
     const student = studentsList.find((s: any) => String(s.id) === String(med.studentId));
     return {
       id: `med_${med.requestId || med.id}`,
@@ -328,7 +336,7 @@ export const TeacherDashboardView: React.FC = () => {
       btnBorder: isDone ? '#D1D5DB' : '#FCA5A5',
       action: () => {
         if (!isDone) {
-          updateMedicalReq.mutate({ requestId: Number(med.requestId || med.id), status: 'Done' as any }, {
+          updateMedicalReq.mutate({ requestId: Number(med.requestId || med.id), status: 'Completed' as any }, {
             onSuccess: () => addToast('Đã ghi nhận cho uống thuốc')
           });
         }
@@ -345,11 +353,71 @@ export const TeacherDashboardView: React.FC = () => {
       }),
       rowStyle: isDone ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
       isDone, // For sorting
+      status: String(med.status).toUpperCase(),
       createdAt: med.requestDate ? med.requestDate * 1000 : Date.now()
     };
   });
 
-  const tasks: TaskItem[] = [...leaveTasks, ...medicalTasks].sort((a: any, b: any) => {
+  const proxyTasks: TaskItem[] = rawProxyReqs.map((proxy: any) => {
+    const names = proxy.studentName ? proxy.studentName.split(' ') : ['?'];
+    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    const isDone = proxy.status === 'Approved';
+    const student = studentsList.find((s: any) => String(s.id) === String(proxy.studentId));
+    return {
+      id: `proxy_${proxy.authorizationId}`,
+      name: proxy.studentName,
+      initial,
+      avatarUrl: proxy.studentAvatar || proxy.avatarUrl || student?.avatar,
+      color: isDone ? '#F3F4F6' : '#E0E7FF',
+      tag: 'Đón hộ',
+      tagStyle: { color: isDone ? '#9CA3AF' : '#4338CA', background: isDone ? '#E5E7EB' : '#C7D2FE', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
+      sub: `Người đón: ${proxy.proxyName}`,
+      btn: isDone ? 'Đã duyệt' : 'Xem & Duyệt',
+      btnColor: isDone ? '#9CA3AF' : '#4338CA',
+      btnBorder: isDone ? '#D1D5DB' : '#A5B4FC',
+      action: (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        if (!isDone) {
+          setSelectedProxy({
+            authorizationId: String(proxy.authorizationId),
+            studentName: proxy.studentName,
+            parentName: proxy.parentName,
+            parentPhone: proxy.parentPhone,
+            proxyName: proxy.proxyName,
+            proxyPhone: proxy.proxyPhone,
+            proxyIdCard: proxy.proxyIdCard,
+            proxyPhotoUrl: proxy.proxyPhotoUrl,
+            authorizationDate: proxy.authorizationDate,
+            type: proxy.type,
+            notes: proxy.notes,
+            status: proxy.status,
+            avatarUrl: proxy.studentAvatar || proxy.avatarUrl || student?.avatar
+          });
+        }
+      },
+      onRowClick: () => setSelectedProxy({
+        authorizationId: String(proxy.authorizationId),
+        studentName: proxy.studentName,
+        parentName: proxy.parentName,
+        parentPhone: proxy.parentPhone,
+        proxyName: proxy.proxyName,
+        proxyPhone: proxy.proxyPhone,
+        proxyIdCard: proxy.proxyIdCard,
+        proxyPhotoUrl: proxy.proxyPhotoUrl,
+        authorizationDate: proxy.authorizationDate,
+        type: proxy.type,
+        notes: proxy.notes,
+        status: proxy.status,
+        avatarUrl: proxy.studentAvatar || proxy.avatarUrl || student?.avatar
+      }),
+      rowStyle: isDone ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
+      isDone,
+      status: String(proxy.status).toUpperCase(),
+      createdAt: proxy.createdAt * 1000
+    };
+  });
+
+  const tasks: TaskItem[] = [...leaveTasks, ...medicalTasks, ...proxyTasks].sort((a: any, b: any) => {
     if (a.isDone === b.isDone) return 0;
     return a.isDone ? 1 : -1;
   });
@@ -407,54 +475,47 @@ export const TeacherDashboardView: React.FC = () => {
         </S.ErrorContainer>
       ) : (
         <S.BodyLayout>
-          {/* MAIN COLUMN (LEFT) */}
-          <S.MainColumn>
-            <HeroBannerWidget 
-              className={activeClassName || 'Lớp Mầm 1'}
-              presentCount={presentCount}
-              totalCount={studentsList.length || 42}
-              onOpenScanner={() => setScannerOpen(true)}
-            />
+          {/* [1] Hero Banner Quét QR */}
+          <HeroBannerWidget
+            className={activeClassName || 'Lớp Mầm 1'}
+            presentCount={presentCount}
+            totalCount={studentsList.length || 42}
+            onOpenScanner={() => setScannerOpen(true)}
+          />
 
-            <QuickCategoriesWidget 
-              categories={cats} 
-              onViewAll={() => setAllFeaturesOpen(true)}
-            />
+          {/* [2] Quick Actions */}
+          <QuickCategoriesWidget
+            categories={cats}
+            onViewAll={() => setAllFeaturesOpen(true)}
+          />
 
-            <TodayKidsWidget
-              kids={todayKids}
-              date={todayDate}
-              onKidClick={openQuickActionFor}
-              onViewAll={() => router.push('/attendance')}
-            />
+          {/* [3] Tình trạng hôm nay (Điểm danh nhanh dạng lưới) */}
+          <TodayKidsWidget
+            kids={todayKids}
+            date={todayDate}
+            onKidClick={openQuickActionFor}
+            onViewAll={() => router.push('/attendance')}
+          />
 
-            <AttendanceProgressWidget
-              presentCount={presentCount}
-              totalCount={studentsList.length || 42}
-              onScanMore={() => setScannerOpen(true)}
-            />
+          {/* [4] Đơn cần xử lý */}
+          <TaskListWidget tasks={tasks.slice(0, 5)} onViewAll={() => setRequestListType('all')} />
 
-            <PeriodicAssessmentWidget
-              classId={activeClassId}
-              termPeriod={termPeriod}
-              studentNames={Object.fromEntries(
-                studentsList.map((s: any) => [String(s.id), String(s.name ?? '')]).filter(([, n]) => n)
-              ) as Record<string, string>}
-              studentAvatars={Object.fromEntries(
-                studentsList.map((s: any) => [String(s.id), String(fixImageUrl(s.avatar) ?? '')]).filter(([, v]) => v)
-              ) as Record<string, string>}
-            />
+          {/* [5] Newsfeed */}
+          <div>
+            <ClassNewsfeedWidget classId={activeClassId} />
+          </div>
 
-            <div style={{ marginTop: '8px' }}>
-              <ClassNewsfeedWidget classId={activeClassId} />
-            </div>
-          </S.MainColumn>
-
-          {/* RIGHT COLUMN */}
-          <S.RightColumn>
-            {/* Real API-driven Tasks List */}
-            <TaskListWidget tasks={tasks.slice(0, 3)} onViewAll={() => setRequestListType('all')} />
-          </S.RightColumn>
+          {/* [6] Đánh giá định kỳ */}
+          <PeriodicAssessmentWidget
+            classId={activeClassId}
+            termPeriod={termPeriod}
+            studentNames={Object.fromEntries(
+              studentsList.map((s: any) => [String(s.id), String(s.name ?? '')]).filter(([, n]) => n)
+            ) as Record<string, string>}
+            studentAvatars={Object.fromEntries(
+              studentsList.map((s: any) => [String(s.id), String(fixImageUrl(s.avatar) ?? '')]).filter(([, v]) => v)
+            ) as Record<string, string>}
+          />
         </S.BodyLayout>
       )}
 
@@ -501,6 +562,20 @@ export const TeacherDashboardView: React.FC = () => {
         data={selectedMedical}
         onClose={() => setSelectedMedical(null)}
         onMarkDone={(id) => { addToast('✅ Đã cho uống thuốc thành công!'); setSelectedMedical(null); }}
+      />
+
+      <ProxyDetailModal
+        isOpen={!!selectedProxy}
+        data={selectedProxy}
+        onClose={() => setSelectedProxy(null)}
+        onApprove={(id) => {
+          updateProxyReq.mutate({ authorizationId: Number(id), status: 'Approved' }, {
+            onSuccess: () => {
+              addToast('✅ Đã duyệt đơn đón hộ!');
+              setSelectedProxy(null);
+            }
+          });
+        }}
       />
 
       <KidQuickActionModal

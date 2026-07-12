@@ -99,34 +99,32 @@ export const PeriodicAssessmentWidget: React.FC<PeriodicAssessmentWidgetProps> =
   return (
     <>
       <S.WidgetContainer>
-        <S.WidgetHeader>
+        <S.WidgetHeader style={{ marginBottom: '14px' }}>
           <S.HeaderLeft>
-            <S.IconContainer style={{ background: '#DBEAFE', color: '#1D4ED8' }}>📋</S.IconContainer>
+            <S.IconContainer style={{ background: '#DBEAFE', color: '#1D4ED8', width: '36px', height: '36px', fontSize: '16px' }}>📋</S.IconContainer>
             <S.TitleBox>
-              <S.WidgetTitle>Đánh giá định kỳ</S.WidgetTitle>
-              <S.WidgetSubtitle>{formatPeriodLabel(termPeriod)} · Theo 5 tiêu chí phát triển</S.WidgetSubtitle>
+              <S.WidgetTitle style={{ fontSize: '15px' }}>Đánh giá định kỳ</S.WidgetTitle>
+              <S.WidgetSubtitle style={{ fontSize: '11px' }}>{formatPeriodLabel(termPeriod)}</S.WidgetSubtitle>
             </S.TitleBox>
           </S.HeaderLeft>
         </S.WidgetHeader>
 
-        <S.ProgressSection>
-          <S.ProgressCircle $percent={percent}>
-            <S.ProgressContent>
-              <S.ProgressValue>{loading ? '…' : `${evaluatedCount}`}</S.ProgressValue>
-              <S.ProgressLabel>HS đã đánh giá</S.ProgressLabel>
-            </S.ProgressContent>
-          </S.ProgressCircle>
-
-          <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
-            Tiêu chí:{' '}
-            <strong style={{ color: '#1D4ED8' }}>
-              Thể chất · Nhận thức · Ngôn ngữ · Cảm xúc
-            </strong>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#1F2937' }}>
+              {loading ? 'Đang tải...' : `${evaluatedCount} học sinh đã đánh giá`}
+            </span>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: '#1D4ED8' }}>
+              {percent}%
+            </span>
           </div>
-        </S.ProgressSection>
+          <div style={{ width: '100%', height: '8px', background: '#EFF6FF', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${percent}%`, height: '100%', background: 'linear-gradient(90deg, #3B82F6, #1D4ED8)', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
 
-        <S.ActionButton onClick={() => setIsModalOpen(true)}>
-          <BookOpen size={16} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+        <S.ActionButton onClick={() => setIsModalOpen(true)} style={{ padding: '10px', fontSize: '13px' }}>
+          <BookOpen size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
           Mở đánh giá định kỳ
         </S.ActionButton>
       </S.WidgetContainer>
@@ -138,7 +136,7 @@ export const PeriodicAssessmentWidget: React.FC<PeriodicAssessmentWidgetProps> =
               <S.ModalTitleInfo>
                 <S.ModalTitle>📋 Đánh giá định kỳ — {formatPeriodLabel(termPeriod)}</S.ModalTitle>
                 <S.ModalSubtitle>
-                  Dữ liệu thật từ AssessmentService (không mock). 5 tiêu chí phát triển, thang 1–10.
+                  5 tiêu chí phát triển, thang điểm 1–10.
                 </S.ModalSubtitle>
               </S.ModalTitleInfo>
               <S.HeaderActions>

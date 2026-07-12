@@ -241,7 +241,7 @@ export const useUpdateLeaveRequest = () => {
       status,
     }: {
       requestId: number;
-      status: 'Approved' | 'Rejected';
+      status: LeaveRequestStatus;
     }) => {
       return LeaveRequestService.processLeaveRequest(String(requestId), status);
     },
@@ -254,17 +254,20 @@ export const useUpdateLeaveRequest = () => {
 // ─── Medical Requests ──────────────────────────────────────────────────────────
 
 interface MedicalRequest {
-  medRequestId: number;
+  requestId: number;
   studentId: number;
   studentName: string;
+  parentId: number;
   parentName: string;
+  requestDate: string;
   medicineDetails: string;
   dosage: string;
   frequency: string;
-  scheduledDate: number;
-  status: 'Pending' | 'Done' | 'Skipped';
+  timeToTake?: string;
   parentNote?: string;
-  createdAt: number;
+  medicineImageUrl?: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed' | 'Done' | 'Skipped';
+  teacherNote?: string;
 }
 
 export const useMedicalRequests = (classId?: number | string, status?: string) => {
@@ -289,14 +292,57 @@ export const useUpdateMedicalRequest = () => {
     mutationFn: async ({
       requestId,
       status,
+      teacherNote,
     }: {
       requestId: number;
-      status: 'Done' | 'Skipped';
+      status: 'Completed' | 'Skipped' | 'Approved' | 'Rejected';
+      teacherNote?: string;
     }) => {
-      await apiClient.patch(`/teacher/medical-requests/${requestId}`, { status });
+      await apiClient.put(`/teacher/medical-requests/${requestId}`, { status, teacherNote });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medicalRequests'] });
+    },
+  });
+};
+
+// ─── Proxy Approvals ────────────────────────────────────────────────────────────
+
+interface ProxyApproval {
+  authorizationId: number;
+  studentId: number;
+  studentName: string;
+  studentAvatar: string | null;
+  proxyName: string;
+  proxyPhone: string;
+  proxyIdCard: string;
+  proxyPhotoUrl: string | null;
+  authorizationDate: number;
+  type: string;
+  notes: string;
+  status: string;
+  createdAt: number;
+}
+
+export const useProxyApprovals = () => {
+  return useQuery({
+    queryKey: ['proxyApprovals'],
+    queryFn: async (): Promise<ProxyApproval[]> => {
+      const res = await apiClient.get<ApiResponse<ProxyApproval[]>>('/teacher/proxy-approvals');
+      return res.data.data || [];
+    },
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+export const useUpdateProxyApproval = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ authorizationId }: { authorizationId: number }) => {
+      await apiClient.patch('/teacher/proxy-approvals', { authorizationId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proxyApprovals'] });
     },
   });
 };

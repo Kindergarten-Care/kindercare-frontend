@@ -14,6 +14,7 @@ import {
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeacherClasses, useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { useProxyAuthorizations } from '@/hooks/useProxyAuthorizationQueries';
 import type { TeacherClassDomainModel } from '@/config/types/class';
 
 interface TeacherSidebarProps {
@@ -38,6 +39,9 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   
   // Load classes using react query — returns TeacherClassDomainModel[]
   const { data: classes } = useTeacherClasses();
+  
+  const { data: pendingProxyData } = useProxyAuthorizations('Pending');
+  const pendingProxyCount = pendingProxyData?.length || 0;
   
   // Default to first class if available — displayName and classInitial are pre-computed by ClassMapper
   const activeClass: TeacherClassDomainModel | null = classes && classes.length > 0 ? classes[0] : null;
@@ -122,6 +126,9 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
           {isProxyActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><Users size={20} strokeWidth={1.8} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Duyệt đón hộ</S.NavLabel>
+          {pendingProxyCount > 0 && (
+            <S.NavBadge $isCollapsed={isCollapsed} $urgent>{pendingProxyCount}</S.NavBadge>
+          )}
         </S.NavItem>
 
         <S.SectTitle $isCollapsed={isCollapsed}>LỚP & HỌC TẬP</S.SectTitle>

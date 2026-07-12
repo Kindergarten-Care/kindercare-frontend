@@ -225,15 +225,7 @@ export const AssessmentView: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // Load students of class
-  //
-  // Try chain (BE có bug query bảng `students` lowercase khi có `?date=` param):
-  //   1. `getDailyAttendance(classId, today)` — endpoint có `?date=` → BE fail 500
-  //      vì SQL `FROM students` (lowercase) trên môi trường case-sensitive.
-  //   2. Fallback `getClassStudentsLite(classId)` — endpoint không có `?date=`,
-  //      một số BE implement gọi `FROM Students` PascalCase → OK.
-  //   3. Cuối cùng: cache localStorage nếu user đã load lớp này trước đó.
-  //   4. Trả về [] → user thấy empty list + banner "Không tải được danh sách HS".
+  // Load students of active class
   useEffect(() => {
     if (!classId) return;
     let cancelled = false;
@@ -496,8 +488,7 @@ export const AssessmentView: React.FC = () => {
         <EmptyState>
           <div style={{ fontWeight: 700, marginBottom: 4 }}>Chưa tải được danh sách học sinh.</div>
           <div style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.45 }}>
-            BE có thể đang query bảng <code>students</code> (lowercase) — DB chỉ có{' '}
-            <code>Students</code> (PascalCase). Báo BE dev check SQL.
+            Vui lòng kiểm tra kết nối mạng hoặc thử lại.
           </div>
           <button
             type="button"
@@ -574,7 +565,7 @@ export const AssessmentView: React.FC = () => {
         </Sidebar>
 
         <Main>
-          <ChartCard>
+            <ChartCard>
             <ChartHeader>
               <ChartTitle><Activity size={18} color={theme.colors?.primary || '#046E1E'} /> Biểu đồ Radar 6 tiêu chí</ChartTitle>
             </ChartHeader>

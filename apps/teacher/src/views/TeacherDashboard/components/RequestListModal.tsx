@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { X, FileText, Pill, List, Calendar, Filter } from 'lucide-react';
+import { X, FileText, Pill, List, Calendar, Filter, Users, CheckCircle } from 'lucide-react';
 import { TaskItem, TaskListWidget } from './TaskListWidget';
 
 interface RequestListModalProps {
@@ -8,7 +8,7 @@ interface RequestListModalProps {
   onClose: () => void;
   title: string;
   subtitle: string;
-  type: 'leave' | 'medical' | 'all';
+  type: 'leave' | 'medical' | 'proxy' | 'all';
   tasks: TaskItem[];
 }
 
@@ -39,7 +39,7 @@ const Overlay = styled.div`
 const ModalBox = styled.div`
   background: #ffffff;
   width: 100%;
-  max-width: 580px;
+  max-width: 650px;
   max-height: 85vh;
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.18);
@@ -64,11 +64,11 @@ const HeaderLeft = styled.div`
   gap: 16px;
 `;
 
-const HeaderIconBox = styled.div<{ $type: 'leave' | 'medical' }>`
+const HeaderIconBox = styled.div<{ $type: 'leave' | 'medical' | 'proxy' | 'all' }>`
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: ${props => props.$type === 'leave' ? '#7E22CE' : '#BE185D'};
+  background: ${props => props.$type === 'leave' ? '#7E22CE' : props.$type === 'medical' ? '#BE185D' : props.$type === 'proxy' ? '#4338CA' : '#2563EB'};
   color: #fff;
   display: flex;
   align-items: center;
@@ -119,13 +119,14 @@ const FilterSection = styled.div`
   border-bottom: 1px solid #F3F4F6;
   background: #F9FAFB;
   flex-wrap: wrap;
+  align-items: center;
 `;
 
 const FilterSelect = styled.select`
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #D1D5DB;
-  font-size: 14px;
+  font-size: 13.5px;
   color: #374151;
   background: #fff;
   outline: none;
@@ -171,14 +172,16 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
   type, 
   tasks 
 }) => {
-  const [filterType, setFilterType] = useState<'all' | 'leave' | 'medical'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'leave' | 'medical' | 'proxy'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   // Reset filter when opened with a specific type
   React.useEffect(() => {
     if (isOpen) {
       setFilterType(type);
       setDateFilter('all');
+      setStatusFilter('all');
     }
   }, [isOpen, type]);
 
@@ -186,12 +189,11 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
 
   // Compute filtered tasks
   const filteredTasks = tasks.filter(task => {
-    if (type !== 'all') {
-      if (type === 'leave' && task.tag !== 'Đơn phép') return false;
-      if (type === 'medical' && task.tag !== 'Y tế') return false;
-    } else {
+    // 1. Filter by Type
+    if (filterType !== 'all') {
       if (filterType === 'leave' && task.tag !== 'Đơn phép') return false;
       if (filterType === 'medical' && task.tag !== 'Y tế') return false;
+      if (filterType === 'proxy' && task.tag !== 'Đón hộ') return false;
     }
 
     // 2. Filter by Date
@@ -211,6 +213,18 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
         if (taskDate.getMonth() !== today.getMonth() || taskDate.getFullYear() !== today.getFullYear()) return false;
       }
     }
+
+    // 3. Filter by Status
+    if (statusFilter !== 'all') {
+      const taskStatus = task.status || '';
+      const isPending = taskStatus === 'PENDING';
+      const isApproved = taskStatus === 'APPROVED' || taskStatus === 'DONE' || taskStatus === 'COMPLETED';
+      const isRejected = taskStatus === 'REJECTED' || taskStatus === 'SKIPPED';
+      
+      if (statusFilter === 'pending' && !isPending) return false;
+      if (statusFilter === 'approved' && !isApproved) return false;
+      if (statusFilter === 'rejected' && !isRejected) return false;
+    }
     
     return true;
   });
@@ -220,8 +234,11 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
       <ModalBox onClick={e => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
-            <HeaderIconBox $type={type === 'all' ? 'leave' : type} style={type === 'all' ? { background: '#2563EB' } : {}}>
-              {type === 'all' ? <List size={22} strokeWidth={2.5} /> : (type === 'leave' ? <FileText size={22} strokeWidth={2.5} /> : <Pill size={22} strokeWidth={2.5} />)}
+            <HeaderIconBox $type={type}>
+              {type === 'all' ? <List size={22} strokeWidth={2.5} /> : 
+               type === 'leave' ? <FileText size={22} strokeWidth={2.5} /> : 
+               type === 'proxy' ? <Users size={22} strokeWidth={2.5} /> :
+               <Pill size={22} strokeWidth={2.5} />}
             </HeaderIconBox>
             <HeaderText>
               <Title>{title}</Title>
@@ -236,25 +253,34 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
         <FilterSection>
           {type === 'all' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Filter size={16} color="#6B7280" />
-                <span style={{ fontSize: '14px', color: '#4B5563', fontWeight: 500 }}>Lọc theo:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Filter size={15} color="#6B7280" />
+                <span style={{ fontSize: '13.5px', color: '#4B5563', fontWeight: 500 }}>Loại đơn:</span>
               </div>
-              
               <FilterSelect value={filterType} onChange={(e) => setFilterType(e.target.value as any)}>
                 <option value="all">Tất cả loại đơn</option>
                 <option value="leave">Đơn xin nghỉ</option>
                 <option value="medical">Dặn dò y tế</option>
+                <option value="proxy">Đơn đón hộ</option>
               </FilterSelect>
             </>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: type === 'all' ? '12px' : '0' }}>
-            {type !== 'all' && <Filter size={16} color="#6B7280" />}
-            <Calendar size={16} color="#6B7280" />
-            {type !== 'all' && <span style={{ fontSize: '14px', color: '#4B5563', fontWeight: 500 }}>Lọc thời gian:</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: type === 'all' ? '12px' : '0' }}>
+            <CheckCircle size={15} color="#6B7280" />
+            <span style={{ fontSize: '13.5px', color: '#4B5563', fontWeight: 500 }}>Trạng thái:</span>
           </div>
+          <FilterSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
+            <option value="all">Mọi trạng thái</option>
+            <option value="pending">Đang chờ duyệt</option>
+            <option value="approved">Đã duyệt/Cho uống</option>
+            <option value="rejected">Đã từ chối</option>
+          </FilterSelect>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+            <Calendar size={15} color="#6B7280" />
+            <span style={{ fontSize: '13.5px', color: '#4B5563', fontWeight: 500 }}>Thời gian:</span>
+          </div>
           <FilterSelect value={dateFilter} onChange={(e) => setDateFilter(e.target.value as any)}>
             <option value="all">Mọi thời gian</option>
             <option value="today">Hôm nay</option>
@@ -276,3 +302,4 @@ export const RequestListModal: React.FC<RequestListModalProps> = ({
     </Overlay>
   );
 };
+

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@kindercare/core';
+import { apiClient, socketService } from '@kindercare/core';
 import { toast } from 'react-toastify';
 import { X, Calendar, FileText, Check, AlertCircle } from 'lucide-react';
 import styled, { keyframes } from 'styled-components';
@@ -157,49 +157,26 @@ const ActionButton = styled.button<{ $primary?: boolean; $danger?: boolean }>`
   }}
 `;
 
-interface NotificationPayload {
-  NotificationID: number;
-  SenderID: number;
-  ReceiverID: number;
-  Type: 'LEAVE' | 'MEDICAL' | 'OTHER';
-  Message: string;
-  IsRead: number;
-  CreatedAt: number;
-}
-
 export function useTeacherNotifications() {
   const queryClient = useQueryClient();
   const { data: profile } = useTeacherProfile();
   const teacherId = profile?.teacherId;
   
   // State to manage global active notification view modal
-  const [activeNotif, setActiveNotif] = useState<NotificationPayload | null>(null);
+  const [activeNotif, setActiveNotif] = useState<NotificationDto | null>(null);
 
   // Keep track of which Notification IDs have been toasted in the current session
   const notifiedIdsRef = useRef<Set<number>>(new Set());
 
-  // Smart polling via TanStack Query every 3 seconds
-  const { data: newNotifications } = useQuery<NotificationPayload[]>({
-    queryKey: ['pollingTeacherNotifications', teacherId],
-    queryFn: async () => {
-      if (!teacherId) return [];
-      const res = await apiClient.get('/notifications/teacher', {
-        params: { teacherId }
-      });
-      return res.data?.data || [];
-    },
-    enabled: !!teacherId,
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
-  });
-
-  // Mutation to mark notifications as read on backend/mockDb
+  // Mutation to mark notifications as read on backend
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationIds: number[]) => {
-      await apiClient.post('/notifications/mark-as-read', { notificationIds });
+      for (const id of notificationIds) {
+        await notificationService.markAsRead(id);
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pollingTeacherNotifications', teacherId] });
+      queryClient.invalidateQueries({ queryKey: ['initialTeacherNotifications', teacherId] });
     }
   });
 
@@ -215,31 +192,48 @@ export function useTeacherNotifications() {
     setActiveNotif(null);
   };
 
+  // Fetch initial unread notifications ONCE on mount (no polling)
+  const { data: initialNotifications } = useQuery<NotificationDto[]>({
+    queryKey: ['initialTeacherNotifications', teacherId],
+    queryFn: async () => {
+      if (!teacherId) return [];
+      return await notificationService.getInbox();
+    },
+    enabled: !!teacherId,
+    staleTime: Infinity,
+  });
+
+  // Trigger toasts for initial unread notifications
   useEffect(() => {
-    if (!newNotifications || newNotifications.length === 0) return;
+    if (!initialNotifications || initialNotifications.length === 0) return;
 
     const idsToMark: number[] = [];
 
-    newNotifications.forEach(notif => {
-      if (!notifiedIdsRef.current.has(notif.NotificationID)) {
-        notifiedIdsRef.current.add(notif.NotificationID);
-        idsToMark.push(notif.NotificationID);
+    initialNotifications.forEach(notif => {
+      if (!notifiedIdsRef.current.has(notif.notifId)) {
+        notifiedIdsRef.current.add(notif.notifId);
+        idsToMark.push(notif.notifId);
 
-        // Capture current toast instance to clear easily
         let toastId: any = null;
-
         const handleViewClick = () => {
           setActiveNotif(notif);
           if (toastId) toast.dismiss(toastId);
         };
 
+        const isLeave = notif.type === 'LEAVE_REQUEST' || notif.type === 'leave_request';
+        const isProxy = notif.type === 'PROXY_AUTHORIZATION';
+
+        let notifTitle = '💊 Đơn dặn thuốc mới';
+        if (isLeave) notifTitle = '📅 Đơn xin nghỉ phép mới';
+        if (isProxy) notifTitle = '🚗 Đăng ký đón hộ mới';
+
         toastId = toast.info(
           <div style={{ padding: '2px 0' }}>
             <div style={{ fontWeight: 800, marginBottom: '4px', fontSize: '13px', color: '#111827' }}>
-              {notif.Type === 'LEAVE' ? '📅 Đơn xin nghỉ phép mới' : '💊 Đơn dặn thuốc mới'}
+              {notifTitle}
             </div>
             <div style={{ fontSize: '12px', color: '#4B5563', lineHeight: 1.4, marginBottom: '8px' }}>
-              {notif.Message}
+              {notif.message}
             </div>
             <button
               onClick={handleViewClick}
@@ -273,18 +267,142 @@ export function useTeacherNotifications() {
     if (idsToMark.length > 0) {
       markAsReadMutation.mutate(idsToMark);
     }
-  }, [newNotifications, markAsReadMutation]);
+  }, [initialNotifications, markAsReadMutation]);
+
+  // Real-time integration via Socket.io
+  useEffect(() => {
+    if (!teacherId) return;
+
+    const socket = socketService.getSocket();
+
+    const handleConnect = () => {
+      socketService.emit('join_room', `teacher_${teacherId}`);
+      console.log(`[Socket] Teacher ${teacherId} joined room: teacher_${teacherId}`);
+    };
+
+    if (socket) {
+      if (socket.connected) {
+        handleConnect();
+      }
+      socket.on('connect', handleConnect);
+    }
+
+    const onNewNotification = (payload: any) => {
+      console.log('[Socket] Received new notification:', payload);
+      
+      const notifId = payload.notifId || payload.NotificationID || Date.now();
+      const type = payload.type || payload.Type || 'OTHER';
+      const msg = payload.message || payload.Message || '';
+      
+      let dataPayload = payload.dataPayload || payload.data || {};
+      if (typeof dataPayload === 'string') {
+        try {
+          dataPayload = JSON.parse(dataPayload);
+        } catch (e) {}
+      }
+
+      const formattedNotif: NotificationDto = {
+        notifId: notifId,
+        userId: teacherId,
+        title: payload.title || 'Thông báo mới',
+        message: msg,
+        type: type,
+        isRead: 0,
+        isCritical: payload.isCritical || 0,
+        dataPayload: dataPayload,
+        createdAt: payload.createdAt || Math.floor(Date.now() / 1000),
+        updatedAt: payload.updatedAt || Math.floor(Date.now() / 1000)
+      };
+
+      if (!notifiedIdsRef.current.has(formattedNotif.notifId)) {
+        notifiedIdsRef.current.add(formattedNotif.notifId);
+
+        let toastId: any = null;
+        const handleViewClick = () => {
+          setActiveNotif(formattedNotif);
+          if (toastId) toast.dismiss(toastId);
+        };
+
+        const isLeave = formattedNotif.type === 'LEAVE_REQUEST' || formattedNotif.type === 'leave_request';
+        const isProxy = formattedNotif.type === 'PROXY_AUTHORIZATION';
+        
+        let notifTitle = '💊 Đơn dặn thuốc mới';
+        if (isLeave) notifTitle = '📅 Đơn xin nghỉ phép mới';
+        if (isProxy) notifTitle = '🚗 Đăng ký đón hộ mới';
+        
+        toastId = toast.info(
+          <div style={{ padding: '2px 0' }}>
+            <div style={{ fontWeight: 800, marginBottom: '4px', fontSize: '13px', color: '#111827' }}>
+              {notifTitle}
+            </div>
+            <div style={{ fontSize: '12px', color: '#4B5563', lineHeight: 1.4, marginBottom: '8px' }}>
+              {formattedNotif.message}
+            </div>
+            <button
+              onClick={handleViewClick}
+              style={{
+                padding: '5px 12px',
+                background: '#005A36',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-block',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              Xem ngay
+            </button>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
+
+        // Mark as read on backend
+        markAsReadMutation.mutate([formattedNotif.notifId]);
+      }
+    };
+
+    socketService.on('new_notification', onNewNotification);
+
+    return () => {
+      if (socket) {
+        socket.off('connect', handleConnect);
+      }
+      socketService.off('new_notification', onNewNotification);
+    };
+  }, [teacherId, markAsReadMutation]);
 
   // Utility renderer to display global modal inline
   const renderDetailModal = () => {
     if (!activeNotif) return null;
+    const isLeave = activeNotif.type === 'LEAVE_REQUEST' || activeNotif.type === 'leave_request';
+    const isProxy = activeNotif.type === 'PROXY_AUTHORIZATION';
+
+    const formattedDate = activeNotif.createdAt > 2000000000 
+      ? new Date(activeNotif.createdAt).toLocaleString('vi-VN')
+      : new Date(activeNotif.createdAt * 1000).toLocaleString('vi-VN');
+
+    let title = '💊 Đơn Dặn Thuốc Y Tế';
+    if (isLeave) title = '📅 Đơn Xin Nghỉ Phép';
+    if (isProxy) title = '🚗 Đăng Ký Đón Hộ';
+
+    let typeStr = 'Dặn thuốc y tế hàng ngày';
+    if (isLeave) typeStr = 'Nghỉ phép học tập';
+    if (isProxy) typeStr = 'Xác nhận người đón hộ';
+
     return (
       <Overlay onClick={() => setActiveNotif(null)}>
         <ModalBox onClick={(e) => e.stopPropagation()}>
           <Header>
-            <Title>
-              {activeNotif.Type === 'LEAVE' ? '📅 Đơn Xin Nghỉ Phép' : '💊 Đơn Dặn Thuốc Y Tế'}
-            </Title>
+            <Title>{title}</Title>
             <CloseButton onClick={() => setActiveNotif(null)}>
               <X size={18} />
             </CloseButton>
@@ -294,19 +412,19 @@ export function useTeacherNotifications() {
               <Label>Loại yêu cầu</Label>
               <Value>
                 <FileText size={15} />
-                {activeNotif.Type === 'LEAVE' ? 'Nghỉ phép học tập' : 'Dặn thuốc y tế hàng ngày'}
+                {typeStr}
               </Value>
             </InfoRow>
             <InfoRow>
               <Label>Ngày gửi</Label>
               <Value>
                 <Calendar size={15} />
-                {new Date(activeNotif.CreatedAt).toLocaleString('vi-VN')}
+                {formattedDate}
               </Value>
             </InfoRow>
             <InfoRow>
               <Label>Nội dung chi tiết đơn</Label>
-              <MessageBox>{activeNotif.Message}</MessageBox>
+              <MessageBox>{activeNotif.message}</MessageBox>
             </InfoRow>
           </Body>
           <Footer>

@@ -1,72 +1,31 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@kindercare/core';
-import { toast } from 'react-toastify';
-import { ShieldCheck, UserCheck, X, FileText, Phone, CreditCard, Calendar, Clock } from 'lucide-react';
+import { useProxyAuthorizations, useProcessProxyAuthorization } from '@/hooks/useProxyAuthorizationQueries';
+import { ShieldCheck, UserCheck, X, Phone, CreditCard, Calendar } from 'lucide-react';
 import * as S from './styles';
 
-export interface ProxyAuthorization {
-  AuthorizationID: number;
-  StudentID: number;
-  StudentName: string;
-  ParentID: number;
-  ParentName: string;
-  AuthorizationDate: string;
-  ProxyName: string;
-  ProxyPhone: string;
-  ProxyIDCard: string;
-  ProxyPhotoURL: string;
-  Notes: string;
-  Status: 'Pending' | 'Approved' | 'Rejected';
-  CreatedAt: number;
-}
-
 export const ProxyApprovalList: React.FC = () => {
-  const queryClient = useQueryClient();
-  const [selectedRequest, setSelectedRequest] = useState<ProxyAuthorization | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
-  // Fetch all authorizations with 3-second smart polling interval
-  const { data: requests, isLoading } = useQuery<ProxyAuthorization[]>({
-    queryKey: ['proxyApprovals'],
-    queryFn: async () => {
-      const res = await apiClient.get('/teacher/proxy-approvals');
-      return res.data?.data || [];
-    },
-    refetchInterval: 3000, // 3 seconds polling
-  });
+  const { data: pendingData, isLoading: loadingPending } = useProxyAuthorizations('Pending');
+  const { data: historyData, isLoading: loadingHistory } = useProxyAuthorizations();
+  const updateMutation = useProcessProxyAuthorization();
 
-  // Re-usable Mutation to Approve or Reject
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: 'Approved' | 'Rejected' }) => {
-      const res = await apiClient.patch('/teacher/proxy-approvals', {
-        authorizationId: id,
-        status: status
-      });
-      return res.data;
-    },
-    onSuccess: (_, variables) => {
-      toast.success(
-        variables.status === 'Approved'
-          ? 'Đã duyệt yêu cầu đón hộ thành công!'
-          : 'Đã từ chối yêu cầu đón hộ.'
-      );
-      setSelectedRequest(null);
-      // Invalidate query to refresh list
-      queryClient.invalidateQueries({ queryKey: ['proxyApprovals'] });
-    },
-    onError: (err: any) => {
-      const errMsg = err?.response?.data?.error || 'Có lỗi xảy ra khi xử lý yêu cầu';
-      toast.error(errMsg);
-    }
-  });
+  const pendingList = (pendingData || []).filter((r) => r.status === 'Pending');
+  const historyList = (historyData || []).filter(
+    (r) => r.status === 'Approved' || r.status === 'Rejected'
+  );
+
+  const currentList = activeTab === 'pending' ? pendingList : historyList;
+  const isLoading = activeTab === 'pending' ? loadingPending : loadingHistory;
 
   const handleProcess = (status: 'Approved' | 'Rejected') => {
     if (!selectedRequest) return;
-    updateStatusMutation.mutate({
-      id: selectedRequest.AuthorizationID,
-      status: status
+    updateMutation.mutate({
+      authorizationId: selectedRequest.authorizationId,
+      status,
     });
+    setSelectedRequest(null);
   };
 
   if (isLoading) {
@@ -78,12 +37,6 @@ export const ProxyApprovalList: React.FC = () => {
       </S.Container>
     );
   }
-
-  const allRequests = requests || [];
-  const pendingRequests = allRequests.filter(r => r.Status === 'Pending');
-  const historyRequests = allRequests.filter(r => r.Status === 'Approved' || r.Status === 'Rejected');
-  
-  const currentList = activeTab === 'pending' ? pendingRequests : historyRequests;
 
   return (
     <S.Container>
@@ -101,73 +54,73 @@ export const ProxyApprovalList: React.FC = () => {
         </S.HeroContent>
       </S.HeroSection>
 
-      {/* Tabs Selector */}
+      {/* Tabs */}
       <S.TabRow>
         <S.TabButton $active={activeTab === 'pending'} onClick={() => setActiveTab('pending')}>
-          Chờ duyệt 
-          <S.TabBadge $active={activeTab === 'pending'}>{pendingRequests.length}</S.TabBadge>
+          Chờ duyệt
+          <S.TabBadge $active={activeTab === 'pending'}>{pendingList.length}</S.TabBadge>
         </S.TabButton>
         <S.TabButton $active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
-          Lịch sử duyệt 
-          <S.TabBadge $active={activeTab === 'history'}>{historyRequests.length}</S.TabBadge>
+          Lịch sử duyệt
+          <S.TabBadge $active={activeTab === 'history'}>{historyList.length}</S.TabBadge>
         </S.TabButton>
       </S.TabRow>
 
-      {/* Requests Grid */}
+      {/* Grid */}
       {currentList.length === 0 ? (
         <S.EmptyState>
           <UserCheck size={40} color="#9CA3AF" />
           <h3>{activeTab === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Lịch sử trống'}</h3>
           <p>
-            {activeTab === 'pending' 
-              ? 'Tất cả các yêu cầu đăng ký đón hộ đã được xử lý hoàn tất.' 
+            {activeTab === 'pending'
+              ? 'Tất cả các yêu cầu đăng ký đón hộ đã được xử lý hoàn tất.'
               : 'Chưa có yêu cầu đón hộ nào được phê duyệt hay từ chối.'}
           </p>
         </S.EmptyState>
       ) : (
         <S.Grid>
           {currentList.map((req) => (
-            <S.Card key={req.AuthorizationID}>
+            <S.Card key={req.authorizationId}>
               <S.CardHeader>
                 <S.StudentInfo>
-                  <S.StudentName>Bé: {req.StudentName}</S.StudentName>
-                  <S.ParentName>PH: {req.ParentName}</S.ParentName>
+                  <S.StudentName>Bé: {req.studentName}</S.StudentName>
+                  <S.ParentName>PH: {req.parentName}</S.ParentName>
                 </S.StudentInfo>
-                {req.Status === 'Pending' ? (
+                {req.status === 'Pending' ? (
                   <S.Badge>Chờ duyệt</S.Badge>
                 ) : (
-                  <S.HistoryStatusBadge $status={req.Status}>
-                    {req.Status === 'Approved' ? 'Đã duyệt' : 'Từ chối'}
+                  <S.HistoryStatusBadge $status={req.status}>
+                    {req.status === 'Approved' ? 'Đã duyệt' : 'Từ chối'}
                   </S.HistoryStatusBadge>
                 )}
               </S.CardHeader>
-              
+
               <S.CardBody>
                 <S.AvatarBox>
-                  <img src={req.ProxyPhotoURL} alt={req.ProxyName} />
+                  <img src={req.proxyPhotoUrl} alt={req.proxyName} />
                 </S.AvatarBox>
                 <S.ProxyDetails>
-                  <S.ProxyName>{req.ProxyName}</S.ProxyName>
+                  <S.ProxyName>{req.proxyName}</S.ProxyName>
                   <S.ProxyMeta>
-                    <Phone size={12} /> {req.ProxyPhone}
+                    <Phone size={12} /> {req.proxyPhone}
                   </S.ProxyMeta>
                   <S.ProxyMeta>
-                    <Calendar size={12} /> Ngày đón: {req.AuthorizationDate}
+                    <Calendar size={12} /> Ngày đón: {req.authorizationDate}
                   </S.ProxyMeta>
                 </S.ProxyDetails>
               </S.CardBody>
 
-              {req.Notes && <S.NotesText>📝 {req.Notes}</S.NotesText>}
+              {req.notes && <S.NotesText>📝 {req.notes}</S.NotesText>}
 
               <S.ActionBtn onClick={() => setSelectedRequest(req)}>
-                {req.Status === 'Pending' ? 'Xem chi tiết & Duyệt' : 'Xem thông tin'}
+                {req.status === 'Pending' ? 'Xem chi tiết & Duyệt' : 'Xem thông tin'}
               </S.ActionBtn>
             </S.Card>
           ))}
         </S.Grid>
       )}
 
-      {/* Proxy Details Modal */}
+      {/* Modal */}
       {selectedRequest && (
         <S.ModalBackdrop onClick={() => setSelectedRequest(null)}>
           <S.ModalBox onClick={(e) => e.stopPropagation()}>
@@ -177,48 +130,48 @@ export const ProxyApprovalList: React.FC = () => {
                 <X size={20} />
               </S.CloseBtn>
             </S.ModalHeader>
-            
+
             <S.ModalBody>
-              {/* Photo */}
               <S.LargePhoto>
-                <img src={selectedRequest.ProxyPhotoURL} alt={selectedRequest.ProxyName} />
+                <img src={selectedRequest.proxyPhotoUrl} alt={selectedRequest.proxyName} />
               </S.LargePhoto>
 
-              {/* Meta information */}
               <S.MetaGrid>
                 <S.MetaField>
                   <S.Label>Học sinh</S.Label>
-                  <S.Value>{selectedRequest.StudentName}</S.Value>
+                  <S.Value>{selectedRequest.studentName}</S.Value>
                 </S.MetaField>
                 <S.MetaField>
                   <S.Label>Phụ huynh ủy quyền</S.Label>
-                  <S.Value>{selectedRequest.ParentName}</S.Value>
+                  <S.Value>{selectedRequest.parentName}</S.Value>
                 </S.MetaField>
                 <S.MetaField>
                   <S.Label>Họ tên người đón</S.Label>
-                  <S.Value>{selectedRequest.ProxyName}</S.Value>
+                  <S.Value>{selectedRequest.proxyName}</S.Value>
                 </S.MetaField>
                 <S.MetaField>
                   <S.Label>Số điện thoại</S.Label>
-                  <S.Value>{selectedRequest.ProxyPhone}</S.Value>
+                  <S.Value>{selectedRequest.proxyPhone}</S.Value>
                 </S.MetaField>
                 <S.MetaField style={{ gridColumn: 'span 2' }}>
                   <S.Label>Số CMND/CCCD</S.Label>
                   <S.Value style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <CreditCard size={15} /> {selectedRequest.ProxyIDCard}
+                    <CreditCard size={15} /> {selectedRequest.proxyIdCard}
                   </S.Value>
                 </S.MetaField>
                 <S.MetaField style={{ gridColumn: 'span 2' }}>
                   <S.Label>Ngày đón bé</S.Label>
-                  <S.Value>{selectedRequest.AuthorizationDate}</S.Value>
+                  <S.Value>{selectedRequest.authorizationDate}</S.Value>
                 </S.MetaField>
                 <S.MetaField style={{ gridColumn: 'span 2' }}>
                   <S.Label>Trạng thái</S.Label>
                   <S.Value>
-                    {selectedRequest.Status === 'Pending' ? (
+                    {selectedRequest.status === 'Pending' ? (
                       <span style={{ color: '#D97706', fontWeight: 800 }}>⏳ Đang chờ duyệt</span>
-                    ) : selectedRequest.Status === 'Approved' ? (
-                      <span style={{ color: '#059669', fontWeight: 800 }}>✅ Đã phê duyệt</span>
+                    ) : selectedRequest.status === 'Approved' ? (
+                      <span style={{ color: '#059669', fontWeight: 800 }}>
+                        ✅ Đã phê duyệt
+                      </span>
                     ) : (
                       <span style={{ color: '#DC2626', fontWeight: 800 }}>❌ Đã từ chối</span>
                     )}
@@ -226,35 +179,32 @@ export const ProxyApprovalList: React.FC = () => {
                 </S.MetaField>
               </S.MetaGrid>
 
-              {/* Notes */}
-              {selectedRequest.Notes && (
+              {selectedRequest.notes && (
                 <S.MetaField>
                   <S.Label>Ghi chú của Phụ huynh</S.Label>
-                  <S.NotesText>📝 {selectedRequest.Notes}</S.NotesText>
+                  <S.NotesText>📝 {selectedRequest.notes}</S.NotesText>
                 </S.MetaField>
               )}
             </S.ModalBody>
 
             <S.ModalFooter>
-              {selectedRequest.Status === 'Pending' ? (
+              {selectedRequest.status === 'Pending' ? (
                 <>
-                  <S.RejectBtn 
+                  <S.RejectBtn
                     onClick={() => handleProcess('Rejected')}
-                    disabled={updateStatusMutation.isPending}
+                    disabled={updateMutation.isPending}
                   >
-                    {updateStatusMutation.isPending ? 'Đang xử lý...' : 'Từ chối'}
+                    {updateMutation.isPending ? '�ang xử lý...' : 'Từ chối'}
                   </S.RejectBtn>
-                  <S.ApproveBtn 
+                  <S.ApproveBtn
                     onClick={() => handleProcess('Approved')}
-                    disabled={updateStatusMutation.isPending}
+                    disabled={updateMutation.isPending}
                   >
-                    {updateStatusMutation.isPending ? 'Đang xử lý...' : 'Duyệt đơn'}
+                    {updateMutation.isPending ? 'Đang xử lý...' : 'Duyệt đơn'}
                   </S.ApproveBtn>
                 </>
               ) : (
-                <S.ApproveBtn onClick={() => setSelectedRequest(null)}>
-                  Đóng lại
-                </S.ApproveBtn>
+                <S.ApproveBtn onClick={() => setSelectedRequest(null)}>Đóng lại</S.ApproveBtn>
               )}
             </S.ModalFooter>
           </S.ModalBox>

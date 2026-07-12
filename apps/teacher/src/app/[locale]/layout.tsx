@@ -9,6 +9,7 @@ import { ReduxProvider } from '@/store/ReduxProvider';
 import type { Metadata } from 'next';
 import { Inter, Montserrat, Plus_Jakarta_Sans } from 'next/font/google';
 import QueryProvider from '@/providers/QueryProvider';
+import { NotificationSocketHandler } from '@/components/NotificationSocketHandler';
 import '../globals.css';
 
 const inter = Inter({
@@ -88,6 +89,7 @@ export default async function RootLayout({
               <StyledComponentsRegistry>
                 <AuthProvider>
                   <SocketProvider>
+                    <NotificationSocketHandler />
                     {children}
                   </SocketProvider>
                 </AuthProvider>
