@@ -201,6 +201,7 @@ export default function TeacherDetailView() {
   const [teacher, setTeacher] = useState<TeacherDetailDomainModel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [avatarFailed, setAvatarFailed] = useState(false);
   
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -265,8 +266,8 @@ export default function TeacherDetailView() {
       <Card>
         <HeaderRow>
           <AvatarWrapper>
-            {teacher.avatarUrl ? (
-              <AvatarImg src={teacher.avatarUrl} alt={teacher.fullName} />
+            {teacher.avatarUrl && !avatarFailed ? (
+              <AvatarImg src={teacher.avatarUrl} alt={teacher.fullName} onError={() => setAvatarFailed(true)} />
             ) : (
               <AvatarText>{getInitials(teacher.fullName)}</AvatarText>
             )}

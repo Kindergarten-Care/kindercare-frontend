@@ -6,6 +6,7 @@ import { StudentDetailDomainModel } from '@/config/types/student';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getInitials } from '@/views/AccountList/utils/getInitials';
 import AddParentModal from './AddParentModal';
+import EditStudentProfileModal from './EditStudentProfileModal';
 import {
   Container, LoadingText, ErrorText,
   HeaderActions, BtnGhost, BtnBrand,
@@ -80,6 +81,8 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddParent, setShowAddParent] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [heroAvatarFailed, setHeroAvatarFailed] = useState(false);
 
   const fetchStudentDetail = useCallback(async () => {
     try {
@@ -100,6 +103,10 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
     }
   }, [studentId, fetchStudentDetail]);
 
+  useEffect(() => {
+    setHeroAvatarFailed(false);
+  }, [student?.avatarUrl]);
+
   if (loading) return <Container><LoadingText>Đang tải dữ liệu...</LoadingText></Container>;
   if (error) return <Container><ErrorText>{error}</ErrorText></Container>;
   if (!student) return null;
@@ -113,7 +120,7 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           Quay lại danh sách
         </BtnGhost>
-        <BtnBrand>
+        <BtnBrand onClick={() => setShowEditProfile(true)}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
           Chỉnh sửa hồ sơ
         </BtnBrand>
@@ -122,7 +129,15 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
       <Hero>
         <HeroBg />
         <HeroAvatar>
-          {student.avatarUrl ? <HeroAvatarImg src={student.avatarUrl} alt={student.fullName} /> : getInitials(student.fullName)}
+          {student.avatarUrl && !heroAvatarFailed ? (
+            <HeroAvatarImg
+              src={student.avatarUrl}
+              alt={student.fullName}
+              onError={() => setHeroAvatarFailed(true)}
+            />
+          ) : (
+            getInitials(student.fullName)
+          )}
         </HeroAvatar>
         <HeroMain>
           <HeroName>{student.fullName}</HeroName>
@@ -252,6 +267,22 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
           onSuccess={() => {
             setShowAddParent(false);
             fetchStudentDetail();
+          }}
+        />
+      )}
+
+      {showEditProfile && (
+        <EditStudentProfileModal
+          student={student}
+          onClose={() => setShowEditProfile(false)}
+          onSuccess={(updated) => {
+            setStudent(prev => prev && ({
+              ...prev,
+              ...(updated.fullName !== undefined && { fullName: updated.fullName }),
+              ...(updated.dateOfBirth !== undefined && { dateOfBirth: BigInt(updated.dateOfBirth) }),
+              ...(updated.gender !== undefined && { gender: updated.gender }),
+              ...(updated.allergies !== undefined && { allergies: updated.allergies }),
+            }));
           }}
         />
       )}

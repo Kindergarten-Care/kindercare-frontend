@@ -44,6 +44,22 @@ const avatarGradient = (seed: number) => {
   return `linear-gradient(140deg, ${from}, ${to})`;
 };
 
+type AvatarContentProps = {
+  avatarUrl?: string | null;
+  fullName?: string;
+  ImgComponent: typeof HeroAvatarImg | typeof KidAvatarImg;
+};
+
+function AvatarContent({ avatarUrl, fullName, ImgComponent: Img }: AvatarContentProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  return avatarUrl && !imgFailed ? (
+    <Img src={avatarUrl} alt={fullName} onError={() => setImgFailed(true)} />
+  ) : (
+    <>{getInitials(fullName)}</>
+  );
+}
+
 export default function ParentDetailView() {
   const { id } = useParams();
   const router = useRouter();
@@ -111,7 +127,7 @@ export default function ParentDetailView() {
       <Hero>
         <HeroBg />
         <HeroAvatar>
-          {parent.avatarUrl ? <HeroAvatarImg src={parent.avatarUrl} alt={parent.fullName} /> : getInitials(parent.fullName)}
+          <AvatarContent avatarUrl={parent.avatarUrl} fullName={parent.fullName} ImgComponent={HeroAvatarImg} />
         </HeroAvatar>
         <HeroMain>
           <HeroName>{parent.fullName}</HeroName>
@@ -180,7 +196,7 @@ export default function ParentDetailView() {
                     <Td>
                       <KidCell>
                         <KidAvatar $bg={avatarGradient(index)}>
-                          {c.avatarUrl ? <KidAvatarImg src={c.avatarUrl} alt={c.fullName} /> : getInitials(c.fullName)}
+                          <AvatarContent avatarUrl={c.avatarUrl} fullName={c.fullName} ImgComponent={KidAvatarImg} />
                         </KidAvatar>
                         <KidName>{c.fullName}</KidName>
                       </KidCell>

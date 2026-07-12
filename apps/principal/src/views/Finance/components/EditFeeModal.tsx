@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import {
-  Modal, ModalHeader, ModalBody, KmField, KmLabel, KmInput, KmTextArea, KmErrorText, KmFoot, KmBtn,
+  Modal, ModalHeader, ModalBody, KmField, KmLabel, KmInput, KmInputAffix, KmTextArea, KmErrorText, KmFoot, KmBtn,
   CreditCardIcon,
 } from '@/components/Modal';
 
@@ -13,6 +13,21 @@ export interface EditFieldConfig {
   suffix?: string;
   required?: boolean;
 }
+
+const formatCurrency = (value: string | number) => {
+  if (value === '' || value === null || value === undefined) return '';
+  // Giá trị số (kể cả string số thập phân "2500000.00" từ API) phải parseFloat
+  // trước, không được strip ký tự bằng regex — nếu không dấu chấm thập phân sẽ
+  // bị xóa và số bị nhân bội (vd "2500000.00" -> "250000000").
+  const amount = typeof value === 'number' ? value : parseFloat(value.replace(/,/g, ''));
+  if (!Number.isFinite(amount)) return '';
+  return Math.round(amount).toLocaleString('vi-VN');
+};
+
+const parseCurrency = (formatted: string) => {
+  const digits = formatted.replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+};
 
 interface EditFeeModalProps {
   title: string;
@@ -30,6 +45,10 @@ export default function EditFeeModal({ title, fields, initialValues, submitLabel
 
   const handleChange = (key: string, raw: string, type: EditFieldConfig['type']) => {
     setValues(prev => ({ ...prev, [key]: type === 'number' ? Number(raw) : raw }));
+  };
+
+  const handleCurrencyChange = (key: string, raw: string) => {
+    setValues(prev => ({ ...prev, [key]: parseCurrency(raw) }));
   };
 
   const handleSubmit = async () => {
@@ -57,27 +76,40 @@ export default function EditFeeModal({ title, fields, initialValues, submitLabel
 
       <ModalBody $padTop>
         {error && <KmErrorText>{error}</KmErrorText>}
-        {fields.map(field => (
-          <KmField key={field.key}>
-            <KmLabel>
-              {field.label}
-              {field.required ? ' *' : ''}
-              {field.suffix ? ` (${field.suffix})` : ''}
-            </KmLabel>
-            {field.type === 'textarea' ? (
-              <KmTextArea
-                value={values[field.key] ?? ''}
-                onChange={e => handleChange(field.key, e.target.value, field.type)}
-              />
-            ) : (
-              <KmInput
-                type={field.type === 'number' ? 'number' : 'text'}
-                value={values[field.key] ?? ''}
-                onChange={e => handleChange(field.key, e.target.value, field.type)}
-              />
-            )}
-          </KmField>
-        ))}
+        {fields.map(field => {
+          const isCurrency = field.type === 'number' && field.suffix === 'đ';
+          return (
+            <KmField key={field.key}>
+              <KmLabel>
+                {field.label}
+                {field.required ? ' *' : ''}
+                {field.suffix && !isCurrency ? ` (${field.suffix})` : ''}
+              </KmLabel>
+              {field.type === 'textarea' ? (
+                <KmTextArea
+                  value={values[field.key] ?? ''}
+                  onChange={e => handleChange(field.key, e.target.value, field.type)}
+                />
+              ) : isCurrency ? (
+                <KmInputAffix>
+                  <KmInput
+                    type="text"
+                    inputMode="numeric"
+                    value={formatCurrency(values[field.key] ?? '')}
+                    onChange={e => handleCurrencyChange(field.key, e.target.value)}
+                  />
+                  <span className="affix">đ</span>
+                </KmInputAffix>
+              ) : (
+                <KmInput
+                  type={field.type === 'number' ? 'number' : 'text'}
+                  value={values[field.key] ?? ''}
+                  onChange={e => handleChange(field.key, e.target.value, field.type)}
+                />
+              )}
+            </KmField>
+          );
+        })}
       </ModalBody>
 
       <KmFoot>

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { getInitials } from '@/views/AccountList/utils/getInitials';
 import { formatTimestamp } from '@/utils/date';
 import { ViewIcon } from '@/icons/ViewIcon';
@@ -49,6 +49,16 @@ const avatarGradient = (seed: number) => {
   const [from, to] = AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
   return `linear-gradient(140deg, ${from}, ${to})`;
 };
+
+function StudentAvatarContent({ avatarUrl, fullName }: { avatarUrl?: string | null; fullName: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  return avatarUrl && !imgFailed ? (
+    <StudentAvatarImg src={avatarUrl} alt={fullName} onError={() => setImgFailed(true)} />
+  ) : (
+    <>{getInitials(fullName)}</>
+  );
+}
 
 interface StudentTableProps {
   students: StudentDetailDomainModel[];
@@ -146,11 +156,7 @@ export default function StudentTable({
               <Td>
                 <StudentRowCell>
                   <StudentAvatar $bg={avatarGradient(startIndex + index)}>
-                    {student.avatarUrl ? (
-                      <StudentAvatarImg src={student.avatarUrl} alt={student.fullName} />
-                    ) : (
-                      getInitials(student.fullName)
-                    )}
+                    <StudentAvatarContent avatarUrl={student.avatarUrl} fullName={student.fullName} />
                   </StudentAvatar>
                   <StudentNameGroup>
                     <StudentName>{student.fullName}</StudentName>

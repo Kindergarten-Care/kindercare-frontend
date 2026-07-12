@@ -60,6 +60,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUsernameTouched, setIsUsernameTouched] = useState(false);
+  const [isEmailTouched, setIsEmailTouched] = useState(false);
 
   const title = role === 'teacher' ? 'Thêm Giáo viên' : 'Thêm Phụ huynh';
   const subtitle = role === 'teacher' ? 'Tạo tài khoản giáo viên mới' : 'Tạo tài khoản phụ huynh mới';
@@ -70,6 +71,9 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     if (name === 'username') {
       setIsUsernameTouched(true);
     }
+    if (name === 'email') {
+      setIsEmailTouched(true);
+    }
 
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
@@ -77,6 +81,11 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
       // Auto-generate username if fullName changes and username hasn't been manually touched (only for teachers)
       if (role === 'teacher' && name === 'fullName' && !isUsernameTouched) {
         newData.username = generateUsername(value);
+      }
+
+      // Auto-generate email from username if not manually touched (only for teachers)
+      if (role === 'teacher' && (name === 'fullName' || name === 'username') && !isEmailTouched) {
+        newData.email = newData.username ? `${newData.username}@kindercare.edu.vn` : '';
       }
 
       return newData;
@@ -134,6 +143,17 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
+          <KmField>
+            <KmLabel>Họ và tên <span className="opt">*</span></KmLabel>
+            <KmInput
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              placeholder="Nhập họ và tên"
+            />
+            {errors.fullName && <KmErrorText>{errors.fullName}</KmErrorText>}
+          </KmField>
+
           {role === 'teacher' && (
             <KmField>
               <KmLabel>Tên đăng nhập <span className="opt">*</span></KmLabel>
@@ -146,17 +166,6 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
               {errors.username && <KmErrorText>{errors.username}</KmErrorText>}
             </KmField>
           )}
-
-          <KmField>
-            <KmLabel>Họ và tên <span className="opt">*</span></KmLabel>
-            <KmInput
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="Nhập họ và tên"
-            />
-            {errors.fullName && <KmErrorText>{errors.fullName}</KmErrorText>}
-          </KmField>
 
           <KmField>
             <KmLabel>
@@ -179,7 +188,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Nhập email (Tùy chọn)"
+              placeholder="Nhập email"
             />
           </KmField>
 

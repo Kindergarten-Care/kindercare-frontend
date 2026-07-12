@@ -17,13 +17,14 @@ export const KmOverlay = styled.div`
   }
 `;
 
-export const KmModal = styled.div<{ $size?: 'sm' | 'md' | 'lg' }>`
+export const KmModal = styled.div<{ $size?: 'sm' | 'md' | 'lg' | 'xl' }>`
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 18px 48px -12px rgba(0, 90, 54, 0.16), 0 6px 16px -6px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   width: 100%;
-  max-width: ${({ $size }) => ($size === 'lg' ? '600px' : $size === 'sm' ? '400px' : '460px')};
+  max-width: ${({ $size }) =>
+    $size === 'xl' ? '760px' : $size === 'lg' ? '600px' : $size === 'sm' ? '400px' : '460px'};
   max-height: 90vh;
   display: flex;
   flex-direction: column;
