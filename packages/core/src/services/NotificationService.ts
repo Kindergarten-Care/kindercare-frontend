@@ -24,7 +24,7 @@ class NotificationService {
   async registerToken(token: string): Promise<void> {
     const { data: res } = await apiClient.post<ApiResponse<null>>(
       SERVER.notifications.registerToken,
-      { deviceToken: token, deviceType: 'web' },
+      { token, deviceType: 'web' },
     );
     if (!res.success) throw new Error(res.message);
   }
@@ -46,6 +46,19 @@ class NotificationService {
   async markAllAsRead(): Promise<void> {
     const { data: res } = await apiClient.put<ApiResponse<null>>(
       SERVER.notifications.markAllAsRead,
+    );
+    if (!res.success) throw new Error(res.message);
+  }
+
+  async deleteNotification(notifId: number): Promise<void> {
+    const url = SERVER.notifications.deleteNotification.replace(':id', String(notifId));
+    const { data: res } = await apiClient.delete<ApiResponse<null>>(url);
+    if (!res.success) throw new Error(res.message);
+  }
+
+  async deleteAllNotifications(): Promise<void> {
+    const { data: res } = await apiClient.delete<ApiResponse<null>>(
+      SERVER.notifications.deleteAllNotifications,
     );
     if (!res.success) throw new Error(res.message);
   }

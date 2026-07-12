@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
+import { ResponsiveModal } from '@kindercare/ui';
 import * as S from './styles';
 import { AlbumPhoto } from '@/config/types/dashboard';
 import { IconPhoto, IconZoom, IconClose, IconChevronLeft, IconChevronRight, IconDownload } from '@/assets/icons/dashboard';
@@ -54,11 +56,19 @@ const LightboxPhoto: React.FC<{ photo: AlbumPhoto }> = ({ photo }) => {
 };
 
 const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
+  const t = useTranslations('Dashboard');
   const [galleryOpen, setGalleryOpen] = useState<boolean>(false);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [zoomSource, setZoomSource] = useState<'grid' | 'gallery' | null>(null);
 
   const openLightbox = (idx: number): void => setLightboxIdx(idx);
-  const closeLightbox = (): void => setLightboxIdx(null);
+  const closeLightbox = (): void => {
+    setLightboxIdx(null);
+    if (zoomSource === 'gallery') {
+      setGalleryOpen(true);
+    }
+    setZoomSource(null);
+  };
 
   const prevPhoto = useCallback((): void => {
     setLightboxIdx(prev => (prev === null ? 0 : (prev - 1 + photos.length) % photos.length));
@@ -88,15 +98,15 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
           <S.HeadIco><IconPhoto size={18} color="#005A36" /></S.HeadIco>
           <S.HeadInfo>
             <S.HeadTitle>
-              Album hôm nay
+              {t('album.title')}
               {photos.length > 0 && (
-                <S.PhotoCount><IconPhoto size={13} /> {photos.length} ảnh mới</S.PhotoCount>
+                <S.PhotoCount><IconPhoto size={13} /> {t('album.newPhotosCount', { count: photos.length })}</S.PhotoCount>
               )}
             </S.HeadTitle>
           </S.HeadInfo>
           {photos.length > 0 && (
             <S.ViewAllBtn onClick={() => setGalleryOpen(true)}>
-              Xem tất cả →
+              {t('album.viewAllArrow')}
             </S.ViewAllBtn>
           )}
         </S.Head>
@@ -109,65 +119,69 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
                 <circle cx="12" cy="13" r="3" />
               </svg>
             </S.EmptyIcon>
-            <S.EmptyTitle>Chưa có ảnh hôm nay</S.EmptyTitle>
-            <S.EmptySub>Các hoạt động của bé sẽ được<br />cập nhật sớm nhất</S.EmptySub>
+            <S.EmptyTitle>{t('album.emptyTitle')}</S.EmptyTitle>
+            <S.EmptySub dangerouslySetInnerHTML={{ __html: t.raw('emptyActivitiesSub') }} />
           </S.EmptyState>
         ) : (
           <S.Rail>
             {photos.slice(0, 3).map((photo, idx) => (
-              <PhotoTile key={photo.id} photo={photo} onClick={() => openLightbox(idx)} />
+              <PhotoTile key={photo.id} photo={photo} onClick={() => { setZoomSource('grid'); openLightbox(idx); }} />
             ))}
             <S.MoreTile onClick={() => setGalleryOpen(true)}>
               <IconPhoto size={22} color="#6b7280" />
-              Xem tất cả
+              {t('album.viewAll')}
             </S.MoreTile>
           </S.Rail>
         )}
       </S.Card>
 
-      {galleryOpen && (
-        <S.Overlay onClick={() => setGalleryOpen(false)}>
-          <S.GalleryModal onClick={e => e.stopPropagation()}>
-            <S.GalleryHead>
-              <S.GalleryHeadInfo>
-                <S.GalleryTitle><IconPhoto size={16} /> Album hôm nay — {new Date().toLocaleDateString('vi-VN')}</S.GalleryTitle>
-                <S.GallerySubtitle>{photos.length} ảnh · Lớp Hoa Hướng Dương</S.GallerySubtitle>
-              </S.GalleryHeadInfo>
-              <S.ModalCloseBtn onClick={() => setGalleryOpen(false)}>
-                <IconClose size={16} />
-              </S.ModalCloseBtn>
-            </S.GalleryHead>
-            <S.GalleryGrid>
-              {photos.map((photo, idx) => (
-                photo.photoUrl ? (
-                  <S.GalleryPhoto
-                    key={photo.id}
-                    $bg={photo.color}
-                    onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
-                    style={{ padding: 0, overflow: 'hidden' }}
-                  >
-                    <img
-                      src={photo.photoUrl}
-                      alt={photo.caption}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                    <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
-                  </S.GalleryPhoto>
-                ) : (
-                  <S.GalleryPhoto
-                    key={photo.id}
-                    $bg={photo.color}
-                    onClick={() => { setGalleryOpen(false); openLightbox(idx); }}
-                  >
-                    <div style={{ fontSize: 40 }}>{photo.icon}</div>
-                    <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
-                  </S.GalleryPhoto>
-                )
-              ))}
-            </S.GalleryGrid>
-          </S.GalleryModal>
-        </S.Overlay>
-      )}
+      <S.StyledResponsiveModal isOpen={galleryOpen} onClose={() => setGalleryOpen(false)} maxWidth="820px" mobileMaxHeight="88vh">
+          <S.GalleryHead>
+            <S.GalleryHeadInfo>
+              <S.GalleryTitle><IconPhoto size={16} /> {t('album.galleryTitle', { date: new Date().toLocaleDateString('vi-VN') })}</S.GalleryTitle>
+              <S.GallerySubtitle>{t('album.gallerySubtitle', { count: photos.length })}</S.GallerySubtitle>
+            </S.GalleryHeadInfo>
+            <S.ModalCloseBtn onClick={() => setGalleryOpen(false)}>
+              <IconClose size={16} />
+            </S.ModalCloseBtn>
+          </S.GalleryHead>
+          <S.GalleryGrid>
+            {photos.map((photo, idx) => (
+              photo.photoUrl ? (
+                <S.GalleryPhoto
+                  key={photo.id}
+                  $bg={photo.color}
+                  onClick={() => {
+                    setGalleryOpen(false);
+                    setZoomSource('gallery');
+                    openLightbox(idx);
+                  }}
+                  style={{ padding: 0, overflow: 'hidden' }}
+                >
+                  <img
+                    src={photo.photoUrl}
+                    alt={photo.caption}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                  <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
+                </S.GalleryPhoto>
+              ) : (
+                <S.GalleryPhoto
+                  key={photo.id}
+                  $bg={photo.color}
+                  onClick={() => {
+                    setGalleryOpen(false);
+                    setZoomSource('gallery');
+                    openLightbox(idx);
+                  }}
+                >
+                  <div style={{ fontSize: 40 }}>{photo.icon}</div>
+                  <S.TimePill>{photo.time} — {photo.caption}</S.TimePill>
+                </S.GalleryPhoto>
+              )
+            ))}
+          </S.GalleryGrid>
+      </S.StyledResponsiveModal>
 
       {lightboxIdx !== null && currentPhoto && (
         <S.LightboxOverlay onClick={closeLightbox}>
@@ -179,12 +193,12 @@ const AlbumStripWidget: React.FC<AlbumStripWidgetProps> = ({ photos }) => {
             <S.LbFoot>
               <div>
                 <S.LbCaption>{currentPhoto.caption}</S.LbCaption>
-                <S.LbMeta>Lớp Hoa Hướng Dương · {currentPhoto.time} hôm nay</S.LbMeta>
+                <S.LbMeta>{t('album.lightboxMeta', { time: currentPhoto.time })}</S.LbMeta>
               </div>
               <S.LbActions>
                 <S.LbDots>{lightboxIdx + 1}/{photos.length}</S.LbDots>
-                <S.LbDownload onClick={() => alert('Đã tải ảnh!')}>
-                  <IconDownload size={14} /> Tải về
+                <S.LbDownload onClick={() => alert(t('album.downloadedAlert'))}>
+                  <IconDownload size={14} /> {t('album.download')}
                 </S.LbDownload>
               </S.LbActions>
             </S.LbFoot>

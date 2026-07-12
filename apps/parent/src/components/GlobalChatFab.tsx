@@ -3,7 +3,7 @@
 import React from 'react';
 import { useStudent } from '@/contexts/StudentContext';
 import ChatFab from '@/views/ParentDashboard/components/ChatFab';
-import { getTeacherDisplayName } from '@/views/ParentDashboard/hooks/useParentDashboard';
+import { getTeacherDisplayName } from '@/utils/Teacher/TeacherDisplay';
 
 const MOCK_MESSAGES = [
   {

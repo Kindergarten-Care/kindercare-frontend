@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTopLoader } from 'nextjs-toploader';
 import * as S from './styles';
 import LeaveRequestPopup from '@/views/ParentDashboard/components/LeaveRequestPopup';
 import MedicationRequestPopup from '@/views/ParentDashboard/components/MedicationRequestPopup';
+import ProxyRequestPopup from '@/views/ParentDashboard/components/ProxyRequestPopup';
 import { RequestListView } from './components/RequestListView';
 import { ConfirmCancelModal } from './components/ConfirmCancelModal';
 import { SelectRequestTypeModal } from './components/SelectRequestTypeModal';
@@ -27,6 +28,8 @@ export const RequestList: React.FC = () => {
     setIsLeavePopupOpen,
     isMedicationPopupOpen,
     setIsMedicationPopupOpen,
+    isProxyPopupOpen,
+    setIsProxyPopupOpen,
     isSelectPopupOpen,
     setIsSelectPopupOpen,
     fetchRequests,
@@ -89,6 +92,14 @@ export const RequestList: React.FC = () => {
             className={activeStudent.className}
           />
 
+          <ProxyRequestPopup
+            isOpen={isProxyPopupOpen}
+            onClose={() => setIsProxyPopupOpen(false)}
+            onSubmitSuccess={fetchRequests}
+            studentName={activeStudent.fullName}
+            className={activeStudent.className}
+          />
+
           <SelectRequestTypeModal
             isOpen={isSelectPopupOpen}
             onClose={() => setIsSelectPopupOpen(false)}
@@ -99,6 +110,10 @@ export const RequestList: React.FC = () => {
             onSelectMedication={() => {
               setIsSelectPopupOpen(false);
               setIsMedicationPopupOpen(true);
+            }}
+            onSelectProxy={() => {
+              setIsSelectPopupOpen(false);
+              setIsProxyPopupOpen(true);
             }}
           />
         </>

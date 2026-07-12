@@ -10,6 +10,9 @@ const pulse = keyframes`
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export const Card = styled.div`
+  container-type: inline-size;
+  container-name: live-schedule-card;
+  min-width: 0;
   background: var(--surface, #fff);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -19,6 +22,8 @@ export const Card = styled.div`
   flex-direction: column;
   overflow: hidden;
   min-height: 340px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 // ─── Header ───────────────────────────────────────────────────────────────────
@@ -53,6 +58,13 @@ export const CardTitle = styled.div`
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @container live-schedule-card (max-width: 220px) {
+    font-size: 13px;
+  }
 `;
 
 export const CardSub = styled.div`
