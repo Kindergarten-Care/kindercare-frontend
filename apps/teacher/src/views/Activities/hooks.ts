@@ -113,17 +113,64 @@ export function useActivities() {
       try {
         setLoading(true);
         const dateStr = formatDate(currentDate);
+
+        const loadWithDebug = async (name: string, apiCall: () => Promise<any>) => {
+          try {
+            const res = await apiCall();
+            if (!res) {
+              console.warn(`[Debug API] [${name}] Backend returned empty/null data (204 No Content or null body).`);
+            } else {
+              console.log(`[Debug API] [${name}] SUCCESS. Payload:`, res);
+            }
+            return res;
+          } catch (err: any) {
+            const status = err?.response?.status;
+            const configUrl = err?.config?.url;
+            if (status === 404) {
+              console.error(`[Debug API] [${name}] ERROR 404: Sai URL endpoint hoặc Resource không tồn tại. Requested URL: ${configUrl || 'unknown'}`);
+            } else {
+              console.error(`[Debug API] [${name}] ERROR ${status || 'Network'}: Lỗi kết nối hoặc Backend lỗi. Message: ${err?.message || err}`);
+            }
+            return null;
+          }
+        };
+
         const [menuData, mealsData, activitiesData, scheduleData, weeklyMenuData] = await Promise.all([
-          ActivitiesService.getMenuOfTheDay(classId!, dateStr),
-          ActivitiesService.getStudentMealRecords(classId!, dateStr),
-          ActivitiesService.getStudentActivityRecords(classId!, dateStr),
-          ActivitiesService.getWeeklySchedule(classId!, dateStr),
-          ActivitiesService.getWeeklyMenu(classId!, dateStr)
+          loadWithDebug('Menu of the Day', () => ActivitiesService.getMenuOfTheDay(classId!, dateStr)),
+          loadWithDebug('Student Meal Records', () => ActivitiesService.getStudentMealRecords(classId!, dateStr)),
+          loadWithDebug('Student Activity Records', () => ActivitiesService.getStudentActivityRecords(classId!, dateStr)),
+          loadWithDebug('Weekly Schedule', () => ActivitiesService.getWeeklySchedule(classId!, dateStr)),
+          loadWithDebug('Weekly Menu', () => ActivitiesService.getWeeklyMenu(classId!, dateStr))
         ]);
-        setMenu(menuData);
-        setEditedMenu(menuData);
-        setMealRecords(mealsData);
-        setActivityRecords(activitiesData);
+
+        // Validate data parsing structure
+        if (scheduleData && (!scheduleData.details || !Array.isArray(scheduleData.details))) {
+          console.error('[Debug API] Parse error: Schedule response is missing details array or has invalid structure.', scheduleData);
+        }
+        if (weeklyMenuData && (!weeklyMenuData.days || !Array.isArray(weeklyMenuData.days))) {
+          console.error('[Debug API] Parse error: Weekly Menu response is missing days array or has invalid structure.', weeklyMenuData);
+        }
+
+        // Compare WeeklyScheduleID integrity between APIs
+        if (scheduleData && weeklyMenuData) {
+          const scheduleId = scheduleData.weeklyScheduleId || scheduleData.id;
+          const menuScheduleId = weeklyMenuData.weeklyScheduleId || weeklyMenuData.id;
+          console.log(`[Debug API] Verification - Schedule WeeklyScheduleID: ${scheduleId}, Menu WeeklyScheduleID: ${menuScheduleId}`);
+          if (scheduleId && menuScheduleId) {
+            if (String(scheduleId) === String(menuScheduleId)) {
+              console.log('%c[Debug API] SUCCESS: WeeklyScheduleIDs match between Schedule and Menu APIs!', 'color: #10B981; font-weight: bold;');
+            } else {
+              console.warn('[Debug API] WARNING: WeeklyScheduleIDs DO NOT match between Schedule and Menu APIs!');
+            }
+          } else {
+            console.warn('[Debug API] Warning: One or both APIs did not return a valid WeeklyScheduleID reference.');
+          }
+        }
+
+        setMenu(menuData || { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' });
+        setEditedMenu(menuData || { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' });
+        setMealRecords(mealsData || []);
+        setActivityRecords(activitiesData || []);
         setWeeklySchedule(scheduleData);
         setWeeklyMenu(weeklyMenuData);
       } catch (error) {
