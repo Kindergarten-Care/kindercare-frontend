@@ -101,7 +101,7 @@ export default function ScheduleApprovalDetailView({ scheduleId }: ScheduleAppro
     try {
       setApproving(true);
       await scheduleApprovalService.activeMonthlySchedule(data.id, true);
-      setData(prev => prev && { ...prev, isActive: true });
+      setData(prev => prev && { ...prev, isActive: 1 });
       kcToast.success('Đã kích hoạt thời khóa biểu tháng này');
     } catch (err: any) {
       kcToast.error(err.message || 'Lỗi khi kích hoạt');
@@ -162,9 +162,9 @@ export default function ScheduleApprovalDetailView({ scheduleId }: ScheduleAppro
         </HeroMain>
         <HeroActions>
           {data.approvedStatus === 1 ? (
-            <BtnActivate onClick={handleActivate} disabled={approving || data.isActive}>
+            <BtnActivate onClick={handleActivate} disabled={approving || data.isActive === 1}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              {data.isActive ? 'Đang hoạt động' : 'Kích hoạt'}
+              {data.isActive === 1 ? 'Đang hoạt động' : 'Kích hoạt'}
             </BtnActivate>
           ) : (
             <>
