@@ -11,6 +11,7 @@ permissions:
 
 env:
   IMAGE_TAG: ${{ github.ref_name == 'release/master' && 'release-master' || 'dev' }}
+  CACHE_VERSION: v2
 
 jobs:
   build-and-push:
@@ -52,8 +53,8 @@ jobs:
             NEXT_PUBLIC_PORTAL_APP_URL=${{ github.ref_name == 'release/master' && 'https://portal.kindercare.app' || 'https://portal-test.kindercare.app' }}
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}/${{ matrix.app }}:${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=${{ matrix.app }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          cache-from: type=gha,scope=${{ matrix.app }}-${{ env.CACHE_VERSION }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}-${{ env.CACHE_VERSION }}
 
   deploy:
     name: deploy (${{ matrix.app }})
