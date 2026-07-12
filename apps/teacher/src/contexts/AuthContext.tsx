@@ -86,7 +86,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    window.location.href = `${process.env.NEXT_PUBLIC_PORTAL_APP_URL || 'http://localhost:3005'}/login`; // Redirect to portal login
+    const portalBase = process.env.NEXT_PUBLIC_PORTAL_APP_URL || '';
+    const loginUrl = portalBase
+      ? `${portalBase}/login`
+      : (typeof window !== 'undefined' ? `${window.location.origin}/login` : 'http://localhost:3000/login');
+    window.location.href = loginUrl;
   };
 
   return (

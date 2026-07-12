@@ -86,15 +86,17 @@ export const useLoginState = (): UseLoginStateReturn => {
       const expireMinutes = rememberMe ? 3 * 24 * 60 : 30;
       setSession(token, 'teacher', expireMinutes);
 
-      // Redirect to teacher app (chỉ còn role teacher sau khi bỏ principal)
-      const nextUrl = `${process.env.NEXT_PUBLIC_TEACHER_APP_URL || 'http://localhost:3001'}/teacher`;
-      const redirectUrl = nextUrl.startsWith('http')
-        ? new URL(nextUrl)
-        : new URL(nextUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3005');
+    // Resolve teacher app base URL (giữa các subdomain cùng kindercare.app)
+    // Nếu thiếu env, fallback về portal (cùng port) để tránh lỗi localhost.
+    const teacherBase =
+      process.env.NEXT_PUBLIC_TEACHER_APP_URL || '';
+    const redirectUrl = teacherBase
+      ? new URL(teacherBase)
+      : (typeof window !== 'undefined' ? new URL('/teacher', window.location.origin) : new URL('http://localhost:3000/teacher'));
 
-      redirectUrl.searchParams.set('token', token);
+    redirectUrl.searchParams.set('token', token);
 
-      window.location.href = redirectUrl.toString();
+    window.location.href = redirectUrl.toString();
     } catch (error) {
       console.error('Login error:', error);
       setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
