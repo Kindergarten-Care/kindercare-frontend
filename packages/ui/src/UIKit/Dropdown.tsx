@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { css, keyframes } from 'styled-components';
 import '../theme/types';
 
@@ -85,12 +86,12 @@ const panelFade = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-const Panel = styled.ul`
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 80;
+const Panel = styled.ul<{ $top: number; $left: number; $width: number }>`
+  position: fixed;
+  top: ${({ $top }) => $top}px;
+  left: ${({ $left }) => $left}px;
+  width: ${({ $width }) => $width}px;
+  z-index: 1001;
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -198,8 +199,10 @@ export function Dropdown<T extends string = string>({
 
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [panelRect, setPanelRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLUListElement | null>(null);
 
   const selectedIndex = useMemo(
     () => options.findIndex((option) => option.value === value),
@@ -248,12 +251,36 @@ export function Dropdown<T extends string = string>({
   useEffect(() => {
     if (!open) return;
     const handler = (event: MouseEvent): void => {
+      const target = event.target as Node;
       const root = rootRef.current;
-      if (root && !root.contains(event.target as Node)) close();
+      const panel = panelRef.current;
+      if (root?.contains(target) || panel?.contains(target)) return;
+      close();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open, close]);
+
+  const updatePanelRect = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    setPanelRect({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPanelRect(null);
+      return;
+    }
+    updatePanelRect();
+    window.addEventListener('scroll', updatePanelRect, true);
+    window.addEventListener('resize', updatePanelRect);
+    return () => {
+      window.removeEventListener('scroll', updatePanelRect, true);
+      window.removeEventListener('resize', updatePanelRect);
+    };
+  }, [open, updatePanelRect]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
     if (disabled) return;
@@ -324,8 +351,16 @@ export function Dropdown<T extends string = string>({
         </Chevron>
       </Trigger>
 
-      {open && (
-        <Panel id={listboxId} role="listbox" aria-labelledby={triggerId}>
+      {open && panelRect && typeof document !== 'undefined' && createPortal(
+        <Panel
+          ref={panelRef}
+          id={listboxId}
+          role="listbox"
+          aria-labelledby={triggerId}
+          $top={panelRect.top}
+          $left={panelRect.left}
+          $width={panelRect.width}
+        >
           {options.map((option, index) => {
             const isSelected = index === selectedIndex;
             const isActive = index === activeIndex;
@@ -353,7 +388,8 @@ export function Dropdown<T extends string = string>({
               </React.Fragment>
             );
           })}
-        </Panel>
+        </Panel>,
+        document.body,
       )}
     </Root>
   );

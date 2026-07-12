@@ -15,11 +15,6 @@ export interface SidebarItemConfig {
 
 export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
   {
-    label: 'Tổng quan',
-    href: '/overview',
-    icon: <span>🏠</span>
-  },
-  {
     label: 'Tài khoản & Hồ sơ',
     icon: (
       <span>👤</span>
@@ -42,6 +37,13 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     ]
   },
   {
+    label: 'Lịch & Sự kiện',
+    icon: (
+      <span>📆</span>
+    ),
+    href: '/calendar'
+  },
+  {
     label: 'Khối học và lớp học',
     icon: (
       <span>🏫</span>
@@ -54,5 +56,19 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
       <span>💰</span>
     ),
     href: '/finance'
+  },
+  {
+    label: 'Yêu cầu duyệt',
+    icon: (
+      <span>✅</span>
+    ),
+    href: '/schedule-approvals'
+  },
+  {
+    label: 'Thực đơn',
+    icon: (
+      <span>🍽️</span>
+    ),
+    href: '/menus'
   },
 ];

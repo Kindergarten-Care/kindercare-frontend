@@ -95,6 +95,24 @@ function GradeIcon({ gradeKey, size = 34 }: { gradeKey: GradeKey; size?: number 
   }
 }
 
+function AvatarContent({
+  avatarUrl,
+  fullName,
+  ImgComponent,
+}: {
+  avatarUrl?: string | null;
+  fullName: string;
+  ImgComponent: typeof TeacherAvatarImg | typeof StuAvatarImg;
+}) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const Img = ImgComponent;
+  return avatarUrl && !imgFailed ? (
+    <Img src={avatarUrl} alt={fullName} onError={() => setImgFailed(true)} />
+  ) : (
+    <>{getInitials(fullName)}</>
+  );
+}
+
 const getFirstName = (fullName: string) => {
   if (!fullName) return '';
   const parts = fullName.trim().split(' ');
@@ -241,11 +259,11 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
                 <React.Fragment key={teacher.id}>
                   <TeacherRow onClick={() => router.push(`/accounts/teacher/${teacher.id}?from=class`)}>
                     <TeacherAvatar $bg={avatarGradient(index)}>
-                      {teacher.avatarUrl ? (
-                        <TeacherAvatarImg src={teacher.avatarUrl} alt={teacher.fullName} />
-                      ) : (
-                        getInitials(teacher.fullName)
-                      )}
+                      <AvatarContent
+                        avatarUrl={teacher.avatarUrl}
+                        fullName={teacher.fullName}
+                        ImgComponent={TeacherAvatarImg}
+                      />
                     </TeacherAvatar>
                     <div style={{ minWidth: 0 }}>
                       <TeacherName>{teacher.fullName}</TeacherName>
@@ -372,11 +390,11 @@ export default function ClassDetailView({ classId }: ClassDetailProps) {
                       <Td>
                         <StuCell>
                           <StuAvatar $bg={avatarGradient(startIndex + index)}>
-                            {student.avatarUrl ? (
-                              <StuAvatarImg src={student.avatarUrl} alt={student.fullName} />
-                            ) : (
-                              getInitials(student.fullName)
-                            )}
+                            <AvatarContent
+                              avatarUrl={student.avatarUrl}
+                              fullName={student.fullName}
+                              ImgComponent={StuAvatarImg}
+                            />
                           </StuAvatar>
                           <StuName>{student.fullName}</StuName>
                         </StuCell>

@@ -34,7 +34,8 @@ import {
   ContentContainer,
   BreadcrumbContainer,
   BreadcrumbItem,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
+  CountIndicator
 } from './styles';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const searchParams = useSearchParams();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [formattedDate, setFormattedDate] = useState<string>('');
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const currentFullUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
@@ -55,6 +57,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     logout();
     router.push('/login');
   };
+
+  React.useEffect(() => {
+    import('@/services/ScheduleApproval/ScheduleApprovalService').then(({ scheduleApprovalService }) => {
+      scheduleApprovalService.getMonthlySchedules().then(schedules => {
+        setPendingCount(schedules.filter(s => s.approvedStatus === 0).length);
+      }).catch(() => {});
+    });
+  }, []);
 
   React.useEffect(() => {
     setFormattedDate(getFormattedDate());
@@ -112,6 +122,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <SidebarItemIcon>{item.icon}</SidebarItemIcon>
                     <SidebarItemText>{item.label}</SidebarItemText>
                   </SidebarItemContent>
+                  {item.label === 'Yêu cầu duyệt' && pendingCount > 0 && (
+                    <CountIndicator>{pendingCount}</CountIndicator>
+                  )}
                   {hasSub && (
                     <ChevronIcon viewBox="0 0 24 24" $isOpen={isExpanded} $active={isActive || undefined}>
                       <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
@@ -151,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <ContentContainer>
           <BreadcrumbContainer>
-            <BreadcrumbItem $clickable onClick={() => router.push('/overview')}>
+            <BreadcrumbItem $clickable onClick={() => router.push('/home')}>
               <span style={{ marginRight: '6px', display: 'flex' }}><HomeIcon /></span> Trang chủ
             </BreadcrumbItem>
             {(() => {
@@ -264,6 +277,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <BreadcrumbItem $clickable onClick={() => router.push('/accounts?role=parent')}>Phụ huynh</BreadcrumbItem>
                     <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
                     <BreadcrumbItem className="active">Chi tiết Phụ huynh</BreadcrumbItem>
+                  </>
+                );
+              }
+              if (pathname.startsWith('/schedule-approvals/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/schedule-approvals')}>Yêu cầu duyệt</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết duyệt TKB</BreadcrumbItem>
+                  </>
+                );
+              }
+              if (pathname.startsWith('/menus/')) {
+                return (
+                  <>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem $clickable onClick={() => router.push('/menus')}>Thực đơn</BreadcrumbItem>
+                    <BreadcrumbSeparator><ChevronRightIcon /></BreadcrumbSeparator>
+                    <BreadcrumbItem className="active">Chi tiết thực đơn</BreadcrumbItem>
                   </>
                 );
               }

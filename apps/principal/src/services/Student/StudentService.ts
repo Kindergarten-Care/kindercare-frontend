@@ -1,5 +1,5 @@
 import { apiClient, ApiResponse, SERVER } from '@kindercare/core';
-import { StudentDetailApiDto, StudentDetailDomainModel } from '@/config/types/student';
+import { StudentDetailApiDto, StudentDetailDomainModel, ImportStudentsResultDto, UpdateStudentPayload } from '@/config/types/student';
 import { StudentMapper } from './StudentMapper';
 
 class StudentService {
@@ -53,11 +53,19 @@ class StudentService {
     return res.data;
   }
 
-  async importStudents(file: File): Promise<any> {
+  async updateStudent(id: number | string, payload: UpdateStudentPayload): Promise<void> {
+    const url = SERVER.principal.updateStudent.replace(':id', String(id));
+    const { data: res } = await apiClient.patch<ApiResponse<null>>(url, payload);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+  }
+
+  async importStudents(file: File): Promise<ImportStudentsResultDto> {
     const formData = new FormData();
     formData.append('file', file);
-    const { data: res } = await apiClient.post<ApiResponse<any>>(
-      SERVER.principal.importStudents, 
+    const { data: res } = await apiClient.post<ApiResponse<ImportStudentsResultDto>>(
+      SERVER.principal.importStudents,
       formData,
       {
         headers: {

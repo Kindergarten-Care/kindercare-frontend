@@ -30,6 +30,15 @@ const avatarGradient = (seed: number) => {
   return `linear-gradient(140deg, ${from}, ${to})`;
 };
 
+function AvatarCell({ avatarUrl, fullName }: { avatarUrl?: string | null; fullName: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  return avatarUrl && !imgFailed ? (
+    <StudentAvatarImg src={avatarUrl} alt={fullName} onError={() => setImgFailed(true)} />
+  ) : (
+    <>{getInitials(fullName)}</>
+  );
+}
+
 function calculateAge(ts: bigint | null): number | null {
   if (!ts) return null;
   const birth = new Date(Number(ts) * 1000);
@@ -150,7 +159,7 @@ export default function StudentPoolPanel({
                   )}
                 </Checkbox>
                 <StudentAvatar $bg={avatarGradient(index)}>
-                  {student.avatarUrl ? <StudentAvatarImg src={student.avatarUrl} alt={student.fullName} /> : getInitials(student.fullName)}
+                  <AvatarCell avatarUrl={student.avatarUrl} fullName={student.fullName} />
                 </StudentAvatar>
                 <StudentInfo>
                   <StudentName>{student.fullName}</StudentName>

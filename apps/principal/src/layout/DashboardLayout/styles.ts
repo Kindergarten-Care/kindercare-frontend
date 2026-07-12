@@ -121,6 +121,17 @@ export const SidebarItemIcon = styled.span`
   font-size: 1.1rem;
 `;
 
+export const CountIndicator = styled.span`
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  margin-left: auto;
+  line-height: 1;
+`;
+
 export const ChevronIcon = styled.svg<{ $isOpen?: boolean; $active?: boolean }>`
   width: 16px;
   height: 16px;

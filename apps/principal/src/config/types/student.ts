@@ -1,3 +1,16 @@
+export interface ImportStudentsResultDto {
+  imported: number;
+  tuitionPlansCreated: number;
+}
+
+export interface UpdateStudentPayload {
+  fullName?: string;
+  dateOfBirth?: number;
+  gender?: string;
+  allergies?: string | null;
+  avatarUrl?: string | null;
+}
+
 export interface StudentParentApiDto {
   parentId: number;
   fullName: string;

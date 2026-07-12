@@ -10,7 +10,7 @@ export * from './styles';
 export * from './icons';
 
 interface ModalProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   onClose?: () => void;
   closeOnOverlayClick?: boolean;
   children: React.ReactNode;

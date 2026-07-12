@@ -53,8 +53,9 @@ export default function StudentListView() {
   if (authLoading) return null;
 
   const total = students.length;
-  const assigned = students.filter(s => s.className).length;
-  const pending = total - assigned;
+  const assignedStudents = students.filter(s => s.className).length;
+  const pending = total - assignedStudents;
+  const activeClasses = classes.length;
   const male = students.filter(s => s.gender === 'Nam').length;
   const female = students.filter(s => s.gender === 'Nữ').length;
 
@@ -100,7 +101,7 @@ export default function StudentListView() {
             </svg>
           </StatIconWrap>
           <StatInfo>
-            <StatValue>{assigned}</StatValue>
+            <StatValue>{activeClasses}</StatValue>
             <StatLabel>Lớp đang hoạt động</StatLabel>
           </StatInfo>
         </StatCard>

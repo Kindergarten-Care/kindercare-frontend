@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Dropdown } from '@kindercare/ui';
 import { getInitials } from '@/views/AccountList/utils/getInitials';
 import { GradeDomainModel } from '@/config/types/grade';
@@ -28,6 +28,25 @@ const avatarGradient = (seed: number) => {
   const [from, to] = AVATAR_PALETTE[seed % AVATAR_PALETTE.length];
   return `linear-gradient(140deg, ${from}, ${to})`;
 };
+
+interface AvatarContentProps {
+  avatarUrl?: string | null;
+  fullName: string;
+}
+
+function AvatarContent({ avatarUrl, fullName }: AvatarContentProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  return avatarUrl && !imgFailed ? (
+    <StudentAvatarImg
+      src={avatarUrl}
+      alt={fullName}
+      onError={() => setImgFailed(true)}
+    />
+  ) : (
+    <>{getInitials(fullName)}</>
+  );
+}
 
 interface TargetClassPanelProps {
   selectedClassId: string;
@@ -113,7 +132,7 @@ export default function TargetClassPanel({
                 {stagedStudents.map((student, index) => (
                   <StudentRow key={`staged-${student.studentId}`}>
                     <StudentAvatar $bg={avatarGradient(index)}>
-                      {student.avatarUrl ? <StudentAvatarImg src={student.avatarUrl} alt={student.fullName} /> : getInitials(student.fullName)}
+                      <AvatarContent avatarUrl={student.avatarUrl} fullName={student.fullName} />
                     </StudentAvatar>
                     <StudentInfo>
                       <StudentName>{student.fullName}</StudentName>
@@ -134,7 +153,7 @@ export default function TargetClassPanel({
                 {existingStudents.map((student, index) => (
                   <StudentRow key={student.studentId}>
                     <StudentAvatar $bg={avatarGradient(index + stagedStudents.length)}>
-                      {student.avatarUrl ? <StudentAvatarImg src={student.avatarUrl} alt={student.fullName} /> : getInitials(student.fullName)}
+                      <AvatarContent avatarUrl={student.avatarUrl} fullName={student.fullName} />
                     </StudentAvatar>
                     <StudentInfo>
                       <StudentName>{student.fullName}</StudentName>

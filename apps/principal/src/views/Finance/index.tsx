@@ -240,10 +240,16 @@ export default function FinanceView() {
   }, [searchTerm, statusFilter, typeFilter]);
 
   const kpis = useMemo(() => {
-    const totalRevenue = invoices.reduce((sum, i) => sum + i.totalAmount, 0);
-    const paidRevenue = invoices.filter(i => i.paymentStatus === 'Paid').reduce((sum, i) => sum + i.totalAmount, 0);
-    const unpaidRevenue = totalRevenue - paidRevenue;
-    const unpaidCount = invoices.filter(i => i.paymentStatus !== 'Paid').length;
+    const amountOf = (i: InvoiceDto) => {
+      const n = typeof i.totalAmount === 'number' ? i.totalAmount : parseFloat(String(i.totalAmount));
+      return Number.isFinite(n) ? n : 0;
+    };
+    const paidInvoices = invoices.filter(i => i.paymentStatus === 'Paid');
+    const unpaidInvoices = invoices.filter(i => i.paymentStatus !== 'Paid');
+    const totalRevenue = invoices.reduce((sum, i) => sum + amountOf(i), 0);
+    const paidRevenue = paidInvoices.reduce((sum, i) => sum + amountOf(i), 0);
+    const unpaidRevenue = unpaidInvoices.reduce((sum, i) => sum + amountOf(i), 0);
+    const unpaidCount = unpaidInvoices.length;
     return { totalRevenue, paidRevenue, unpaidRevenue, unpaidCount };
   }, [invoices]);
 
@@ -347,27 +353,29 @@ export default function FinanceView() {
                           <Tr key={fee.id}>
                             <Td>
                               {fee.yearName || 'Đã xóa'}
-                              {fee.isActive ? <ActiveTag>Đang áp dụng</ActiveTag> : <InactiveTag>Không active</InactiveTag>}
+                              {fee.isActive ? <ActiveTag>Đang áp dụng</ActiveTag> : <InactiveTag>Đã kết thúc</InactiveTag>}
                             </Td>
                             <Td>{formatVND(fee.monthlyTuition)}</Td>
                             <Td>{formatVND(fee.dailyMealFee)}</Td>
                             <Td style={{ textAlign: 'center' }}>
-                              <EditButton
-                                onClick={() =>
-                                  setEditTarget({
-                                    kind: 'baseFee',
-                                    id: fee.id,
-                                    title: `Sửa học phí: ${fee.yearName || 'Năm học đã xóa'}`,
-                                    fields: [
-                                      { key: 'monthlyTuition', label: 'Học phí/tháng', type: 'number', suffix: 'đ' },
-                                      { key: 'dailyMealFee', label: 'Phí ăn/ngày', type: 'number', suffix: 'đ' },
-                                    ],
-                                    values: { monthlyTuition: fee.monthlyTuition, dailyMealFee: fee.dailyMealFee },
-                                  })
-                                }
-                              >
-                                ✏️ Sửa
-                              </EditButton>
+                              {!!fee.isActive && (
+                                <EditButton
+                                  onClick={() =>
+                                    setEditTarget({
+                                      kind: 'baseFee',
+                                      id: fee.id,
+                                      title: `Sửa học phí: ${fee.yearName || 'Năm học đã xóa'}`,
+                                      fields: [
+                                        { key: 'monthlyTuition', label: 'Học phí/tháng', type: 'number', suffix: 'đ' },
+                                        { key: 'dailyMealFee', label: 'Phí ăn/ngày', type: 'number', suffix: 'đ' },
+                                      ],
+                                      values: { monthlyTuition: fee.monthlyTuition, dailyMealFee: fee.dailyMealFee },
+                                    })
+                                  }
+                                >
+                                  ✏️ Sửa
+                                </EditButton>
+                              )}
                             </Td>
                           </Tr>
                         ))
