@@ -35,7 +35,7 @@ function normalizePhotoUrl(url: string | null | undefined): string | undefined {
 
 function mapApiMedicalRequestToDomain(raw: any): MedicalRequest {
   return {
-    id: String(raw.medRequestId),
+    id: String(raw.requestId ?? raw.medRequestId),
     studentId: String(raw.studentId),
     studentName: raw.studentName,
     parentName: raw.parentName || 'Phụ huynh',

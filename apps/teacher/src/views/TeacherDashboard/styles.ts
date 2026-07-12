@@ -264,32 +264,8 @@ export const NotifTime = styled.div`
 
 export const BodyLayout = styled.div`
   display: flex;
-  gap: 22px;
-  align-items: flex-start;
-
-  @media (max-width: 1180px) {
-    flex-direction: column;
-  }
-`;
-
-export const MainColumn = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
   flex-direction: column;
-  gap: 18px;
-`;
-
-export const RightColumn = styled.div`
-  width: 360px;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (max-width: 1180px) {
-    width: 100%;
-  }
+  gap: 20px;
 `;
 
 /**
@@ -298,7 +274,7 @@ export const RightColumn = styled.div`
  */
 export const AttendanceStrip = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: stretch;
 

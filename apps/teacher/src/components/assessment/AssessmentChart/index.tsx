@@ -30,6 +30,8 @@ export interface AssessmentChartProps {
 
 const Wrap = styled.div`
   width: 100%;
+  max-width: 320px; /* Thu gọn biểu đồ lại để không bị phình to */
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -100,7 +102,8 @@ export const AssessmentChart: React.FC<AssessmentChartProps> = ({
 
   const cx = size / 2;
   const cy = size / 2;
-  const r = (size / 2) * 0.78;
+  // Thu nhỏ bán kính biểu đồ (từ 0.78 xuống 0.65)
+  const r = (size / 2) * 0.65;
 
   const levels = useMemo(
     () => [0.25, 0.5, 0.75, 1].map(scale => scale * r),
@@ -140,6 +143,7 @@ export const AssessmentChart: React.FC<AssessmentChartProps> = ({
           const { x, y } = polar(i, axes.length, r);
           const lx = cx + x * 1.18;
           const ly = cy + y * 1.18;
+          
           return (
             <g key={a.key}>
               <line
@@ -155,7 +159,7 @@ export const AssessmentChart: React.FC<AssessmentChartProps> = ({
                 y={ly}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize={11}
+                fontSize={9}
                 fontWeight={600}
                 fill={a.accent}
               >
@@ -226,18 +230,18 @@ export const AssessmentChart: React.FC<AssessmentChartProps> = ({
         {/* Center label */}
         <text
           x={cx}
-          y={cy - 6}
+          y={cy - (size < 250 ? 4 : 6)}
           textAnchor="middle"
-          fontSize={10}
+          fontSize={size < 250 ? 8 : 10}
           fill="#94A3B8"
         >
           Thang điểm
         </text>
         <text
           x={cx}
-          y={cy + 8}
+          y={cy + (size < 250 ? 6 : 8)}
           textAnchor="middle"
-          fontSize={11}
+          fontSize={size < 250 ? 9 : 11}
           fontWeight={700}
           fill={accent}
         >

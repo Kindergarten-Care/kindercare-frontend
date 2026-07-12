@@ -575,7 +575,7 @@ export const AssessmentView: React.FC = () => {
               <AssessmentChart
                 current={currentScores as Record<AssessmentCriterionKey, number>}
                 previous={previousScores}
-                size={220}
+                size={340}
               />
             )}
           </ChartCard>

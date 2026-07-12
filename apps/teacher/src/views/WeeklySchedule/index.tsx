@@ -346,11 +346,18 @@ export const WeeklyScheduleView: React.FC = () => {
   };
 
   const downloadCsvTemplate = () => {
-    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
+    // Generate CSV template for the CURRENT week
+    const week = selectedWeek || 1;
+    const templateContent = 'WeekOrder,DayOfWeek,StartTime,EndTime,ActivityName,ActivityType,Details,Location\n' +
+      `${week},Monday,07:30,08:30,Đón bé & Thể dục sáng,pickup,Tập dân vũ,Sân trường\n` +
+      `${week},Monday,08:30,09:00,Ăn sáng,meal,Suất sáng,Phòng ăn\n` +
+      `${week},Tuesday,07:30,08:30,Đón bé,pickup,,Sân trường\n`;
+
+    const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `weekly_schedule_template_${currentMonth.year}_${currentMonth.month}.csv`;
+    a.download = `weekly_schedule_template_Tuan${week}_${currentMonth.month}_${currentMonth.year}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
