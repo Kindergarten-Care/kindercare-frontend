@@ -70,7 +70,8 @@ export default function StudentImportModal({ onClose, onSuccess }: ModalProps) {
 
   const downloadTemplate = () => {
     const csvContent = "FullName,DateOfBirth,Gender,Allergies,AdmissionDate\nNguyễn Văn A,15/05/2023,Nam,,01/09/2026\nTrần Thị B,20/08/2023,Nữ,Dị ứng hải sản,01/09/2026";
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // BOM ﻿ bắt buộc để Excel nhận diện đúng UTF-8, nếu không sẽ đoán nhầm sang ANSI và vỡ font tiếng Việt.
+    const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
