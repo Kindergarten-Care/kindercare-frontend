@@ -9,6 +9,20 @@
     "notifyButton": "Notify me",
     "footer": "© 2024 KinderCare Team. All rights reserved. Build for Education."
   },
+  "Login": {
+    "portalLabel": "Management Portal | KinderCare",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember login",
+    "loginButton": "Login",
+    "loggingIn": "Processing...",
+    "loginError": "An error occurred. Please try again.",
+    "missingCredentials": "Please enter both username and password.",
+    "invalidCredentials": "Incorrect username or password.",
+    "accessDenied": "Your account is disabled or you don't have access."
+  },
   "Site": {
     "title": "KinderCare - Preschool management system",
     "description": "A comprehensive, modern, and secure preschool management platform."

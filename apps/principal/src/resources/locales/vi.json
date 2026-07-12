@@ -9,6 +9,20 @@
     "notifyButton": "Thông báo cho tôi",
     "footer": "© 2024 KinderCare Team. All rights reserved. Build for Education."
   },
+  "Login": {
+    "portalLabel": "Cổng quản lý | KinderCare",
+    "usernameLabel": "Tài khoản",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "passwordLabel": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu của bạn",
+    "rememberMe": "Ghi nhớ đăng nhập",
+    "loginButton": "Đăng nhập",
+    "loggingIn": "Đang xử lý...",
+    "loginError": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "missingCredentials": "Vui lòng nhập đầy đủ tài khoản và mật khẩu.",
+    "invalidCredentials": "Tên đăng nhập hoặc mật khẩu không chính xác.",
+    "accessDenied": "Tài khoản của bạn đã bị vô hiệu hóa hoặc không có quyền truy cập."
+  },
   "Site": {
     "title": "KinderCare - Hệ Thống Quản Lý Mầm Non",
     "description": "Nền tảng quản lý mầm non toàn diện, hiện đại và bảo mật."
