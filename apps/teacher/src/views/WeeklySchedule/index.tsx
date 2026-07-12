@@ -24,6 +24,7 @@ import {
 } from '@/config/types/weeklySchedule';
 import * as S from './styles';
 import type { SchoolDay, WeeklyScheduleDetail, ActivityType } from '@/config/types/weeklySchedule';
+import { apiClient } from '@kindercare/core';
 
 const MONTH_NAMES = [
   'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -55,6 +56,100 @@ const CSV_TEMPLATE = 'WeekOrder,DayOfWeek,StartTime,EndTime,ActivityName,Activit
   '1,Monday,07:30,08:30,Đón bé & Thể dục sáng,pickup,Tập dân vũ,Sân trường\n' +
   '1,Monday,08:30,09:00,Ăn sáng,meal,Suất sáng,Phòng ăn\n' +
   '1,Tuesday,07:30,08:30,Đón bé,pickup,,Sân trường\n';
+
+// Utility helper to filter empty activityName items and remove duplicate time slots per day
+const filterAndUniqueSchedules = (items: WeeklyScheduleDetail[]): WeeklyScheduleDetail[] => {
+  const seen = new Set<string>();
+  return (items || []).filter((it) => {
+    if (!it.activityName || !it.activityName.trim()) {
+      return false;
+    }
+    const key = `${it.dayOfWeek}-${it.startTime.slice(0, 5)}-${it.endTime.slice(0, 5)}-${it.activityName.trim()}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
+// Error Boundary to prevent render crashes when schedule details or menu formats are invalid
+class WeeklyScheduleErrorBoundary extends React.Component<
+  { children: React.ReactNode; itemsByDay: any; currentWeek: any },
+  { hasError: boolean; error: Error | null; errorInfo: React.ErrorInfo | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    this.setState({
+      hasError: true,
+      error: error,
+      errorInfo: errorInfo
+    });
+    console.error('[WeeklyScheduleErrorBoundary] Render error caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '24px',
+          background: '#FFF5F5',
+          border: '2px solid #FEB2B2',
+          borderRadius: '12px',
+          margin: '20px 0',
+          color: '#C53030',
+          fontFamily: 'monospace'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold' }}>
+            ⚠️ Lỗi hiển thị Thời khóa biểu (Render Error Boundary)
+          </h3>
+          <p style={{ margin: '0 0 15px 0', fontSize: '14px' }}>
+            Component gặp lỗi crash khi render. Xem thông tin gỡ lỗi bên dưới:
+          </p>
+          <div style={{ background: '#1A202C', color: '#A0AEC0', padding: '16px', borderRadius: '8px', overflow: 'auto', maxHeight: '300px', fontSize: '12px' }}>
+            <div style={{ color: '#F56565', fontWeight: 'bold', marginBottom: '8px' }}>
+              Error: {this.state.error?.toString()}
+            </div>
+            <div style={{ whiteSpace: 'pre-wrap', marginBottom: '16px' }}>
+              {this.state.errorInfo?.componentStack}
+            </div>
+            <div style={{ borderTop: '1px solid #4A5568', paddingTop: '12px' }}>
+              <div style={{ color: '#ED8936', fontWeight: 'bold', marginBottom: '4px' }}>Dump State / Data:</div>
+              <pre>{JSON.stringify({
+                currentWeek: this.props.currentWeek,
+                itemsByDayCount: Object.keys(this.props.itemsByDay || {}).reduce((acc: any, key) => {
+                  acc[key] = this.props.itemsByDay[key]?.length || 0;
+                  return acc;
+                }, {})
+              }, null, 2)}</pre>
+            </div>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '16px',
+              padding: '8px 16px',
+              background: '#E53E3E',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Tải lại trang
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export const WeeklyScheduleView: React.FC = () => {
   const { data: classes, isLoading: isLoadingClasses } = useTeacherClasses();
@@ -103,6 +198,65 @@ export const WeeklyScheduleView: React.FC = () => {
     clearCsvPreview,
     refresh: fetchMonthlySchedule,
   } = useWeeklySchedule(activeClassId);
+
+  // Hook to fetch and compare API payloads for debugging
+  useEffect(() => {
+    if (!activeClassId) return;
+    const verifyApis = async () => {
+      try {
+        const scheduleUrl = `/teacher/classes/${activeClassId}/schedule`;
+        const menuUrl = `/teacher/classes/${activeClassId}/menu`;
+        
+        console.log(`[API Verification] Fetching schedule from: ${scheduleUrl}`);
+        console.log(`[API Verification] Fetching menu from: ${menuUrl}`);
+        
+        const [scheduleRes, menuRes] = await Promise.all([
+          apiClient.get(scheduleUrl).catch(e => ({ data: { data: null } })),
+          apiClient.get(menuUrl).catch(e => ({ data: { data: null } }))
+        ]);
+        
+        const scheduleData = scheduleRes.data?.data;
+        const menuData = menuRes.data?.data;
+        
+        console.log('[API Verification] Weekly Schedule Payload:', scheduleData);
+        console.log('[API Verification] Menu Payload:', menuData);
+        
+        let scheduleId = null;
+        if (scheduleData) {
+          if (Array.isArray(scheduleData)) {
+            scheduleId = scheduleData[0]?.weeklyScheduleId || scheduleData[0]?.id;
+          } else {
+            scheduleId = scheduleData.weeklyScheduleId || scheduleData.id;
+          }
+        }
+
+        let menuScheduleId = null;
+        if (menuData) {
+          if (Array.isArray(menuData)) {
+            menuScheduleId = menuData[0]?.weeklyScheduleId || menuData[0]?.id;
+          } else {
+            menuScheduleId = menuData.weeklyScheduleId || menuData.id;
+          }
+        }
+        
+        console.log(`[API Verification] Schedule WeeklyScheduleID: ${scheduleId}`);
+        console.log(`[API Verification] Menu WeeklyScheduleID: ${menuScheduleId}`);
+        
+        if (scheduleId && menuScheduleId) {
+          if (String(scheduleId) === String(menuScheduleId)) {
+            console.log('%c[API Verification] SUCCESS: WeeklyScheduleIDs match between Schedule and Menu APIs!', 'color: #10B981; font-weight: bold;');
+          } else {
+            console.warn('[API Verification] WARNING: WeeklyScheduleIDs DO NOT match between Schedule and Menu APIs!');
+          }
+        } else {
+          console.log('[API Verification] Info: One or both APIs returned empty weekly schedule ID references.');
+        }
+      } catch (err) {
+        console.error('[API Verification] Error during verification:', err);
+      }
+    };
+    verifyApis();
+  }, [activeClassId]);
 
   // ── Item modal state (add new activity inline) ──────────────────────────
   const [itemModalOpen, setItemModalOpen] = useState(false);
@@ -399,68 +553,72 @@ export const WeeklyScheduleView: React.FC = () => {
           Chưa có thời khóa biểu cho tháng này. Hãy nhập chủ đề tháng và bấm "Lưu thông tin tháng" để bắt đầu.
         </S.EmptyState>
       ) : (
-        <S.Board>
-          {SCHOOL_DAYS.map((day) => {
-            const dayIsPast = isPastDay(day.key);
-            return (
-            <S.DayColumn key={day.key} $isPast={dayIsPast}>
-              <S.DayHeader>
-                <S.DayTitle $isToday={selectedWeek === todayWeekOrder && day.key === todayDayOfWeek}>
-                  {day.label}
-                  {selectedWeek === todayWeekOrder && day.key === todayDayOfWeek && (
-                    <S.TodayBadge>Hôm nay</S.TodayBadge>
-                  )}
-                </S.DayTitle>
-                <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
-                  <Plus size={14} />
-                </S.AddButton>
-              </S.DayHeader>
-              <S.DayBody>
-                {(itemsByDay[day.key] || []).length === 0 ? (
-                  <S.EmptyDay>Chưa có hoạt động</S.EmptyDay>
-                ) : (
-                  (itemsByDay[day.key] || []).map((it) => (
-                    <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]} $isPast={dayIsPast}>
-                      <S.ItemHeader>
-                        <S.ItemTime>
-                          {it.startTime.slice(0, 5)} - {it.endTime.slice(0, 5)}
-                        </S.ItemTime>
-                        <S.ItemIcon>{ACTIVITY_ICONS[it.activityType]}</S.ItemIcon>
-                      </S.ItemHeader>
-                      <S.ItemTitle>{it.activityName}</S.ItemTitle>
-                      <S.ItemType $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
-                        {ACTIVITY_TYPE_LABELS[it.activityType]}
-                      </S.ItemType>
-                      {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
-                      {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
-                      {it.scheduleDetailId && !dayIsPast ? (
-                        <S.ItemActions>
-                          <S.ItemEditBtn
-                            type="button"
-                            onClick={() => openEditItem(it)}
-                            title="Sửa"
-                          >
-                            <Pencil size={14} />
-                          </S.ItemEditBtn>
-                          <S.ItemDeleteBtn
-                            type="button"
-                            onClick={() =>
-                              setConfirmDelete({ scheduleDetailId: it.scheduleDetailId!, day: day.key })
-                            }
-                            title="Xóa"
-                          >
-                            <Trash2 size={14} />
-                          </S.ItemDeleteBtn>
-                        </S.ItemActions>
-                      ) : null}
-                    </S.ItemCard>
-                  ))
-                )}
-              </S.DayBody>
-            </S.DayColumn>
-            );
-          })}
-        </S.Board>
+        <WeeklyScheduleErrorBoundary itemsByDay={itemsByDay} currentWeek={currentWeek}>
+          <S.Board>
+            {SCHOOL_DAYS.map((day) => {
+              const dayIsPast = isPastDay(day.key);
+              return (
+              <S.DayColumn key={day.key} $isPast={dayIsPast}>
+                <S.DayHeader>
+                  <S.DayTitle $isToday={selectedWeek === todayWeekOrder && day.key === todayDayOfWeek}>
+                    {day.label}
+                    {selectedWeek === todayWeekOrder && day.key === todayDayOfWeek && (
+                      <S.TodayBadge>Hôm nay</S.TodayBadge>
+                    )}
+                  </S.DayTitle>
+                  <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                    <Plus size={14} />
+                  </S.AddButton>
+                </S.DayHeader>
+                <S.DayBody>
+                  {(() => {
+                    const filtered = filterAndUniqueSchedules(itemsByDay[day.key] || []);
+                    if (filtered.length === 0) {
+                      return <S.EmptyDay>Chưa có hoạt động</S.EmptyDay>;
+                    }
+                    return filtered.map((it) => (
+                      <S.ItemCard key={it.scheduleDetailId} $color={ACTIVITY_TYPE_COLORS[it.activityType]} $isPast={dayIsPast}>
+                        <S.ItemHeader>
+                          <S.ItemTime>
+                            {it.startTime.slice(0, 5)} - {it.endTime.slice(0, 5)}
+                          </S.ItemTime>
+                          <S.ItemIcon>{ACTIVITY_ICONS[it.activityType]}</S.ItemIcon>
+                        </S.ItemHeader>
+                        <S.ItemTitle>{it.activityName}</S.ItemTitle>
+                        <S.ItemType $color={ACTIVITY_TYPE_COLORS[it.activityType]}>
+                          {ACTIVITY_TYPE_LABELS[it.activityType]}
+                        </S.ItemType>
+                        {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
+                        {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
+                        {it.scheduleDetailId && !dayIsPast ? (
+                          <S.ItemActions>
+                            <S.ItemEditBtn
+                              type="button"
+                              onClick={() => openEditItem(it)}
+                              title="Sửa"
+                            >
+                              <Pencil size={14} />
+                            </S.ItemEditBtn>
+                            <S.ItemDeleteBtn
+                              type="button"
+                              onClick={() =>
+                                setConfirmDelete({ scheduleDetailId: it.scheduleDetailId!, day: day.key })
+                              }
+                              title="Xóa"
+                            >
+                              <Trash2 size={14} />
+                            </S.ItemDeleteBtn>
+                          </S.ItemActions>
+                        ) : null}
+                      </S.ItemCard>
+                    ));
+                  })()}
+                </S.DayBody>
+              </S.DayColumn>
+              );
+            })}
+          </S.Board>
+        </WeeklyScheduleErrorBoundary>
       )}
 
       {/* Item modal */}

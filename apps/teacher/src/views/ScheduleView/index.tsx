@@ -64,6 +64,59 @@ const ICON_MAP = {
   arrival: <Sun size={19} />
 };
 
+const timeToMinutes = (t: string): number => {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+const filterOverlapAndEmptyDetails = (details: any[]): any[] => {
+  if (!details || !Array.isArray(details)) return [];
+  
+  // 1. Filter out empty activities
+  const validDetails = details.filter(d => d && d.activityName && d.activityName.trim());
+  
+  // 2. Group by day to filter overlapping events
+  const grouped: Record<string, any[]> = {};
+  validDetails.forEach(d => {
+    const day = d.dayOfWeek;
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(d);
+  });
+  
+  const result: any[] = [];
+  
+  // 3. Keep first and eliminate any overlapping child events in order
+  Object.keys(grouped).forEach(day => {
+    const items = grouped[day];
+    items.sort((a, b) => a.startTime.localeCompare(b.startTime));
+    
+    const cleanItems: any[] = [];
+    let lastItem: any = null;
+    
+    items.forEach(item => {
+      if (!lastItem) {
+        cleanItems.push(item);
+        lastItem = item;
+      } else {
+        const start = timeToMinutes(item.startTime);
+        const lastEnd = timeToMinutes(lastItem.endTime);
+        
+        if (start >= lastEnd) {
+          cleanItems.push(item);
+          lastItem = item;
+        } else {
+          console.warn(`[Overlap Filtered] Removed overlap item "${item.activityName}" (${item.startTime}-${item.endTime}) conflicts with "${lastItem.activityName}" (${lastItem.startTime}-${lastItem.endTime}) on ${day}`);
+        }
+      }
+    });
+    
+    result.push(...cleanItems);
+  });
+  
+  return result;
+};
+
 export const ScheduleView: React.FC = () => {
   const {
     loading,
@@ -99,6 +152,11 @@ export const ScheduleView: React.FC = () => {
 
   const [selectedActId, setSelectedActId] = useState<string | null>(null);
 
+  // Memoize clean details with no overlapping slots
+  const cleanDetails = React.useMemo(() => {
+    return filterOverlapAndEmptyDetails(weeklySchedule?.details || []);
+  }, [weeklySchedule?.details]);
+
   // Note Modal State
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteStudentId, setNoteStudentId] = useState<string>('');
@@ -112,7 +170,7 @@ export const ScheduleView: React.FC = () => {
 
   const daysStr = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const todayDayStr = daysStr[currentDate.getDay()];
-  const todaySchedule = weeklySchedule?.details?.filter(d => d.dayOfWeek === todayDayStr) || [];
+  const todaySchedule = cleanDetails.filter(d => d.dayOfWeek === todayDayStr);
   const sortedTodaySchedule = [...todaySchedule].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   useEffect(() => {
@@ -126,7 +184,7 @@ export const ScheduleView: React.FC = () => {
       }
       setSelectedActId(closest.id);
     }
-  }, [weeklySchedule, currentDate, selectedActId]);
+  }, [weeklySchedule, currentDate, selectedActId, sortedTodaySchedule]);
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Đang tải lịch trình...</div>;
@@ -532,14 +590,14 @@ export const ScheduleView: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {Array.from(new Set((weeklySchedule?.details || []).map(d => `${d.startTime.slice(0, 5)} - ${d.endTime.slice(0, 5)}`))).sort().map(timeSlot => {
+              {Array.from(new Set(cleanDetails.map(d => `${d.startTime.slice(0, 5)} - ${d.endTime.slice(0, 5)}`))).sort().map(timeSlot => {
                 return (
                   <tr key={timeSlot}>
                     <S.WeeklyGridTd style={{ textAlign: 'center', verticalAlign: 'middle', background: '#fff' }}>
                       <S.GridCellTime color="#374151">{timeSlot}</S.GridCellTime>
                     </S.WeeklyGridTd>
                     {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
-                      const detail = weeklySchedule.details.find(d => 
+                      const detail = cleanDetails.find(d => 
                         d.dayOfWeek === day && 
                         `${d.startTime.slice(0,5)} - ${d.endTime.slice(0,5)}` === timeSlot
                       );
