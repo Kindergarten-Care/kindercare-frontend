@@ -4,6 +4,9 @@ import { useDetailedStudents, useTeacherClasses } from '@/hooks/useTeacherQuerie
 import { useAuth } from '@/contexts/AuthContext';
 import { StudentDetailedDomainModel } from '@/config/types/student';
 import type { TeacherClassDomainModel } from '@/config/types/class';
+import { studentService } from '@/services/student/StudentService';
+import { useQueryClient } from '@tanstack/react-query';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 type DrawerTab = 'profile' | 'attendance' | 'health' | 'parents';
 type FilterType = 'all' | 'present' | 'absent' | 'allergy';
@@ -25,12 +28,91 @@ export const StudentsListView: React.FC = () => {
   const { data: students, isLoading: isLoadingStudents } = useDetailedStudents(activeClassId);
 
   // States
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [sort, setSort] = useState<SortType>('name');
   const [selectedStudent, setSelectedStudent] = useState<StudentDetailedDomainModel | null>(null);
   const [activeTab, setActiveTab] = useState<DrawerTab>('profile');
   const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
+
+  // API Data for selected student
+  const [attendanceHistory, setAttendanceHistory] = useState<Array<{ date: string; status: 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' }>>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [todayMeds, setTodayMeds] = useState<any[]>([]);
+  const [loadingMeds, setLoadingMeds] = useState(false);
+
+  // Form fields for edit
+  const [editNickname, setEditNickname] = useState('');
+  const [editTeam, setEditTeam] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+
+  const [historyMonth, setHistoryMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  const loadAttendanceHistory = async (studentId: number, monthStr: string) => {
+    try {
+      setLoadingHistory(true);
+      const res = await studentService.getStudentAttendanceHistory(studentId, monthStr);
+      setAttendanceHistory(res);
+    } catch (e) {
+      console.error('Failed to load attendance history', e);
+      setAttendanceHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const loadTodayMeds = async (studentId: number) => {
+    try {
+      setLoadingMeds(true);
+      const res = await studentService.getStudentMedicationsToday(studentId);
+      setTodayMeds(res);
+    } catch (e) {
+      console.error('Failed to load medications today', e);
+      setTodayMeds([]);
+    } finally {
+      setLoadingMeds(false);
+    }
+  };
+
+  const handleSaveStudentInfo = async () => {
+    if (!selectedStudent) return;
+    try {
+      setIsSavingProfile(true);
+      const updated = await studentService.updateStudentNicknameAndTeam(selectedStudent.studentId, {
+        nickname: editNickname.trim() || null,
+        team: editTeam.trim() || null
+      });
+
+      setSelectedStudent(prev => prev ? { ...prev, nickname: updated.nickname, team: updated.team } : null);
+      queryClient.invalidateQueries({ queryKey: ['detailed-students', activeClassId] });
+      addToast('Đã cập nhật biệt danh và tổ học sinh!');
+    } catch (e) {
+      console.error(e);
+      addToast('Cập nhật thất bại');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedStudent) {
+      setEditNickname(selectedStudent.nickname || '');
+      setEditTeam(selectedStudent.team || '');
+      loadAttendanceHistory(selectedStudent.studentId, historyMonth);
+      loadTodayMeds(selectedStudent.studentId);
+    }
+  }, [selectedStudent]);
+
+  useEffect(() => {
+    if (selectedStudent) {
+      loadAttendanceHistory(selectedStudent.studentId, historyMonth);
+    }
+  }, [historyMonth]);
 
   // Toast Helpers
   const addToast = (text: string) => {
@@ -142,7 +224,8 @@ export const StudentsListView: React.FC = () => {
   // Filter students
   let filteredStudents = allStudents.filter(s => {
     const q = searchQuery.trim().toLowerCase();
-    const matchesQuery = s.fullName.toLowerCase().includes(q) || getStudentNick(s.studentId).toLowerCase().includes(q);
+    const studentNick = s.nickname || getStudentNick(s.studentId);
+    const matchesQuery = s.fullName.toLowerCase().includes(q) || studentNick.toLowerCase().includes(q);
     if (!matchesQuery) return false;
 
     const status = getStudentStatus(s.studentId);
@@ -198,11 +281,52 @@ export const StudentsListView: React.FC = () => {
   };
 
   // Drawer selected student details calculation
-  const drawerStudentHeatmap = selectedStudent ? buildHeatmap(selectedStudent.studentId) : [];
+  const buildHeatmapFromApi = (historyList: Array<{ date: string; status: string }>, year: number, month: number) => {
+    const cells: { day: number; kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' }[] = [];
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateObj = new Date(year, month - 1, day);
+      const dow = dateObj.getDay();
+      const weekend = dow === 0 || dow === 6;
+
+      let kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' = 'present';
+
+      if (weekend) {
+        kind = 'weekend';
+      } else if (dateObj > todayZero) {
+        kind = 'future';
+      } else {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const match = historyList.find(h => h.date === dateStr);
+        if (match) {
+          if (match.status === 'PRESENT') {
+            kind = 'present';
+          } else if (match.status === 'PERMISSION_ABSENCE') {
+            kind = 'late';
+          } else {
+            kind = 'absent';
+          }
+        } else {
+          kind = 'absent';
+        }
+      }
+      cells.push({ day, kind });
+    }
+    return cells;
+  };
+
+  // Drawer selected student details calculation
+  const [yearStr, monthStr] = historyMonth.split('-');
+  const drawerStudentHeatmap = selectedStudent
+    ? buildHeatmapFromApi(attendanceHistory, parseInt(yearStr), parseInt(monthStr))
+    : [];
   const drawerStudentAttendanceDays = drawerStudentHeatmap.filter(c => c.kind !== 'weekend' && c.kind !== 'future');
   const drawerStudentPresentOrLateDays = drawerStudentAttendanceDays.filter(c => c.kind === 'present' || c.kind === 'late').length;
-  const drawerStudentAttendanceRate = drawerStudentAttendanceDays.length > 0 
-    ? Math.round((drawerStudentPresentOrLateDays / drawerStudentAttendanceDays.length) * 100) 
+  const drawerStudentAttendanceRate = drawerStudentAttendanceDays.length > 0
+    ? Math.round((drawerStudentPresentOrLateDays / drawerStudentAttendanceDays.length) * 100)
     : 100;
 
   const drawerStudentBmi = selectedStudent?.healthRecord?.bmi || 0;
@@ -287,7 +411,7 @@ export const StudentsListView: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => addToast('➕ Mở biểu mẫu thêm bé mới…')}
+            onClick={() => setPermissionModalOpen(true)}
             style={{
               flex: 'none',
               display: 'flex',
@@ -376,7 +500,7 @@ export const StudentsListView: React.FC = () => {
             
             const hasAllergies = !!(student.allergies && student.allergies.trim());
             const hasMeds = getStudentMeds(student.studentId).length > 0;
-            const nickname = getStudentNick(student.studentId);
+            const nickname = student.nickname || getStudentNick(student.studentId);
             const ageYear = student.dateOfBirth ? (2026 - new Date(Number(student.dateOfBirth) * 1000).getFullYear()) : 5;
 
             return (
@@ -412,7 +536,7 @@ export const StudentsListView: React.FC = () => {
                       {student.fullName}
                     </div>
                     <div style={{ fontSize: '11.5px', color: '#9CA3AF', marginTop: '1px' }}>
-                      {nickname} · {ageYear} tuổi
+                      {nickname ? `"${nickname}"` : 'Chưa có biệt danh'} · {ageYear} tuổi
                     </div>
                   </div>
                 </div>
@@ -502,7 +626,7 @@ export const StudentsListView: React.FC = () => {
                     {selectedStudent.fullName}
                   </div>
                   <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '2px' }}>
-                    Biệt danh: {getStudentNick(selectedStudent.studentId)} · HS{selectedStudent.studentId.toString().padStart(4, '0')}
+                    Biệt danh: {selectedStudent.nickname || 'Chưa có'} · HS{selectedStudent.studentId.toString().padStart(4, '0')}
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginTop: '9px', flexWrap: 'wrap' }}>
                     <S.StatusTag $type={getStudentStatus(selectedStudent.studentId)}>
@@ -583,7 +707,7 @@ export const StudentsListView: React.FC = () => {
                     <S.InfoRow>
                       <span style={{ flex: 'none', width: '32px', height: '32px', borderRadius: '10px', background: '#E6F3ED', color: '#005A36', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>🐾</span>
                       <span style={{ flex: 1, fontSize: '12px', color: '#9CA3AF', fontWeight: 500 }}>Tổ</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2937' }}>{getStudentTeam(selectedStudent.studentId)}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2937' }}>{selectedStudent.team || 'Chưa phân tổ'}</span>
                     </S.InfoRow>
 
                     <S.InfoRow>
@@ -592,33 +716,92 @@ export const StudentsListView: React.FC = () => {
                       <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2937' }}>05/09/2024</span>
                     </S.InfoRow>
                   </div>
+
+                  <div style={{ marginTop: '20px', borderTop: '1px solid #EEF4F0', paddingTop: '15px' }}>
+                    <div className="display" style={{ fontWeight: 700, fontSize: '14px', marginBottom: '10px' }}>Chỉnh sửa thông tin nhanh</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Biệt danh</label>
+                        <input 
+                          value={editNickname}
+                          onChange={e => setEditNickname(e.target.value)}
+                          placeholder="Ví dụ: Bin, Sóc..."
+                          maxLength={50}
+                          style={{ width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px', border: '1.5px solid #E6EEE9', outline: 'none', fontSize: '13px' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Tổ / Nhóm</label>
+                        <input 
+                          value={editTeam}
+                          onChange={e => setEditTeam(e.target.value)}
+                          placeholder="Ví dụ: Tổ Gấu Nâu, Tổ Thỏ Trắng..."
+                          maxLength={50}
+                          style={{ width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px', border: '1.5px solid #E6EEE9', outline: 'none', fontSize: '13px' }}
+                        />
+                      </div>
+                      <button
+                        onClick={handleSaveStudentInfo}
+                        disabled={isSavingProfile}
+                        style={{
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: '#005A36',
+                          color: '#fff',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          marginTop: '5px',
+                          transition: 'opacity 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        {isSavingProfile ? 'Đang lưu...' : 'Lưu thay đổi'}
+                      </button>
+                    </div>
+                  </div>
                 </S.FadeInContent>
               )}
 
               {/* ATTENDANCE TAB */}
               {activeTab === 'attendance' && (
                 <S.FadeInContent>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="display" style={{ fontWeight: 700, fontSize: '14px' }}>Chuyên cần tháng 7</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#005A36', background: '#E6F3ED', padding: '4px 11px', borderRadius: '8px' }}>
-                      {drawerStudentAttendanceRate}%
-                    </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                    <span className="display" style={{ fontWeight: 700, fontSize: '14px' }}>Chuyên cần</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input 
+                        type="month"
+                        value={historyMonth}
+                        onChange={e => setHistoryMonth(e.target.value)}
+                        style={{ padding: '4px 8px', borderRadius: '8px', border: '1.5px solid #C7E3D5', fontSize: '12.5px', outline: 'none' }}
+                      />
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#005A36', background: '#E6F3ED', padding: '5px 11px', borderRadius: '8px' }}>
+                        {drawerStudentAttendanceRate}%
+                      </span>
+                    </div>
                   </div>
 
-                  <S.HeatmapGrid>
-                    {drawerStudentHeatmap.map(c => {
-                      const dayLabel = `${c.day}/7 · ${c.kind === 'present' ? 'có mặt' : c.kind === 'late' ? 'đi muộn' : c.kind === 'absent' ? 'vắng' : c.kind === 'weekend' ? 'cuối tuần' : 'chưa tới'}`;
-                      return (
-                        <S.HeatmapCell 
-                          key={c.day}
-                          $kind={c.kind}
-                          title={dayLabel}
-                        >
-                          {c.day}
-                        </S.HeatmapCell>
-                      );
-                    })}
-                  </S.HeatmapGrid>
+                  {loadingHistory ? (
+                    <div style={{ padding: '30px', textAlign: 'center', fontSize: '13px', color: '#6B7280' }}>Đang tải lịch sử chuyên cần...</div>
+                  ) : (
+                    <S.HeatmapGrid>
+                      {drawerStudentHeatmap.map(c => {
+                        const [y, m] = historyMonth.split('-');
+                        const dayLabel = `${c.day}/${m} · ${c.kind === 'present' ? 'có mặt' : c.kind === 'late' ? 'vắng phép' : c.kind === 'absent' ? 'vắng' : c.kind === 'weekend' ? 'cuối tuần' : 'chưa tới'}`;
+                        return (
+                          <S.HeatmapCell 
+                            key={c.day}
+                            $kind={c.kind}
+                            title={dayLabel}
+                          >
+                            {c.day}
+                          </S.HeatmapCell>
+                        );
+                      })}
+                    </S.HeatmapGrid>
+                  )}
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginTop: '4px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -704,16 +887,21 @@ export const StudentsListView: React.FC = () => {
                   <S.PrescriptionBox>
                     <span className="display" style={{ fontWeight: 700, fontSize: '13.5px' }}>💊 Đơn thuốc hôm nay</span>
                     
-                    {getStudentMeds(selectedStudent.studentId).map((med, idx) => (
-                      <S.PrescriptionItem key={idx}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, fontSize: '13px', color: '#1F2937' }}>{med.name}</div>
-                          <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '1px' }}>{med.dose} · {med.time}</div>
-                        </div>
-                      </S.PrescriptionItem>
-                    ))}
-
-                    {getStudentMeds(selectedStudent.studentId).length === 0 && (
+                    {loadingMeds ? (
+                      <div style={{ padding: '14px', textAlign: 'center', fontSize: '12.5px', color: '#6B7280' }}>Đang tải đơn thuốc hôm nay...</div>
+                    ) : todayMeds && todayMeds.length > 0 ? (
+                      todayMeds.map((med, idx) => (
+                        <S.PrescriptionItem key={idx}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700, fontSize: '13px', color: '#1F2937' }}>{med.medicineName}</div>
+                            <div style={{ fontSize: '11.5px', color: '#6B7280', marginTop: '1px' }}>{med.dosage} · {med.frequency} · Giờ uống: {med.scheduledTime}</div>
+                            {med.parentNote && (
+                              <div style={{ fontSize: '11px', color: '#DC2626', marginTop: '4px', fontWeight: 600 }}>Lưu ý: {med.parentNote}</div>
+                            )}
+                          </div>
+                        </S.PrescriptionItem>
+                      ))
+                    ) : (
                       <div style={{
                         padding: '14px',
                         borderRadius: '12px',
@@ -794,7 +982,10 @@ export const StudentsListView: React.FC = () => {
 
                           <div style={{ display: 'flex', gap: '9px', marginTop: '13px' }}>
                             <S.PrimaryButton 
-                              onClick={() => addToast(`📞 Đang gọi ${parent.relationship} bé ${getLastName(selectedStudent.fullName)}…`)}
+                              onClick={() => {
+                                addToast(`📞 Đang kết nối cuộc gọi tới ${parent.relationship}…`);
+                                window.location.href = `tel:${parent.phone}`;
+                              }}
                               style={{ flex: 1 }}
                             >
                               Gọi điện
@@ -837,6 +1028,17 @@ export const StudentsListView: React.FC = () => {
           </S.ToastItem>
         ))}
       </S.ToastContainer>
+
+      {permissionModalOpen && (
+        <ConfirmDialog
+          title="Không có quyền thực hiện"
+          message="Tính năng thêm học sinh mới chỉ dành cho Hiệu trưởng hoặc Quản trị viên hệ thống. Vui lòng liên hệ Văn phòng nhà trường để được hỗ trợ."
+          confirmText="Đồng ý"
+          cancelText="Đóng"
+          onConfirm={() => setPermissionModalOpen(false)}
+          onCancel={() => setPermissionModalOpen(false)}
+        />
+      )}
     </S.Container>
   );
 };

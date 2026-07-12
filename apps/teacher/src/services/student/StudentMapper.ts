@@ -9,6 +9,8 @@ export class StudentMapper {
       gender: dto.gender,
       allergies: dto.allergies,
       avatarUrl: dto.avatarUrl,
+      nickname: dto.nickname,
+      team: dto.team,
       healthRecord: dto.healthRecord ? {
         height: dto.healthRecord.height,
         weight: dto.healthRecord.weight,

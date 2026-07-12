@@ -34,6 +34,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
 
   const modalDayName = DAYS.find((d) => d.key === draft.day)?.name ?? '';
 
+  const startClean = (draft.startTime ? draft.startTime.slice(0, 5) : draft.time) || '';
+  const endClean = (draft.endTime ? draft.endTime.slice(0, 5) : '') || '';
+  const isTimeInvalid = endClean !== '' && startClean !== '' && endClean <= startClean;
+  const isTitleTooLong = draft.title.trim().length > 255;
+
   return (
     <S.ModalBackdrop onClick={onClose}>
       <S.ModalWideBox onClick={(e) => e.stopPropagation()}>
@@ -85,6 +90,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               placeholder="Ví dụ: Nhận biết hình tròn, hình vuông"
               disabled={isReadOnly}
             />
+            {isTitleTooLong && (
+              <div style={{ color: '#E53E3E', fontSize: '12px', marginTop: '4px', fontWeight: 600 }}>
+                ⚠️ Tên bài học không được vượt quá 255 ký tự (Hiện tại: {draft.title.length} ký tự)
+              </div>
+            )}
           </div>
 
           {/* Giờ bắt đầu + Giờ kết thúc */}
@@ -108,6 +118,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({
               />
             </S.TimeField>
           </S.TimeRow>
+          {isTimeInvalid && (
+            <div style={{ color: '#E53E3E', fontSize: '12px', marginTop: '-8px', marginBottom: '8px', fontWeight: 600 }}>
+              ⚠️ Giờ kết thúc ({endClean}) phải lớn hơn giờ bắt đầu ({startClean})
+            </div>
+          )}
 
           {/* Thứ trong tuần */}
           <div>
@@ -176,7 +191,15 @@ export const LessonModal: React.FC<LessonModalProps> = ({
           <S.ModalFooter style={{ marginTop: 4 }}>
             <S.CancelBtn type="button" onClick={onClose}>Huỷ</S.CancelBtn>
             {!isReadOnly && (
-              <S.SaveBtn type="button" onClick={onSave}>
+              <S.SaveBtn
+                type="button"
+                onClick={onSave}
+                disabled={isTimeInvalid || isTitleTooLong || !draft.title.trim()}
+                style={{
+                  opacity: (isTimeInvalid || isTitleTooLong || !draft.title.trim()) ? 0.5 : 1,
+                  cursor: (isTimeInvalid || isTitleTooLong || !draft.title.trim()) ? 'not-allowed' : 'pointer'
+                }}
+              >
                 <Save size={16} style={{ marginRight: 6 }} />
                 {editId ? 'Lưu thay đổi' : 'Thêm vào kế hoạch'}
               </S.SaveBtn>

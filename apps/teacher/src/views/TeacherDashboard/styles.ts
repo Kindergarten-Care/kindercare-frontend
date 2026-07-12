@@ -612,3 +612,56 @@ export const ConfettiPiece = styled.span<{ $x: number; $y: number; $color: strin
     }
   }
 `;
+
+export const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: #FFF5F5;
+  border: 1px solid #FECACA;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.1);
+  animation: ${kcPop} 0.3s ease;
+`;
+
+export const ErrorTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 700;
+  color: #C53030;
+  margin: 12px 0 6px 0;
+`;
+
+export const ErrorDesc = styled.p`
+  font-size: 14px;
+  color: #742A2A;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+`;
+
+export const RetryButton = styled.button`
+  padding: 10px 24px;
+  background: #DC2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+
+  &:hover {
+    background: #B91C1C;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+

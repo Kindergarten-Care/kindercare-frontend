@@ -75,8 +75,8 @@ export const HealthView: React.FC = () => {
     const height = parseFloat(row.height);
     const weight = parseFloat(row.weight);
 
-    if (!height || !weight || height <= 0 || weight <= 0) {
-      addToast('Vui lòng nhập chiều cao và cân nặng hợp lệ', 'warning');
+    if (!height || !weight || height < 50 || height > 200 || weight < 5 || weight > 150) {
+      addToast('Chiều cao phải từ 50 - 200 cm, cân nặng phải từ 5 - 150 kg', 'warning');
       return;
     }
 
@@ -90,6 +90,14 @@ export const HealthView: React.FC = () => {
         weight,
       };
       await healthService.createHealthLog(activeClassId!, studentId, payload, termPeriod);
+      
+      setHealthRows(prev => {
+        const next = new Map(prev);
+        const r = next.get(studentId);
+        if (r) next.set(studentId, { ...r, saved: true });
+        return next;
+      });
+
       setSavedRows(prev => new Set([...prev, studentId]));
       setTimeout(() => {
         setSavedRows(prev => {
@@ -103,6 +111,60 @@ export const HealthView: React.FC = () => {
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Lỗi không xác định';
       addToast(`Lưu thất bại: ${msg}`, 'error');
+    }
+  };
+
+  const handleSaveAll = async () => {
+    const recordsToSave: Array<{ studentId: number; height: number; weight: number }> = [];
+
+    healthRows.forEach((row, studentId) => {
+      const isSaved = row.saved;
+      if (!isSaved && row.height && row.weight) {
+        const h = parseFloat(row.height);
+        const w = parseFloat(row.weight);
+        if (h >= 50 && h <= 200 && w >= 5 && w <= 150) {
+          recordsToSave.push({ studentId, height: h, weight: w });
+        }
+      }
+    });
+
+    if (recordsToSave.length === 0) {
+      addToast('Không có chỉ số mới hợp lệ để lưu. (Chiều cao: 50-200 cm, Cân nặng: 5-150 kg)', 'warning');
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const termPeriod = `${now.getFullYear()}-${month}`;
+
+      await healthService.batchUpdateHealthLogs(activeClassId!, recordsToSave, termPeriod);
+
+      const sids = recordsToSave.map(r => r.studentId);
+      setHealthRows(prev => {
+        const next = new Map(prev);
+        sids.forEach(sid => {
+          const row = next.get(sid);
+          if (row) {
+            next.set(sid, { ...row, saved: true });
+          }
+        });
+        return next;
+      });
+
+      setSavedRows(prev => new Set([...prev, ...sids]));
+      setTimeout(() => {
+        setSavedRows(prev => {
+          const next = new Set(prev);
+          sids.forEach(sid => next.delete(sid));
+          return next;
+        });
+      }, 3000);
+
+      addToast(`Đã lưu thành công chỉ số cho ${recordsToSave.length} học sinh!`, 'success');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Lỗi không xác định';
+      addToast(`Lưu hàng loạt thất bại: ${msg}`, 'error');
     }
   };
 
@@ -343,6 +405,32 @@ export const HealthView: React.FC = () => {
       </div>
 
       {/* ── Student Measurement Table ─────────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px', marginTop: '16px' }}>
+        <button
+          onClick={handleSaveAll}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 22px',
+            background: '#059669',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: 800,
+            fontSize: '13.5px',
+            cursor: 'pointer',
+            boxShadow: '0 8px 20px -8px rgba(5,150,105,0.4)',
+            transition: 'all 0.2s',
+          }}
+          onMouseOver={e => e.currentTarget.style.background = '#047857'}
+          onMouseOut={e => e.currentTarget.style.background = '#059669'}
+        >
+          <Save size={15} />
+          Lưu tất cả chỉ số
+        </button>
+      </div>
+
       <S.StudentTable>
         <S.TableHeader>
           <div>Học sinh</div>

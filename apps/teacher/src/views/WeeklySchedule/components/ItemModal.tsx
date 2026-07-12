@@ -76,15 +76,19 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   if (!isOpen || !item) return null;
 
   const modalDayName = DAYS.find(d => d.key === item.dayOfWeek)?.label || '';
-  // Effective lock: true if forced by template status OR explicitly marked as view-only (past/today)
   const effectiveReadOnly = isReadOnly || viewOnly;
 
-  // Reason shown at the top of the modal when locked
   const lockReason = viewOnly
     ? 'Ngày này đã qua hoặc là hôm nay — bạn chỉ có thể xem, không thể chỉnh sửa.'
     : isReadOnly
       ? 'Thời khóa biểu đang ở trạng thái Đã duyệt — bạn chỉ có thể xem.'
       : null;
+
+  const startClean = item.startTime || '';
+  const endClean = item.endTime || '';
+  const isTimeInvalid = endClean !== '' && startClean !== '' && endClean <= startClean;
+  const isNameEmpty = !item.activityName.trim();
+  const isNameTooLong = item.activityName.trim().length > 255;
 
   return (
     <S.ModalBackdrop onClick={onClose}>
@@ -107,7 +111,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
         {/* BODY */}
         <S.ModalBody>
-          {/* VIEW-ONLY NOTICE (only when effectiveReadOnly && viewOnly / isReadOnly) */}
+          {/* VIEW-ONLY NOTICE */}
           {effectiveReadOnly && lockReason && (
             <S.ViewOnlyNotice>
               <AlertTriangle size={16} />
@@ -115,7 +119,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             </S.ViewOnlyNotice>
           )}
 
-          {/* CHANGE-REQUEST HINT for future day of Submitted template */}
+          {/* CHANGE-REQUEST HINT */}
           {!effectiveReadOnly && changeRequestHint && (
             <S.ChangeRequestHint>
               <Info size={16} />
@@ -155,6 +159,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               placeholder="Ví dụ: Đón bé & Thể dục sáng"
               disabled={effectiveReadOnly}
             />
+            {isNameTooLong && (
+              <div style={{ color: '#E53E3E', fontSize: '12px', marginTop: '4px', fontWeight: 600 }}>
+                ⚠️ Tên hoạt động không được vượt quá 255 ký tự (Hiện tại: {item.activityName.length} ký tự)
+              </div>
+            )}
           </div>
 
           {/* Giờ bắt đầu + Giờ kết thúc */}
@@ -178,6 +187,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               />
             </S.TimeField>
           </S.TimeRow>
+          {isTimeInvalid && (
+            <div style={{ color: '#E53E3E', fontSize: '12px', marginTop: '-8px', marginBottom: '8px', fontWeight: 600 }}>
+              ⚠️ Giờ kết thúc ({endClean}) phải lớn hơn giờ bắt đầu ({startClean})
+            </div>
+          )}
 
           {/* Thứ */}
           <div>
@@ -222,7 +236,15 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           <S.ModalFooter style={{ marginTop: 0, padding: '16px 0 0 0', borderTop: 'none' }}>
             <S.CancelBtn type="button" onClick={onClose}>Hủy</S.CancelBtn>
             {!effectiveReadOnly && (
-              <S.SaveBtn type="button" onClick={onSave}>
+              <S.SaveBtn
+                type="button"
+                onClick={onSave}
+                disabled={isTimeInvalid || isNameTooLong || isNameEmpty}
+                style={{
+                  opacity: (isTimeInvalid || isNameTooLong || isNameEmpty) ? 0.5 : 1,
+                  cursor: (isTimeInvalid || isNameTooLong || isNameEmpty) ? 'not-allowed' : 'pointer'
+                }}
+              >
                 <Save size={16} style={{ marginRight: 6 }} />
                 {editId ? 'Lưu thay đổi' : 'Thêm vào thời khóa biểu'}
               </S.SaveBtn>

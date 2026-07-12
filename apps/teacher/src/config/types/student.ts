@@ -23,6 +23,8 @@ export interface StudentDetailedApiDto {
   avatarUrl: string | null;
   healthRecord: HealthRecordApiDto | null;
   parents: ParentApiDto[] | null;
+  nickname: string | null;
+  team: string | null;
 }
 
 export interface ParentDomainModel {
@@ -51,6 +53,8 @@ export interface StudentDetailedDomainModel {
   avatarUrl: string | null;
   healthRecord: HealthRecordDomainModel | null;
   parents: ParentDomainModel[];
+  nickname?: string | null;
+  team?: string | null;
 }
 
 export interface DetailedStudentsApiResponse {
