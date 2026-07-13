@@ -7,6 +7,7 @@ interface HeroBannerProps {
   presentCount: number;
   totalCount: number;
   onOpenScanner: () => void;
+  onOpenPhotoScanner?: () => void;
 }
 
 const bob = keyframes`
@@ -90,6 +91,12 @@ const ScanButton = styled.button`
   }
 `;
 
+const SecondaryButton = styled(ScanButton)`
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  backdrop-filter: blur(4px);
+`;
+
 const IconBox = styled.span`
   width: 32px;
   height: 32px;
@@ -124,7 +131,8 @@ export const HeroBannerWidget: React.FC<HeroBannerProps> = ({
   className, 
   presentCount, 
   totalCount, 
-  onOpenScanner 
+  onOpenScanner,
+  onOpenPhotoScanner 
 }) => {
   const percent = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
@@ -136,12 +144,20 @@ export const HeroBannerWidget: React.FC<HeroBannerProps> = ({
         <Title>Quét QR — điểm danh<br/>tức thì, chính xác ✨</Title>
         <StatsText>{presentCount}/{totalCount} bé đã đến lớp · {percent}% sĩ số</StatsText>
         
-        <ScanButton onClick={onOpenScanner}>
-          Quét QR ngay
-          <IconBox style={{ background: '#004d2e', width: '28px', height: '28px', borderRadius: '50%', color: '#fff' }}>
-            <span style={{ fontSize: '18px', fontWeight: 'bold', lineHeight: 1, paddingBottom: '2px' }}>&rsaquo;</span>
-          </IconBox>
-        </ScanButton>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <ScanButton onClick={onOpenScanner}>
+            Quét QR ngay
+            <IconBox style={{ background: '#004d2e', width: '28px', height: '28px', borderRadius: '50%', color: '#fff' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold', lineHeight: 1, paddingBottom: '2px' }}>&rsaquo;</span>
+            </IconBox>
+          </ScanButton>
+          
+          {onOpenPhotoScanner && (
+            <SecondaryButton onClick={onOpenPhotoScanner}>
+              Chụp ảnh
+            </SecondaryButton>
+          )}
+        </div>
       </ContentWrapper>
       
       <IllustrationWrapper>

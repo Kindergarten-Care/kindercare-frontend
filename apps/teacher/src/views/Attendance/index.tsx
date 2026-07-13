@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
-import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download } from 'lucide-react';
+import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download, Camera } from 'lucide-react';
 import * as S from './styles';
 import { AttendanceService } from '../../services/attendance';
 import { LeaveRequestService } from '../../services/leave-requests';
 import { QrScannerModal } from '../../components/QrScannerModal';
+import { PhotoAttendanceModal } from '../../components/PhotoAttendance/PhotoAttendanceModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
 
 const GRADS = [
@@ -83,8 +84,9 @@ export const AttendanceView: React.FC = () => {
   const [proofOpenId, setProofOpenId] = useState<string | null>(null);
   const [monthOffset, setMonthOffset] = useState<number>(0);
 
-  // QR Scanner State
+  // QR & Photo Scanner State
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const [isPhotoScannerOpen, setIsPhotoScannerOpen] = useState(false);
 
   // Quick menu popover states
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -801,6 +803,17 @@ export const AttendanceView: React.FC = () => {
         />
       )}
 
+      {/* PHOTO ATTENDANCE MODAL */}
+      <PhotoAttendanceModal 
+        isOpen={isPhotoScannerOpen}
+        onClose={() => setIsPhotoScannerOpen(false)}
+        students={students}
+        classId={classId}
+        className={className}
+        onSuccess={() => {
+          if (classId) fetchAttendance(classId, dateMs);
+        }}
+      />
     </S.PageContainer>
   );
 };

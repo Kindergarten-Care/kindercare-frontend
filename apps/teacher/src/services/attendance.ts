@@ -232,4 +232,17 @@ export class AttendanceService {
     });
     return true;
   }
+
+  /**
+   * Upload Photo Attendance
+   */
+  public static async uploadPhotoAttendance(formData: FormData): Promise<boolean> {
+    // apiClient sẽ tự đính kèm token Authorization
+    await apiClient.post('/teacher/attendance/upload-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return true;
+  }
 }
