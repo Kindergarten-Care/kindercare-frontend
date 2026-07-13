@@ -8,7 +8,6 @@ loadMonorepoEnv(path.resolve(__dirname, '../..'));
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
-  basePath: '/teacher',
   output: 'standalone',
   reactCompiler: true,
   compiler: {
