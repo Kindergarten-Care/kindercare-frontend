@@ -28,7 +28,7 @@ export function Billing() {
     loading,
     error,
     activeStudent,
-    mergedGroups,
+    groupedInvoices,
     hasAnyInvoices,
     availableMonths,
     summary,
@@ -90,14 +90,14 @@ export function Billing() {
         <S.LoadingState>Đang tải danh sách hóa đơn...</S.LoadingState>
       ) : error ? (
         <S.EmptyState>{error}</S.EmptyState>
-      ) : mergedGroups.length === 0 ? (
+      ) : groupedInvoices.length === 0 ? (
         <S.EmptyState>
           {hasAnyInvoices
             ? 'Không có hóa đơn nào phù hợp bộ lọc hiện tại.'
             : 'Hiện tại chưa có lịch sử hóa đơn.'}
         </S.EmptyState>
       ) : (
-        <MonthGroupList groups={mergedGroups} locale={locale} />
+        <MonthGroupList groups={groupedInvoices} locale={locale} />
       )}
     </S.PageWrap>
   );

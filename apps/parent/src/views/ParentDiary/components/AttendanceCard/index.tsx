@@ -15,6 +15,7 @@ interface AttendanceCardProps {
   studentAvatarUrl?: string | null;
   diaryTitle?: string;
   diaryDescription?: string;
+  onZoomImage?: (url: string, caption?: string) => void;
 }
 
 export function AttendanceCard({
@@ -25,6 +26,7 @@ export function AttendanceCard({
   studentAvatarUrl,
   diaryTitle,
   diaryDescription,
+  onZoomImage,
 }: AttendanceCardProps) {
   const isAbsent = attendance?.status === 'Absent' || attendance?.status === 'Excused';
   const checkIn = attendance?.checkInTime ? tsToHHMM(attendance.checkInTime) : null;
@@ -136,6 +138,22 @@ export function AttendanceCard({
                   <S.AttWhoName>{droppedOffName}</S.AttWhoName>
                 </div>
               </S.AttWho>
+              {attendance?.dropoffImage ? (
+                <S.AttPhotoBox onClick={() => onZoomImage?.(attendance.dropoffImage!, 'Ảnh lúc đưa bé đến lớp')}>
+                  <S.AttPhotoImg src={attendance.dropoffImage} alt="Ảnh lúc đưa bé đến lớp" />
+                </S.AttPhotoBox>
+              ) : (
+                <S.AttPhotoBox>
+                  <S.AttPhotoPlaceholder>
+                    <Svg size={18} sw={1.6}>
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="m21 15-5-5L5 21" />
+                    </Svg>
+                    Chưa có ảnh
+                  </S.AttPhotoPlaceholder>
+                </S.AttPhotoBox>
+              )}
             </S.AttCol>
             <S.AttCol>
               <S.AttTag $type="out">
@@ -160,6 +178,22 @@ export function AttendanceCard({
                   <S.AttWhoName>{pickedUpName}</S.AttWhoName>
                 </div>
               </S.AttWho>
+              {attendance?.pickupImage ? (
+                <S.AttPhotoBox onClick={() => onZoomImage?.(attendance.pickupImage!, 'Ảnh lúc trả bé về')}>
+                  <S.AttPhotoImg src={attendance.pickupImage} alt="Ảnh lúc trả bé về" />
+                </S.AttPhotoBox>
+              ) : (
+                <S.AttPhotoBox>
+                  <S.AttPhotoPlaceholder>
+                    <Svg size={18} sw={1.6}>
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="m21 15-5-5L5 21" />
+                    </Svg>
+                    Chưa có ảnh
+                  </S.AttPhotoPlaceholder>
+                </S.AttPhotoBox>
+              )}
             </S.AttCol>
           </S.AttGrid>
         </S.AttCard>

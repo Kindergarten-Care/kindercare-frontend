@@ -190,3 +190,35 @@ export const AttWhoName = styled.div`
   color: #1F2937;
   margin-top: 1px;
 `;
+
+export const AttPhotoBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 92px;
+  margin-top: 14px;
+  border: 1.5px dashed #D9E2DC;
+  border-radius: 12px;
+  background: #FAFBFA;
+  box-sizing: border-box;
+  overflow: hidden;
+`;
+
+export const AttPhotoImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: zoom-in;
+  display: block;
+`;
+
+export const AttPhotoPlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #9CA3AF;
+  font-size: 11.5px;
+  text-align: center;
+`;

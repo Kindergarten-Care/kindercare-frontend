@@ -164,12 +164,10 @@ export const Right = styled.div`
   align-items: stretch;
   gap: 10px;
   flex-shrink: 0;
-  min-width: 148px;
+  min-width: 180px;
 
   @media (max-width: 640px) {
     width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
   }
 `;
 
@@ -177,16 +175,16 @@ export const BtnAbsence = styled.button`
   background: var(--brand);
   color: #fff;
   border: none;
-  padding: 11px 16px;
-  border-radius: 12px;
+  padding: 16px 22px;
+  border-radius: 14px;
   font: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 15.5px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 9px;
   white-space: nowrap;
   box-shadow: 0 8px 18px -6px rgba(0, 90, 54, 0.45);
   transition: transform 0.12s, background 0.15s;
@@ -194,38 +192,7 @@ export const BtnAbsence = styled.button`
   &:hover { background: var(--brand-hover); transform: scale(1.02); }
 
   @media (max-width: 640px) {
-    flex: 1 1 140px;
-    min-width: 0;
-    padding: 11px 10px;
-  }
-`;
-
-export const BtnQrCode = styled.button`
-  background: #ffffff;
-  color: var(--brand);
-  border: 1.5px solid var(--brand);
-  padding: 11px 16px;
-  border-radius: 12px;
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  white-space: nowrap;
-  box-shadow: 0 6px 14px -6px rgba(0, 90, 54, 0.15);
-  transition: transform 0.12s, background 0.15s;
-
-  &:hover {
-    background: var(--brand-tint);
-    transform: scale(1.02);
-  }
-
-  @media (max-width: 640px) {
-    flex: 1 1 140px;
-    min-width: 0;
-    padding: 11px 10px;
+    width: 100%;
+    padding: 15px 16px;
   }
 `;

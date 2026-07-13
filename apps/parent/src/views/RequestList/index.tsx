@@ -70,7 +70,7 @@ export const RequestList: React.FC = () => {
       <ConfirmCancelModal
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
-        onConfirm={confirmCancelRequest}
+        onConfirm={() => confirmCancelRequest()}
       />
 
       {/* Creation Popups */}
