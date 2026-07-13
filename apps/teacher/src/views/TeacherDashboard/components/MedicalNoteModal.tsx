@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { X, Pill, Clock, AlertTriangle, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { getStudentInitials } from '@/utils/string';
 
 interface MedicalNoteDetails {
   id: string;
@@ -109,17 +110,27 @@ const StudentInfoCard = styled.div`
   border: 1px dashed #FCA5A5;
 `;
 
-const Avatar = styled.div<{ $imgUrl?: string }>`
+const Avatar = styled.div`
+  position: relative;
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: ${props => props.$imgUrl ? `url(${props.$imgUrl}) center/cover no-repeat` : '#FEE2E2'};
-  color: ${props => props.$imgUrl ? 'transparent' : '#DC2626'};
+  background: #FEE2E2;
+  color: #DC2626;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 800;
+  overflow: hidden;
+`;
+
+const AvatarImg = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 const InfoCol = styled.div`
@@ -263,7 +274,16 @@ export const MedicalNoteModal: React.FC<MedicalNoteModalProps> = ({ isOpen, data
         
         <Content>
           <StudentInfoCard>
-            <Avatar $imgUrl={data.avatarUrl}>{!data.avatarUrl && initial}</Avatar>
+            <Avatar>
+              {initial}
+              {data.avatarUrl && (
+                <AvatarImg 
+                  src={data.avatarUrl} 
+                  alt="" 
+                  onError={(e: any) => { e.currentTarget.style.display = 'none'; }} 
+                />
+              )}
+            </Avatar>
             <InfoCol>
               <StName>{data.studentName}</StName>
             </InfoCol>

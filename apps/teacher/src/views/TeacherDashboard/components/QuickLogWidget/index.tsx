@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as S from './styles';
+import { getStudentInitials } from '@/utils/string';
 
 type StatusType = 'none' | 'eat-all' | 'slow-eater' | 'skip-meal';
 
