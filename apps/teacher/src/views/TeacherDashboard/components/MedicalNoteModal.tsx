@@ -13,7 +13,7 @@ interface MedicalNoteDetails {
   avatarUrl?: string;
 }
 
-interface MedicalNoteModalProps {
+export interface MedicalNoteModalProps {
   isOpen: boolean;
   data: MedicalNoteDetails | null;
   onClose: () => void;
@@ -246,7 +246,7 @@ const ActionBtn = styled.button`
 export const MedicalNoteModal: React.FC<MedicalNoteModalProps> = ({ isOpen, data, onClose, onMarkDone }) => {
   if (!isOpen || !data) return null;
 
-  const initial = data.studentName.split(' ').pop()?.charAt(0).toUpperCase() || '?';
+  const initial = getStudentInitials(data.studentName);
 
   return (
     <Overlay onClick={onClose}>

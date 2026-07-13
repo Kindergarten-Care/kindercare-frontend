@@ -17,6 +17,7 @@ import { calculateBMI, getBMICategory, BMI_CATEGORIES } from '@/config/types/hea
 import { AllergiesPopup } from './components/AllergiesPopup';
 import { MedicalRequestsPopup } from './components/MedicalRequestsPopup';
 import type { BMICategory } from '@/config/types/health';
+import { getStudentInitials } from '@/utils/string';
 
 interface ToastItem {
   id: string;
@@ -220,9 +221,7 @@ export const HealthView: React.FC = () => {
   };
 
   const getInitials = (name: string) => {
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return name.slice(0, 2).toUpperCase();
+    return getStudentInitials(name);
   };
 
   const today = new Date();
@@ -466,10 +465,14 @@ export const HealthView: React.FC = () => {
               <S.TableRow key={student.studentId} $saved={isSaved} style={{ animationDelay: `${idx * 40}ms` }}>
                 <S.StudentCell>
                   <S.AvatarSmall $grad={getAvatarGrad(student.fullName)}>
-                    {student.avatarUrl ? (
-                      <img src={student.avatarUrl} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      getInitials(student.fullName)
+                    {getInitials(student.fullName)}
+                    {student.avatarUrl && (
+                      <img 
+                        src={student.avatarUrl} 
+                        alt="" 
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                        onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                      />
                     )}
                   </S.AvatarSmall>
                   <div>

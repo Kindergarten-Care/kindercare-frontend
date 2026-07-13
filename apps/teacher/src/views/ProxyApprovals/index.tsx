@@ -107,6 +107,12 @@ export const ProxyApprovalList: React.FC = () => {
                   <S.ProxyMeta>
                     <Calendar size={12} /> Ngày đón: {req.authorizationDate}
                   </S.ProxyMeta>
+                  <S.ProxyMeta>
+                    <UserCheck size={12} /> Hình thức: {
+                      (req.type || '').toLowerCase() === 'checkin' ? 'Đưa bé đến' :
+                      (req.type || '').toLowerCase() === 'checkout' ? 'Đón bé về' : 'Đưa và đón'
+                    }
+                  </S.ProxyMeta>
                 </S.ProxyDetails>
               </S.CardBody>
 
@@ -160,8 +166,17 @@ export const ProxyApprovalList: React.FC = () => {
                   </S.Value>
                 </S.MetaField>
                 <S.MetaField style={{ gridColumn: 'span 2' }}>
-                  <S.Label>Ngày đón bé</S.Label>
+                  <S.Label>Ngày thực hiện</S.Label>
                   <S.Value>{selectedRequest.authorizationDate}</S.Value>
+                </S.MetaField>
+                <S.MetaField style={{ gridColumn: 'span 2' }}>
+                  <S.Label>Hình thức đăng ký</S.Label>
+                  <S.Value style={{ color: '#005A36', fontWeight: 600 }}>
+                    {
+                      (selectedRequest.type || '').toLowerCase() === 'checkin' ? 'Đưa bé đến' :
+                      (selectedRequest.type || '').toLowerCase() === 'checkout' ? 'Đón bé về' : 'Cả ngày (Đưa và Đón)'
+                    }
+                  </S.Value>
                 </S.MetaField>
                 <S.MetaField style={{ gridColumn: 'span 2' }}>
                   <S.Label>Trạng thái</S.Label>

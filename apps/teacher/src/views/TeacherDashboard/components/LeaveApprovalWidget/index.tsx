@@ -7,6 +7,7 @@ import { LeaveRequestService } from '@/services/leave-requests';
 import { LeaveRequest } from '@/config/types/attendance';
 
 import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
+import { getStudentInitials } from '@/utils/string';
 
 const formatDate = (timestamp: number | undefined): string => {
   if (!timestamp) return '...';
@@ -130,9 +131,7 @@ export const LeaveApprovalWidget: React.FC<LeaveApprovalWidgetProps> = ({ onActi
     return grads[h % grads.length];
   };
 
-  const getInitial = (name: string): string => {
-    return name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
-  };
+  const getInitial = (name: string): string => getStudentInitials(name);
 
   if (isLoading) {
     return (

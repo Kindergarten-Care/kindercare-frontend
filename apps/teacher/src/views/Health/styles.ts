@@ -437,6 +437,7 @@ export const StudentCell = styled.div`
 `;
 
 export const AvatarSmall = styled.div<{ $grad: string }>`
+  position: relative;
   width: 36px;
   height: 36px;
   border-radius: 50%;
