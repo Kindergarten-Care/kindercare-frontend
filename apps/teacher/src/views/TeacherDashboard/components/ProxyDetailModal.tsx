@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { X, Calendar, User, Phone, CheckCircle, Car, Shield, Image as ImageIcon } from 'lucide-react';
+import { getStudentInitials } from '@/utils/string';
 
 interface ProxyDetails {
   authorizationId: string;
@@ -261,7 +262,7 @@ const formatDate = (val: string | number) => {
 export const ProxyDetailModal: React.FC<ProxyDetailModalProps> = ({ isOpen, data, onClose, onApprove }) => {
   if (!isOpen || !data) return null;
 
-  const initial = data.studentName.split(' ').pop()?.charAt(0).toUpperCase() || '?';
+  const initial = getStudentInitials(data.studentName);
   const isProcessed = data.status === 'Approved';
 
   return (

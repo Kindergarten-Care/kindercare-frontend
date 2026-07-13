@@ -13,7 +13,8 @@ export const apiClient = axios.create({
 
 // Attach Bearer token to every outgoing request
 apiClient.interceptors.request.use((config) => {
-  const token = getToken() || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+  const sessionToken = typeof window !== 'undefined' ? sessionStorage.getItem('teacher_token') || sessionStorage.getItem('token') : null;
+  const token = getToken() || sessionToken || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
   if (token) config.headers.Authorization = `Bearer ${token}`;
 
   // Dynamically set baseURL client-side based on the active application's basePath

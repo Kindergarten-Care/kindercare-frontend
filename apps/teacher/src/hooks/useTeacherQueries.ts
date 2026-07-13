@@ -282,6 +282,7 @@ export const useMedicalRequests = (classId?: number | string, status?: string) =
       const res = await apiClient.get<ApiResponse<MedicalRequest[]>>(url, { params });
       return res.data.data || [];
     },
+    enabled: !!classId,
     staleTime: 1 * 60 * 1000,
   });
 };
@@ -371,6 +372,7 @@ export const useWeeklyRewards = (classId?: number | string, weekStartDate?: stri
       const res = await apiClient.get<ApiResponse<WeeklyReward[]>>(url, { params });
       return res.data.data || [];
     },
+    enabled: !!classId,
     staleTime: 2 * 60 * 1000,
   });
 };

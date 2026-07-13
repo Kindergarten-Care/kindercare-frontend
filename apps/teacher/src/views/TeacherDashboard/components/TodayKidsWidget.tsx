@@ -107,19 +107,29 @@ const Card = styled.button<{ $status: QuickAttendanceStatus }>`
   }
 `;
 
-const Avatar = styled.span<{ $bg: string; $imgUrl?: string }>`
+const Avatar = styled.span<{ $bg: string }>`
   position: relative;
   flex: none;
   width: 64px;
   height: 64px;
   border-radius: 20px;
-  background: ${p => p.$imgUrl ? `url(${p.$imgUrl}) center/cover no-repeat` : p.$bg};
-  color: ${p => p.$imgUrl ? 'transparent' : '#374151'};
+  background: ${p => p.$bg};
+  color: #374151;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 24px;
+  overflow: hidden;
+`;
+
+const AvatarImg = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 `;
 
 const StatusBadge = styled.span<{ $status: QuickAttendanceStatus }>`
@@ -245,8 +255,15 @@ export const TodayKidsWidget: React.FC<TodayKidsProps> = ({ kids, date, onKidCli
                 {STATUS_ICON[k.attendanceStatus]}
                 {STATUS_LABEL[k.attendanceStatus]}
               </StatusBadge>
-              <Avatar $bg={bg} $imgUrl={k.avatarUrl}>
-                {!k.avatarUrl && k.initial}
+              <Avatar $bg={bg}>
+                {k.initial}
+                {k.avatarUrl && (
+                  <AvatarImg 
+                    src={k.avatarUrl} 
+                    alt="" 
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                  />
+                )}
               </Avatar>
               <Name>{k.name}</Name>
               {k.arrivalTime ? (

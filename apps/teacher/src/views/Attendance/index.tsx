@@ -619,7 +619,12 @@ export const AttendanceView: React.FC = () => {
                     <S.StudentAvatar $grad={grad}>
                       {s.avatar && !imageErrors[s.id] ? (
                         <S.AvatarImg src={s.avatar} onError={() => setImageErrors(prev => ({ ...prev, [s.id]: true }))} />
-                      ) : s.name.charAt(0).toUpperCase()}
+                      ) : (
+                        (() => {
+                          const parts = s.name.split(' ').filter(Boolean);
+                          return parts.map(p => p[0]).slice(-2).join('').toUpperCase();
+                        })()
+                      )}
                     </S.StudentAvatar>
                     <div>
                       <S.StudentName>{s.name}</S.StudentName>

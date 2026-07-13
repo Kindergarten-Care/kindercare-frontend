@@ -49,7 +49,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
   const displayClassName = activeClass?.displayName  ?? 'Lớp Mầm 1';
   const classInitial     = activeClass?.classInitial ?? 'M1';
 
-  const isDashboardActive = pathname === '/';
+  const isDashboardActive = pathname === '/dashboard' || pathname === '/';
   const isStudentsActive = pathname === '/students';
   const isAttendanceActive = pathname === '/attendance';
   const isScheduleActive = pathname === '/schedule';
@@ -107,7 +107,7 @@ export const TeacherSidebar: React.FC<TeacherSidebarProps> = ({
       {/* NAVIGATION */}
       <S.NavSection>
         <S.SectTitle $isCollapsed={isCollapsed}>HÔM NAY</S.SectTitle>
-        <S.NavItem $active={isDashboardActive} $isCollapsed={isCollapsed} onClick={() => router.push('/')}>
+        <S.NavItem $active={isDashboardActive} $isCollapsed={isCollapsed} onClick={() => router.push('/dashboard')}>
           {isDashboardActive && <S.ActiveBar $isCollapsed={isCollapsed} />}
           <S.NavIcon><LayoutDashboard size={20} strokeWidth={1.9} /></S.NavIcon>
           <S.NavLabel $isCollapsed={isCollapsed}>Tổng quan</S.NavLabel>
