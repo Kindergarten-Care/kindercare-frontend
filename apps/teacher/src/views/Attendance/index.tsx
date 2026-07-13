@@ -419,6 +419,9 @@ export const AttendanceView: React.FC = () => {
           <S.QrBtn onClick={() => setIsQrScannerOpen(true)} style={{ background: '#111827', color: '#fff', borderColor: '#111827' }}>
             <ScanLine size={18} /> Quét mã QR
           </S.QrBtn>
+          <S.QrBtn onClick={() => setIsPhotoScannerOpen(true)} style={{ background: '#059669', color: '#fff', borderColor: '#059669' }}>
+            <Camera size={18} /> Chụp ảnh điểm danh
+          </S.QrBtn>
           <S.LeaveBtn onClick={() => setLeaveDrawerOpen(true)}>
             <Bell size={18} />
             Đơn xin nghỉ
@@ -624,6 +627,10 @@ export const AttendanceView: React.FC = () => {
                     <div>
                       <S.StudentName>{s.name}</S.StudentName>
                       <S.StudentCode>{s.id.substring(0, 8)}</S.StudentCode>
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                        <span title="Ảnh nhận (Dropoff)"><Camera size={14} color={s.dropoffImage ? '#10B981' : '#D1D5DB'} /></span>
+                        <span title="Ảnh trả (Pickup)"><Camera size={14} color={s.pickupImage ? '#10B981' : '#D1D5DB'} /></span>
+                      </div>
                     </div>
                   </div>
 

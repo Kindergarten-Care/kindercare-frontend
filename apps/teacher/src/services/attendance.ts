@@ -80,6 +80,8 @@ function mapApiStudentToDomain(raw: any): Student {
     leaveRequestId: raw.leaveRequest ? String(raw.leaveRequest.requestId) : undefined,
     leaveRequestStatus: leaveReqStatus,
     leaveRequestReason: raw.leaveRequest?.reason || undefined,
+    dropoffImage: raw.dropoffImage,
+    pickupImage: raw.pickupImage,
   };
 }
 
@@ -236,13 +238,13 @@ export class AttendanceService {
   /**
    * Upload Photo Attendance
    */
-  public static async uploadPhotoAttendance(formData: FormData): Promise<boolean> {
+  public static async uploadPhotoAttendance(formData: FormData): Promise<any> {
     // apiClient sẽ tự đính kèm token Authorization
-    await apiClient.post('/teacher/attendance/upload-photo', formData, {
+    const res = await apiClient.post('/teacher/attendance/upload-photo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return true;
+    return res.data;
   }
 }

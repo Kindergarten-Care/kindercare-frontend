@@ -141,21 +141,17 @@ export const HeroBannerWidget: React.FC<HeroBannerProps> = ({
       <BackgroundOverlay />
       <ContentWrapper>
         <Subtitle>{className} · Hôm nay</Subtitle>
-        <Title>Quét QR — điểm danh<br/>tức thì, chính xác ✨</Title>
+        <Title>Chụp ảnh — điểm danh<br/>tức thì, chính xác ✨</Title>
         <StatsText>{presentCount}/{totalCount} bé đã đến lớp · {percent}% sĩ số</StatsText>
         
         <div style={{ display: 'flex', gap: '12px' }}>
-          <ScanButton onClick={onOpenScanner}>
-            Quét QR ngay
-            <IconBox style={{ background: '#004d2e', width: '28px', height: '28px', borderRadius: '50%', color: '#fff' }}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold', lineHeight: 1, paddingBottom: '2px' }}>&rsaquo;</span>
-            </IconBox>
-          </ScanButton>
-          
           {onOpenPhotoScanner && (
-            <SecondaryButton onClick={onOpenPhotoScanner}>
-              Chụp ảnh
-            </SecondaryButton>
+            <ScanButton onClick={onOpenPhotoScanner}>
+              Chụp ảnh điểm danh
+              <IconBox style={{ background: '#004d2e', width: '28px', height: '28px', borderRadius: '50%', color: '#fff' }}>
+                <span style={{ fontSize: '18px', fontWeight: 'bold', lineHeight: 1, paddingBottom: '2px' }}>&rsaquo;</span>
+              </IconBox>
+            </ScanButton>
           )}
         </div>
       </ContentWrapper>

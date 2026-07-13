@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { AttendanceService } from '@/services/attendance';
+import { Student } from '@/config/types/attendance';
 
 const Overlay = styled.div`
   position: fixed;
@@ -15,11 +16,12 @@ const Overlay = styled.div`
 const ModalBox = styled.div`
   background: white;
   width: 90%;
-  max-width: 400px;
-  border-radius: 12px;
+  max-width: 380px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
 `;
 
 const Header = styled.div`
@@ -40,17 +42,18 @@ const Desc = styled.p`
 `;
 
 const Body = styled.div`
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const ImagePreview = styled.img`
   width: 100%;
-  max-height: 250px;
+  max-height: 220px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 `;
 
 const FormGroup = styled.div`
@@ -66,15 +69,19 @@ const Label = styled.label`
 `;
 
 const Select = styled.select`
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 14px;
   outline: none;
-  &:focus { border-color: #3b82f6; }
+  &:focus { border-color: #10B981; }
 `;
 
 const Input = styled.input`
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
@@ -84,7 +91,7 @@ const Input = styled.input`
 `;
 
 const Footer = styled.div`
-  padding: 16px;
+  padding: 16px 20px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
@@ -92,25 +99,25 @@ const Footer = styled.div`
 `;
 
 const Btn = styled.button<{ $primary?: boolean }>`
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   border: ${props => props.$primary ? 'none' : '1px solid #d1d5db'};
-  background: ${props => props.$primary ? '#111827' : 'white'};
+  background: ${props => props.$primary ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : 'white'};
   color: ${props => props.$primary ? 'white' : '#374151'};
   transition: all 0.2s ease;
   &:disabled { opacity: 0.5; cursor: not-allowed; }
   &:hover:not(:disabled) { 
-    background: ${props => props.$primary ? '#1f2937' : '#f3f4f6'}; 
+    transform: ${props => props.$primary ? 'translateY(-1px)' : 'none'};
+    box-shadow: ${props => props.$primary ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'};
+    background: ${props => props.$primary ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : '#f3f4f6'}; 
   }
   &:active:not(:disabled) { transform: scale(0.96); }
 `;
 
-interface Student {
-  id: string;
-  name: string;
-}
+
 
 interface AttendanceConfirmModalProps {
   isOpen: boolean;
@@ -138,6 +145,23 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const selectedStudent = useMemo(() => {
+    return students.find(s => String(s.id) === selectedStudentId);
+  }, [students, selectedStudentId]);
+
+  const isDropoffComplete = !!selectedStudent?.dropoffImage;
+  const isPickupComplete = !!selectedStudent?.pickupImage;
+  const isFullyComplete = isDropoffComplete && isPickupComplete;
+
+  const attendanceType = !isDropoffComplete ? 'dropoff' : 'pickup';
+  const modalTitle = !selectedStudent
+    ? 'Xác nhận điểm danh'
+    : !isDropoffComplete
+    ? 'Xác nhận Nhận trẻ (Đầu ngày)'
+    : isFullyComplete
+    ? 'Hoàn thành điểm danh'
+    : 'Xác nhận Trả trẻ (Cuối ngày)';
+
   const arrivalTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
   const handleSubmit = async () => {
@@ -149,6 +173,10 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
       alert('Không có ảnh chụp!');
       return;
     }
+    if (isFullyComplete) {
+      alert('Học sinh đã hoàn thành điểm danh 2 chiều trong ngày!');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -158,16 +186,30 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
       formData.append('classId', classId);
       formData.append('teacherId', teacherId);
       formData.append('arrivalTime', arrivalTime);
+      formData.append('type', attendanceType);
 
       // Call API
-      await AttendanceService.uploadPhotoAttendance(formData);
+      const res = await AttendanceService.uploadPhotoAttendance(formData);
 
-      alert('Điểm danh thành công!');
+      const returnedType = res?.data?.type || res?.type;
+
+      if (returnedType === 'dropoff') {
+        alert('Đã lưu ảnh nhận trẻ đầu ngày thành công!');
+      } else if (returnedType === 'pickup') {
+        alert('Đã lưu ảnh trả trẻ cuối ngày thành công!');
+      } else {
+        alert('Điểm danh thành công!');
+      }
+
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting attendance:', error);
-      alert('Có lỗi xảy ra khi điểm danh.');
+      if (error?.response?.status === 400) {
+        alert('Học sinh đã điểm danh đủ 2 lần trong ngày, không thể chụp thêm');
+      } else {
+        alert('Có lỗi xảy ra khi điểm danh.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -179,8 +221,12 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
     <Overlay onClick={onClose}>
       <ModalBox onClick={e => e.stopPropagation()}>
         <Header>
-          <Title>Xác nhận điểm danh</Title>
-          <Desc>Kiểm tra thông tin và xác nhận.</Desc>
+          <Title>{modalTitle}</Title>
+          <Desc>
+            {isFullyComplete && selectedStudent
+              ? 'Học sinh đã hoàn thành điểm danh 2 chiều trong ngày.'
+              : 'Kiểm tra thông tin và xác nhận.'}
+          </Desc>
         </Header>
         <Body>
           {photoUrl && <ImagePreview src={photoUrl} alt="Preview" />}
@@ -206,7 +252,11 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
         </Body>
         <Footer>
           <Btn onClick={onClose} disabled={isSubmitting}>Hủy</Btn>
-          <Btn $primary onClick={handleSubmit} disabled={isSubmitting}>
+          <Btn 
+            $primary 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || (!!selectedStudent && isFullyComplete)}
+          >
             {isSubmitting ? 'Đang gửi...' : 'Xác nhận'}
           </Btn>
         </Footer>
