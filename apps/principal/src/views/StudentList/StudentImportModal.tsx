@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { kcToast } from '@kindercare/ui';
+import type ExcelJS from 'exceljs';
 import { studentService } from '@/services/Student/StudentService';
 import { financeService } from '@/services/Principal/FinanceService';
 import { FeePackageDto } from '@/config/types/finance';
@@ -263,7 +264,23 @@ export default function StudentImportModal({ onClose, onSuccess }: ModalProps) {
         { header: 'AdmissionDate', key: 'admissionDate', width: 16 },
         { header: 'PackageID', key: 'packageId', width: 14 },
       ];
-      sheet.getRow(1).font = { bold: true };
+
+      const HEADER_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF047857' } };
+      const HEADER_FONT: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' } };
+      const THIN_BORDER: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+        right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+      };
+
+      ['A1', 'B1', 'C1', 'D1', 'E1', 'F1'].forEach(ref => {
+        const cell = sheet.getCell(ref);
+        cell.fill = HEADER_FILL;
+        cell.font = HEADER_FONT;
+        cell.alignment = { vertical: 'middle' };
+        cell.border = THIN_BORDER;
+      });
 
       sheet.addRow({
         fullName: 'Nguyễn Văn A',
@@ -294,6 +311,49 @@ export default function StudentImportModal({ onClose, onSuccess }: ModalProps) {
             error: 'Vui lòng chọn 1 PackageID trong danh sách gói học phí hiện có.',
           };
         }
+
+        // Vùng ghi chú "PackageID - Tên gói" ngay trong sheet chính (từ cột I), có tiêu đề + tô màu
+        // để người nhập liệu tra cứu PackageID mà không cần chuyển sheet.
+        sheet.getColumn('I').width = 10;
+        sheet.getColumn('J').width = 28;
+
+        const NOTE_TITLE_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+        const NOTE_HEADER_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF59E0B' } };
+        const NOTE_HEADER_FONT: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' } };
+        const NOTE_ROW_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFBEB' } };
+
+        sheet.mergeCells('I1:J1');
+        const titleCell = sheet.getCell('I1');
+        titleCell.value = '📌 Tra cứu gói học phí';
+        titleCell.font = { bold: true, color: { argb: 'FF92400E' } };
+        titleCell.fill = NOTE_TITLE_FILL;
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        titleCell.border = THIN_BORDER;
+        sheet.getCell('J1').border = THIN_BORDER;
+
+        sheet.getCell('I2').value = 'PackageID';
+        sheet.getCell('J2').value = 'Tên gói';
+        ['I2', 'J2'].forEach(ref => {
+          const cell = sheet.getCell(ref);
+          cell.fill = NOTE_HEADER_FILL;
+          cell.font = NOTE_HEADER_FONT;
+          cell.alignment = { vertical: 'middle', horizontal: ref === 'I2' ? 'center' : 'left' };
+          cell.border = THIN_BORDER;
+        });
+
+        currentPackages.forEach((p, i) => {
+          const row = i + 3;
+          const idCell = sheet.getCell(`I${row}`);
+          const nameCell = sheet.getCell(`J${row}`);
+          idCell.value = p.id;
+          nameCell.value = p.discount ? `${p.name} (giảm ${p.discount}%)` : p.name;
+
+          [idCell, nameCell].forEach(cell => {
+            cell.fill = NOTE_ROW_FILL;
+            cell.border = THIN_BORDER;
+            cell.alignment = { vertical: 'middle', horizontal: cell === idCell ? 'center' : 'left' };
+          });
+        });
 
         const legendSheet = workbook.addWorksheet('Danh sách gói học phí');
         legendSheet.columns = [
@@ -341,21 +401,24 @@ export default function StudentImportModal({ onClose, onSuccess }: ModalProps) {
         )}
         <KmCallout $variant="amber" style={{ marginTop: error ? 12 : 0 }}>
           <span>
-            Tải về{' '}
+            Hãy{' '}
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); if (!templateLoading) downloadTemplate(); }}
               style={{ fontWeight: 600, textDecoration: 'underline' }}
             >
-              file mẫu (template.xlsx)
+              tải file mẫu
             </a>{' '}
-            và điền dữ liệu theo đúng định dạng trước khi tải lên. Cột <b>PackageID</b> là dropdown chọn sẵn, không bắt buộc — chọn 1 gói học phí nếu muốn đăng ký gói ngay lúc import.
+            và điền đầy đủ thông tin học sinh theo mẫu đó trước khi tải lên. Nếu học sinh đã đăng ký gói học phí, hãy chọn gói tương ứng ở cột cuối.
             {packages.length > 0 && (
-              <PackageList>
-                {packages.map(p => (
-                  <li key={p.id}><b>{p.id}</b> — {p.name}{p.discount ? ` (giảm ${p.discount}%)` : ''}</li>
-                ))}
-              </PackageList>
+              <>
+                <div style={{ marginTop: 8 }}>Các gói học phí đang có:</div>
+                <PackageList>
+                  {packages.map(p => (
+                    <li key={p.id}>{p.name}{p.discount ? ` (giảm ${p.discount}%)` : ''}</li>
+                  ))}
+                </PackageList>
+              </>
             )}
           </span>
         </KmCallout>

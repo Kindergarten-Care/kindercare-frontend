@@ -68,6 +68,7 @@ export const SERVER = {
     addParentToStudent: '/principal/student/:id/parents',
     getStudents: '/principal/students',
     enrollStudent: '/principal/students/enroll',
+    uploadStudentAvatar: '/principal/students/upload-avatar',
     importStudents: '/principal/students/import',
     getUnassignedStudents: '/principal/students/unassigned',
     resetAccountPassword: '/principal/accounts/:id/reset-password',
@@ -81,6 +82,7 @@ export const SERVER = {
     activateAcademicYear: '/principal/academic-year/:id/activate',
     getFees: '/principal/fees',
     getInvoices: '/principal/invoices',
+    getInvoiceDetail: '/principal/invoices/:id',
     updateBaseFee: '/principal/base-fees/:id',
     createPaymentPackage: '/principal/payment-packages',
     updatePaymentPackage: '/principal/payment-packages/:id',
@@ -102,6 +104,12 @@ export const SERVER = {
     getMenuDetail: '/principal/menus/:id',
     deleteMenu: '/principal/menus/:id',
     importMenus: '/principal/menus/import',
+  },
+  billing: {
+    runMonthly: '/billing/run-monthly',
+    publishInvoices: '/billing/invoices/publish',
+    publishInvoice: '/billing/invoices/:invoiceId/publish',
+    publishSelectedInvoices: '/billing/invoices/publish-selected',
   },
   notifications: {
     getFirebaseConfig: '/notifications/firebase-config',

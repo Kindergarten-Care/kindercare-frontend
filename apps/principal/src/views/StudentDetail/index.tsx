@@ -68,6 +68,19 @@ function relationshipLabel(r: string): string {
   }
 }
 
+function ParentAvatarView({ avatarUrl, fullName, bg }: { avatarUrl: string | null; fullName: string; bg: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <ParentAvatar $bg={bg}>
+      {avatarUrl && !failed ? (
+        <ParentAvatarImg src={avatarUrl} alt={fullName} onError={() => setFailed(true)} />
+      ) : (
+        getInitials(fullName)
+      )}
+    </ParentAvatar>
+  );
+}
+
 interface StudentDetailProps {
   studentId: string;
 }
@@ -207,9 +220,7 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
             {student.parents.map((parent, index) => (
               <ParentCard key={parent.parentId}>
                 <ParentCardHead>
-                  <ParentAvatar $bg={avatarGradient(index)}>
-                    {getInitials(parent.fullName)}
-                  </ParentAvatar>
+                  <ParentAvatarView avatarUrl={parent.avatarUrl} fullName={parent.fullName} bg={avatarGradient(index)} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <ParentName>
                       {parent.fullName}
@@ -275,14 +286,9 @@ export default function StudentDetailView({ studentId }: StudentDetailProps) {
         <EditStudentProfileModal
           student={student}
           onClose={() => setShowEditProfile(false)}
-          onSuccess={(updated) => {
-            setStudent(prev => prev && ({
-              ...prev,
-              ...(updated.fullName !== undefined && { fullName: updated.fullName }),
-              ...(updated.dateOfBirth !== undefined && { dateOfBirth: BigInt(updated.dateOfBirth) }),
-              ...(updated.gender !== undefined && { gender: updated.gender }),
-              ...(updated.allergies !== undefined && { allergies: updated.allergies }),
-            }));
+          onSuccess={() => {
+            setShowEditProfile(false);
+            fetchStudentDetail();
           }}
         />
       )}

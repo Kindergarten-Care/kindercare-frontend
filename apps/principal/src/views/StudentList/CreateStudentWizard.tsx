@@ -1,15 +1,122 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { Dropdown } from '@kindercare/ui';
+import { Dropdown, kcToast } from '@kindercare/ui';
 import { accountService } from '@/services/account/AccountService';
 import { studentService } from '@/services/Student/StudentService';
+import Avatar from '@/components/Avatar';
 import {
   Modal, ModalHeader, ModalBody,
   KmField, KmLabel, KmInput, KmTextArea, KmFoot, KmBtn,
   UsersIcon,
 } from '@/components/Modal';
+
+const MAX_AVATAR_SIZE = 20 * 1024 * 1024; // 20MB
+const ACCEPTED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const AVATAR_SIZE = 76;
+
+const AvatarPickRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+`;
+
+const AvatarDropzone = styled.button`
+  position: relative;
+  width: ${AVATAR_SIZE}px;
+  height: ${AVATAR_SIZE}px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: none;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;
+
+const AvatarOverlay = styled.div<{ $alwaysVisible?: boolean }>`
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: rgba(17, 24, 39, 0.55);
+  opacity: ${({ $alwaysVisible }) => ($alwaysVisible ? 1 : 0)};
+  transition: opacity 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  ${AvatarDropzone}:hover & {
+    opacity: 1;
+  }
+`;
+
+const Spinner = styled.span`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  display: inline-block;
+  animation: km-avatar-spin 0.7s linear infinite;
+
+  @keyframes km-avatar-spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const AvatarInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const AvatarTitle = styled.span`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const AvatarHint = styled.span`
+  font-size: 0.78rem;
+  color: #6b7280;
+`;
+
+const AvatarRemoveBtn = styled.button`
+  align-self: flex-start;
+  margin-top: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #b91c1c;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+      <circle cx="12" cy="14" r="3.5" />
+    </svg>
+  );
+}
 
 const GENDER_OPTIONS = [
   { value: 'Nam', label: 'Nam' },
@@ -87,6 +194,39 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
     allergies: ''
   });
 
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  const handleAvatarPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
+      kcToast.error('Chỉ chấp nhận file ảnh (jpg, jpeg, png, webp, gif)');
+      return;
+    }
+    if (file.size > MAX_AVATAR_SIZE) {
+      kcToast.error('Kích thước ảnh tối đa 20MB');
+      return;
+    }
+
+    try {
+      setAvatarUploading(true);
+      const url = await studentService.uploadAvatar(file);
+      setAvatarUrl(url);
+    } catch (err: any) {
+      kcToast.error(err.message || 'Có lỗi xảy ra khi tải ảnh lên');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleAvatarRemove = () => {
+    setAvatarUrl(null);
+  };
+
   const [parent, setParent] = useState({
     id: null as number | null,
     fullName: '',
@@ -152,7 +292,8 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
         student: {
           ...student,
           dateOfBirth: Math.floor(new Date(student.dateOfBirth).getTime() / 1000),
-          admissionDate: Math.floor(new Date(student.admissionDate).getTime() / 1000)
+          admissionDate: Math.floor(new Date(student.admissionDate).getTime() / 1000),
+          ...(avatarUrl ? { avatarUrl } : {}),
         },
         parent: {
           ...parent
@@ -195,6 +336,37 @@ export default function CreateStudentWizard({ onClose, onSuccess }: WizardProps)
 
         {step === 1 && (
           <>
+            <AvatarPickRow>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                style={{ display: 'none' }}
+                onChange={handleAvatarPick}
+              />
+              <AvatarDropzone
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarUploading}
+                aria-label={avatarUrl ? 'Đổi ảnh đại diện' : 'Tải ảnh đại diện'}
+              >
+                <Avatar src={avatarUrl} name={student.fullName} size={AVATAR_SIZE} />
+                <AvatarOverlay $alwaysVisible={avatarUploading}>
+                  {avatarUploading ? <Spinner /> : <CameraIcon />}
+                </AvatarOverlay>
+              </AvatarDropzone>
+
+              <AvatarInfo>
+                <AvatarTitle>Ảnh đại diện</AvatarTitle>
+                <AvatarHint>JPG, PNG, WEBP, GIF · tối đa 20MB · không bắt buộc</AvatarHint>
+                {avatarUrl && !avatarUploading && (
+                  <AvatarRemoveBtn type="button" onClick={handleAvatarRemove}>
+                    Xóa ảnh
+                  </AvatarRemoveBtn>
+                )}
+              </AvatarInfo>
+            </AvatarPickRow>
+
             <KmField>
               <KmLabel>Họ và tên học sinh *</KmLabel>
               <KmInput

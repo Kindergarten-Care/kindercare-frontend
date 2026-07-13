@@ -9,6 +9,7 @@ import { assignmentService } from '@/services/Principal/AssignmentService';
 import { gradeService } from '@/services/grade/GradeService';
 import { AccountDomainModel } from '@/config/types/account';
 import { GradeDomainModel, ClassDomainModel } from '@/config/types/grade';
+import TeacherSearchSelect from './TeacherSearchSelect';
 
 interface Props {
   classId: number;
@@ -76,18 +77,13 @@ export default function AssignTeacherModal({ classId, className, onClose, onSucc
     }))
   );
 
-  const teacherOptions = teachers.map(t => ({
-    value: t.id.toString(),
-    label: `${t.fullName} (@${t.username})`,
-  }));
-
   const roleOptions: { value: string; label: string }[] = [
     { value: 'Giáo viên chủ nhiệm', label: 'Giáo viên chủ nhiệm' },
     { value: 'Giáo viên phụ', label: 'Giáo viên phụ' },
   ];
 
   return (
-    <Modal size="md" onClose={onClose}>
+    <Modal size="lg" onClose={onClose}>
       <ModalHeader
         icon={<UserPlusIcon />}
         iconVariant="brand"
@@ -111,12 +107,10 @@ export default function AssignTeacherModal({ classId, className, onClose, onSucc
 
         <KmField>
           <KmLabel>Chọn Giáo viên</KmLabel>
-          <Dropdown
-            value={selectedTeacherId === '' ? null : selectedTeacherId}
-            onChange={(val) => setSelectedTeacherId(val)}
-            options={teacherOptions}
-            placeholder="-- Chọn một giáo viên --"
-            fullWidth
+          <TeacherSearchSelect
+            teachers={teachers}
+            value={selectedTeacherId}
+            onChange={setSelectedTeacherId}
           />
         </KmField>
 
