@@ -11,6 +11,7 @@ import { PeriodicAssessmentWidget } from './components/GoodBehaviorWidget';
 import { TaskListWidget, TaskItem } from './components/TaskListWidget';
 import { LeaveApprovalWidget } from './components/LeaveApprovalWidget';
 import { QrScannerModal } from '@/components/QrScannerModal';
+import { PhotoAttendanceModal } from '@/components/PhotoAttendance/PhotoAttendanceModal';
 
 import { LeaveRequestModal } from './components/LeaveRequestModal';
 import { MedicalNoteModal } from './components/MedicalNoteModal';
@@ -66,6 +67,7 @@ export const TeacherDashboardView: React.FC = () => {
 
   // Modals
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [photoScannerOpen, setPhotoScannerOpen] = useState(false);
   const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
@@ -481,6 +483,7 @@ export const TeacherDashboardView: React.FC = () => {
             presentCount={presentCount}
             totalCount={studentsList.length || 42}
             onOpenScanner={() => setScannerOpen(true)}
+            onOpenPhotoScanner={() => setPhotoScannerOpen(true)}
           />
 
           {/* [2] Quick Actions */}
@@ -536,6 +539,19 @@ export const TeacherDashboardView: React.FC = () => {
           }}
         />
       )}
+
+      {/* PHOTO ATTENDANCE MODAL */}
+      <PhotoAttendanceModal 
+        isOpen={photoScannerOpen}
+        onClose={() => setPhotoScannerOpen(false)}
+        students={studentsList}
+        classId={String(activeClassId)}
+        className={activeClassName}
+        onSuccess={() => {
+          loadDashboardData();
+          triggerConfetti(window.innerWidth / 2, window.innerHeight / 2);
+        }}
+      />
 
       {/* CREATE NEWSFEED MODAL */}
       <CreateNewsfeedModal 

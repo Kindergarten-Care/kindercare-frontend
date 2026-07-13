@@ -801,6 +801,17 @@ export const AttendanceView: React.FC = () => {
         />
       )}
 
+      {/* PHOTO ATTENDANCE MODAL */}
+      <PhotoAttendanceModal 
+        isOpen={isPhotoScannerOpen}
+        onClose={() => setIsPhotoScannerOpen(false)}
+        students={students}
+        classId={classId}
+        className={className}
+        onSuccess={() => {
+          if (classId) fetchAttendance(classId, dateMs);
+        }}
+      />
     </S.PageContainer>
   );
 };

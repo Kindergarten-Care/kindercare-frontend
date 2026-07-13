@@ -1,0 +1,216 @@
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { AttendanceService } from '@/services/attendance';
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalBox = styled.div`
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Header = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+`;
+
+const Title = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+`;
+
+const Desc = styled.p`
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+`;
+
+const Body = styled.div`
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ImagePreview = styled.img`
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const Label = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+`;
+
+const Select = styled.select`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  &:focus { border-color: #3b82f6; }
+`;
+
+const Input = styled.input`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  font-size: 14px;
+  color: #6b7280;
+`;
+
+const Footer = styled.div`
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+`;
+
+const Btn = styled.button<{ $primary?: boolean }>`
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  border: ${props => props.$primary ? 'none' : '1px solid #d1d5db'};
+  background: ${props => props.$primary ? '#111827' : 'white'};
+  color: ${props => props.$primary ? 'white' : '#374151'};
+  transition: all 0.2s ease;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:hover:not(:disabled) { 
+    background: ${props => props.$primary ? '#1f2937' : '#f3f4f6'}; 
+  }
+  &:active:not(:disabled) { transform: scale(0.96); }
+`;
+
+interface Student {
+  id: string;
+  name: string;
+}
+
+interface AttendanceConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  photoBlob: Blob | null;
+  photoUrl: string | null;
+  students: Student[];
+  classId: string;
+  className: string;
+  teacherId: string;
+  onSuccess: () => void;
+}
+
+export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
+  isOpen,
+  onClose,
+  photoBlob,
+  photoUrl,
+  students,
+  classId,
+  className,
+  teacherId,
+  onSuccess,
+}) => {
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const arrivalTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+  const handleSubmit = async () => {
+    if (!selectedStudentId) {
+      alert('Vui lòng chọn học sinh!');
+      return;
+    }
+    if (!photoBlob) {
+      alert('Không có ảnh chụp!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', photoBlob, 'attendance.jpg');
+      formData.append('studentId', selectedStudentId);
+      formData.append('classId', classId);
+      formData.append('teacherId', teacherId);
+      formData.append('arrivalTime', arrivalTime);
+
+      // Call API
+      await AttendanceService.uploadPhotoAttendance(formData);
+
+      alert('Điểm danh thành công!');
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+      alert('Có lỗi xảy ra khi điểm danh.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Overlay onClick={onClose}>
+      <ModalBox onClick={e => e.stopPropagation()}>
+        <Header>
+          <Title>Xác nhận điểm danh</Title>
+          <Desc>Kiểm tra thông tin và xác nhận.</Desc>
+        </Header>
+        <Body>
+          {photoUrl && <ImagePreview src={photoUrl} alt="Preview" />}
+          <FormGroup>
+            <Label>Học sinh</Label>
+            <Select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}>
+              <option value="" disabled>Chọn học sinh...</option>
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </Select>
+          </FormGroup>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <FormGroup>
+              <Label>Lớp học</Label>
+              <Input readOnly value={className} />
+            </FormGroup>
+            <FormGroup>
+              <Label>Thời gian</Label>
+              <Input readOnly value={arrivalTime} />
+            </FormGroup>
+          </div>
+        </Body>
+        <Footer>
+          <Btn onClick={onClose} disabled={isSubmitting}>Hủy</Btn>
+          <Btn $primary onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Đang gửi...' : 'Xác nhận'}
+          </Btn>
+        </Footer>
+      </ModalBox>
+    </Overlay>
+  );
+};
