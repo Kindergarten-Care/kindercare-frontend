@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+import { usePathname, useRouter } from 'next/navigation';
+
 export interface AuthUser {
   userId: number;
   username: string;
@@ -27,12 +29,14 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   logout: () => void;
+  setUser: (user: AuthUser | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   logout: () => {},
+  setUser: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -40,21 +44,12 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // 1. Kiểm tra token trên URL trước (từ Portal truyền sang)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
+    const token = sessionStorage.getItem('teacher_token');
     
-    if (urlToken) {
-      localStorage.setItem('token', urlToken);
-      // Xoá token khỏi URL để bảo mật
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-
-    // 2. Lấy token từ localStorage (hoặc vừa lưu ở trên)
-    const token = localStorage.getItem('token');
     if (token) {
       try {
         const base64Url = token.split('.')[1];
@@ -77,24 +72,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } catch (error) {
         console.error('Failed to parse token', error);
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('teacher_token');
+        setUser(null);
       }
+    } else {
+      setUser(null);
     }
     setIsLoading(false);
   }, []);
 
+  // Route Guard
+  useEffect(() => {
+    if (isLoading) return;
+    
+    const isLoginPage = pathname.endsWith('/login');
+    const hasToken = !!sessionStorage.getItem('teacher_token');
+
+    if (!hasToken && !isLoginPage) {
+      router.replace('/login');
+    } else if (hasToken && isLoginPage) {
+      router.replace('/');
+    }
+  }, [isLoading, pathname, user, router]);
+
   const logout = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('teacher_token');
+    localStorage.removeItem('token'); // Clear old token just in case
     setUser(null);
-    const portalBase = process.env.NEXT_PUBLIC_PORTAL_APP_URL || '';
-    const loginUrl = portalBase
-      ? `${portalBase}/login`
-      : (typeof window !== 'undefined' ? `${window.location.origin}/login` : 'http://localhost:3000/login');
-    window.location.href = loginUrl;
+    router.replace('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

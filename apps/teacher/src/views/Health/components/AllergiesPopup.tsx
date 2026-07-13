@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
 import * as S from '../styles';
 import type { StudentDetailedDomainModel } from '@/config/types/student';
+import { getStudentInitials } from '@/utils/string';
 
 interface AllergiesPopupProps {
   onClose: () => void;
@@ -23,9 +24,7 @@ function getAvatarGrad(name: string) {
 }
 
 function getInitials(name: string) {
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+  return getStudentInitials(name);
 }
 
 function formatDate(timestamp: number | null | undefined): string {
@@ -97,11 +96,15 @@ export const AllergiesPopup: React.FC<AllergiesPopupProps> = ({
                     style={{ animationDelay: `${idx * 50}ms`, cursor: 'pointer' }}
                     onClick={() => handleViewStudent(student)}
                   >
-                    <S.AvatarSmall $grad={getAvatarGrad(student.fullName)} style={{ width: 44, height: 44, fontSize: 16 }}>
-                      {student.avatarUrl ? (
-                        <img src={student.avatarUrl} alt={student.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        getInitials(student.fullName)
+                    <S.AvatarSmall $grad={getAvatarGrad(student.fullName)} style={{ width: 44, height: 44, fontSize: 16, position: 'relative', overflow: 'hidden' }}>
+                      {getInitials(student.fullName)}
+                      {student.avatarUrl && (
+                        <img 
+                          src={student.avatarUrl} 
+                          alt="" 
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                          onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                        />
                       )}
                     </S.AvatarSmall>
 

@@ -14,6 +14,7 @@ export interface ProxyAuthorization {
   proxyIdCard: string;
   proxyPhotoUrl: string;
   notes: string;
+  type: 'Checkin' | 'Checkout' | 'Both' | string;
   status: ProxyStatus;
   createdAt: number;
   processedBy?: number;
@@ -35,12 +36,20 @@ function mapApiToDomain(raw: any): ProxyAuthorization {
     studentName: raw.studentName ?? raw.StudentName ?? 'Học sinh',
     parentId: raw.parentId ?? raw.ParentID,
     parentName: raw.parentName ?? raw.ParentName ?? 'Phụ huynh',
-    authorizationDate: raw.authorizationDate ?? raw.AuthorizationDate ?? '',
+    authorizationDate: (() => {
+      const d = raw.authorizationDate ?? raw.AuthorizationDate;
+      if (!d) return '';
+      const ts = Number(d);
+      if (isNaN(ts) || ts <= 0) return d;
+      const date = new Date(ts > 2000000000 ? ts : ts * 1000);
+      return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    })(),
     proxyName: raw.proxyName ?? raw.ProxyName ?? 'Người đón',
     proxyPhone: raw.proxyPhone ?? raw.ProxyPhone ?? '',
     proxyIdCard: raw.proxyIdCard ?? raw.ProxyIDCard ?? '',
     proxyPhotoUrl: normalizePhotoUrl(raw.proxyPhotoUrl ?? raw.ProxyPhotoURL),
     notes: raw.notes ?? raw.Notes ?? '',
+    type: raw.type ?? raw.Type ?? 'Both',
     status: raw.status ?? raw.Status ?? 'Pending',
     createdAt: raw.createdAt ?? raw.CreatedAt ?? Date.now(),
     processedBy: raw.processedBy ?? raw.ProcessedBy,

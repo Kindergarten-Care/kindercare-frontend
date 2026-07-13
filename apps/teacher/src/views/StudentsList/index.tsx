@@ -7,6 +7,7 @@ import type { TeacherClassDomainModel } from '@/config/types/class';
 import { studentService } from '@/services/student/StudentService';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { getStudentInitials } from '@/utils/string';
 
 type DrawerTab = 'profile' | 'attendance' | 'health' | 'parents';
 type FilterType = 'all' | 'present' | 'absent' | 'allergy';
@@ -490,7 +491,7 @@ export const StudentsListView: React.FC = () => {
       {filteredStudents.length > 0 ? (
         <S.Grid>
           {filteredStudents.map(student => {
-            const initial = student.fullName.charAt(0).toUpperCase();
+            const initial = getStudentInitials(student.fullName);
             const status = getStudentStatus(student.studentId);
             const conf = statusConfig[status];
             
@@ -511,9 +512,16 @@ export const StudentsListView: React.FC = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '13px', width: '100%' }}>
                   <S.AvatarBox $grad={grad}>
-                    {student.avatarUrl ? (
-                      <S.ProfileAvatar src={student.avatarUrl} alt={student.fullName} fill sizes="52px" />
-                    ) : initial}
+                    {initial}
+                    {student.avatarUrl && (
+                      <S.ProfileAvatar 
+                        src={student.avatarUrl} 
+                        alt="" 
+                        fill 
+                        sizes="52px"
+                        onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
                     <span style={{
                       position: 'absolute',
                       right: '-3px',
@@ -605,9 +613,16 @@ export const StudentsListView: React.FC = () => {
                   fontSize: '25px',
                   boxShadow: '0 0 0 4px #fff'
                 }} className="display">
-                  {selectedStudent.avatarUrl ? (
-                    <S.ProfileAvatar src={selectedStudent.avatarUrl} alt={selectedStudent.fullName} fill sizes="66px" />
-                  ) : selectedStudent.fullName.charAt(0).toUpperCase()}
+                  {getStudentInitials(selectedStudent.fullName)}
+                  {selectedStudent.avatarUrl && (
+                    <S.ProfileAvatar 
+                      src={selectedStudent.avatarUrl} 
+                      alt="" 
+                      fill 
+                      sizes="66px"
+                      onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  )}
                   
                   <span style={{
                     position: 'absolute',

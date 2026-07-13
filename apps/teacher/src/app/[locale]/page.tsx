@@ -1,30 +1,24 @@
 'use client';
 
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { DashboardLayout } from '@/layout/DashboardLayout';
-import { TeacherDashboardView } from '@/views/TeacherDashboard';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function TeacherHomePage() {
-  const { user, isLoading } = useAuth();
+export default function TeacherRootRedirect() {
+  const router = useRouter();
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
-  }
-
-  // Nếu không có user, AuthContext sẽ chuyển hướng về trang login (portal).
-  // Vì AuthContext.logout() dùng window.location.href, ta có thể dùng useEffect trong thực tế.
-  // Tuy nhiên, để tránh lỗi hiển thị khi chưa redirect xong:
-  if (!user) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Vui lòng đăng nhập...</div>;
-  }
+  useEffect(() => {
+    // Logic kiểm tra trạng thái tại trang chủ gốc (No subpath)
+    const token = sessionStorage.getItem('teacher_token');
+    if (token) {
+      router.replace('/dashboard');
+    } else {
+      router.replace('/login');
+    }
+  }, [router]);
 
   return (
-    <DashboardLayout 
-      fullName={user.fullName || user.username} 
-      roleTitle={user.roleName || 'Giáo Viên Mầm Non'}
-    >
-      <TeacherDashboardView />
-    </DashboardLayout>
+    <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Đang điều hướng...</div>
+    </div>
   );
 }

@@ -33,6 +33,7 @@ import { AttendanceService } from '@/services/attendance';
 import { LeaveRequestService } from '@/services/leave-requests';
 import { Student } from '@/config/types/attendance';
 import { fixImageUrl } from '@/utils/imageUrl';
+import { getStudentInitials } from '@/utils/string';
 
 import { 
   useDashboardStats,
@@ -271,8 +272,7 @@ export const TeacherDashboardView: React.FC = () => {
 
   // Map Real Leave Requests to TaskList - show ALL requests, not just pending
   const leaveTasks: TaskItem[] = allLeaveRequests.map((leave: any) => {
-    const names = leave.studentName ? leave.studentName.split(' ') : ['?'];
-    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    const initial = getStudentInitials(leave.studentName);
     const student = studentsList.find((s: any) => String(s.id) === String(leave.studentId));
     const isDone = leave.status === 'APPROVED' || leave.status === 'Approved' || leave.status === 'REJECTED' || leave.status === 'Rejected';
     return {
@@ -320,8 +320,7 @@ export const TeacherDashboardView: React.FC = () => {
   });
 
   const medicalTasks: TaskItem[] = rawMedicalReqs.map((med: any) => {
-    const names = med.studentName ? med.studentName.split(' ') : ['?'];
-    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    const initial = getStudentInitials(med.studentName);
     const isDone = med.status === 'Done' || med.status === 'Completed';
     const student = studentsList.find((s: any) => String(s.id) === String(med.studentId));
     return {
@@ -361,8 +360,7 @@ export const TeacherDashboardView: React.FC = () => {
   });
 
   const proxyTasks: TaskItem[] = rawProxyReqs.map((proxy: any) => {
-    const names = proxy.studentName ? proxy.studentName.split(' ') : ['?'];
-    const initial = names[names.length - 1].charAt(0).toUpperCase();
+    const initial = getStudentInitials(proxy.studentName);
     const isDone = proxy.status === 'Approved';
     const student = studentsList.find((s: any) => String(s.id) === String(proxy.studentId));
     return {
@@ -434,8 +432,7 @@ export const TeacherDashboardView: React.FC = () => {
   })();
 
   const todayKids: TodayKid[] = studentsList.map(s => {
-    const parts = s.name?.split(' ') || ['Bé'];
-    const initial = parts[parts.length - 1].charAt(0).toUpperCase();
+    const initial = getStudentInitials(s.name || '');
     return {
       id: String(s.id),
       name: s.name || 'Học sinh',

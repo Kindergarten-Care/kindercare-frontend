@@ -2,6 +2,8 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { X, Calendar, User, Phone, CheckCircle, XCircle, FileText, Image as ImageIcon } from 'lucide-react';
 
+import { getStudentInitials } from '@/utils/string';
+
 interface LeaveRequestDetails {
   id: string;
   studentName: string;
@@ -272,7 +274,7 @@ const CloseButton = styled.button`
 export const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({ isOpen, data, onClose, onApprove, onReject }) => {
   if (!isOpen || !data) return null;
 
-  const initial = data.studentName.split(' ').pop()?.charAt(0).toUpperCase() || '?';
+  const initial = getStudentInitials(data.studentName);
   const status = data.status || 'PENDING';
   const isProcessed = status !== 'PENDING';
   const statusLabel = status === 'APPROVED' || status === 'Approved' ? 'Đã duyệt' :

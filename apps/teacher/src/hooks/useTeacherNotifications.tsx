@@ -210,6 +210,19 @@ export function useTeacherNotifications() {
     const idsToMark: number[] = [];
 
     initialNotifications.forEach(notif => {
+      if (notif.isRead === 1) return;
+
+      let role = '';
+      try {
+        const data = typeof notif.dataPayload === 'string' ? JSON.parse(notif.dataPayload) : (notif.dataPayload || {});
+        role = data.senderRole || data.role || '';
+      } catch(e) {}
+      
+      const isFromParent = ['LEAVE_REQUEST', 'leave_request', 'PROXY_AUTHORIZATION', 'MEDICAL_REQUEST'].includes(notif.type) || ['Parent', 'Phụ huynh'].includes(role);
+      const isFromAdmin = ['ANNOUNCEMENT', 'SYSTEM', 'ADMIN'].includes(notif.type) || ['Admin', 'Principal', 'Hiệu trưởng'].includes(role);
+
+      if (!(isFromParent || isFromAdmin)) return;
+
       if (!notifiedIdsRef.current.has(notif.notifId)) {
         notifiedIdsRef.current.add(notif.notifId);
         idsToMark.push(notif.notifId);
@@ -313,6 +326,19 @@ export function useTeacherNotifications() {
         createdAt: payload.createdAt || Math.floor(Date.now() / 1000),
         updatedAt: payload.updatedAt || Math.floor(Date.now() / 1000)
       };
+
+      if (formattedNotif.isRead === 1) return;
+
+      let role = '';
+      try {
+        const data = typeof formattedNotif.dataPayload === 'string' ? JSON.parse(formattedNotif.dataPayload) : (formattedNotif.dataPayload || {});
+        role = data.senderRole || data.role || '';
+      } catch(e) {}
+      
+      const isFromParent = ['LEAVE_REQUEST', 'leave_request', 'PROXY_AUTHORIZATION', 'MEDICAL_REQUEST'].includes(formattedNotif.type) || ['Parent', 'Phụ huynh'].includes(role);
+      const isFromAdmin = ['ANNOUNCEMENT', 'SYSTEM', 'ADMIN'].includes(formattedNotif.type) || ['Admin', 'Principal', 'Hiệu trưởng'].includes(role);
+
+      if (!(isFromParent || isFromAdmin)) return;
 
       if (!notifiedIdsRef.current.has(formattedNotif.notifId)) {
         notifiedIdsRef.current.add(formattedNotif.notifId);
