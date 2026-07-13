@@ -12,8 +12,14 @@ import {
   KmBtn,
   UserPlusIcon,
 } from '@/components/Modal';
-import { kcToast } from '@kindercare/ui';
+import { Dropdown, kcToast } from '@kindercare/ui';
 import { accountService } from '../../../services/account/AccountService';
+
+const GENDER_OPTIONS = [
+  { value: 'Nam', label: 'Nam' },
+  { value: 'Nữ', label: 'Nữ' },
+  { value: 'Khác', label: 'Khác' },
+];
 
 interface CreateAccountModalProps {
   role: 'teacher' | 'parent';
@@ -55,6 +61,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     fullName: '',
     phoneNumber: '',
     email: '',
+    gender: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -97,6 +104,10 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     }
   };
 
+  const handleGenderChange = (value: string) => {
+    setFormData(prev => ({ ...prev, gender: value }));
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (role === 'teacher' && !formData.username.trim()) newErrors.username = 'Tên đăng nhập là bắt buộc';
@@ -114,9 +125,12 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
     e.preventDefault();
     if (!validate()) return;
 
-    const payload = { ...formData };
+    const payload: any = { ...formData };
     if (role === 'parent') {
       payload.username = formData.phoneNumber;
+      delete payload.gender;
+    } else if (!payload.gender) {
+      delete payload.gender;
     }
 
     setIsSubmitting(true);
@@ -191,6 +205,20 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ role, on
               placeholder="Nhập email"
             />
           </KmField>
+
+          {role === 'teacher' && (
+            <KmField>
+              <KmLabel>Giới tính</KmLabel>
+              <Dropdown
+                value={formData.gender}
+                onChange={handleGenderChange}
+                options={GENDER_OPTIONS}
+                placeholder="Chọn giới tính"
+                fullWidth
+                ariaLabel="Giới tính"
+              />
+            </KmField>
+          )}
 
           <KmCallout $variant="amber">
             {role === 'teacher' ? (

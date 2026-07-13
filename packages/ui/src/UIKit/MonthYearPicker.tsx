@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled, { keyframes } from 'styled-components';
 import '../theme/types';
 
@@ -88,11 +89,11 @@ const panelFade = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-const Panel = styled.div`
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 80;
+const Panel = styled.div<{ $top: number; $left: number }>`
+  position: fixed;
+  top: ${({ $top }) => $top}px;
+  left: ${({ $left }) => $left}px;
+  z-index: 1001;
   width: 268px;
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -175,7 +176,9 @@ export function MonthYearPicker({
 
   const [open, setOpen] = useState(false);
   const [panelYear, setPanelYear] = useState(year);
+  const [panelRect, setPanelRect] = useState<{ top: number; left: number } | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (open) setPanelYear(year);
@@ -187,7 +190,10 @@ export function MonthYearPicker({
     if (!open) return;
     const handler = (event: MouseEvent): void => {
       const root = rootRef.current;
-      if (root && !root.contains(event.target as Node)) close();
+      const panel = panelRef.current;
+      const target = event.target as Node;
+      if (root?.contains(target) || panel?.contains(target)) return;
+      close();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -201,6 +207,27 @@ export function MonthYearPicker({
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, close]);
+
+  const updatePanelRect = useCallback(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const rect = root.getBoundingClientRect();
+    setPanelRect({ top: rect.bottom + 8, left: rect.right - 268 });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPanelRect(null);
+      return;
+    }
+    updatePanelRect();
+    window.addEventListener('scroll', updatePanelRect, true);
+    window.addEventListener('resize', updatePanelRect);
+    return () => {
+      window.removeEventListener('scroll', updatePanelRect, true);
+      window.removeEventListener('resize', updatePanelRect);
+    };
+  }, [open, updatePanelRect]);
 
   const isMonthDisabled = (m: number): boolean => {
     if (!maxDate) return false;
@@ -249,8 +276,8 @@ export function MonthYearPicker({
         </ArrowBtn>
       </Pick>
 
-      {open && (
-        <Panel role="dialog" aria-labelledby={triggerId}>
+      {open && panelRect && typeof document !== 'undefined' && createPortal(
+        <Panel ref={panelRef} role="dialog" aria-labelledby={triggerId} $top={panelRect.top} $left={panelRect.left}>
           <PanelHead>
             <ArrowBtn type="button" onClick={() => setPanelYear(y => y - 1)} aria-label="Năm trước">
               <ChevronLeftGlyph />
@@ -283,7 +310,8 @@ export function MonthYearPicker({
               );
             })}
           </MonthGrid>
-        </Panel>
+        </Panel>,
+        document.body,
       )}
     </Root>
   );

@@ -7,7 +7,7 @@ import { eventService } from '@/services/Principal/EventService';
 import { HolidayDto } from '@/config/types/event';
 import {
   Modal, ModalHeader, ModalBody, KmField, KmLabel, KmInput,
-  KmErrorText, KmFoot, KmBtn, PartyIcon,
+  KmErrorText, KmFoot, KmBtn, StarIcon,
 } from '@/components/Modal';
 
 interface CreateHolidayModalProps {
@@ -76,7 +76,7 @@ export default function CreateHolidayModal({ holiday, onClose, onSuccess }: Crea
   return (
     <Modal size="md" onClose={onClose}>
       <ModalHeader
-        icon={<PartyIcon />}
+        icon={<StarIcon />}
         iconVariant="amber"
         title={isEditing ? 'Sửa ngày nghỉ lễ' : 'Tạo ngày nghỉ lễ'}
         subtitle="Ngày nghỉ lễ sẽ được loại trừ khi tính phí ăn hàng tháng"

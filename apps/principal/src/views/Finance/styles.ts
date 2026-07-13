@@ -81,6 +81,10 @@ export const ChartCard = styled.div`
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 `;
 
 export const CardGrid = styled.div`
@@ -151,6 +155,10 @@ export const TableCard = styled.div`
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   overflow: hidden;
+`;
+
+export const TableScroll = styled.div`
+  overflow-x: auto;
 `;
 
 export const Table = styled.table`
