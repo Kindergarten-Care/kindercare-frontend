@@ -343,6 +343,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       </StudentRow>
 
       <BentoGrid>
+        {/**
          * Render đủ 5 card theo ASSESSMENT_CRITERIA — KHÔNG filter `!isSupported`.
          *  - 4 card có cột DB (Physical, Cognitive, Language, SocioEmotional → 2 cột riêng Emotional/Social):
          *      gửi BE khi save.
