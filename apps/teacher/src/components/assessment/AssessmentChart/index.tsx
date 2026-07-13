@@ -9,7 +9,7 @@ import {
 
 /**
  * Radar chart inline-SVG (no recharts dependency).
- * - Trục: 6 tiêu chí đánh giá định kỳ.
+ * - Trục: 5 tiêu chí đánh giá định kỳ.
  * - 2 polygon: tháng hiện tại (đậm) và lịch sử gần nhất (nhạt) nếu cung cấp.
  * - Score min..max ánh xạ radial 0..1.
  */
@@ -63,7 +63,7 @@ const Swatch = styled.span<{ $color: string; $dashed?: boolean }>`
   border-radius: 2px;
 `;
 
-const axes = ASSESSMENT_CRITERIA; // 6 tiêu chí, cố định thứ tự
+const axes = ASSESSMENT_CRITERIA; // 5 tiêu chí, cố định thứ tự
 
 function polar(i: number, total: number, radius: number) {
   // Bắt đầu từ góc -90deg (đỉnh trên) và xoay theo chiều kim đồng hồ.

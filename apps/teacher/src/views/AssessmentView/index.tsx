@@ -380,7 +380,6 @@ export const AssessmentView: React.FC = () => {
       currentRecord?.socialScore,
     ),
     aestheticScore: currentRecord?.aestheticScore || 0,
-    lifeSkillScore: currentRecord?.lifeSkillScore || 0,
   }), [currentRecord]);
 
   /**
@@ -403,7 +402,6 @@ export const AssessmentView: React.FC = () => {
           previousRecord.socialScore,
         ),
         aestheticScore: previousRecord.aestheticScore || 0,
-        lifeSkillScore: previousRecord.lifeSkillScore || 0,
       },
     };
   }, [previousRecord]);
@@ -435,7 +433,6 @@ export const AssessmentView: React.FC = () => {
       cognitiveScore: item.cognitiveScore,
       languageScore: item.languageScore,
       aestheticScore: item.aestheticScore,
-      lifeSkillScore: item.lifeSkillScore,
       ...(typeof socE === 'number' ? { emotionalScore: socE } : {}),
       ...(typeof socS === 'number' ? { socialScore: socS } : {}),
       ...(item.overallNote ? { overallNote: item.overallNote } : {}),
@@ -470,7 +467,6 @@ export const AssessmentView: React.FC = () => {
           cognitiveScore: item.cognitiveScore,
           languageScore: item.languageScore,
           aestheticScore: item.aestheticScore || 0,
-          lifeSkillScore: item.lifeSkillScore || 0,
           emotionalScore: typeof socE === 'number' ? socE : 0,
           socialScore: typeof socS === 'number' ? socS : 0,
           overallNote: item.overallNote || item.teacherComment,
@@ -567,7 +563,7 @@ export const AssessmentView: React.FC = () => {
         <Main>
             <ChartCard>
             <ChartHeader>
-              <ChartTitle><Activity size={18} color={theme.colors?.primary || '#046E1E'} /> Biểu đồ Radar 6 tiêu chí</ChartTitle>
+              <ChartTitle><Activity size={18} color={theme.colors?.primary || '#046E1E'} /> Biểu đồ Radar 5 tiêu chí</ChartTitle>
             </ChartHeader>
             {loadingMonth ? (
               <Spinner><Activity size={14} /> Đang tải đánh giá…</Spinner>
@@ -599,7 +595,6 @@ export const AssessmentView: React.FC = () => {
                     ),
                     /** DB chưa có cột → undefined, form sẽ dùng default 3. */
                     aestheticScore: currentRecord.aestheticScore,
-                    lifeSkillScore: currentRecord.lifeSkillScore,
                     /** Tương thích ngược: form/validation cũ dùng `teacherComment`. */
                     teacherComment: currentRecord.overallNote,
                   }
