@@ -1,5 +1,5 @@
 import React from 'react';
-import { EventDomainModel, EventType } from '@/config/types/event';
+import { EventDomainModel, EventType, HolidayDomainModel } from '@/config/types/event';
 import {
   IconStar,
   IconFlag,
@@ -26,12 +26,20 @@ export interface CalendarEventModel {
   description?: string;
 }
 
+/** From the Holidays table (billing's source of truth) — independent from CalendarEventModel of category 'holiday'. */
+export interface CalendarHolidayModel {
+  holidayId: string;
+  holidayName: string | null;
+  date: Date;
+}
+
 export interface CalendarCellData {
   date: Date;
   inMonth: boolean;
   isToday: boolean;
   isWeekend: boolean;
   events: CalendarEventModel[];
+  holidays: CalendarHolidayModel[];
 }
 
 // ─── Category meta (color + icon + label) ───────────────────────────────────
@@ -120,6 +128,17 @@ export const toCalendarEvent = (e: EventDomainModel): CalendarEventModel => {
     description: e.description ?? undefined,
   };
 };
+
+/** Convert an API holiday (single-day marker, no time range) into the calendar's view model. */
+export const toCalendarHoliday = (h: HolidayDomainModel): CalendarHolidayModel => ({
+  holidayId: String(h.holidayId),
+  holidayName: h.holidayName,
+  date: startOfDay(h.holidayDate),
+});
+
+/** Whether `day` is the holiday's date. */
+export const holidayCoversDay = (holiday: CalendarHolidayModel, day: Date): boolean =>
+  sameDay(holiday.date, day);
 
 /** Number of days an event spans, inclusive of both ends. */
 export const eventDaySpan = (event: CalendarEventModel): number =>

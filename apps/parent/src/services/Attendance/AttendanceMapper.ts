@@ -15,12 +15,14 @@ export class AttendanceMapper {
       droppedOffBy: dto.droppedOffBy ?? null,
       droppedOffRelationship: dto.droppedOffRelationship ?? null,
       droppedOffAvatarUrl: dto.droppedOffAvatarUrl ?? null,
+      dropoffImage: dto.dropoffImage ?? null,
 
       // Pick-up
       pickedUpByParentId: dto.pickedUpByParentId ?? null,
       pickedUpBy: dto.pickedUpBy ?? null,
       pickedUpRelationship: dto.pickedUpRelationship ?? null,
       pickedUpAvatarUrl: dto.pickedUpAvatarUrl ?? null,
+      pickupImage: dto.pickupImage ?? null,
 
       // Audit
       checkedInByTeacherId: dto.checkedInByTeacherId ?? null,

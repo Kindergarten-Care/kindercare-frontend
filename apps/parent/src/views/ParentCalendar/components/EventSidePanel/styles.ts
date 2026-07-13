@@ -131,6 +131,22 @@ export const EventItemDesc = styled.p`
   color: #4B5563;
 `;
 
+// ─── Holiday banner (from Holidays table — distinct from category 'holiday' events) ────
+
+export const HolidayBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #FBCEA0;
+  background: #FFF7ED;
+  color: #C2410C;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+`;
+
 export const EmptyState = styled.div`
   text-align: center;
   padding: 22px 12px;

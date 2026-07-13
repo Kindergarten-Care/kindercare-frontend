@@ -4,16 +4,18 @@ import React from 'react';
 import * as S from './styles';
 import {
   CalendarEventModel,
+  CalendarHolidayModel,
   getCategoryMeta,
   formatFullDate,
   formatEventRange,
   sameDay,
 } from '../../utils';
-import { IconCalendar, IconClock, IconPin } from '../../icons';
+import { IconCalendar, IconClock, IconPin, IconStar } from '../../icons';
 
 interface EventSidePanelProps {
   selectedDate: Date;
   selectedDayEvents: CalendarEventModel[];
+  selectedDayHolidays: CalendarHolidayModel[];
   upcomingEvents: CalendarEventModel[];
   onSelectDate: (date: Date) => void;
 }
@@ -23,6 +25,7 @@ const MONTH_SHORT = ['Th 1', 'Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'Th
 const EventSidePanel: React.FC<EventSidePanelProps> = ({
   selectedDate,
   selectedDayEvents,
+  selectedDayHolidays,
   upcomingEvents,
   onSelectDate,
 }) => (
@@ -36,6 +39,13 @@ const EventSidePanel: React.FC<EventSidePanelProps> = ({
           <S.CardSub>{formatFullDate(selectedDate)}</S.CardSub>
         </div>
       </S.CardHead>
+
+      {selectedDayHolidays.map(holiday => (
+        <S.HolidayBanner key={holiday.holidayId}>
+          <IconStar size={14} />
+          {holiday.holidayName ? `Ngày nghỉ lễ: ${holiday.holidayName}` : 'Ngày nghỉ lễ theo quy định trường'}
+        </S.HolidayBanner>
+      ))}
 
       {selectedDayEvents.length > 0 ? (
         <S.EventList>
@@ -63,12 +73,12 @@ const EventSidePanel: React.FC<EventSidePanelProps> = ({
             );
           })}
         </S.EventList>
-      ) : (
+      ) : selectedDayHolidays.length === 0 ? (
         <S.EmptyState>
           <IconCalendar size={26} color="#D1D5DB" />
           Không có sự kiện nào trong ngày này
         </S.EmptyState>
-      )}
+      ) : null}
     </S.Card>
 
     {/* Upcoming events */}

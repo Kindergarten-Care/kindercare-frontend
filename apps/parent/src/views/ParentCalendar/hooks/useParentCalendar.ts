@@ -5,13 +5,16 @@ import { useStudent } from '@/contexts/StudentContext';
 import { eventService } from '@/services/Event/EventService';
 import {
   CalendarEventModel,
+  CalendarHolidayModel,
   CalendarCellData,
   EventCategory,
   getMonthGridDates,
   eventCoversDay,
+  holidayCoversDay,
   eventDaySpan,
   daysFromToday,
   toCalendarEvent,
+  toCalendarHoliday,
   toDateParam,
   sameDay,
   startOfDay,
@@ -28,6 +31,7 @@ export interface UseParentCalendarReturn {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
   selectedDayEvents: CalendarEventModel[];
+  selectedDayHolidays: CalendarHolidayModel[];
   upcomingEvents: CalendarEventModel[];
   nextEvent: CalendarEventModel | null;
   upcomingHolidayCount: number;
@@ -40,11 +44,12 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(new Date()));
   const [activeCategory, setActiveCategory] = useState<EventCategory | null>(null);
   const [monthEvents, setMonthEvents] = useState<CalendarEventModel[]>([]);
+  const [monthHolidays, setMonthHolidays] = useState<CalendarHolidayModel[]>([]);
   const [upcomingWindow, setUpcomingWindow] = useState<CalendarEventModel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Events of the visible month grid (includes leading/trailing days of
-  // adjacent months) — one range call per month view. The cancelled flag
+  // Events + holidays of the visible month grid (includes leading/trailing days
+  // of adjacent months) — one range call per month view. The cancelled flag
   // keeps a slow response for a previous month from overwriting the current one.
   useEffect(() => {
     if (!activeStudent?.studentId) return;
@@ -55,10 +60,14 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
     let cancelled = false;
     setLoading(true);
     eventService.getEventsInRange(activeStudent.studentId, toDateParam(from), toDateParam(to))
-      .then(events => { if (!cancelled) setMonthEvents(events.map(toCalendarEvent)); })
+      .then(({ events, holidays }) => {
+        if (cancelled) return;
+        setMonthEvents(events.map(toCalendarEvent));
+        setMonthHolidays(holidays.map(toCalendarHoliday));
+      })
       .catch(err => {
         console.error('[ParentCalendar] Failed to load month events:', err);
-        if (!cancelled) setMonthEvents([]);
+        if (!cancelled) { setMonthEvents([]); setMonthHolidays([]); }
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
@@ -74,7 +83,7 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
 
     let cancelled = false;
     eventService.getEventsInRange(activeStudent.studentId, toDateParam(today), toDateParam(to))
-      .then(events => { if (!cancelled) setUpcomingWindow(events.map(toCalendarEvent)); })
+      .then(({ events }) => { if (!cancelled) setUpcomingWindow(events.map(toCalendarEvent)); })
       .catch(err => {
         console.error('[ParentCalendar] Failed to load upcoming events:', err);
         if (!cancelled) setUpcomingWindow([]);
@@ -112,8 +121,9 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
       isToday: sameDay(date, today),
       isWeekend: date.getDay() === 0 || date.getDay() === 6,
       events: filteredMonthEvents.filter(e => eventCoversDay(e, date)),
+      holidays: monthHolidays.filter(h => holidayCoversDay(h, date)),
     }));
-  }, [viewYear, viewMonth, filteredMonthEvents]);
+  }, [viewYear, viewMonth, filteredMonthEvents, monthHolidays]);
 
   // Union of both fetches so selecting an upcoming event outside the viewed
   // month still shows its details while the month refetches.
@@ -125,6 +135,11 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
       .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   }, [monthEvents, upcomingWindow, selectedDate, activeCategory]);
 
+  const selectedDayHolidays = useMemo(
+    () => monthHolidays.filter(h => holidayCoversDay(h, selectedDate)),
+    [monthHolidays, selectedDate],
+  );
+
   return {
     activeStudent,
     loading: studentLoading,
@@ -133,6 +148,7 @@ export function useParentCalendar(viewYear: number, viewMonth: number): UseParen
     selectedDate,
     setSelectedDate,
     selectedDayEvents,
+    selectedDayHolidays,
     upcomingEvents,
     nextEvent,
     upcomingHolidayCount,
