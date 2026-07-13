@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { X, Check, Clock, Calendar, Save, Loader2 } from 'lucide-react';
 import { AttendanceService } from '@/services/attendance';
 import type { QuickAttendanceStatus } from './TodayKidsWidget';
+import { getStudentInitials } from '@/utils/string';
 
 interface KidQuickActionModalProps {
   isOpen: boolean;
@@ -260,7 +261,7 @@ export const KidQuickActionModal: React.FC<KidQuickActionModalProps> = ({
 
   if (!isOpen || !kid) return null;
 
-  const initial = kid.name.split(' ').pop()?.charAt(0).toUpperCase() || '?';
+  const initial = getStudentInitials(kid.name);
 
   const handleSave = async () => {
     if (!classId) {

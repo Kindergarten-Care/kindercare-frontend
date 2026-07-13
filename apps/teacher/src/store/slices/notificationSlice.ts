@@ -64,13 +64,28 @@ export const { markOneRead, markAllRead, prependItem } = notificationSlice.actio
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
 export const selectNotifications = (state: { notifications: NotificationState }) =>
-  state.notifications.items;
+  state.notifications.items.filter(n => {
+    // 1. Chỉ hiển thị thông báo chưa đọc
+    if (n.isRead === 1) return false;
 
-const selectItems = (state: { notifications: NotificationState }) => state.notifications.items;
+    // 2. Lọc theo nguồn gửi
+    let role = '';
+    try {
+      const data = typeof n.dataPayload === 'string' ? JSON.parse(n.dataPayload) : (n.dataPayload || {});
+      role = data.senderRole || data.role || '';
+    } catch(e) {}
+    
+    // Yêu cầu từ Phụ huynh
+    const isFromParent = ['LEAVE_REQUEST', 'leave_request', 'PROXY_AUTHORIZATION', 'MEDICAL_REQUEST'].includes(n.type) || ['Parent', 'Phụ huynh'].includes(role);
+    // Yêu cầu từ Hiệu trưởng/Admin
+    const isFromAdmin = ['ANNOUNCEMENT', 'SYSTEM', 'ADMIN'].includes(n.type) || ['Admin', 'Principal', 'Hiệu trưởng'].includes(role);
+    
+    return isFromParent || isFromAdmin;
+  });
 
 export const selectUnreadCount = createSelector(
-  selectItems,
-  items => items.filter(n => n.isRead === 0).length,
+  selectNotifications,
+  items => items.length,
 );
 
 export const selectNotifLoading = (state: { notifications: NotificationState }) =>

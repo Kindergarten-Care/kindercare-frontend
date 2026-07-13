@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as S from './styles';
+import { getStudentInitials } from '@/utils/string';
 
 type StatusType = 'none' | 'eat-all' | 'slow-eater' | 'skip-meal';
 
@@ -23,7 +24,7 @@ export const QuickLogWidget: React.FC<QuickLogWidgetProps> = ({ students, menuIn
   React.useEffect(() => {
     const colors = ['#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#C4B5FD', '#F9A8D4', '#FDBA74', '#67E8F9', '#A5B4FC', '#5EEAD4'];
     const mappedLogs = students.map((s, index) => {
-      const initial = s.name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+      const initial = getStudentInitials(s.name);
       const color = colors[index % colors.length];
 
       let widgetStatus: StatusType = 'none';

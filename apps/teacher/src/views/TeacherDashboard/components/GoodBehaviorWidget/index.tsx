@@ -8,6 +8,7 @@ import type { AssessmentHistoryPoint, AssessmentCriterionKey } from '@/config/ty
 import { mergeSocioEmotional } from '@/config/validations/assessment';
 import { useRouter } from '@/i18n/routing';
 import { ChevronRight, BookOpen, CheckCircle2, Circle } from 'lucide-react';
+import { getStudentInitials } from '@/utils/string';
 
 interface PeriodicAssessmentWidgetProps {
   /** Lớp đang active — bắt buộc để fetch assessments. */
@@ -215,7 +216,7 @@ const AssessmentList: React.FC<AssessmentListProps> = ({ records, studentNames, 
           : 0;
         const key = String(r.studentId);
         const name = studentNames?.[key] || `HS #${key}`;
-        const initial = name.trim().split(' ').pop()?.charAt(0).toUpperCase() || 'B';
+        const initial = getStudentInitials(name);
         const isComplete = known.length >= 3;
 
         return (

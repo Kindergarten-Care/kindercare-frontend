@@ -5,6 +5,7 @@ import { X, Pill, CheckCircle, XCircle, Clock } from 'lucide-react';
 import * as S from '../styles';
 import type { MedicationDomainModel } from '@/config/types/health';
 import { useUpdateMedicationStatus } from '@/hooks/useHealthQueries';
+import { getStudentInitials } from '@/utils/string';
 
 interface MedicalRequestsPopupProps {
   onClose: () => void;
@@ -26,9 +27,7 @@ function getAvatarGrad(name: string) {
 }
 
 function getInitials(name: string) {
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
+  return getStudentInitials(name);
 }
 
 function formatDate(timestamp: number) {
@@ -106,12 +105,16 @@ export const MedicalRequestsPopup: React.FC<MedicalRequestsPopupProps> = ({
                       background: getAvatarGrad(req.studentName),
                       color: '#fff', fontSize: 14, fontWeight: 700,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
-                      overflow: 'hidden',
+                      position: 'relative'
                     }}>
-                      {req.studentAvatar ? (
-                        <img src={req.studentAvatar} alt={req.studentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        getInitials(req.studentName)
+                      {getInitials(req.studentName)}
+                      {req.studentAvatar && (
+                        <img 
+                          src={req.studentAvatar} 
+                          alt="" 
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} 
+                          onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                        />
                       )}
                     </div>
 
