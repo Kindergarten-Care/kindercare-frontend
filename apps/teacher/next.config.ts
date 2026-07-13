@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/teacher',
+        basePath: false,
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     const target = process.env.NEXT_PUBLIC_API_URL;
     // Rewrite /api/* → BE server (works with basePath '/teacher')
