@@ -17,7 +17,7 @@ import {
  *  - 3 score BE chắc chắn nhận: physicalScore, cognitiveScore, languageScore       (range 1..10)
  *  - 2 score BE nhận thêm (sau TASK 1): emotionalScore, socialScore              (range 1..10)
  *  - 1 text BE nhận thêm: overallNote                                             (max 500 ký tự)
- *  - 2 field local-only (DB chưa có cột): aestheticScore, lifeSkillScore
+ *  - 1 field local-only (DB chưa có cột): aestheticScore
  *  - termPeriod: required khi gửi BE, regex YYYY-MM
  */
 
@@ -50,7 +50,7 @@ function isMonthReversed(s: unknown): s is string {
  *  - 3 scores required (BE chắc chắn nhận): physicalScore, cognitiveScore, languageScore
  *  - 2 scores optional (BE nhận nếu có):   emotionalScore, socialScore
  *  - 1 overallNote optional, max 500 ký tự
- *  - 2 fields local-only (aestheticScore, lifeSkillScore)
+ *  - 1 field local-only (aestheticScore)
  *    FE vẫn cho phép nhập nhưng KHÔNG gửi BE (DB DevelopmentAssessments không có cột).
  */
 export function validateAssessmentItem(input: unknown): string[] {
@@ -96,7 +96,7 @@ export function validateAssessmentItem(input: unknown): string[] {
 /** Runtime-validate cả body gửi BE.
  *
  * Sau khi BE apply TASK 1: build payload gồm đủ 5 scores + overallNote.
- * 2 field local-only (aestheticScore, lifeSkillScore) sẽ KHÔNG được gửi.
+ * 1 field local-only (aestheticScore) sẽ KHÔNG được gửi.
  */
 export function validateUpsertBody(input: unknown): {
   ok: boolean;
@@ -138,7 +138,7 @@ export function validateUpsertBody(input: unknown): {
         : it.studentId;
 
       // Build payload: chứa 3 score bắt buộc + 2 score optional (nếu có) + 1 text (nếu có).
-      // Field local-only (aesthetic/lifeSkill) KHÔNG được gửi.
+      // Field local-only (aesthetic) KHÔNG được gửi.
       // Cast `as UpsertAssessmentItem` ở đây — các field được gán từng bước bên dưới.
       const cleaned = { studentId } as UpsertAssessmentItem;
       for (const k of BE_REQUIRED_SCORE_KEYS) {

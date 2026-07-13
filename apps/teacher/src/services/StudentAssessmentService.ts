@@ -128,7 +128,6 @@ export class AssessmentService {
       emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore),
       socialScore: num(raw?.socialScore ?? raw?.SocialScore),
       aestheticScore: num(raw?.aestheticScore ?? raw?.AestheticScore),
-      lifeSkillScore: num(raw?.lifeSkillScore ?? raw?.LifeSkillScore),
       overallNote: typeof note === 'string' ? note : undefined,
       createdAt: num(raw?.createdAt ?? raw?.CreatedAt, 0),
       updatedAt: num(raw?.updatedAt ?? raw?.UpdatedAt, 0),
