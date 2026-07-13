@@ -1,0 +1,45 @@
+export type AttendanceStatus = 'PRESENT' | 'PERMISSION_ABSENCE' | 'UNEXCUSED_ABSENCE' | 'NOT_YET';
+
+export interface Student {
+  id: string;
+  name: string;
+  avatar?: string;
+  attendanceStatus: AttendanceStatus;
+  arrivalTime: string; // e.g. "07:45" or "--:--"
+  healthNote: string;
+  eatingStatus?: string;
+  sleepingStatus?: string;
+  hygieneStatus?: string;
+  teacherNote?: string;
+  photoUrl?: string;
+  hasActiveLeaveRequest: boolean;
+  leaveRequestId?: string;
+  leaveRequestStatus?: LeaveRequestStatus;
+  leaveRequestReason?: string;
+  dropoffImage?: string;
+  pickupImage?: string;
+}
+
+export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface LeaveRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  parentName: string;
+  relationship: string; // e.g. "Mẹ", "Bố"
+  reason: string;
+  attachmentUrl?: string;
+  status: LeaveRequestStatus;
+  classId?: number;
+  fromDate?: number;
+  toDate?: number;
+  parentPhone?: string;
+  isMealFeeDeducted?: number | boolean;
+  parentNotes?: string;
+  createdAt?: number;
+  className?: string;
+  studentAvatar?: string;
+  approverId?: number; // TeacherID who approved/rejected
+  updatedTime?: number;
+}

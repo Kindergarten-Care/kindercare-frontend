@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 import path from 'path';
-import { loadMonorepoEnv, withApiProxy } from '../../packages/config/withMonorepoEnv';
+import { loadMonorepoEnv } from '../../packages/config/withMonorepoEnv';
 
 loadMonorepoEnv(path.resolve(__dirname, '../..'));
 
@@ -14,6 +14,39 @@ const nextConfig: NextConfig = {
   compiler: {
     styledComponents: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'media.kindercare.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+      }
+    ],
+  },
+  async rewrites() {
+    const target = process.env.NEXT_PUBLIC_API_URL;
+    // Rewrite /api/* → BE server (works with basePath '/teacher')
+    // Browser calls: /api/teacher/classes → Next.js receives: /api/teacher/classes → rewrite to: https://web-test.kindercare.app/api/v1/teacher/classes
+    const proxyRewrites = target && !target.startsWith('/')
+      ? [{ source: '/api/:path*', destination: `${target}/:path*` }]
+      : [];
+    return proxyRewrites;
+  },
 };
 
-export default withNextIntl(withApiProxy(nextConfig));
+export default withNextIntl(nextConfig);

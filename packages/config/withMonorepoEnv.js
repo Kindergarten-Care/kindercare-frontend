@@ -17,14 +17,22 @@ function parseEnvFile(filePath) {
 }
 
 /**
- * Load .env.development then .env.local from the monorepo root into process.env.
- * Vars already set in the environment (e.g. forwarded by Turbo) are NOT overridden.
+ * Load env files based on NODE_ENV:
+ * - development / test  → .env.development + .env.local
+ * - production          → .env.production + .env.local
+ *
+ * Vars already set in the environment (e.g. forwarded by the deploy system /
+ * set in CI) are NOT overridden.
  *
  * Call this at the TOP of every app's next.config.ts:
  *   loadMonorepoEnv(path.resolve(__dirname, '../..'));
  */
 export function loadMonorepoEnv(rootDir) {
-  for (const file of ['.env.development', '.env.local']) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const files = isProd
+    ? ['.env.production', '.env.local']
+    : ['.env.development', '.env.local'];
+  for (const file of files) {
     const vars = parseEnvFile(path.resolve(rootDir, file));
     for (const [k, v] of Object.entries(vars)) {
       if (!process.env[k]) process.env[k] = v;

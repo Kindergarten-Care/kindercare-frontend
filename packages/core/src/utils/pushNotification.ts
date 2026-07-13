@@ -31,6 +31,13 @@ export async function initPushNotification(options: InitPushNotificationOptions 
     // 1. Fetch public Firebase client config from backend
     const config = await notificationService.getFirebaseConfig();
 
+    // Defensive: ensure config has required projectId
+    if (!config?.projectId) {
+      console.warn('[FCM] Firebase config missing projectId — push notifications disabled.');
+      registered = false;
+      return false;
+    }
+
     // 2. Dynamic imports keep firebase/messaging out of the SSR bundle entirely
     const { initializeApp, getApps, getApp } = await import('firebase/app');
     const { getMessaging, getToken, onMessage } = await import('firebase/messaging');
@@ -81,6 +88,7 @@ export async function initPushNotification(options: InitPushNotificationOptions 
 
     return true;
   } catch (error) {
+    console.warn('[FCM] Push notification unavailable — server may be offline');
     console.error('[FCM] Initialization error:', error);
     registered = false;
     return false;

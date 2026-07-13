@@ -34,9 +34,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — only root .env.development is committed
+# env files
 .env*
-!.env.development
 
 # vercel
 .vercel
@@ -47,3 +46,19 @@ next-env.d.ts
 
 # agents
 .agents/
+# MCP & local configs
+mcp_config.json
+fetch-swagger.js
+
+# Agent config & logs
+.agent/
+.agent
+.agents/
+.agents
+
+KinderCare*.html
+*.sql
+
+# Runtime logs
+logs/
+*.log

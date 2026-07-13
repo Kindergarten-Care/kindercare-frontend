@@ -8,14 +8,27 @@ interface RetryableConfig extends InternalAxiosRequestConfig {
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
   timeout: 15_000,
 });
 
 // Attach Bearer token to every outgoing request
 apiClient.interceptors.request.use((config) => {
-  const token = getToken();
+  const token = getToken() || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  // Dynamically set baseURL client-side based on the active application's basePath
+  if (typeof window !== 'undefined') {
+    const path = window.location.pathname;
+    if (path.startsWith('/teacher')) {
+      config.baseURL = '/teacher/api';
+    } else if (path.startsWith('/principal')) {
+      config.baseURL = '/principal/api';
+    } else if (path.startsWith('/admin')) {
+      config.baseURL = '/admin/api';
+    } else if (path.startsWith('/parent')) {
+      config.baseURL = '/parent/api';
+    }
+  }
   return config;
 });
 

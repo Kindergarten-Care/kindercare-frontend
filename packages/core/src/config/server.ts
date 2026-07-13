@@ -11,10 +11,11 @@ export const API_BASE_URL =
 /** All API endpoints — single source of truth for the monorepo. */
 export const SERVER = {
   auth: {
-    login:   '/auth/login',
-    logout:  '/auth/logout',
-    refresh: '/auth/refresh',
-    me:      '/auth/me',
+    login:          '/auth/login',
+    logout:         '/auth/logout',
+    refresh:        '/auth/refresh',
+    me:             '/auth/me',
+    changePassword: '/auth/change-password',
   },
   parent: {
     getChildren: '/parent/children',
@@ -53,7 +54,38 @@ export const SERVER = {
     cancelExtracurricularEnrollment: '/parent/children/:studentId/extracurriculars/:enrollmentId/cancel',
   },
   teacher: {
-    scanAttendance: '/teacher/attendance/scan',
+    scanAttendance:          '/teacher/attendance/scan',
+    getMyActiveClass:        '/teacher/my-class',
+    getClasses:              '/teacher/classes',
+    getStudents:             '/teacher/classes/:classId/students',
+    getDetailedStudents:     '/teacher/classes/:classId/detailed-students',
+    getDashboard:            '/teacher/dashboard',
+    getProfile:              '/teacher/profile',
+    getSchedule:             '/teacher/classes/:classId/schedule',
+    getMenu:                 '/teacher/classes/:classId/menu',
+    getMedicalRequests:      '/teacher/classes/:classId/medical-requests',
+    getWeeklyRewards:        '/teacher/classes/:classId/weekly-rewards',
+    postWeeklyRewards:       '/teacher/classes/:classId/weekly-rewards',
+    getLeaveRequests:        '/teacher/leave-requests',
+    getLeaveRequestDetail:   '/teacher/leave-requests/:requestId',
+    updateLeaveRequestStatus:'/teacher/leave-requests/:requestId/status',
+    postAttendanceQuick:     '/teacher/attendance/quick',
+    postAttendanceMeals:     '/teacher/attendance/meals',
+    getNotifications:        '/teacher/notifications',
+    getRewardBadges:         '/teacher/reward-badges',
+    getNewsfeeds:            '/teacher/classes/:classId/newsfeeds',
+    postNewsfeed:            '/teacher/classes/:classId/newsfeeds',
+    workHistory:             '/teacher/work-history',
+    settings:                '/teacher/settings',
+    // Đánh giá định kỳ học sinh (6 tiêu chí)
+    getClassAssessments:     '/teacher/classes/:classId/student-health/assessments',
+    upsertClassAssessments:  '/teacher/classes/:classId/student-health/assessments',
+    getStudentAssessmentHistory: '/teacher/classes/:classId/student-health/assessments/history',
+    
+    // Quản lý thông tin học sinh
+    getStudentAttendanceHistory: '/students/:studentId/attendance-history',
+    getStudentMedicationsToday:  '/students/:studentId/medications/today',
+    updateStudentInfo:           '/students/:studentId',
   },
   principal: {
     getProfile: '/principal/profile',

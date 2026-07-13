@@ -1,18 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { apiClient, setSession } from '@kindercare/core';
 
-export type UserRole = 'principal' | 'teacher';
+export type UserRole = 'teacher';
 
 export interface UseLoginStateReturn {
-  role: UserRole;
   username: string;
   password: string;
   rememberMe: boolean;
   errors: { username?: string; password?: string };
   isSubmitting: boolean;
-  handleRoleChange: (role: UserRole) => void;
   handleUsernameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handlePasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRememberMeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -20,20 +18,11 @@ export interface UseLoginStateReturn {
 }
 
 export const useLoginState = (): UseLoginStateReturn => {
-  const router = useRouter();
-  const [role, setRole] = useState<UserRole>('principal');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleRoleChange = (selectedRole: UserRole): void => {
-    setRole(selectedRole);
-    setErrors({});
-    setUsername('');
-    setPassword('');
-  };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setUsername(e.target.value);
@@ -53,12 +42,12 @@ export const useLoginState = (): UseLoginStateReturn => {
     setRememberMe(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const newErrors: { username?: string; password?: string } = {};
     if (!username.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập / mã nhân viên.';
+      newErrors.username = 'Vui lòng nhập email hoặc số điện thoại.';
     }
     if (!password) {
       newErrors.password = 'Vui lòng nhập mật khẩu.';
@@ -71,23 +60,63 @@ export const useLoginState = (): UseLoginStateReturn => {
 
     setIsSubmitting(true);
 
-    // Redirect based on role using Next.js router
-    const roleRoutes: Record<UserRole, string> = {
-      principal: '/principal',
-      teacher: '/teacher',
-    };
+    try {
+      // Gọi trực tiếp API URL (proxy rewrite không hoạt động trong standalone mode)
+      const baseApiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://web-test.kindercare.app/api/v1';
+      const apiUrl = `${baseApiUrl}/auth/teacher/login`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ identifier: username, password }),
+      });
 
-    router.push(roleRoutes[role]);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ username: data.message || 'Đăng nhập thất bại. Vui lòng thử lại.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const token = data.data.token;
+
+      // Save session in sessionStorage (expires in 30 minutes, or longer if rememberMe is checked, e.g. 3 days)
+      const expireMinutes = rememberMe ? 3 * 24 * 60 : 30;
+      setSession(token, 'teacher', expireMinutes);
+
+    // Resolve teacher app base URL (giữa các subdomain cùng kindercare.app)
+    // Nếu thiếu env, fallback về portal (cùng port) để tránh lỗi localhost.
+    const teacherBase =
+      process.env.NEXT_PUBLIC_TEACHER_APP_URL || '';
+    
+    // Thêm /teacher để khớp với basePath của teacher application
+    const teacherUrlWithBasePath = teacherBase
+      ? (teacherBase.endsWith('/teacher') ? teacherBase : `${teacherBase.replace(/\/$/, '')}/teacher`)
+      : '';
+
+    const redirectUrl = teacherUrlWithBasePath
+      ? new URL(teacherUrlWithBasePath)
+      : (typeof window !== 'undefined' ? new URL('/teacher', window.location.origin) : new URL('http://localhost:3000/teacher'));
+
+    redirectUrl.searchParams.set('token', token);
+
+    window.location.href = redirectUrl.toString();
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ username: 'Lỗi kết nối đến máy chủ.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
-    role,
     username,
     password,
     rememberMe,
     errors,
     isSubmitting,
-    handleRoleChange,
     handleUsernameChange,
     handlePasswordChange,
     handleRememberMeChange,

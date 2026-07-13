@@ -13,7 +13,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        />
+      </head>
+      <body style={{ margin: 0, fontFamily: "'Inter', system-ui, sans-serif" }}>
         <StyledComponentsRegistry>
           <ThemeProvider>
             {children}
