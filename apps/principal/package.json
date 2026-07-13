@@ -8,15 +8,18 @@
     "start": "next start -p 3002"
   },
   "dependencies": {
+    "@kindercare/config": "*",
+    "@kindercare/core": "*",
+    "@kindercare/ui": "*",
     "axios": "^1.15.2",
+    "exceljs": "^4.4.0",
     "next": "16.2.3",
     "next-intl": "^4.9.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "recharts": "^3.9.2",
     "socket.io-client": "^4.8.3",
-    "styled-components": "^6.4.0",
-    "@kindercare/core": "*",
-    "@kindercare/config": "*"
+    "styled-components": "^6.4.0"
   },
   "devDependencies": {
     "@types/node": "^20",
