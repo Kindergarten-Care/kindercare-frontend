@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { PhotoAttendance } from './PhotoAttendance';
 import { X } from 'lucide-react';
+import { Student } from '@/config/types/attendance';
 
 const Overlay = styled.div`
   position: fixed;
@@ -49,7 +50,7 @@ interface PhotoAttendanceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  students: Array<{id: string; name: string}>;
+  students: Student[];
   classId: string;
   className: string;
 }

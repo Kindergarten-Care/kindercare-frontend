@@ -16,6 +16,8 @@ export interface Student {
   leaveRequestId?: string;
   leaveRequestStatus?: LeaveRequestStatus;
   leaveRequestReason?: string;
+  dropoffImage?: string;
+  pickupImage?: string;
 }
 
 export type LeaveRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';

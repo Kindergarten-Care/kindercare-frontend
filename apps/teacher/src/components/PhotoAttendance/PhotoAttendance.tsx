@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { Camera, RefreshCw } from 'lucide-react';
 import { AttendanceConfirmModal } from './AttendanceConfirmModal';
+import { Student } from '@/config/types/attendance';
 
 const Container = styled.div`
   width: 100%;
@@ -86,7 +87,7 @@ const PrimaryBtn = styled.button`
 interface PhotoAttendanceProps {
   onSuccess?: () => void;
   onCloseModal?: () => void;
-  students: Array<{id: string; name: string}>;
+  students: Student[];
   classId: string;
   className: string;
 }

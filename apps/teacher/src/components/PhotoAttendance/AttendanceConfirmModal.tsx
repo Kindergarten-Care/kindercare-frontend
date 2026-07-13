@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { AttendanceService } from '@/services/attendance';
+import { Student } from '@/config/types/attendance';
 
 const Overlay = styled.div`
   position: fixed;
@@ -107,10 +108,7 @@ const Btn = styled.button<{ $primary?: boolean }>`
   &:active:not(:disabled) { transform: scale(0.96); }
 `;
 
-interface Student {
-  id: string;
-  name: string;
-}
+
 
 interface AttendanceConfirmModalProps {
   isOpen: boolean;
@@ -138,6 +136,23 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const selectedStudent = useMemo(() => {
+    return students.find(s => String(s.id) === selectedStudentId);
+  }, [students, selectedStudentId]);
+
+  const isDropoffComplete = !!selectedStudent?.dropoffImage;
+  const isPickupComplete = !!selectedStudent?.pickupImage;
+  const isFullyComplete = isDropoffComplete && isPickupComplete;
+
+  const attendanceType = !isDropoffComplete ? 'dropoff' : 'pickup';
+  const modalTitle = !selectedStudent
+    ? 'Xác nhận điểm danh'
+    : !isDropoffComplete
+    ? 'Xác nhận Nhận trẻ (Đầu ngày)'
+    : isFullyComplete
+    ? 'Hoàn thành điểm danh'
+    : 'Xác nhận Trả trẻ (Cuối ngày)';
+
   const arrivalTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
   const handleSubmit = async () => {
@@ -149,6 +164,10 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
       alert('Không có ảnh chụp!');
       return;
     }
+    if (isFullyComplete) {
+      alert('Học sinh đã hoàn thành điểm danh 2 chiều trong ngày!');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -158,16 +177,30 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
       formData.append('classId', classId);
       formData.append('teacherId', teacherId);
       formData.append('arrivalTime', arrivalTime);
+      formData.append('type', attendanceType);
 
       // Call API
-      await AttendanceService.uploadPhotoAttendance(formData);
+      const res = await AttendanceService.uploadPhotoAttendance(formData);
 
-      alert('Điểm danh thành công!');
+      const returnedType = res?.data?.type || res?.type;
+
+      if (returnedType === 'dropoff') {
+        alert('Đã lưu ảnh nhận trẻ đầu ngày thành công!');
+      } else if (returnedType === 'pickup') {
+        alert('Đã lưu ảnh trả trẻ cuối ngày thành công!');
+      } else {
+        alert('Điểm danh thành công!');
+      }
+
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting attendance:', error);
-      alert('Có lỗi xảy ra khi điểm danh.');
+      if (error?.response?.status === 400) {
+        alert('Học sinh đã điểm danh đủ 2 lần trong ngày, không thể chụp thêm');
+      } else {
+        alert('Có lỗi xảy ra khi điểm danh.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -179,8 +212,12 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
     <Overlay onClick={onClose}>
       <ModalBox onClick={e => e.stopPropagation()}>
         <Header>
-          <Title>Xác nhận điểm danh</Title>
-          <Desc>Kiểm tra thông tin và xác nhận.</Desc>
+          <Title>{modalTitle}</Title>
+          <Desc>
+            {isFullyComplete && selectedStudent
+              ? 'Học sinh đã hoàn thành điểm danh 2 chiều trong ngày.'
+              : 'Kiểm tra thông tin và xác nhận.'}
+          </Desc>
         </Header>
         <Body>
           {photoUrl && <ImagePreview src={photoUrl} alt="Preview" />}
@@ -206,7 +243,11 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
         </Body>
         <Footer>
           <Btn onClick={onClose} disabled={isSubmitting}>Hủy</Btn>
-          <Btn $primary onClick={handleSubmit} disabled={isSubmitting}>
+          <Btn 
+            $primary 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || (!!selectedStudent && isFullyComplete)}
+          >
             {isSubmitting ? 'Đang gửi...' : 'Xác nhận'}
           </Btn>
         </Footer>
