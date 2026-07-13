@@ -2,18 +2,16 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { Camera, RefreshCw } from 'lucide-react';
+import { Camera, RefreshCw, X } from 'lucide-react';
 import { AttendanceConfirmModal } from './AttendanceConfirmModal';
 import { Student } from '@/config/types/attendance';
 
 const Container = styled.div`
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 24px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const HeaderRow = styled.div`
@@ -23,7 +21,7 @@ const HeaderRow = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
   color: #111827;
@@ -46,8 +44,23 @@ const OutlinedBtn = styled.button`
   &:active { transform: scale(0.96); }
 `;
 
+const IconButton = styled.button`
+  background: rgba(0,0,0,0.05);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #374151;
+  transition: background 0.2s;
+  &:hover { background: rgba(0,0,0,0.1); }
+`;
+
 const CameraCard = styled.div`
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   background: #000;
   position: relative;
@@ -56,6 +69,7 @@ const CameraCard = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
 `;
 
 const ErrorText = styled.p`
@@ -65,22 +79,22 @@ const ErrorText = styled.p`
 
 const PrimaryBtn = styled.button`
   width: 100%;
-  padding: 16px;
-  background: #111827;
+  padding: 14px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 18px;
+  border-radius: 14px;
+  font-size: 16px;
   font-weight: 600;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   transition: all 0.2s ease;
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &:hover:not(:disabled) { background: #1f2937; box-shadow: 0 6px 12px -2px rgba(0,0,0,0.15); }
+  &:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+  &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4); }
   &:active:not(:disabled) { transform: scale(0.98); }
 `;
 
@@ -179,9 +193,14 @@ export const PhotoAttendance: React.FC<PhotoAttendanceProps> = ({
     <Container>
       <HeaderRow>
         <Title>Điểm danh chụp ảnh</Title>
-        <OutlinedBtn onClick={startCamera}>
-          <RefreshCw size={14} /> Khởi động lại
-        </OutlinedBtn>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <OutlinedBtn onClick={startCamera}>
+            <RefreshCw size={14} /> Khởi động lại
+          </OutlinedBtn>
+          <IconButton onClick={onCloseModal} title="Đóng">
+            <X size={18} />
+          </IconButton>
+        </div>
       </HeaderRow>
 
       <CameraCard>

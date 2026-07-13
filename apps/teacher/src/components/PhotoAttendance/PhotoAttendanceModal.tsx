@@ -18,14 +18,15 @@ const Overlay = styled.div`
 const ModalContent = styled.div`
   background: white;
   width: 100%;
-  max-width: 600px;
-  height: 90vh;
-  border-radius: 16px;
+  max-width: 440px;
+  max-height: 85vh;
+  border-radius: 24px;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   position: relative;
+  margin: 16px;
 `;
 
 const CloseBtn = styled.button`
@@ -62,7 +63,6 @@ export const PhotoAttendanceModal: React.FC<PhotoAttendanceModalProps> = ({
   return (
     <Overlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
-        <CloseBtn onClick={onClose}><X size={18} /></CloseBtn>
         <PhotoAttendance 
           onSuccess={onSuccess} 
           onCloseModal={onClose}

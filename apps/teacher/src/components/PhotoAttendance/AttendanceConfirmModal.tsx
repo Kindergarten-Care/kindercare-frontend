@@ -16,11 +16,12 @@ const Overlay = styled.div`
 const ModalBox = styled.div`
   background: white;
   width: 90%;
-  max-width: 400px;
-  border-radius: 12px;
+  max-width: 380px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
 `;
 
 const Header = styled.div`
@@ -41,17 +42,18 @@ const Desc = styled.p`
 `;
 
 const Body = styled.div`
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const ImagePreview = styled.img`
   width: 100%;
-  max-height: 250px;
+  max-height: 220px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 `;
 
 const FormGroup = styled.div`
@@ -67,15 +69,19 @@ const Label = styled.label`
 `;
 
 const Select = styled.select`
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 14px;
   outline: none;
-  &:focus { border-color: #3b82f6; }
+  &:focus { border-color: #10B981; }
 `;
 
 const Input = styled.input`
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
@@ -85,7 +91,7 @@ const Input = styled.input`
 `;
 
 const Footer = styled.div`
-  padding: 16px;
+  padding: 16px 20px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
@@ -93,17 +99,20 @@ const Footer = styled.div`
 `;
 
 const Btn = styled.button<{ $primary?: boolean }>`
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   border: ${props => props.$primary ? 'none' : '1px solid #d1d5db'};
-  background: ${props => props.$primary ? '#111827' : 'white'};
+  background: ${props => props.$primary ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : 'white'};
   color: ${props => props.$primary ? 'white' : '#374151'};
   transition: all 0.2s ease;
   &:disabled { opacity: 0.5; cursor: not-allowed; }
   &:hover:not(:disabled) { 
-    background: ${props => props.$primary ? '#1f2937' : '#f3f4f6'}; 
+    transform: ${props => props.$primary ? 'translateY(-1px)' : 'none'};
+    box-shadow: ${props => props.$primary ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'};
+    background: ${props => props.$primary ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : '#f3f4f6'}; 
   }
   &:active:not(:disabled) { transform: scale(0.96); }
 `;
