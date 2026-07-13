@@ -9,7 +9,7 @@ import DeleteConfirmModal from './components/DeleteConfirmModal';
 import { eventService } from '@/services/Principal/EventService';
 import { EventDto, HolidayDto, PrincipalEventType } from '@/config/types/event';
 import {
-  CalendarIcon, PartyIcon, EditIcon, TrashIcon, ClockIcon, MapPinIcon,
+  CalendarIcon, StarIcon, EditIcon, TrashIcon, ClockIcon, MapPinIcon,
 } from '@/components/Modal';
 import {
   Container, PageHeader, HeaderText, Title, PageSubtitle, HeaderActions, BtnGhost, BtnBrand,
@@ -132,7 +132,7 @@ export default function CalendarView() {
         </HeaderText>
         <HeaderActions>
           <BtnGhost onClick={() => setShowCreateHoliday(true)}>
-            <PartyIcon />
+            <StarIcon />
             Tạo ngày nghỉ lễ
           </BtnGhost>
           <BtnBrand onClick={() => setShowCreateEvent(true)}>
@@ -236,7 +236,7 @@ export default function CalendarView() {
         <Card>
           <CardHead>
             <CardTitle>
-              <TitleIcon $variant="amber"><PartyIcon /></TitleIcon>
+              <TitleIcon $variant="amber"><StarIcon /></TitleIcon>
               Ngày nghỉ lễ <CountChip $variant="amber">{holidayGroups.length}</CountChip>
             </CardTitle>
           </CardHead>

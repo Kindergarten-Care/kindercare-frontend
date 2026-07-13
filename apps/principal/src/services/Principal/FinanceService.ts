@@ -2,6 +2,7 @@ import { apiClient, ApiResponse, SERVER } from '@kindercare/core';
 import {
   FeesDataDto,
   InvoiceDto,
+  InvoiceDetailDto,
   InvoiceFilters,
   FeePackageDto,
   ExtracurricularDto,
@@ -10,6 +11,11 @@ import {
   UpdatePaymentPackagePayload,
   CreateExtracurricularPayload,
   UpdateExtracurricularPayload,
+  RunMonthlyPayload,
+  RunMonthlyResultDto,
+  PublishInvoicesResultDto,
+  PublishSelectedInvoicesResultDto,
+  PublishInvoiceRawDto,
 } from '@/config/types/finance';
 
 class FinanceService {
@@ -69,6 +75,53 @@ class FinanceService {
     if (!res.success) {
       throw new Error(res.message);
     }
+  }
+
+  async getInvoiceDetail(id: number): Promise<InvoiceDetailDto> {
+    const url = SERVER.principal.getInvoiceDetail.replace(':id', String(id));
+    const { data: res } = await apiClient.get<ApiResponse<InvoiceDetailDto>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
+  async runMonthly(payload?: RunMonthlyPayload): Promise<RunMonthlyResultDto> {
+    const { data: res } = await apiClient.post<ApiResponse<RunMonthlyResultDto>>(SERVER.billing.runMonthly, payload);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
+  async publishInvoices(billingMonth: string): Promise<PublishInvoicesResultDto> {
+    const { data: res } = await apiClient.patch<ApiResponse<PublishInvoicesResultDto>>(SERVER.billing.publishInvoices, {
+      billingMonth,
+    });
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
+  }
+
+  async publishInvoice(invoiceId: number): Promise<PublishInvoiceRawDto> {
+    const url = SERVER.billing.publishInvoice.replace(':invoiceId', String(invoiceId));
+    const { data: res } = await apiClient.patch<ApiResponse<{ invoice: PublishInvoiceRawDto }>>(url);
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data.invoice;
+  }
+
+  async publishSelectedInvoices(invoiceIds: number[]): Promise<PublishSelectedInvoicesResultDto> {
+    const { data: res } = await apiClient.patch<ApiResponse<PublishSelectedInvoicesResultDto>>(
+      SERVER.billing.publishSelectedInvoices,
+      { invoiceIds }
+    );
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data;
   }
 }
 
