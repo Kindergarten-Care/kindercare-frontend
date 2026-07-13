@@ -416,9 +416,6 @@ export const AttendanceView: React.FC = () => {
           <S.HeroSubtitle>Tiến độ điểm danh hôm nay</S.HeroSubtitle>
         </S.HeroLeft>
         <S.HeroRight>
-          <S.QrBtn onClick={() => setIsQrScannerOpen(true)} style={{ background: '#111827', color: '#fff', borderColor: '#111827' }}>
-            <ScanLine size={18} /> Quét mã QR
-          </S.QrBtn>
           <S.QrBtn onClick={() => setIsPhotoScannerOpen(true)} style={{ background: '#059669', color: '#fff', borderColor: '#059669' }}>
             <Camera size={18} /> Chụp ảnh điểm danh
           </S.QrBtn>
