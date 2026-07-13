@@ -25,6 +25,8 @@ import {
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
+const DOW_ENUM_BY_INDEX = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
 interface WeeklyMenuSectionProps {
   days: WeekDayData[];
   weekHasRealMenu: boolean;
@@ -46,11 +48,14 @@ export const WeeklyMenuSection: React.FC<WeeklyMenuSectionProps> = ({
     </SecHead>
     <WeekCols>
       {days.map((d, i) => {
-        const realGroups = (d.menu?.details ?? []).reduce<Record<string, MenuDetailDomainModel[]>>((acc, detail) => {
-          const key = getMealConfig(detail.mealType).label;
-          (acc[key] ??= []).push(detail);
-          return acc;
-        }, {});
+        const expectedDayOfWeek = DOW_ENUM_BY_INDEX[i];
+        const realGroups = (d.menu?.details ?? [])
+          .filter(detail => detail.dayOfWeek === expectedDayOfWeek)
+          .reduce<Record<string, MenuDetailDomainModel[]>>((acc, detail) => {
+            const key = getMealConfig(detail.mealType).label;
+            (acc[key] ??= []).push(detail);
+            return acc;
+          }, {});
 
         const groupEntries = weekHasRealMenu
           ? Object.entries(realGroups)

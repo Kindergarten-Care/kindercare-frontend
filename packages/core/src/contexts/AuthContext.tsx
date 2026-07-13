@@ -50,7 +50,7 @@ export interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginRequest, options?: { rememberMe?: boolean }) => Promise<void>;
+  login: (credentials: LoginRequest, options?: { rememberMe?: boolean; loginUrl?: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -81,9 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (credentials: LoginRequest, options?: { rememberMe?: boolean }) => {
+    async (credentials: LoginRequest, options?: { rememberMe?: boolean; loginUrl?: string }) => {
+      const url = options?.loginUrl || SERVER.auth.login;
       const { data: res } = await apiClient.post<ApiResponse<LoginData>>(
-        SERVER.auth.login,
+        url,
         credentials,
       );
 
