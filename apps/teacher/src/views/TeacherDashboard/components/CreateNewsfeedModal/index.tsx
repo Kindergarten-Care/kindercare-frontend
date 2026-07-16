@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import * as S from './styles';
-import { useCreateNewsfeed } from '@/hooks/useTeacherQueries';
-import { NewsfeedService } from '@/services/newsfeed';
+import { useCreateNewsfeed } from '@/hooks/queries';
+import { NewsfeedService } from '@/services/Newsfeed/NewsfeedService';
 
 interface CreateNewsfeedModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import { apiClient } from '@kindercare/core';
+import { apiClient, SERVER } from '@kindercare/core';
 import { LeaveRequest, LeaveRequestStatus } from '@/config/types/attendance';
 
 export function mapApiLeaveRequestToDomain(raw: any): LeaveRequest {
@@ -49,7 +49,7 @@ export class LeaveRequestService {
       params.status = upper === 'PENDING' ? 'Pending' : upper === 'APPROVED' ? 'Approved' : 'Rejected';
     }
 
-    const res = await apiClient.get('/teacher/leave-requests', { params });
+    const res = await apiClient.get(SERVER.teacher.getLeaveRequests, { params });
     const list = res.data?.data || [];
     return list.map(mapApiLeaveRequestToDomain);
   }
@@ -58,7 +58,8 @@ export class LeaveRequestService {
    * Fetch details for a specific leave request.
    */
   public static async getLeaveRequestDetail(requestId: string): Promise<LeaveRequest | null> {
-    const res = await apiClient.get(`/teacher/leave-requests/${requestId}`);
+    const url = SERVER.teacher.getLeaveRequestDetail.replace(':requestId', requestId);
+    const res = await apiClient.get(url);
     const data = res.data?.data;
     if (!data) return null;
     return mapApiLeaveRequestToDomain(data);

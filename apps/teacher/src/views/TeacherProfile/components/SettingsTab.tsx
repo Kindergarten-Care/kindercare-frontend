@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Mail, Bell, Calendar, KeyRound } from 'lucide-react';
-import { useTeacherSettings, useUpdateSettings } from '@/hooks/useTeacherQueries';
+import { useTeacherSettings, useUpdateSettings } from '@/hooks/queries';
 import { PasswordModal } from './PasswordModal';
 
 const SettingsList = styled.div`

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as S from './styles';
-import { useNewsfeeds, useDeleteNewsfeed } from '@/hooks/useTeacherQueries';
+import { useNewsfeeds, useDeleteNewsfeed } from '@/hooks/queries';
 
 interface ClassNewsfeedWidgetProps {
   classId: number | string | null;

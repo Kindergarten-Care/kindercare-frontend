@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import * as S from './styles';
-import { useClassSchedule, useClassMenu } from '@/hooks/useTeacherQueries';
+import { useClassSchedule, useClassMenu } from '@/hooks/queries';
 
 interface TimelineWidgetProps {
   classId?: number | null;

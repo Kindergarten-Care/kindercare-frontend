@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useTeacherWorkHistory } from '@/hooks/useTeacherQueries';
+import { useTeacherWorkHistory } from '@/hooks/queries';
 import { Award, Briefcase, GraduationCap, PlayCircle, Clock } from 'lucide-react';
 import { WorkHistoryDomainModel } from '@/config/types/profile';
 

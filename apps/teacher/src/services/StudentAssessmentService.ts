@@ -32,7 +32,7 @@ export class AssessmentService {
     classId: number | string,
     termPeriod: string
   ): Promise<AssessmentHistoryPoint[]> {
-    const url = `/teacher/classes/${classId}/assessments`;
+    const url = SERVER.teacher.getAssessments;
     const res = await apiClient.get<ApiResponse<{ students: any[] }>>(url, {
       params: { month: termPeriod },
     });
@@ -58,7 +58,7 @@ export class AssessmentService {
     }
 
     try {
-      const url = '/teacher/assessments';
+      const url = SERVER.teacher.getAssessments;
       for (const item of items) {
         const payload = {
           classId: Number(classId),
@@ -91,7 +91,7 @@ export class AssessmentService {
     studentId: number | string,
     monthsBack = 6
   ): Promise<AssessmentHistoryPoint[]> {
-    const url = `/teacher/assessments`;
+    const url = SERVER.teacher.getAssessments;
     try {
       const res = await apiClient.get<ApiResponse<{ assessments: any[] }>>(url, {
         params: { classId, studentId, monthsBack },

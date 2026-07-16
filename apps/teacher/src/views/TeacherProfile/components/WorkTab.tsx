@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
 
 const ClassGrid = styled.div`
   display: grid;

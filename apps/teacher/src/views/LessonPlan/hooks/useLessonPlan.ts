@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
 import {
   useLessonPlanDetail,
   useMyLessonPlans,

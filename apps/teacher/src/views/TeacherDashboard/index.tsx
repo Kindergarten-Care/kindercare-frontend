@@ -29,238 +29,45 @@ import { useRouter } from '@/i18n/routing';
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
 const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
 
-import { AttendanceService } from '@/services/attendance';
-import { LeaveRequestService } from '@/services/leave-requests';
-import { Student } from '@/config/types/attendance';
-import { fixImageUrl } from '@/utils/imageUrl';
+import { useTeacherDashboard } from './hooks/useTeacherDashboard';
 import { getStudentInitials } from '@/utils/string';
-
-import { 
-  useDashboardStats,
-  useNotifications,
-  useLeaveRequests,
-  useUpdateLeaveRequest,
-  useMonthlyGoodKids,
-  useMedicalRequests,
-  useUpdateMedicalRequest,
-  useProxyApprovals,
-  useUpdateProxyApproval,
-} from '@/hooks/useTeacherQueries';
-
-// Helper to calculate current week number
-const getWeekNumber = (d: Date) => {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
-};
+import { fixImageUrl } from '@/utils/imageUrl';
 
 export const TeacherDashboardView: React.FC = () => {
-  const router = useRouter();
-  const { data: dashboardData, isLoading: isLoadingDashboardQuery } = useDashboardStats();
-
-  const [activeClassId, setActiveClassId] = useState<number | null>(null);
-  const [activeClassName, setActiveClassName] = useState<string>('');
-  const [studentsList, setStudentsList] = useState<Student[]>([]);
-  const [presentCount, setPresentCount] = useState(0);
-  const [toasts, setToasts] = useState<{id: string, text: string}[]>([]);
-  const [confetti, setConfetti] = useState<any[]>([]);
-
-  // Modals
-  const [scannerOpen, setScannerOpen] = useState(false);
-  const [photoScannerOpen, setPhotoScannerOpen] = useState(false);
-  const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
-  const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
-  const [dashboardError, setDashboardError] = useState<string | null>(null);
-
-  // Deep Link Search Params
-  const searchParams = useSearchParams();
-  const openLeaveId = searchParams.get('openLeaveRequest');
-  const openMedId = searchParams.get('openMedRequest');
-  const openRequestList = searchParams.get('openRequestList');
-
-  // Modal States
-  const [selectedLeave, setSelectedLeave] = useState<any>(null);
-  const [selectedMedical, setSelectedMedical] = useState<any>(null);
-  const [selectedProxy, setSelectedProxy] = useState<any>(null);
-  const [selectedQuickKid, setSelectedQuickKid] = useState<TodayKid | null>(null);
-  const [isTimelineModalOpen, setTimelineModalOpen] = useState(false);
-  const [allFeaturesOpen, setAllFeaturesOpen] = useState(false);
-  const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'all' | null>(null);
-
-  // API Hooks integration
-  // Fetch ALL requests (not just pending) to show processed ones with faded style
-  const { data: allLeaveRequests = [] } = useLeaveRequests();
-  const { data: pendingLeaves = [] } = useLeaveRequests('Pending');
-  const updateLeaveReq = useUpdateLeaveRequest();
-  const { data: rawMedicalReqs = [] } = useMedicalRequests(activeClassId || undefined);
-  const updateMedicalReq = useUpdateMedicalRequest();
-  
-  const { data: rawProxyReqs = [] } = useProxyApprovals();
-  const updateProxyReq = useUpdateProxyApproval();
-
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
-  const currentWeek = getWeekNumber(now);
-  const termPeriod = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
-
-  // Hook vẫn giữ để tương thích ngược với các modal khác; không dùng trong dashboard chính.
-  const { data: rawMonthlyKids = [] } = useMonthlyGoodKids(currentYear, currentMonth);
-  void rawMonthlyKids;
-
-  const qrScannerRef = useRef<any>(null);
-
-  const getTodayDateString = () => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const loadDashboardData = async () => {
-    try {
-      setIsLoadingDashboard(true);
-      setDashboardError(null);
-      const classes = (dashboardData as any)?.classes || await AttendanceService.getTeacherClasses();
-      if (classes && classes.length > 0) {
-        const firstClass = classes[0];
-        setActiveClassId(firstClass.classId);
-        setActiveClassName(firstClass.className);
-        
-        const todayDate = getTodayDateString();
-        const students = await AttendanceService.getDailyAttendance(firstClass.classId, todayDate);
-        setStudentsList(students);
-
-        const present = students.filter(s => s.attendanceStatus === 'PRESENT' && !s.hasActiveLeaveRequest);
-        setPresentCount(present.length);
-      }
-    } catch (e: any) {
-      console.warn('Failed to load dashboard data:', e);
-      setDashboardError('Không thể tải dữ liệu lớp học. Vui lòng kiểm tra kết nối và thử lại.');
-    } finally {
-      setIsLoadingDashboard(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isLoadingDashboardQuery && dashboardData) {
-      loadDashboardData();
-    }
-  }, [isLoadingDashboardQuery, dashboardData]);
-
-
-
-  const addToast = (text: string) => {
-    const id = 'toast-' + Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, text }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3000);
-  };
-
-  const triggerConfetti = (centerX: number, centerY: number) => {
-    const colors = ['#10B981', '#34D399', '#FCD34D', '#F43F5E', '#93C5FD', '#C4B5FD'];
-    const newPieces: any[] = [];
-    for (let i = 0; i < 30; i++) {
-      const ang = Math.random() * Math.PI * 2;
-      const dist = 40 + Math.random() * 85;
-      newPieces.push({
-        id: 'confetti-' + Date.now() + '-' + i,
-        x: centerX,
-        y: centerY,
-        color: colors[i % colors.length],
-        dx: Math.cos(ang) * dist,
-        dy: Math.sin(ang) * dist - 30,
-        angle: Math.random() * 360
-      });
-    }
-    setConfetti(prev => [...prev, ...newPieces]);
-    setTimeout(() => {
-      const pieceIds = new Set(newPieces.map(p => p.id));
-      setConfetti(prev => prev.filter(p => !pieceIds.has(p.id)));
-    }, 1200);
-  };
-
-  // MOCK DATA FOR NEW WIDGETS
-  const handleApproveLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'APPROVED' as LeaveRequestStatus }, {
-      onSuccess: () => addToast('🎉 Đã duyệt đơn xin phép!'),
-      onError: () => addToast('❌ Lỗi khi duyệt đơn')
-    });
-  };
-
-  const handleRejectLeave = (reqId: string) => {
-    updateLeaveReq.mutate({ requestId: Number(reqId), status: 'REJECTED' as LeaveRequestStatus }, {
-      onSuccess: () => addToast('Đã từ chối đơn!'),
-      onError: () => addToast('❌ Lỗi khi từ chối đơn')
-    });
-  };
-
-  // Tự động mở Modal từ Deep Link (khi bấm vào Thông báo)
-  useEffect(() => {
-    const handleDeepLinks = async () => {
-      // Handle Leave Request
-      if (openLeaveId && !selectedLeave) {
-        let target = pendingLeaves.find((l: any) => String(l.id) === openLeaveId);
-        
-        // Nếu không có trong list pending (đã duyệt, hoặc chưa có request nào pending), fetch trực tiếp
-        if (!target) {
-          try {
-            target = (await LeaveRequestService.getLeaveRequestDetail(openLeaveId) as any) || undefined;
-          } catch (e) {
-            console.warn('Could not fetch leave request detail for deep link');
-          }
-        }
-        
-        if (target) {
-          const t: any = target;
-          setSelectedLeave({
-            id: String(t.id ?? t.requestId),
-            studentName: t.studentName,
-            parentName: t.parentName || 'Phụ huynh',
-            parentPhone: t.parentPhone || '0988 123 456',
-            reason: t.reason,
-            fromDate: t.fromDate,
-            toDate: t.toDate,
-            parentNotes: t.parentNotes,
-            attachmentUrl: t.attachmentUrl,
-            avatarUrl: t.studentAvatar || t.avatarUrl || t.avatar
-          });
-        }
-      }
-      
-      // Handle Medical Request
-      if (openMedId && !selectedMedical) {
-        // Có thể medical reqs chưa fetch xong
-        const target = rawMedicalReqs.find((m: any) => String(m.medRequestId || m.requestId || m.id) === openMedId);
-        if (target) {
-          const m: any = target;
-          setSelectedMedical({
-            id: String(m.medRequestId || m.requestId || m.id),
-            studentName: m.studentName,
-            medicineName: m.medicineName,
-            dosage: m.dosage,
-            timeToTake: m.timeToTake,
-            parentNotes: m.parentNotes,
-            imageUrl: m.attachmentUrl,
-            avatarUrl: m.studentAvatar || m.avatarUrl || m.avatar
-          });
-        }
-      }
-      
-      // Handle Request List
-      if (openRequestList && !requestListType) {
-        if (openRequestList === 'leave' || openRequestList === 'medical') {
-          setRequestListType(openRequestList);
-        }
-      }
-    };
-
-    handleDeepLinks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openLeaveId, openMedId, openRequestList, pendingLeaves.length, rawMedicalReqs.length]);
+  const {
+    router,
+    activeClassId,
+    activeClassName,
+    studentsList,
+    presentCount,
+    toasts,
+    confetti,
+    isLoadingDashboard,
+    dashboardError,
+    scannerOpen, setScannerOpen,
+    photoScannerOpen, setPhotoScannerOpen,
+    newsfeedModalOpen, setNewsfeedModalOpen,
+    isTimelineModalOpen, setTimelineModalOpen,
+    allFeaturesOpen, setAllFeaturesOpen,
+    requestListType, setRequestListType,
+    selectedLeave, setSelectedLeave,
+    selectedMedical, setSelectedMedical,
+    selectedProxy, setSelectedProxy,
+    selectedQuickKid, setSelectedQuickKid,
+    termPeriod,
+    todayDate,
+    allLeaveRequests,
+    rawMedicalReqs,
+    rawProxyReqs,
+    updateLeaveReq,
+    updateMedicalReq,
+    updateProxyReq,
+    addToast,
+    triggerConfetti,
+    handleApproveLeave,
+    handleRejectLeave,
+    loadDashboardData,
+  } = useTeacherDashboard();
 
   const cats = [
     { id: '1', label: 'Điểm danh', icon: '✓', iconBg: '#E6F3ED', iconColor: '#005A36', onClick: () => setScannerOpen(true) },
@@ -426,11 +233,6 @@ export const TeacherDashboardView: React.FC = () => {
    * Map studentsList (từ getDailyAttendance) → TodayKid cho widget "Tình trạng hôm nay".
    * Giáo viên click vào thẻ → mở modal KidQuickActionModal để sửa nhanh điểm danh.
    */
-  const todayDate = (() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  })();
-
   const todayKids: TodayKid[] = studentsList.map(s => {
     const initial = getStudentInitials(s.name || '');
     return {

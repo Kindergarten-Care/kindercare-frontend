@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useAuth } from '@/contexts/AuthContext';
 import { classService } from '@/services/class/ClassService';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import { fixImageUrl } from '@/utils/imageUrl';
 import { StudentAvatar } from '@/components/common/StudentAvatar';
 import {
