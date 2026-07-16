@@ -162,11 +162,9 @@ const FeatureName = styled.span`
  * Xóa: 'students' (Hồ sơ bé) theo yêu cầu anh.
  */
 const features = [
-  { id: 'qr',            name: 'Điểm danh QR',     icon: '✓',  bg: '#E6F3ED', color: '#005A36' },
   { id: 'attendance',    name: 'Điểm danh',        icon: '📋', bg: '#EEF2FF', color: '#4338CA' },
   { id: 'students',      name: 'Danh sách lớp',    icon: '👥', bg: '#DBEAFE', color: '#1D4ED8' },
   { id: 'schedule',      name: 'Thời khoá biểu',   icon: '📅', bg: '#F3E8FF', color: '#7E22CE' },
-  { id: 'lesson-plan',   name: 'Soạn giáo án',     icon: '📝', bg: '#ECFDF5', color: '#047857' },
   { id: 'activities',    name: 'Hoạt động',        icon: '🎨', bg: '#FCE7F3', color: '#BE185D' },
   { id: 'health',        name: 'Y tế & Sức khỏe',  icon: '💊', bg: '#FEE2E2', color: '#DC2626' },
   { id: 'leave',         name: 'Đơn xin nghỉ',     icon: '📬', bg: '#FEF9C3', color: '#854D0E' },

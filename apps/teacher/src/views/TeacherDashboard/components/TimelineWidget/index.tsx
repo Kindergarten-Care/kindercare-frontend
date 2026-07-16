@@ -17,8 +17,12 @@ interface TimelineItemParsed {
 }
 
 export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
-  const { data: scheduleData, isLoading: isLoadingSchedule } = useClassSchedule(classId || undefined);
-  const { data: menuData, isLoading: isLoadingMenu } = useClassMenu(classId || undefined);
+  // get today's timestamp in string
+  const todayDate = new Date();
+  const dateStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
+
+  const { data: scheduleData, isLoading: isLoadingSchedule } = useClassSchedule(classId || undefined, dateStr);
+  const { data: menuData, isLoading: isLoadingMenu } = useClassMenu(classId || undefined, dateStr);
 
   // Parse unix timestamp (seconds) or string to HH:mm string in UTC+7
   const formatTimeUTC7 = (val: any): string => {
@@ -60,8 +64,9 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
     const items: TimelineItemParsed[] = [];
     
     // Parse schedule items
-    if (scheduleData && Array.isArray(scheduleData)) {
-      scheduleData.forEach((s: any) => {
+    if (scheduleData) {
+      const schedules = Array.isArray(scheduleData) ? scheduleData : [scheduleData];
+      schedules.forEach((s: any) => {
         if (s.startTime) {
           items.push({
             time: formatTimeUTC7(s.startTime),
@@ -70,13 +75,36 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
             timestamp: getTimestamp(s.startTime),
             statusFromDb: s.status,
           });
+        } else if (s.items && Array.isArray(s.items)) {
+           s.items.forEach((item: any) => {
+             const timeParts = item.timeSlot ? item.timeSlot.split('-') : [];
+             const startTimeStr = timeParts.length > 0 ? timeParts[0].trim() : '08:00';
+             items.push({
+               time: startTimeStr,
+               title: item.activityName || item.subject,
+               sub: item.notes || item.description || 'Hoạt động theo lịch',
+               timestamp: getTimestamp(startTimeStr.replace(':', '')), // Mock timestamp based on time string
+               statusFromDb: item.completed ? 'COMPLETED' : 'PENDING'
+             });
+           });
+        } else if (s.timeSlot) {
+             const timeParts = s.timeSlot.split('-');
+             const startTimeStr = timeParts.length > 0 ? timeParts[0].trim() : '08:00';
+             items.push({
+               time: startTimeStr,
+               title: s.activityName || s.subject,
+               sub: s.notes || s.description || 'Hoạt động theo lịch',
+               timestamp: getTimestamp(startTimeStr.replace(':', '')),
+               statusFromDb: s.completed ? 'COMPLETED' : 'PENDING'
+             });
         }
       });
     }
 
     // Parse menu items
-    if (menuData && Array.isArray(menuData)) {
-      menuData.forEach((m: any) => {
+    if (menuData) {
+      const menus = Array.isArray(menuData) ? menuData : [menuData];
+      menus.forEach((m: any) => {
         if (m.mealTime) {
           items.push({
             time: formatTimeUTC7(m.mealTime),
@@ -84,6 +112,26 @@ export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
             sub: m.foodName,
             timestamp: getTimestamp(m.mealTime),
           });
+        } else if (m.items && Array.isArray(m.items)) {
+           m.items.forEach((item: any) => {
+             const type = item.mealType?.toLowerCase() || '';
+             const t = type.includes('breakfast') || type.includes('sáng') ? '08:30' : (type.includes('lunch') || type.includes('trưa') ? '11:15' : '14:30');
+             items.push({
+               time: t,
+               title: item.mealType === 'Breakfast' ? 'Ăn sáng' : item.mealType === 'Lunch' ? 'Ăn trưa' : item.mealType === 'Snack' ? 'Ăn xế' : 'Bữa ăn',
+               sub: Array.isArray(item.dishes) ? item.dishes.join(', ') : item.dishes,
+               timestamp: getTimestamp(t.replace(':', '')),
+             });
+           });
+        } else if (m.mealType && m.dishes) {
+             const type = m.mealType?.toLowerCase() || '';
+             const t = type.includes('breakfast') || type.includes('sáng') ? '08:30' : (type.includes('lunch') || type.includes('trưa') ? '11:15' : '14:30');
+             items.push({
+               time: t,
+               title: m.mealType === 'Breakfast' ? 'Ăn sáng' : m.mealType === 'Lunch' ? 'Ăn trưa' : m.mealType === 'Snack' ? 'Ăn xế' : 'Bữa ăn',
+               sub: Array.isArray(m.dishes) ? m.dishes.join(', ') : m.dishes,
+               timestamp: getTimestamp(t.replace(':', '')),
+             });
         }
       });
     }
