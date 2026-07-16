@@ -29,6 +29,8 @@ const IconWrapper = styled.div<{ $color: string; $bg: string }>`
 const InfoContent = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 `;
 
 const InfoLabel = styled.span`
@@ -42,6 +44,7 @@ const InfoValue = styled.span`
   color: #111827;
   font-weight: 600;
   margin-top: 2px;
+  word-break: break-all;
 `;
 
 export const ContactInfo: React.FC<any> = ({ user }) => {

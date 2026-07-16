@@ -8,6 +8,8 @@ import { studentService } from '@/services/student/StudentService';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getStudentInitials } from '@/utils/string';
+import { AttendanceService } from '@/services/attendance';
+import type { Student } from '@/config/types/attendance';
 
 type DrawerTab = 'profile' | 'attendance' | 'health' | 'parents';
 type FilterType = 'all' | 'present' | 'absent' | 'allergy';
@@ -42,6 +44,16 @@ export const StudentsListView: React.FC = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [todayMeds, setTodayMeds] = useState<any[]>([]);
   const [loadingMeds, setLoadingMeds] = useState(false);
+  const [dailyAttendance, setDailyAttendance] = useState<Student[]>([]);
+
+  useEffect(() => {
+    if (activeClassId) {
+      const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+      AttendanceService.getDailyAttendance(activeClassId, todayStr)
+        .then(setDailyAttendance)
+        .catch(console.error);
+    }
+  }, [activeClassId]);
 
   // Form fields for edit
   const [editNickname, setEditNickname] = useState('');
@@ -159,11 +171,13 @@ export const StudentsListView: React.FC = () => {
 
   const allStudents: StudentDetailedDomainModel[] = students?.students || [];
 
-  // Deterministic Helpers for attributes not supported by Backend API
+  // Status Helpers based on real attendance
   const getStudentStatus = (studentId: number): 'present' | 'late' | 'absent' => {
-    if (studentId % 6 === 0) return 'absent';
-    if (studentId % 5 === 0) return 'late';
-    return 'present';
+    const att = dailyAttendance.find(a => a.id === String(studentId));
+    if (!att) return 'absent';
+    if (att.attendanceStatus === 'PRESENT') return 'present';
+    if (att.attendanceStatus === 'PERMISSION_ABSENCE') return 'late'; // using late as excused for ui
+    return 'absent';
   };
 
   const getStudentMeds = (studentId: number) => {
