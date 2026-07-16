@@ -21,7 +21,8 @@ export class StudentMapper {
         occupation: p.occupation,
         address: p.address,
         relationship: p.relationship,
-        isPrimary: p.isPrimary === 1
+        isPrimary: p.isPrimary === 1,
+        avatarUrl: p.avatarUrl || null
       })) || []
     };
   }

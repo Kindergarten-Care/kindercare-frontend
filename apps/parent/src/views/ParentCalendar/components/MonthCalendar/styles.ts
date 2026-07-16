@@ -32,7 +32,8 @@ export const Weekday = styled.div<{ $weekend?: boolean }>`
   padding: 4px 0 10px;
 `;
 
-export const DayCell = styled.button<{ $inMonth?: boolean; $weekend?: boolean; $selected?: boolean; $today?: boolean }>`
+export const DayCell = styled.button<{ $inMonth?: boolean; $weekend?: boolean; $selected?: boolean; $today?: boolean; $holiday?: boolean }>`
+  position: relative;
   font: inherit;
   text-align: left;
   min-height: 96px;
@@ -44,8 +45,8 @@ export const DayCell = styled.button<{ $inMonth?: boolean; $weekend?: boolean; $
   gap: 4px;
   cursor: pointer;
   transition: all .15s;
-  border: 1px solid ${p => p.$selected ? '#005A36' : p.$today ? '#BBDAC8' : '#D9E2DC'};
-  background: ${p => p.$selected ? '#E6F3ED' : p.$today ? '#F4F8F5' : p.$weekend ? '#FAFBFA' : '#fff'};
+  border: 1px solid ${p => p.$selected ? '#005A36' : p.$holiday ? '#F3B584' : p.$today ? '#BBDAC8' : '#D9E2DC'};
+  background: ${p => p.$selected ? '#E6F3ED' : p.$holiday ? '#FFF7ED' : p.$today ? '#F4F8F5' : p.$weekend ? '#FAFBFA' : '#fff'};
   opacity: ${p => p.$inMonth ? 1 : .45};
 
   &:hover { border-color: #9ACAAE; background: #F4F8F5; }
@@ -64,6 +65,14 @@ export const DayNum = styled.span<{ $today?: boolean; $weekend?: boolean }>`
     padding: 4px 7px;
     margin: -2px 0 0 -2px;
   `}
+`;
+
+export const HolidayMark = styled.span`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: inline-flex;
+  color: #EA580C;
 `;
 
 export const EventPills = styled.div`

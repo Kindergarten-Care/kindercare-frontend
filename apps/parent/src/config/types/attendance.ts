@@ -11,12 +11,14 @@ export interface AttendanceApiDto {
   droppedOffBy: string | null;
   droppedOffRelationship: string | null;
   droppedOffAvatarUrl?: string | null;
+  dropoffImage?: string | null;
 
   // Pick-up
   pickedUpByParentId: number | null;
   pickedUpBy: string | null;
   pickedUpRelationship: string | null;
   pickedUpAvatarUrl?: string | null;
+  pickupImage?: string | null;
 
   // Audit
   checkedInByTeacherId: number | null;
@@ -37,12 +39,14 @@ export interface AttendanceDomainModel {
   droppedOffBy: string | null;
   droppedOffRelationship: string | null;
   droppedOffAvatarUrl?: string | null;
+  dropoffImage: string | null;
 
   // Pick-up
   pickedUpByParentId: number | null;
   pickedUpBy: string | null;
   pickedUpRelationship: string | null;
   pickedUpAvatarUrl?: string | null;
+  pickupImage: string | null;
 
   // Audit
   checkedInByTeacherId: number | null;

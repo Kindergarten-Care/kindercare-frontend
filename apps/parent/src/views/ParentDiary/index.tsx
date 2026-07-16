@@ -174,6 +174,7 @@ export function ParentDiary() {
                 studentAvatarUrl={activeStudent.avatarUrl}
                 diaryTitle={diaryStatus.title}
                 diaryDescription={diaryStatus.description}
+                onZoomImage={handleZoomImage}
               />
 
               <S.TwoCol>

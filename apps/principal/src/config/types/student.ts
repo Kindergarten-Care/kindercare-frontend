@@ -11,6 +11,42 @@ export interface UpdateStudentPayload {
   avatarUrl?: string | null;
 }
 
+export interface UploadStudentAvatarResultDto {
+  avatarUrl: string;
+}
+
+export interface EnrollStudentPayload {
+  student: {
+    fullName: string;
+    dateOfBirth: number;
+    gender: string;
+    admissionDate: number;
+    allergies?: string;
+    avatarUrl?: string;
+  };
+  parent: {
+    id: number | null;
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    occupation: string;
+    address: string;
+  };
+  isNewParent: boolean;
+  account: { username: string; password: string } | null;
+  packageId: number | null;
+}
+
+/** Response của POST /principal/students/enroll — KHÔNG có statusCode, khác ApiResponse<T> thông thường. */
+export interface EnrollStudentResult {
+  success: boolean;
+  data: {
+    studentId: number;
+    parentId: number;
+  };
+  message: string;
+}
+
 export interface StudentParentApiDto {
   parentId: number;
   fullName: string;
@@ -20,6 +56,7 @@ export interface StudentParentApiDto {
   address?: string;
   relationship: string;
   isPrimary: number;
+  avatarUrl?: string | null;
 }
 
 export interface StudentDetailApiDto {
@@ -46,6 +83,7 @@ export interface StudentParentDomainModel {
   address?: string;
   relationship: string;
   isPrimary: boolean;
+  avatarUrl: string | null;
 }
 
 export interface StudentDetailDomainModel {

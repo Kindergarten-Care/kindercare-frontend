@@ -1,5 +1,13 @@
 import { apiClient, ApiResponse, SERVER } from '@kindercare/core';
-import { StudentDetailApiDto, StudentDetailDomainModel, ImportStudentsResultDto, UpdateStudentPayload } from '@/config/types/student';
+import {
+  StudentDetailApiDto,
+  StudentDetailDomainModel,
+  ImportStudentsResultDto,
+  UpdateStudentPayload,
+  EnrollStudentPayload,
+  EnrollStudentResult,
+  UploadStudentAvatarResultDto,
+} from '@/config/types/student';
 import { StudentMapper } from './StudentMapper';
 
 class StudentService {
@@ -45,12 +53,30 @@ class StudentService {
     return res.data;
   }
 
-  async enrollStudent(data: any): Promise<any> {
-    const { data: res } = await apiClient.post<ApiResponse<any>>(SERVER.principal.enrollStudent, data);
+  async enrollStudent(payload: EnrollStudentPayload): Promise<EnrollStudentResult['data']> {
+    const { data: res } = await apiClient.post<EnrollStudentResult>(SERVER.principal.enrollStudent, payload);
     if (!res.success) {
       throw new Error(res.message);
     }
     return res.data;
+  }
+
+  async uploadAvatar(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const { data: res } = await apiClient.post<ApiResponse<UploadStudentAvatarResultDto>>(
+      SERVER.principal.uploadStudentAvatar,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res.data.avatarUrl;
   }
 
   async updateStudent(id: number | string, payload: UpdateStudentPayload): Promise<void> {

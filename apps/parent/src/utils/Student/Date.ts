@@ -20,9 +20,10 @@ export const tsToHHMM = (ts: bigint): string => {
 };
 
 /**
- * Returns the current month in "MM-YYYY" format for assessment API queries.
+ * Returns the current month in "YYYY-MM" format for assessment API queries,
+ * matching the AssessmentMonth column format returned by the backend.
  */
 export const currentMonthParam = (): string => {
   const d = new Date();
-  return `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };

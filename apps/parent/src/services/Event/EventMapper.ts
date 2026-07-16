@@ -1,4 +1,4 @@
-import { EventApiDto, EventDomainModel } from '@/config/types/event';
+import { EventApiDto, EventDomainModel, HolidayApiDto, HolidayDomainModel } from '@/config/types/event';
 
 export const mapEvent = (dto: EventApiDto): EventDomainModel => ({
   eventId: dto.eventId,
@@ -9,4 +9,10 @@ export const mapEvent = (dto: EventApiDto): EventDomainModel => ({
   location: dto.location,
   status: dto.status,
   eventType: dto.eventType,
+});
+
+export const mapHoliday = (dto: HolidayApiDto): HolidayDomainModel => ({
+  holidayId: dto.holidayId,
+  holidayDate: new Date(dto.holidayDate * 1000),
+  holidayName: dto.holidayName,
 });

@@ -9,7 +9,7 @@ import { HealthRecordDomainModel } from '@/config/types/health';
 import { getBmiStatus, formatTermPeriod } from '@/utils/Student/Health';
 
 const monthParam = (year: number, month: number): string =>
-  `${String(month + 1).padStart(2, '0')}-${year}`;
+  `${year}-${String(month + 1).padStart(2, '0')}`;
 
 // Converts a "YYYY-MM" / "YYYY-M" termPeriod into a comparable absolute month index.
 const termPeriodToIndex = (termPeriod: string): number => {

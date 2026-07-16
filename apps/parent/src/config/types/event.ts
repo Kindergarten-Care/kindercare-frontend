@@ -13,6 +13,13 @@ export interface EventApiDto {
   eventType: EventType;
 }
 
+export interface HolidayApiDto {
+  holidayId: number;
+  /** Unix seconds — a single day marker, not a range. */
+  holidayDate: number;
+  holidayName: string | null;
+}
+
 export interface DailyEventsResponseDto {
   date: string | null;
   startDate?: string | null;
@@ -20,6 +27,8 @@ export interface DailyEventsResponseDto {
   studentId: number;
   classId: number | null;
   events: EventApiDto[];
+  /** From the Holidays table (billing's source of truth) — independent from events of eventType='Holiday'. */
+  holidays: HolidayApiDto[];
 }
 
 export interface EventDomainModel {
@@ -31,4 +40,10 @@ export interface EventDomainModel {
   location: string | null;
   status: string;
   eventType: EventType;
+}
+
+export interface HolidayDomainModel {
+  holidayId: number;
+  holidayDate: Date;
+  holidayName: string | null;
 }
