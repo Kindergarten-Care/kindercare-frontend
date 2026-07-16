@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, AlertTriangle, Pill, Plus, Save, CheckCircle } from 'lucide-react';
 import * as S from './styles';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
-import { useDetailedStudents } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
+import { useDetailedStudents } from '@/hooks/queries';
 import {
   useCreateHealthLog,
   useClassMedicalRequests,

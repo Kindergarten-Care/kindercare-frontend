@@ -7,7 +7,7 @@ import type { AppDispatch } from '@/store';
 import { useRouter } from '@/i18n/routing';
 import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { useTeacherProfile } from '@/hooks/queries';
 import { initPushNotification, socketService } from '@kindercare/core';
 import { useSocketContext } from '@/contexts/SocketContext';
 

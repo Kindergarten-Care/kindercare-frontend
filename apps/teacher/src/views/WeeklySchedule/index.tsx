@@ -17,7 +17,7 @@ import {
 import { useWeeklySchedule, SCHOOL_DAYS } from './hooks/useWeeklySchedule';
 import { ItemModal } from './components/ItemModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
 import {
   ACTIVITY_TYPE_LABELS,
   ACTIVITY_TYPE_COLORS,

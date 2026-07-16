@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { X, Check, Clock, Calendar, Save, Loader2 } from 'lucide-react';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { QuickAttendanceStatus } from './TodayKidsWidget';
 import { getStudentInitials } from '@/utils/string';
 

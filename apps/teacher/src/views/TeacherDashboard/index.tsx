@@ -29,8 +29,8 @@ import { useRouter } from '@/i18n/routing';
 const CreateNewsfeedModal = dynamic(() => import('./components/CreateNewsfeedModal').then(mod => mod.CreateNewsfeedModal), { ssr: false });
 const ClassNewsfeedWidget = dynamic(() => import('./components/ClassNewsfeedWidget').then(mod => mod.ClassNewsfeedWidget), { ssr: false });
 
-import { AttendanceService } from '@/services/attendance';
-import { LeaveRequestService } from '@/services/leave-requests';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
+import { LeaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { Student } from '@/config/types/attendance';
 import { fixImageUrl } from '@/utils/imageUrl';
 import { getStudentInitials } from '@/utils/string';
@@ -45,7 +45,7 @@ import {
   useUpdateMedicalRequest,
   useProxyApprovals,
   useUpdateProxyApproval,
-} from '@/hooks/useTeacherQueries';
+} from '@/hooks/queries';
 
 // Helper to calculate current week number
 const getWeekNumber = (d: Date) => {

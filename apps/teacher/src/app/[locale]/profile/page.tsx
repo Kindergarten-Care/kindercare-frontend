@@ -4,7 +4,7 @@ import React from 'react';
 import { useAuth, AuthUser } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/layout/DashboardLayout';
 import { TeacherProfileView } from '@/views/TeacherProfile';
-import { useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { useTeacherProfile } from '@/hooks/queries';
 
 export default function TeacherProfilePage() {
   const { user, isLoading } = useAuth();

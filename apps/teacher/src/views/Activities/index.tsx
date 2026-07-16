@@ -14,7 +14,7 @@ import {
   MessageSquare,
   Camera
 } from 'lucide-react';
-import { ActivitiesService } from '@/services/activities';
+import { ActivitiesService } from '@/services/Activities/ActivitiesService';
 
 interface ToastItem {
   id: string;

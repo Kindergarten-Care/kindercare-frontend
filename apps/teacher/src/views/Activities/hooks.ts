@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, participationStatus, WeeklyScheduleResponse, WeeklyMenuResponse } from '@/config/types/activities';
-import { ActivitiesService } from '@/services/activities';
+import { ActivitiesService } from '@/services/Activities/ActivitiesService';
 import { classService } from '@/services/class/ClassService';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { TeacherClassDomainModel } from '@/config/types/class';
 
 export function useActivities() {

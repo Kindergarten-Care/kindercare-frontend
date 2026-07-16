@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
-import { useMedicalRequests } from '@/hooks/useTeacherQueries';
+import { useMedicalRequests } from '@/hooks/queries';
 
 interface MedItem {
   id: string;

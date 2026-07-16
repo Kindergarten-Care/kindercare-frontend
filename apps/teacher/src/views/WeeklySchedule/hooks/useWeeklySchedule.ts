@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
 import * as WeeklyScheduleService from '@/services/weeklySchedule/WeeklyScheduleService';
 import type {
   MonthlySchedule,

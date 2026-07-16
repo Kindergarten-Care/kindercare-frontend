@@ -4,7 +4,7 @@ import { apiClient, socketService, notificationService, type NotificationDto } f
 import { toast } from 'react-toastify';
 import { X, Calendar, FileText, Check, AlertCircle } from 'lucide-react';
 import styled, { keyframes } from 'styled-components';
-import { useTeacherProfile } from './useTeacherQueries';
+import { useTeacherProfile } from './queries';
 
 const modalFadeIn = keyframes`
   from { opacity: 0; transform: translateY(10px) scale(0.98); }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
-import { useDetailedStudents, useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useDetailedStudents, useTeacherClasses } from '@/hooks/queries';
 import { useAuth } from '@/contexts/AuthContext';
 import { StudentDetailedDomainModel } from '@/config/types/student';
 import type { TeacherClassDomainModel } from '@/config/types/class';
@@ -8,7 +8,7 @@ import { studentService } from '@/services/student/StudentService';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getStudentInitials } from '@/utils/string';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { Student } from '@/config/types/attendance';
 
 type DrawerTab = 'profile' | 'attendance' | 'health' | 'parents';

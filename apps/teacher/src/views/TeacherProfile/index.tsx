@@ -8,7 +8,7 @@ import { WorkTab } from './components/WorkTab';
 import { HistoryTab } from './components/HistoryTab';
 import { SettingsTab } from './components/SettingsTab';
 import { EditProfileModal } from './components/EditProfileModal';
-import { useUploadAvatar, useUpdateAvatar } from '@/hooks/useTeacherQueries';
+import { useUploadAvatar, useUpdateAvatar } from '@/hooks/queries';
 
 interface TeacherProfileViewProps {
   user: AuthUser;
