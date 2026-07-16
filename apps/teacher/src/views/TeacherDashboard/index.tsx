@@ -114,7 +114,7 @@ export const TeacherDashboardView: React.FC = () => {
         id: String(leave.requestId || leave.id),
         studentName: leave.studentName,
         parentName: leave.parentName || 'Phụ huynh',
-        parentPhone: leave.parentPhone || '0988 123 456',
+        parentPhone: leave.parentPhone || 'Chưa cập nhật',
         reason: leave.reason,
         fromDate: leave.fromDate,
         toDate: leave.toDate,

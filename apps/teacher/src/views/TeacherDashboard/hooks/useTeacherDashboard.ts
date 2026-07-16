@@ -167,7 +167,7 @@ export const useTeacherDashboard = () => {
             id: String(t.id ?? t.requestId),
             studentName: t.studentName,
             parentName: t.parentName || 'Phụ huynh',
-            parentPhone: t.parentPhone || '0988 123 456',
+            parentPhone: t.parentPhone || 'Chưa cập nhật',
             reason: t.reason,
             fromDate: t.fromDate,
             toDate: t.toDate,
