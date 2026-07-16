@@ -16,7 +16,7 @@ import {
 } from '@/config/types/activities';
 import { scheduleService } from '../schedule/ScheduleService';
 import { AttendanceService } from '../Attendance/AttendanceService';
-import { apiClient } from '@kindercare/core';
+import { apiClient, SERVER } from '@kindercare/core';
 
 export class ActivitiesService {
   /**
@@ -38,7 +38,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getMenu.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const raw = res.data?.data;
 
       const todayDetails = ActivitiesService.extractMenuDetailsForDate(raw, year, month, day);
@@ -106,7 +107,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/menu/weekly?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getWeeklyMenu.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const raw = res.data?.data;
 
       const flat = ActivitiesService.flattenMenuResponse(raw);
@@ -230,7 +232,7 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      await apiClient.put(`/teacher/classes/${classId}/menu`, {
+      await apiClient.put(SERVER.teacher.getMenu.replace(':classId', String(classId)), {
         date: dateSeconds,
         breakfastMenu: menu.breakfastMenu,
         lunchMenu: menu.lunchMenu,
@@ -321,7 +323,7 @@ export class ActivitiesService {
         };
       });
 
-      await apiClient.post('/teacher/attendance/meals', {
+      await apiClient.post(SERVER.teacher.postAttendanceMeals, {
         classId: Number(classId),
         date: dateSeconds,
         mealData
@@ -430,7 +432,7 @@ export class ActivitiesService {
         };
       });
 
-      await apiClient.post('/teacher/attendance/activities', {
+      await apiClient.post(SERVER.teacher.postAttendanceActivities, {
         classId: Number(classId),
         date: dateSeconds,
         activityData
@@ -456,7 +458,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/schedule/weekly?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getWeeklySchedule.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const payload = res.data?.data;
       if (!payload) return null;
 
@@ -564,7 +567,7 @@ export class ActivitiesService {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await apiClient.post('/teacher/upload', formData);
+      const response = await apiClient.post(SERVER.teacher.uploadPhoto, formData);
       return response.data?.data?.url || null;
     } catch (e) {
       console.error('Error uploading image:', e);

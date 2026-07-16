@@ -1,5 +1,5 @@
 import { Student, AttendanceStatus } from '@/config/types/attendance';
-import { apiClient } from '@kindercare/core';
+import { apiClient, SERVER } from '@kindercare/core';
 import { fixImageUrl } from '@/utils/imageUrl';
 import { AttendanceMapper } from './AttendanceMapper';
 
@@ -24,13 +24,13 @@ export function timeStrToTimestamp(dateStr: string, timeStr: string): number | n
 
 export class AttendanceService {
   public static async getTeacherClasses(): Promise<TeacherClass[]> {
-    const res = await apiClient.get('/teacher/classes');
+    const res = await apiClient.get(SERVER.teacher.getClasses);
     return res.data?.data || [];
   }
 
   public static async getDailyAttendance(classId: number | string, date: string): Promise<Student[]> {
     const dateTimestamp = getUtcTimestampInSeconds(date);
-    const res = await apiClient.get(`/teacher/classes/${classId}/students`, {
+    const res = await apiClient.get(SERVER.teacher.getStudents.replace(':classId', String(classId)), {
       params: { date: dateTimestamp }
     });
     return AttendanceMapper.toDomainList(res.data?.data || []);
@@ -39,7 +39,7 @@ export class AttendanceService {
   public static async getClassStudentsLite(
     classId: number | string
   ): Promise<Array<{ id: string | number; name: string; avatar?: string }>> {
-    const res = await apiClient.get(`/teacher/classes/${classId}/students`);
+    const res = await apiClient.get(SERVER.teacher.getStudents.replace(':classId', String(classId)));
     const list = res.data?.data || [];
     const arr = Array.isArray(list) ? list : (list?.students || list?.data || []);
     return (Array.isArray(arr) ? arr : []).map((s: any) => ({
@@ -72,7 +72,7 @@ export class AttendanceService {
       };
     });
 
-    await apiClient.post('/teacher/attendance/quick', {
+    await apiClient.post(SERVER.teacher.postAttendanceQuick, {
       classId: Number(classId),
       date: dateTimestamp,
       attendanceData,
@@ -91,7 +91,7 @@ export class AttendanceService {
       eatingStatus: m.eatingStatus,
     }));
 
-    await apiClient.post('/teacher/attendance/meals', {
+    await apiClient.post(SERVER.teacher.postAttendanceMeals, {
       classId: Number(classId),
       date: dateTimestamp,
       mealData: data,
@@ -112,7 +112,7 @@ export class AttendanceService {
       teacherNote: a.teacherNote,
     }));
 
-    await apiClient.post('/teacher/attendance/activities', {
+    await apiClient.post(SERVER.teacher.postAttendanceActivities, {
       classId: Number(classId),
       date: dateTimestamp,
       activityData: data,
@@ -121,7 +121,7 @@ export class AttendanceService {
   }
 
   public static async scanQRAttendance(qrToken: string, classId: number | string): Promise<boolean> {
-    await apiClient.post('/teacher/attendance/scan', {
+    await apiClient.post(SERVER.teacher.scanAttendance, {
       qrToken,
       classId: Number(classId)
     });
@@ -129,7 +129,7 @@ export class AttendanceService {
   }
 
   public static async uploadPhotoAttendance(formData: FormData): Promise<any> {
-    const res = await apiClient.post('/teacher/attendance/upload-photo', formData, {
+    const res = await apiClient.post(SERVER.teacher.uploadAttendancePhoto, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
