@@ -547,35 +547,7 @@ export const ActivitiesView: React.FC = () => {
             </div>
           </S.SectionCard>
 
-          {/* SECTION B: LESSON LOG */}
-          <S.SectionCard style={{ padding: '18px 22px' }}>
-            <S.LessonHeaderRow>
-              <span style={{ fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>Bài học hôm nay</span>
-              <span style={{ fontSize: '12px', color: '#9ca3af' }}>· Nhật ký giảng dạy</span>
-            </S.LessonHeaderRow>
-            <S.LessonGrid>
-              <S.LessonCard $bg="#FFFBEB" $borderColor="#FEF3C7">
-                <S.LessonWatermark $color="#FDE68A"><BookOpen size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#D97706">TOÁN HỌC</S.LessonSubject>
-                <S.LessonTitle>Đếm số 1 đến 10</S.LessonTitle>
-                <S.LessonNote>Các bé rất hào hứng nhận biết các chữ số qua thẻ màu.</S.LessonNote>
-              </S.LessonCard>
 
-              <S.LessonCard $bg="#EFF6FF" $borderColor="#DBEAFE">
-                <S.LessonWatermark $color="#BFDBFE"><Sun size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#2563EB">NGÔN NGỮ</S.LessonSubject>
-                <S.LessonTitle>Kể chuyện Thỏ & Rùa</S.LessonTitle>
-                <S.LessonNote>Lớp chia nhóm đóng kịch truyện cổ tích, bé ngoan.</S.LessonNote>
-              </S.LessonCard>
-
-              <S.LessonCard $bg="#ECFDF5" $borderColor="#D1FAE5">
-                <S.LessonWatermark $color="#A7F3D0"><Users size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#059669">THỂ CHẤT</S.LessonSubject>
-                <S.LessonTitle>Tập dân vũ</S.LessonTitle>
-                <S.LessonNote>Khởi động ngoài trời, rèn luyện sự dẻo dai.</S.LessonNote>
-              </S.LessonCard>
-            </S.LessonGrid>
-          </S.SectionCard>
         </S.RightCol>
       </S.SplitContainer>
 

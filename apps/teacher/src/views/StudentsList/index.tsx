@@ -56,9 +56,6 @@ export const StudentsListView: React.FC = () => {
   }, [activeClassId]);
 
   // Form fields for edit
-  const [editNickname, setEditNickname] = useState('');
-  const [editTeam, setEditTeam] = useState('');
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [permissionModalOpen, setPermissionModalOpen] = useState(false);
 
   const [historyMonth, setHistoryMonth] = useState(() => {
@@ -92,30 +89,9 @@ export const StudentsListView: React.FC = () => {
     }
   };
 
-  const handleSaveStudentInfo = async () => {
-    if (!selectedStudent) return;
-    try {
-      setIsSavingProfile(true);
-      const updated = await studentService.updateStudentNicknameAndTeam(selectedStudent.studentId, {
-        nickname: editNickname.trim() || null,
-        team: editTeam.trim() || null
-      });
-
-      setSelectedStudent(prev => prev ? { ...prev, nickname: updated.nickname, team: updated.team } : null);
-      queryClient.invalidateQueries({ queryKey: ['detailed-students', activeClassId] });
-      addToast('Đã cập nhật biệt danh và tổ học sinh!');
-    } catch (e) {
-      console.error(e);
-      addToast('Cập nhật thất bại');
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
 
   useEffect(() => {
     if (selectedStudent) {
-      setEditNickname(selectedStudent.nickname || '');
-      setEditTeam(selectedStudent.team || '');
       loadAttendanceHistory(selectedStudent.studentId, historyMonth);
       loadTodayMeds(selectedStudent.studentId);
     }
@@ -655,7 +631,7 @@ export const StudentsListView: React.FC = () => {
                     {selectedStudent.fullName}
                   </div>
                   <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '2px' }}>
-                    Biệt danh: {selectedStudent.nickname || 'Chưa có'} · HS{selectedStudent.studentId.toString().padStart(4, '0')}
+                    HS{selectedStudent.studentId.toString().padStart(4, '0')}
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginTop: '9px', flexWrap: 'wrap' }}>
                     <S.StatusTag $type={getStudentStatus(selectedStudent.studentId)}>
@@ -733,11 +709,7 @@ export const StudentsListView: React.FC = () => {
                       <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2937' }}>HS{selectedStudent.studentId.toString().padStart(4, '0')}</span>
                     </S.InfoRow>
 
-                    <S.InfoRow>
-                      <span style={{ flex: 'none', width: '32px', height: '32px', borderRadius: '10px', background: '#E6F3ED', color: '#005A36', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>🐾</span>
-                      <span style={{ flex: 1, fontSize: '12px', color: '#9CA3AF', fontWeight: 500 }}>Tổ</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#1F2937' }}>{selectedStudent.team || 'Chưa phân tổ'}</span>
-                    </S.InfoRow>
+
 
                     <S.InfoRow>
                       <span style={{ flex: 'none', width: '32px', height: '32px', borderRadius: '10px', background: '#E6F3ED', color: '#005A36', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>📅</span>
@@ -746,51 +718,7 @@ export const StudentsListView: React.FC = () => {
                     </S.InfoRow>
                   </div>
 
-                  <div style={{ marginTop: '20px', borderTop: '1px solid #EEF4F0', paddingTop: '15px' }}>
-                    <div className="display" style={{ fontWeight: 700, fontSize: '14px', marginBottom: '10px' }}>Chỉnh sửa thông tin nhanh</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div>
-                        <label style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Biệt danh</label>
-                        <input 
-                          value={editNickname}
-                          onChange={e => setEditNickname(e.target.value)}
-                          placeholder="Ví dụ: Bin, Sóc..."
-                          maxLength={50}
-                          style={{ width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px', border: '1.5px solid #E6EEE9', outline: 'none', fontSize: '13px' }}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Tổ / Nhóm</label>
-                        <input 
-                          value={editTeam}
-                          onChange={e => setEditTeam(e.target.value)}
-                          placeholder="Ví dụ: Tổ Gấu Nâu, Tổ Thỏ Trắng..."
-                          maxLength={50}
-                          style={{ width: '100%', height: '36px', padding: '0 10px', borderRadius: '8px', border: '1.5px solid #E6EEE9', outline: 'none', fontSize: '13px' }}
-                        />
-                      </div>
-                      <button
-                        onClick={handleSaveStudentInfo}
-                        disabled={isSavingProfile}
-                        style={{
-                          height: '38px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: '#005A36',
-                          color: '#fff',
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          marginTop: '5px',
-                          transition: 'opacity 0.2s'
-                        }}
-                        onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                      >
-                        {isSavingProfile ? 'Đang lưu...' : 'Lưu thay đổi'}
-                      </button>
-                    </div>
-                  </div>
+
                 </S.FadeInContent>
               )}
 

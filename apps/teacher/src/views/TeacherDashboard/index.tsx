@@ -376,7 +376,14 @@ export const TeacherDashboardView: React.FC = () => {
         isOpen={!!selectedMedical}
         data={selectedMedical}
         onClose={() => setSelectedMedical(null)}
-        onMarkDone={(id) => { addToast('✅ Đã cho uống thuốc thành công!'); setSelectedMedical(null); }}
+        onMarkDone={(id, note) => { 
+          updateMedicalReq.mutate({ requestId: Number(id), status: 'Completed', teacherNote: note }, {
+            onSuccess: () => {
+              addToast('✅ Đã cho uống thuốc thành công!');
+              setSelectedMedical(null);
+            }
+          });
+        }}
       />
 
       <ProxyDetailModal
