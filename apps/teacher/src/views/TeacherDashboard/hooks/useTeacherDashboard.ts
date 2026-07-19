@@ -167,7 +167,7 @@ export const useTeacherDashboard = () => {
             id: String(t.id ?? t.requestId),
             studentName: t.studentName,
             parentName: t.parentName || 'Phụ huynh',
-            parentPhone: t.parentPhone || '0988 123 456',
+            parentPhone: t.parentPhone || 'Chưa cập nhật',
             reason: t.reason,
             fromDate: t.fromDate,
             toDate: t.toDate,
@@ -185,11 +185,11 @@ export const useTeacherDashboard = () => {
           setSelectedMedical({
             id: String(m.medRequestId || m.requestId || m.id),
             studentName: m.studentName,
-            medicineName: m.medicineName,
+            medicineName: m.medicineDetails || m.medicineName,
             dosage: m.dosage,
             timeToTake: m.timeToTake,
-            parentNotes: m.parentNotes,
-            imageUrl: m.attachmentUrl,
+            parentNotes: m.parentNote || m.parentNotes,
+            imageUrl: m.medicineImageUrl || m.attachmentUrl || m.imageUrl,
             avatarUrl: m.studentAvatar || m.avatarUrl || m.avatar
           });
         }
