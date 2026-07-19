@@ -25,5 +25,5 @@ export const tsToHHMM = (ts: bigint): string => {
  */
 export const currentMonthParam = (): string => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
 };

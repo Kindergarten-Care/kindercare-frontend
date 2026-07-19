@@ -16,6 +16,10 @@ export interface DatePickerProps {
   maxDate?: Date;
   /** Disallow navigating/selecting dates before this date, if provided */
   minDate?: Date;
+  /** Function to disable specific dates */
+  disableDate?: (date: Date) => boolean;
+  /** Alignment of the popover panel. Defaults to 'right' */
+  alignPanel?: 'left' | 'right';
   showTodayShortcut?: boolean;
   showClearShortcut?: boolean;
   onClear?: () => void;
@@ -42,10 +46,10 @@ const panelFade = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-const Panel = styled.div`
+const Panel = styled.div<{ $alignPanel?: 'left' | 'right' }>`
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  ${p => (p.$alignPanel === 'left' ? 'left: 0;' : 'right: 0;')}
   z-index: 80;
   width: 296px;
   background: ${({ theme }) => theme.colors.surface};
@@ -197,6 +201,8 @@ export function DatePicker({
   ariaLabel = 'Chọn ngày',
   maxDate,
   minDate,
+  disableDate,
+  alignPanel = 'right',
   showTodayShortcut = true,
   showClearShortcut = false,
   onClear,
@@ -240,6 +246,7 @@ export function DatePicker({
   const isDateDisabled = (d: Date): boolean => {
     if (maxDate && startOfDay(d) > startOfDay(maxDate)) return true;
     if (minDate && startOfDay(d) < startOfDay(minDate)) return true;
+    if (disableDate && disableDate(d)) return true;
     return false;
   };
 
@@ -291,7 +298,7 @@ export function DatePicker({
       {children({ onClick: () => !disabled && setOpen(o => !o), open })}
 
       {open && (
-        <Panel role="dialog" aria-label={ariaLabel} id={panelId}>
+        <Panel role="dialog" aria-label={ariaLabel} id={panelId} $alignPanel={alignPanel}>
           <PanelHead>
             <ArrowBtn type="button" onClick={goPrevMonth} aria-label="Tháng trước">
               <ChevronLeftGlyph />
