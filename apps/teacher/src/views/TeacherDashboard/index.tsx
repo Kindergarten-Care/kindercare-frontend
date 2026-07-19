@@ -138,7 +138,7 @@ export const TeacherDashboardView: React.FC = () => {
       color: isDone ? '#F3F4F6' : '#FCE7F3', 
       tag: 'Y tế',
       tagStyle: { color: isDone ? '#9CA3AF' : '#DC2626', background: isDone ? '#E5E7EB' : '#FEE2E2', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' },
-      sub: `${med.medicineName || 'Thuốc'} - ${med.dosage || 'Liều'}`,
+      sub: `${med.medicineDetails || med.medicineName || 'Thuốc'} - ${med.dosage || 'Liều'}`,
       btn: isDone ? 'Đã cho uống' : (updateMedicalReq.isPending && String(updateMedicalReq.variables?.requestId) === String(med.requestId || med.id) ? 'Đang lưu...' : 'Xác nhận uống'),
       btnColor: isDone ? '#9CA3AF' : '#DC2626',
       btnBorder: isDone ? '#D1D5DB' : '#FCA5A5',
@@ -152,11 +152,11 @@ export const TeacherDashboardView: React.FC = () => {
       onRowClick: () => setSelectedMedical({
         id: String(med.requestId || med.id),
         studentName: med.studentName,
-        medicineName: med.medicineName,
+        medicineName: med.medicineDetails || med.medicineName,
         dosage: med.dosage,
         timeToTake: med.timeToTake,
-        parentNotes: med.parentNotes,
-        imageUrl: med.attachmentUrl,
+        parentNotes: med.parentNote || med.parentNotes,
+        imageUrl: med.medicineImageUrl || med.attachmentUrl || med.imageUrl,
         avatarUrl: med.studentAvatar || med.avatarUrl || med.avatar || student?.avatar
       }),
       rowStyle: isDone ? { opacity: 0.55, filter: 'grayscale(80%)' } : undefined,
