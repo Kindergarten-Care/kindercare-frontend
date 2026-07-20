@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
 import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download, Camera } from 'lucide-react';
 import * as S from './styles';
-import { AttendanceService } from '../../services/attendance';
-import { LeaveRequestService } from '../../services/leave-requests';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
+import { LeaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { QrScannerModal } from '../../components/QrScannerModal';
 import { PhotoAttendanceModal } from '../../components/PhotoAttendance/PhotoAttendanceModal';
 import { Student, LeaveRequest } from '../../config/types/attendance';
@@ -331,11 +331,7 @@ export const AttendanceView: React.FC = () => {
   // Filters & sorts
   const filteredByStatus = students.filter(s => {
     if (statusFilter === 'all') return true;
-    if (statusFilter === 'present') return s.attendanceStatus === 'PRESENT';
-    if (statusFilter === 'excused') return s.attendanceStatus === 'PERMISSION_ABSENCE';
-    if (statusFilter === 'unexcused') return s.attendanceStatus === 'UNEXCUSED_ABSENCE';
-    if (statusFilter === 'absent') return s.attendanceStatus === 'NOT_YET' || !s.attendanceStatus;
-    return true;
+    return getStatusKey(s) === statusFilter;
   });
 
   const filteredAndSearched = filteredByStatus.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
@@ -462,13 +458,13 @@ export const AttendanceView: React.FC = () => {
           </S.KpiMeta>
         </S.KpiCard>
 
-        <S.KpiCard $borderColor="#FCA5A5" style={{ background: '#FEF2F2' }}>
+        <S.KpiCard>
           <S.KpiIconBlock $bg="#FEE2E2" $color="#DC2626">
-             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"></path></svg>
           </S.KpiIconBlock>
           <S.KpiMeta>
-            <S.KpiLabel>Vắng không phép</S.KpiLabel>
-            <S.KpiValue $color="#DC2626">{cUnexcused}</S.KpiValue>
+            <S.KpiLabel>Vắng</S.KpiLabel>
+            <S.KpiValue>{cUnexcused}</S.KpiValue>
           </S.KpiMeta>
         </S.KpiCard>
       </S.KpiGrid>

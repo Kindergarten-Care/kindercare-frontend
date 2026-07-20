@@ -32,12 +32,12 @@ export class AssessmentService {
     classId: number | string,
     termPeriod: string
   ): Promise<AssessmentHistoryPoint[]> {
-    const url = SERVER.teacher.getClassAssessments.replace(':classId', String(classId));
-    const res = await apiClient.get<ApiResponse<{ assessments: any[] }>>(url, {
-      params: { termPeriod },
+    const url = SERVER.teacher.getAssessments;
+    const res = await apiClient.get<ApiResponse<{ students: any[] }>>(url, {
+      params: { month: termPeriod },
     });
     const raw =
-      res.data?.data?.assessments ?? (res.data?.data as any) ?? [];
+      res.data?.data?.students ?? (res.data?.data as any) ?? [];
     const arr = Array.isArray(raw) ? raw : [];
     return arr.map(AssessmentService.normalize);
   }
@@ -58,8 +58,21 @@ export class AssessmentService {
     }
 
     try {
-      const url = SERVER.teacher.upsertClassAssessments.replace(':classId', String(classId));
-      await apiClient.put<ApiResponse<unknown>>(url, valid.data);
+      const url = SERVER.teacher.getAssessments;
+      for (const item of items) {
+        const payload = {
+          classId: Number(classId),
+          studentId: Number(item.studentId),
+          month: termPeriod,
+          physicalScore: item.physicalScore,
+          cognitiveScore: item.cognitiveScore,
+          languageScore: item.languageScore,
+          emotionalScore: typeof item.emotionalScore === 'number' ? item.emotionalScore : item.socioEmotionalScore,
+          aestheticScore: item.aestheticScore,
+          notes: item.overallNote || item.teacherComment
+        };
+        await apiClient.post<ApiResponse<unknown>>(url, payload);
+      }
       return { ok: true };
     } catch (e: any) {
       const msg =
@@ -78,12 +91,12 @@ export class AssessmentService {
     studentId: number | string,
     monthsBack = 6
   ): Promise<AssessmentHistoryPoint[]> {
-    const url = SERVER.teacher.getStudentAssessmentHistory.replace(':classId', String(classId));
+    const url = SERVER.teacher.getAssessments;
     try {
-      const res = await apiClient.get<ApiResponse<{ history: any[] }>>(url, {
-        params: { studentId, monthsBack },
+      const res = await apiClient.get<ApiResponse<{ assessments: any[] }>>(url, {
+        params: { classId, studentId, monthsBack },
       });
-      const raw = res.data?.data?.history ?? (res.data?.data as any) ?? [];
+      const raw = res.data?.data?.assessments ?? (res.data?.data as any) ?? [];
       const arr = Array.isArray(raw) ? raw : [];
       return arr.map(AssessmentService.normalize);
     } catch (e) {
@@ -125,10 +138,9 @@ export class AssessmentService {
       physicalScore: num(raw?.physicalScore ?? raw?.PhysicalScore),
       cognitiveScore: num(raw?.cognitiveScore ?? raw?.CognitiveScore),
       languageScore: num(raw?.languageScore ?? raw?.LanguageScore),
-      emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore),
+      emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore ?? raw?.socioEmotionalScore),
       socialScore: num(raw?.socialScore ?? raw?.SocialScore),
       aestheticScore: num(raw?.aestheticScore ?? raw?.AestheticScore),
-      lifeSkillScore: num(raw?.lifeSkillScore ?? raw?.LifeSkillScore),
       overallNote: typeof note === 'string' ? note : undefined,
       createdAt: num(raw?.createdAt ?? raw?.CreatedAt, 0),
       updatedAt: num(raw?.updatedAt ?? raw?.UpdatedAt, 0),

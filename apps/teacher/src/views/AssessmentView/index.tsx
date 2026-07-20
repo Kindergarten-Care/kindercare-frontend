@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useAuth } from '@/contexts/AuthContext';
 import { classService } from '@/services/class/ClassService';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import { fixImageUrl } from '@/utils/imageUrl';
 import { StudentAvatar } from '@/components/common/StudentAvatar';
 import {
@@ -110,11 +110,34 @@ const StudentItem = styled.button<{ $active?: boolean; $accent?: string }>`
   font-weight: ${p => (p.$active ? 700 : 500)};
   color: ${props => props.theme.colors.fg || props.theme.colors.text};
   transition: background 0.15s ease, transform 0.15s ease;
+  position: relative;
 
   &:hover {
     background: ${p => (p.$active ? `${p.theme.colors.primary}22` : '#F1F5F9')};
     transform: translateX(2px);
   }
+`;
+
+const Badge = styled.span`
+  background: #DCFCE7;
+  color: #166534;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 8px;
+  margin-left: auto;
+`;
+
+const FilterBtn = styled.button<{ $active?: boolean }>`
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid ${p => p.$active ? p.theme.colors.primary || '#005A36' : '#E2E8F0'};
+  background: ${p => p.$active ? `${p.theme.colors.primary || '#005A36'}15` : '#F8FAFC'};
+  color: ${p => p.$active ? p.theme.colors.primary || '#005A36' : '#64748B'};
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
 `;
 
 const Main = styled.main`
@@ -197,6 +220,7 @@ export const AssessmentView: React.FC = () => {
 
   const [monthRecords, setMonthRecords] = useState<AssessmentHistoryPoint[]>([]);
   const [history, setHistory] = useState<AssessmentHistoryPoint[]>([]);
+  const [filterType, setFilterType] = useState<'all' | 'assessed' | 'not_assessed'>('all');
 
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [loadingMonth, setLoadingMonth] = useState(false);
@@ -380,7 +404,6 @@ export const AssessmentView: React.FC = () => {
       currentRecord?.socialScore,
     ),
     aestheticScore: currentRecord?.aestheticScore || 0,
-    lifeSkillScore: currentRecord?.lifeSkillScore || 0,
   }), [currentRecord]);
 
   /**
@@ -403,7 +426,6 @@ export const AssessmentView: React.FC = () => {
           previousRecord.socialScore,
         ),
         aestheticScore: previousRecord.aestheticScore || 0,
-        lifeSkillScore: previousRecord.lifeSkillScore || 0,
       },
     };
   }, [previousRecord]);
@@ -435,7 +457,6 @@ export const AssessmentView: React.FC = () => {
       cognitiveScore: item.cognitiveScore,
       languageScore: item.languageScore,
       aestheticScore: item.aestheticScore,
-      lifeSkillScore: item.lifeSkillScore,
       ...(typeof socE === 'number' ? { emotionalScore: socE } : {}),
       ...(typeof socS === 'number' ? { socialScore: socS } : {}),
       ...(item.overallNote ? { overallNote: item.overallNote } : {}),
@@ -470,7 +491,6 @@ export const AssessmentView: React.FC = () => {
           cognitiveScore: item.cognitiveScore,
           languageScore: item.languageScore,
           aestheticScore: item.aestheticScore || 0,
-          lifeSkillScore: item.lifeSkillScore || 0,
           emotionalScore: typeof socE === 'number' ? socE : 0,
           socialScore: typeof socS === 'number' ? socS : 0,
           overallNote: item.overallNote || item.teacherComment,
@@ -509,10 +529,19 @@ export const AssessmentView: React.FC = () => {
         </EmptyState>
       );
     }
+    
+    const filteredStudents = students.filter(s => {
+      const isAssessed = monthRecords.some(r => String(r.studentId) === String(s.id));
+      if (filterType === 'assessed') return isAssessed;
+      if (filterType === 'not_assessed') return !isAssessed;
+      return true;
+    });
+
     return (
       <StudentList>
-        {students.map(s => {
+        {filteredStudents.map(s => {
           const active = String(s.id) === String(selectedId);
+          const isAssessed = monthRecords.some(r => String(r.studentId) === String(s.id));
           return (
             <StudentItem
               key={String(s.id)}
@@ -525,9 +554,13 @@ export const AssessmentView: React.FC = () => {
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {s.name}
               </span>
+              {isAssessed && <Badge>Đã ĐG</Badge>}
             </StudentItem>
           );
         })}
+        {filteredStudents.length === 0 && (
+          <EmptyState>Không có học sinh nào phù hợp bộ lọc.</EmptyState>
+        )}
       </StudentList>
     );
   };
@@ -545,7 +578,14 @@ export const AssessmentView: React.FC = () => {
 
       <Layout>
         <Sidebar>
-          <SidebarTitle>Danh sách lớp</SidebarTitle>
+          <SidebarTitle>
+            Danh sách lớp ({monthRecords.length}/{students.length} bé đã ĐG)
+          </SidebarTitle>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8, marginTop: -4 }}>
+            <FilterBtn $active={filterType === 'all'} onClick={() => setFilterType('all')}>Tất cả</FilterBtn>
+            <FilterBtn $active={filterType === 'assessed'} onClick={() => setFilterType('assessed')}>Đã ĐG</FilterBtn>
+            <FilterBtn $active={filterType === 'not_assessed'} onClick={() => setFilterType('not_assessed')}>Chưa ĐG</FilterBtn>
+          </div>
           {renderStudentList()}
           <div>
             <SidebarTitle as="label" htmlFor="term-select" style={{ display: 'block', marginBottom: 6 }}>
@@ -567,7 +607,7 @@ export const AssessmentView: React.FC = () => {
         <Main>
             <ChartCard>
             <ChartHeader>
-              <ChartTitle><Activity size={18} color={theme.colors?.primary || '#046E1E'} /> Biểu đồ Radar 6 tiêu chí</ChartTitle>
+              <ChartTitle><Activity size={18} color={theme.colors?.primary || '#046E1E'} /> Biểu đồ Radar 5 tiêu chí</ChartTitle>
             </ChartHeader>
             {loadingMonth ? (
               <Spinner><Activity size={14} /> Đang tải đánh giá…</Spinner>
@@ -599,14 +639,13 @@ export const AssessmentView: React.FC = () => {
                     ),
                     /** DB chưa có cột → undefined, form sẽ dùng default 3. */
                     aestheticScore: currentRecord.aestheticScore,
-                    lifeSkillScore: currentRecord.lifeSkillScore,
                     /** Tương thích ngược: form/validation cũ dùng `teacherComment`. */
                     teacherComment: currentRecord.overallNote,
                   }
                 : undefined
               }
               onSubmit={handleSave}
-              disabled={loadingMonth || submitting}
+              disabled={loadingMonth || submitting || !!currentRecord}
             />
           ) : (
             <EmptyState>Chọn học sinh để bắt đầu đánh giá.</EmptyState>

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeacherClasses, useTeacherProfile } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses, useTeacherProfile } from '@/hooks/queries';
 import { useProxyAuthorizations } from '@/hooks/useProxyAuthorizationQueries';
 import type { TeacherClassDomainModel } from '@/config/types/class';
 

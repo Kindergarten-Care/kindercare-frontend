@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import styled from 'styled-components';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import { Student } from '@/config/types/attendance';
 
 const Overlay = styled.div`

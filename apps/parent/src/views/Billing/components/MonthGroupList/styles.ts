@@ -29,12 +29,6 @@ export const InvoiceList = styled.div`
   gap: 12px;
 `;
 
-export const InvoiceStack = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
 export const InvoiceCard = styled.a`
   display: flex;
   align-items: center;
@@ -127,45 +121,3 @@ export const Badge = styled.span<{ $variant: 'unpaid' | 'partial' | 'paid' | 'ca
   }}
 `;
 
-export const BreakdownList = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 0 12px 8px;
-  border: 1px solid var(--border, #e6eee9);
-  border-radius: 12px;
-  background: #fafbfa;
-  overflow: hidden;
-`;
-
-export const BreakdownItem = styled.a`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  text-decoration: none;
-  color: #4b5563;
-  font-size: 13px;
-  border-bottom: 1px solid #eef0ec;
-  transition: background 0.12s;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: #f1f5f1;
-  }
-`;
-
-export const BreakdownLabel = styled.span`
-  flex: 1;
-  min-width: 0;
-  font-weight: 600;
-`;
-
-export const BreakdownAmount = styled.span`
-  font-weight: 700;
-  color: #1f2937;
-  white-space: nowrap;
-`;

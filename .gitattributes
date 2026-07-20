@@ -1,2 +1,2 @@
 # Force yarn.lock to always use LF line endings (required for turbo prune in Docker)
-yarn.lock binary
+yarn.lock text eol=lf -diff

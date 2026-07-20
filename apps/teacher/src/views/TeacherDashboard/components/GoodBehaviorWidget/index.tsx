@@ -29,7 +29,7 @@ interface PeriodicAssessmentWidgetProps {
  *
  * Hiển thị:
  *  - Progress: % HS đã có đánh giá tháng này
- *  - Modal: danh sách HS với 5 tiêu chí (Thể chất/Nhận thức/Ngôn ngữ/Cảm xúc-Xã hội/Thẩm mỹ/Kỹ năng sống)
+ *  - Modal: danh sách HS với 5 tiêu chí (Thể chất/Nhận thức/Ngôn ngữ/Cảm xúc-Xã hội/Thẩm mỹ)
  *  - Card HS: 5 ô điểm + ĐTB + trạng thái
  *  - Click HS → navigate sang /assessment?studentId=X&termPeriod=Y
  */
@@ -185,7 +185,7 @@ export const PeriodicAssessmentWidget: React.FC<PeriodicAssessmentWidgetProps> =
  * Render danh sách HS với 5 ô điểm tương ứng ASSESSMENT_CRITERIA.
  * - Điểm BE đã có: physicalScore, cognitiveScore, languageScore, emotionalScore, socialScore
  * - UI merge emotional + social thành "Cảm xúc - Xã hội" (theo ASSESSMENT_CRITERIA)
- * - aestheticScore + lifeSkillScore: hiển thị "—" vì DB chưa có cột
+ * - aestheticScore: hiển thị "—" vì DB chưa có cột
  */
 interface AssessmentListProps {
   records: AssessmentHistoryPoint[];
@@ -208,7 +208,6 @@ const AssessmentList: React.FC<AssessmentListProps> = ({ records, studentNames, 
           languageScore: r.languageScore || null,
           socioEmotionalScore: emoMerged > 0 ? emoMerged : null,
           aestheticScore: null,
-          lifeSkillScore: null,
         };
         const known = (Object.values(scores).filter(v => v !== null) as number[]);
         const avg = known.length > 0
@@ -241,7 +240,7 @@ const CriteriaHeader: React.FC = () => (
   <div
     style={{
       display: 'grid',
-      gridTemplateColumns: '1.6fr repeat(6, minmax(48px, 1fr)) 40px',
+      gridTemplateColumns: '1.6fr repeat(5, minmax(48px, 1fr)) 40px',
       gap: 6,
       padding: '8px 12px',
       fontSize: 11,
@@ -287,7 +286,7 @@ const AssessmentRow: React.FC<AssessmentRowProps> = ({
     onClick={onClick}
     style={{
       display: 'grid',
-      gridTemplateColumns: '1.6fr repeat(6, minmax(48px, 1fr)) 40px',
+      gridTemplateColumns: '1.6fr repeat(5, minmax(48px, 1fr)) 40px',
       gap: 6,
       padding: '12px',
       borderRadius: 14,

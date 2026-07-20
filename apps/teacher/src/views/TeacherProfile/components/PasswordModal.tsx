@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { X, Eye, EyeOff, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useChangePassword } from '@/hooks/useTeacherQueries';
+import { useChangePassword } from '@/hooks/queries';
 
 const ModalOverlay = styled.div`
   position: fixed;

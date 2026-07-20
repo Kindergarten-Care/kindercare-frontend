@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { StudentMealRecord, StudentActivityRecord, MenuOfTheDay, MealStatus, NapStatus, participationStatus, WeeklyScheduleResponse, WeeklyMenuResponse } from '@/config/types/activities';
-import { ActivitiesService } from '@/services/activities';
+import { ActivitiesService } from '@/services/Activities/ActivitiesService';
 import { classService } from '@/services/class/ClassService';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { TeacherClassDomainModel } from '@/config/types/class';
 
 export function useActivities() {
@@ -135,13 +136,24 @@ export function useActivities() {
           }
         };
 
-        const [menuData, mealsData, activitiesData, scheduleData, weeklyMenuData] = await Promise.all([
+        const [menuData, mealsData, activitiesData, scheduleData, weeklyMenuData, attendanceData] = await Promise.all([
           loadWithDebug('Menu of the Day', () => ActivitiesService.getMenuOfTheDay(classId!, dateStr)),
           loadWithDebug('Student Meal Records', () => ActivitiesService.getStudentMealRecords(classId!, dateStr)),
           loadWithDebug('Student Activity Records', () => ActivitiesService.getStudentActivityRecords(classId!, dateStr)),
           loadWithDebug('Weekly Schedule', () => ActivitiesService.getWeeklySchedule(classId!, dateStr)),
-          loadWithDebug('Weekly Menu', () => ActivitiesService.getWeeklyMenu(classId!, dateStr))
+          loadWithDebug('Weekly Menu', () => ActivitiesService.getWeeklyMenu(classId!, dateStr)),
+          loadWithDebug('Daily Attendance', () => AttendanceService.getDailyAttendance(classId!, dateStr))
         ]);
+
+        const presentStudentIds = new Set(
+          (attendanceData || [])
+            .filter((a: any) => a.attendanceStatus === 'PRESENT' || a.attendanceStatus === 'PERMISSION_ABSENCE')
+            .map((a: any) => Number(a.id))
+        );
+
+        const filteredMealsData = (mealsData || []).filter((m: any) => presentStudentIds.has(m.studentId));
+        const filteredActivitiesData = (activitiesData || []).filter((a: any) => presentStudentIds.has(a.studentId));
+
 
         // Validate data parsing structure
         if (scheduleData && (!scheduleData.details || !Array.isArray(scheduleData.details))) {
@@ -169,8 +181,8 @@ export function useActivities() {
 
         setMenu(menuData || { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' });
         setEditedMenu(menuData || { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' });
-        setMealRecords(mealsData || []);
-        setActivityRecords(activitiesData || []);
+        setMealRecords(filteredMealsData);
+        setActivityRecords(filteredActivitiesData);
         setWeeklySchedule(scheduleData);
         setWeeklyMenu(weeklyMenuData);
       } catch (error) {

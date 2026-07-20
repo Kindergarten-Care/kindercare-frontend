@@ -23,60 +23,10 @@ export interface InvoiceMonthGroup {
   invoices: InvoiceDomainModel[];
 }
 
-export interface MergedInvoiceGroup {
-  billingMonth: string;
-  primary: InvoiceDomainModel;
-  breakdown: InvoiceDomainModel[];
-}
-
 /** 'MM-YYYY' -> sortable 'YYYY-MM' key */
 function monthSortKey(billingMonth: string): string {
   const [month, year] = billingMonth.split('-');
   return `${year}-${month}`;
-}
-
-const TYPE_PRIORITY: Record<InvoiceDomainModel['invoiceType'], number> = {
-  TUITION: 3,
-  MONTHLY: 2,
-  EXTRACURRICULAR: 1,
-};
-
-function mergedPaymentStatus(items: InvoiceDomainModel[]): PaymentStatus {
-  if (items.length === 0) return 'Unpaid';
-  if (items.every(i => i.paymentStatus === 'Paid')) return 'Paid';
-  if (items.some(i => i.paymentStatus !== 'Paid')) return 'Unpaid';
-  return 'Unpaid';
-}
-
-function combineInvoices(items: InvoiceDomainModel[]): InvoiceDomainModel {
-  const sorted = [...items].sort(
-    (a, b) => TYPE_PRIORITY[b.invoiceType] - TYPE_PRIORITY[a.invoiceType]
-  );
-  const primary = sorted[0];
-  const tuitionFee = items.reduce((s, i) => s + i.tuitionFee, 0);
-  const expectedMealFee = items.reduce((s, i) => s + i.expectedMealFee, 0);
-  const extracurricularFee = items.reduce((s, i) => s + i.extracurricularFee, 0);
-  const surcharge = items.reduce((s, i) => s + i.surcharge, 0);
-  const refundAmount = items.reduce((s, i) => s + i.refundAmount, 0);
-  const discountAmount = items.reduce((s, i) => s + i.discountAmount, 0);
-  const totalAmount = items.reduce((s, i) => s + i.totalAmount, 0);
-  const earliestDue = items
-    .map(i => i.dueDate)
-    .filter((d): d is number => typeof d === 'number')
-    .reduce<number | null>((min, d) => (min === null || d < min ? d : min), null);
-
-  return {
-    ...primary,
-    tuitionFee,
-    expectedMealFee,
-    extracurricularFee,
-    surcharge,
-    refundAmount,
-    discountAmount,
-    totalAmount,
-    paymentStatus: mergedPaymentStatus(items),
-    dueDate: earliestDue,
-  };
 }
 
 function isCancelledAndRefunded(inv: InvoiceDomainModel): boolean {
@@ -170,14 +120,6 @@ export function useBilling() {
       .sort((a, b) => monthSortKey(b.billingMonth).localeCompare(monthSortKey(a.billingMonth)));
   }, [filteredInvoices]);
 
-  const mergedGroups = useMemo((): MergedInvoiceGroup[] => {
-    return groupedInvoices.map(g => ({
-      billingMonth: g.billingMonth,
-      primary: combineInvoices(g.invoices),
-      breakdown: g.invoices,
-    }));
-  }, [groupedInvoices]);
-
   const summary = useMemo(() => {
     const unpaidTotal = invoices
       .filter(inv => inv.paymentStatus !== 'Paid')
@@ -196,7 +138,6 @@ export function useBilling() {
     invoices: filteredInvoices,
     hasAnyInvoices: invoices.length > 0,
     groupedInvoices,
-    mergedGroups,
     availableMonths,
     summary,
     typeFilter,

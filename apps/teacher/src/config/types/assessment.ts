@@ -24,8 +24,7 @@ export type AssessmentCriterionKey =
   | 'cognitiveScore'       // Nhận thức
   | 'languageScore'        // Ngôn ngữ
   | 'socioEmotionalScore'  // Cảm xúc - Xã hội (UI merge emotional + social)
-  | 'aestheticScore'       // Thẩm mỹ
-  | 'lifeSkillScore';      // Kỹ năng sống
+  | 'aestheticScore';      // Thẩm mỹ
 
 /** Mỗi tiêu chí điểm 1..10 (BE validate tối đa 10). */
 export type CriterionScore = number;
@@ -54,7 +53,6 @@ export const BE_OPTIONAL_SCORE_KEYS: ReadonlyArray<string> = [
   'emotionalScore',
   'socialScore',
   'aestheticScore',
-  'lifeSkillScore',
 ] as const;
 
 /**
@@ -81,7 +79,7 @@ export const BE_SUPPORTED_FIELDS: ReadonlyArray<string> = [
 
 /**
  * Field UI KHÔNG có cột DB tương ứng → KHÔNG gửi BE, KHÔNG validate.
- * Hiện có 2 tiêu chí: Thẩm mỹ + Kỹ năng sống (DB `DevelopmentAssessments` không có cột).
+ * Hiện có 1 tiêu chí: Thẩm mỹ (DB `DevelopmentAssessments` không có cột).
  * FE vẫn hiển thị cho user nhập, lưu localStorage để sau này BE mở rộng có sẵn data.
  */
 export const LOCAL_ONLY_FIELDS: AssessmentCriterionKey[] = [];
@@ -98,7 +96,6 @@ export interface UpsertAssessmentItem {
   socialScore?: CriterionScore;
   /** UI field — KHÔNG gửi BE (DB không có cột). */
   aestheticScore?: CriterionScore;
-  lifeSkillScore?: CriterionScore;
   /** UI field — KHÔNG gửi BE (DB không có cột socioEmotional riêng). */
   socioEmotionalScore?: CriterionScore;
   /** Optional, max 500 ký tự. BE map → OverallNote. */
@@ -130,7 +127,6 @@ export interface AssessmentHistoryPoint {
   emotionalScore: number;
   socialScore: number;
   aestheticScore: number;
-  lifeSkillScore: number;
   /** Có thể null/undefined nếu record cũ chưa có. */
   overallNote?: string;
   createdAt?: number;
@@ -188,13 +184,5 @@ export const ASSESSMENT_CRITERIA: ReadonlyArray<{
     emoji: '🎨',
     accent: '#F59E0B',
     description: 'Cảm thụ âm nhạc, mỹ thuật, tạo hình.',
-  },
-  {
-    key: 'lifeSkillScore',
-    label: 'Kỹ năng sống',
-    shortLabel: 'Kỹ năng',
-    emoji: '🌱',
-    accent: '#8B5CF6',
-    description: 'Tự phục vụ, nề nếp, kỹ năng tự lập.',
   },
 ] as const;

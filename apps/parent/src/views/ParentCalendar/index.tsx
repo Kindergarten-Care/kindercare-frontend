@@ -19,6 +19,7 @@ export function ParentCalendar() {
     selectedDate,
     setSelectedDate,
     selectedDayEvents,
+    selectedDayHolidays,
     upcomingEvents,
     nextEvent,
     upcomingHolidayCount,
@@ -94,6 +95,7 @@ export function ParentCalendar() {
         <EventSidePanel
           selectedDate={selectedDate}
           selectedDayEvents={selectedDayEvents}
+          selectedDayHolidays={selectedDayHolidays}
           upcomingEvents={upcomingEvents}
           onSelectDate={handleSelectDate}
         />

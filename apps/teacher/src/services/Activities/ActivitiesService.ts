@@ -14,73 +14,9 @@ import {
   WeeklyMenuDay,
   DayOfWeek
 } from '@/config/types/activities';
-import { scheduleService } from './schedule/ScheduleService';
-import { AttendanceService } from './attendance';
-import { apiClient } from '@kindercare/core';
-
-// Default mock data kept as fallback
-const MOCK_MEALS_DB: StudentMealRecord[] = [
-  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', studentAvatar: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'HALF', afternoonSnack: 'ALL', note: 'Ăn ngoan' },
-  { studentId: 'S02', studentName: 'Trần Minh Anh', studentAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', breakfast: 'NONE', lunch: 'ALL', afternoonSnack: 'HALF' },
-  { studentId: 'S03', studentName: 'Lê Hải Đăng', studentAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', breakfast: 'ALL', lunch: 'ALL', afternoonSnack: 'ALL' },
-  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', studentAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', breakfast: 'HALF', lunch: 'ALL', afternoonSnack: 'NONE', note: 'Kén ăn rau' }
-];
-
-const MOCK_ACTIVITIES_DB: StudentActivityRecord[] = [
-  { studentId: 'S01', studentName: 'Nguyễn Gia Bảo', studentAvatar: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
-  { studentId: 'S02', studentName: 'Trần Minh Anh', studentAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&auto=format&fit=crop&q=60', nap: 'POOR', participation: 'NORMAL', note: 'Bé hơi mệt' },
-  { studentId: 'S03', studentName: 'Lê Hải Đăng', studentAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&auto=format&fit=crop&q=60', nap: 'GOOD', participation: 'ACTIVE' },
-  { studentId: 'S04', studentName: 'Phạm Ngọc Diệp', studentAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&auto=format&fit=crop&q=60', nap: 'POOR', participation: 'TIRED' }
-];
-
-let mockMealsState = [...MOCK_MEALS_DB];
-let mockActivitiesState = [...MOCK_ACTIVITIES_DB];
-let mockMenuState: MenuOfTheDay = {
-  breakfastMenu: 'Cháo sườn heo nóng hổi xay nhuyễn hạt sen.',
-  lunchMenu: 'Cơm tẻ dẻo thơm, sườn sốt chua ngọt, canh rau ngót thịt bằm, tráng miệng chuối chín.',
-  afternoonSnackMenu: 'Sữa tươi tiệt trùng và bánh bông lan trứng muối mềm.'
-};
-
-// Menu mẫu theo ngày trong tuần (fallback khi API lỗi)
-const WEEKLY_MOCK_MENUS: Record<string, MenuOfTheDay> = {
-  Monday: {
-    breakfastMenu: '🍳 Bánh mì bơ tỏi\n🥛 Sữa tươi không đường',
-    lunchMenu: '🍚 Cơm tẻ\n🍖 Thịt kho trứng\n🥬 Canh rau muống nấu tôm\n🍌 Trái cây theo mùa',
-    afternoonSnackMenu: '🧀 Bánh flan sữa tươi'
-  },
-  Tuesday: {
-    breakfastMenu: '🥣 Cháo gà hạt sen\n🥛 Sữa đậu nành',
-    lunchMenu: '🍚 Cơm tẻ\n🐟 Cá thu sốt cà\n🥬 Rau luộc\n🍵 Canh khổ qua',
-    afternoonSnackMenu: '🍵 Sữa đậu nành'
-  },
-  Wednesday: {
-    breakfastMenu: '🍝 Nui xào thịt bằm\n🥛 Sữa tươi',
-    lunchMenu: '🍚 Cơm tẻ\n🍗 Đùi gà chiên giòn\n🥗 Salad rau trộn\n🦀 Súp cua',
-    afternoonSnackMenu: '🍮 Bánh flan'
-  },
-  Thursday: {
-    breakfastMenu: '🍜 Phở bò\n🥛 Sữa tươi',
-    lunchMenu: '🍚 Cơm tẻ\n🦐 Tôm hùm hấp\n🥬 Rau xào\n🍲 Canh cải thịt bằm',
-    afternoonSnackMenu: '🍊 Nước ép cam'
-  },
-  Friday: {
-    breakfastMenu: '🥟 Bánh bao nhân thịt\n🥛 Sữa tươi',
-    lunchMenu: '🍚 Cơm tẻ\n🍖 Sườn non nấu sả\n🍳 Trứng chiên\n🥬 Canh bắp cải',
-    afternoonSnackMenu: '🥮 Bánh pía'
-  },
-  Saturday: {
-    breakfastMenu: '🍳 Trứng chiên\n🍞 Bánh mì\n🥛 Sữa',
-    lunchMenu: '🍚 Cơm tẻ\n🍗 Gà hấp\n🥬 Rau luộc\n🍲 Canh rau',
-    afternoonSnackMenu: '🍎 Trái cây'
-  },
-  Sunday: {
-    breakfastMenu: '🥣 Cháo trứng\n🥛 Sữa',
-    lunchMenu: '🍚 Cơm tẻ\n🐟 Cá chiên\n🥬 Rau xào\n🍲 Canh',
-    afternoonSnackMenu: '🍮 Bánh ngọt'
-  }
-};
-
-const menuByDate: Record<string, MenuOfTheDay> = {};
+import { scheduleService } from '../schedule/ScheduleService';
+import { AttendanceService } from '../Attendance/AttendanceService';
+import { apiClient, SERVER } from '@kindercare/core';
 
 export class ActivitiesService {
   /**
@@ -102,7 +38,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/menu?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getMenu.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const raw = res.data?.data;
 
       const todayDetails = ActivitiesService.extractMenuDetailsForDate(raw, year, month, day);
@@ -139,17 +76,17 @@ export class ActivitiesService {
         };
       }
       return { breakfastMenu: '', lunchMenu: '', afternoonSnackMenu: '' };
-    } catch (error: any) {
-      console.warn('Backend API not ready yet (Menu):', error?.message || 'Unknown error');
-
-      // Fallback: Sử dụng menu mock theo ngày trong tuần
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const currentDay = dayNames[new Date().getDay()];
-
-      return WEEKLY_MOCK_MENUS[currentDay] || {
-        breakfastMenu: '🍳 (Đang tải thực đơn...)',
-        lunchMenu: '🍚 (Đang tải thực đơn...)',
-        afternoonSnackMenu: '🍮 (Đang tải thực đơn...)'
+      return {
+        breakfastMenu: '',
+        lunchMenu: '',
+        afternoonSnackMenu: ''
+      };
+    } catch (e) {
+      console.error('Error fetching menu:', e);
+      return {
+        breakfastMenu: '',
+        lunchMenu: '',
+        afternoonSnackMenu: ''
       };
     }
   }
@@ -170,7 +107,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/menu/weekly?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getWeeklyMenu.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const raw = res.data?.data;
 
       const flat = ActivitiesService.flattenMenuResponse(raw);
@@ -294,7 +232,7 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      await apiClient.put(`/teacher/classes/${classId}/menu`, {
+      await apiClient.put(SERVER.teacher.getMenu.replace(':classId', String(classId)), {
         date: dateSeconds,
         breakfastMenu: menu.breakfastMenu,
         lunchMenu: menu.lunchMenu,
@@ -321,8 +259,8 @@ export class ActivitiesService {
       
       if (students && students.length > 0) {
         return students
-          .filter(s => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
-          .map(s => {
+          .filter((s: any) => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
+          .map((s: any) => {
             let breakfast = 'ALL';
             let lunch = 'ALL';
             if (s.eatingStatus === 'Ăn chậm') { breakfast = 'HALF'; lunch = 'HALF'; }
@@ -339,10 +277,10 @@ export class ActivitiesService {
             };
           });
       }
-      return [...mockMealsState];
+      return [];
     } catch (e) {
-      console.error('Error fetching students for meals, fallback to mock:', e);
-      return [...mockMealsState];
+      console.error('Error fetching students for meals:', e);
+      return [];
     }
   }
 
@@ -385,7 +323,7 @@ export class ActivitiesService {
         };
       });
 
-      await apiClient.post('/teacher/attendance/meals', {
+      await apiClient.post(SERVER.teacher.postAttendanceMeals, {
         classId: Number(classId),
         date: dateSeconds,
         mealData
@@ -411,8 +349,8 @@ export class ActivitiesService {
       
       if (students && students.length > 0) {
         return students
-          .filter(s => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
-          .map(s => {
+          .filter((s: any) => s.attendanceStatus !== 'PERMISSION_ABSENCE' && s.attendanceStatus !== 'UNEXCUSED_ABSENCE')
+          .map((s: any) => {
             let nap = 'GOOD';
             if (s.sleepingStatus === 'Khó ngủ') nap = 'POOR';
             if (s.sleepingStatus === 'Không ngủ') nap = 'NONE';
@@ -435,10 +373,10 @@ export class ActivitiesService {
             };
           });
       }
-      return [...mockActivitiesState];
+      return [];
     } catch (e) {
-      console.error('Error fetching students for activities, fallback to mock:', e);
-      return [...mockActivitiesState];
+      console.error('Error fetching students for activities:', e);
+      return [];
     }
   }
 
@@ -494,7 +432,7 @@ export class ActivitiesService {
         };
       });
 
-      await apiClient.post('/teacher/attendance/activities', {
+      await apiClient.post(SERVER.teacher.postAttendanceActivities, {
         classId: Number(classId),
         date: dateSeconds,
         activityData
@@ -520,7 +458,8 @@ export class ActivitiesService {
       const [year, month, day] = realDate.split('-').map(Number);
       const dateSeconds = Math.floor(Date.UTC(year, month - 1, day) / 1000);
 
-      const res = await apiClient.get(`/teacher/classes/${classId}/schedule/weekly?date=${dateSeconds}`);
+      const url = `${SERVER.teacher.getWeeklySchedule.replace(':classId', String(classId))}?date=${dateSeconds}`;
+      const res = await apiClient.get(url);
       const payload = res.data?.data;
       if (!payload) return null;
 
@@ -607,7 +546,7 @@ export class ActivitiesService {
 
       const domainSchedules = await scheduleService.getSchedule(classId, dateSeconds);
       
-      return domainSchedules.map((schedule) => {
+      return domainSchedules.map((schedule: any) => {
         return {
           id: String(schedule.dailyScheduleId),
           timeSlot: `${schedule.startTime} - ${schedule.endTime}`,
@@ -628,7 +567,7 @@ export class ActivitiesService {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await apiClient.post('/teacher/upload', formData);
+      const response = await apiClient.post(SERVER.teacher.uploadPhoto, formData);
       return response.data?.data?.url || null;
     } catch (e) {
       console.error('Error uploading image:', e);
@@ -652,17 +591,3 @@ export class ActivitiesService {
   }
 }
 
-const MOCK_SCHEDULE_DB: ScheduleItem[] = [
-  { id: '1', timeSlot: '07:15 - 08:00', activityName: 'Đón trẻ & Kiểm tra vệ sinh sáng', completed: true },
-  { id: '2', timeSlot: '08:00 - 08:30', activityName: 'Thể dục buổi sáng ngoài sân', completed: true, classPhoto: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&auto=format&fit=crop&q=60' },
-  { id: '3', timeSlot: '08:30 - 09:00', activityName: 'Ăn sáng & Vệ sinh cá nhân', completed: true },
-  { id: '4', timeSlot: '09:00 - 10:15', activityName: 'Học tập chuyên đề: Nhận biết con vật', completed: false },
-  { id: '5', timeSlot: '10:15 - 11:15', activityName: 'Vui chơi tự do ở góc học tập', completed: false },
-  { id: '6', timeSlot: '11:15 - 12:00', activityName: 'Ăn trưa & chuẩn bị giờ ngủ trưa', completed: false },
-  { id: '7', timeSlot: '12:00 - 14:00', activityName: 'Giấc ngủ trưa của trẻ', completed: false },
-  { id: '8', timeSlot: '14:00 - 14:30', activityName: 'Ăn xế chiều', completed: false },
-  { id: '9', timeSlot: '14:30 - 16:00', activityName: 'Hoạt động kể chuyện cổ tích', completed: false },
-  { id: '10', timeSlot: '16:00 - 17:00', activityName: 'Vệ sinh & Trả trẻ cho phụ huynh', completed: false }
-];
-
-let mockScheduleState = [...MOCK_SCHEDULE_DB];

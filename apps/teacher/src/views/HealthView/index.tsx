@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
 import { healthService } from '@/services/health/HealthService';
 import { studentService } from '@/services/student/StudentService';
-import { AttendanceService } from '@/services/attendance';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { StudentDetailedDomainModel } from '@/config/types/student';
 import type {
   AllergyDomainModel,

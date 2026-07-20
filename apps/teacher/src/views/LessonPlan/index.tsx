@@ -13,7 +13,7 @@ import {
   XCircle,
   Eye,
 } from 'lucide-react';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
 import { DAYS, SUBJECTS, getSubjectMeta } from './constants';
 import { useLessonPlan } from './hooks/useLessonPlan';
 import { LessonModal } from './components/LessonModal';

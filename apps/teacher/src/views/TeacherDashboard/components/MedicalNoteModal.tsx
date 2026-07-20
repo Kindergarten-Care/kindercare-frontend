@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { X, Pill, Clock, AlertTriangle, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { X, Pill, Clock, AlertTriangle, CheckCircle2, Image as ImageIcon, MessageSquare } from 'lucide-react';
 import { getStudentInitials } from '@/utils/string';
 
 interface MedicalNoteDetails {
@@ -18,7 +18,7 @@ export interface MedicalNoteModalProps {
   isOpen: boolean;
   data: MedicalNoteDetails | null;
   onClose: () => void;
-  onMarkDone: (id: string) => void;
+  onMarkDone: (id: string, note: string) => void;
 }
 
 const fadeIn = keyframes`
@@ -42,18 +42,20 @@ const Overlay = styled.div`
   align-items: center;
   justify-content: center;
   animation: ${fadeIn} 0.2s ease;
+  padding: 20px;
 `;
 
 const ModalBox = styled.div`
   background: #ffffff;
-  width: 90%;
-  max-width: 440px;
+  width: 100%;
+  max-width: 580px;
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(220, 38, 38, 0.15);
   overflow: hidden;
   animation: ${popUp} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  max-height: 90vh;
 `;
 
 const Header = styled.div`
@@ -98,30 +100,31 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
 `;
 
 const StudentInfoCard = styled.div`
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
+  background: #FFF5F5;
   padding: 16px;
-  background: #fff;
   border-radius: 16px;
-  border: 1px dashed #FCA5A5;
+  border: 1px solid #FEE2E2;
 `;
 
 const Avatar = styled.div`
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #FEE2E2;
-  color: #DC2626;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #FCA5A5;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
+  position: relative;
   overflow: hidden;
 `;
 
@@ -136,12 +139,14 @@ const AvatarImg = styled.img`
 const InfoCol = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 4px;
 `;
 
 const StName = styled.div`
-  font-size: 16px;
-  font-weight: 700;
-  color: #1F2937;
+  font-size: 18px;
+  font-weight: 800;
+  color: #7F1D1D;
+  letter-spacing: -0.01em;
 `;
 
 const FieldRow = styled.div`
@@ -224,6 +229,68 @@ const ImagePreview = styled.img`
   margin-top: 8px;
 `;
 
+const ImageContainer = styled.div`
+  position: relative;
+  width: 100%;
+  cursor: zoom-in;
+  &:hover::after {
+    content: '🔍 Phóng to';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  &:hover::after {
+    opacity: 1;
+  }
+`;
+
+const ZoomOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  padding: 20px;
+`;
+
+const ZoomedImage = styled.img`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 80px;
+  color: #1F2937;
+  &:focus { 
+    outline: none; 
+    border-color: #DC2626; 
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1); 
+  }
+  &::placeholder {
+    color: #9CA3AF;
+  }
+`;
+
 const Footer = styled.div`
   display: flex;
   padding: 16px 24px;
@@ -255,84 +322,115 @@ const ActionBtn = styled.button`
 `;
 
 export const MedicalNoteModal: React.FC<MedicalNoteModalProps> = ({ isOpen, data, onClose, onMarkDone }) => {
+  const [teacherNote, setTeacherNote] = useState('');
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Reset state when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setTeacherNote('');
+      setIsZoomed(false);
+    }
+  }, [isOpen, data]);
+
   if (!isOpen || !data) return null;
 
   const initial = getStudentInitials(data.studentName);
 
   return (
-    <Overlay onClick={onClose}>
-      <ModalBox onClick={e => e.stopPropagation()}>
-        <Header>
-          <Title>
-            <AlertTriangle size={20} />
-            Lưu ý Y tế
-          </Title>
-          <CloseBtn onClick={onClose}>
-            <X size={22} strokeWidth={2.5} />
-          </CloseBtn>
-        </Header>
-        
-        <Content>
-          <StudentInfoCard>
-            <Avatar>
-              {initial}
-              {data.avatarUrl && (
-                <AvatarImg 
-                  src={data.avatarUrl} 
-                  alt="" 
-                  onError={(e: any) => { e.currentTarget.style.display = 'none'; }} 
-                />
-              )}
-            </Avatar>
-            <InfoCol>
-              <StName>{data.studentName}</StName>
-            </InfoCol>
-          </StudentInfoCard>
+    <>
+      <Overlay onClick={onClose}>
+        <ModalBox onClick={e => e.stopPropagation()}>
+          <Header>
+            <Title>
+              <AlertTriangle size={20} />
+              Lưu ý Y tế
+            </Title>
+            <CloseBtn onClick={onClose}>
+              <X size={22} strokeWidth={2.5} />
+            </CloseBtn>
+          </Header>
+          
+          <Content>
+            <StudentInfoCard>
+              <Avatar>
+                {initial}
+                {data.avatarUrl && (
+                  <AvatarImg 
+                    src={data.avatarUrl} 
+                    alt="" 
+                    onError={(e: any) => { e.currentTarget.style.display = 'none'; }} 
+                  />
+                )}
+              </Avatar>
+              <InfoCol>
+                <StName>{data.studentName}</StName>
+              </InfoCol>
+            </StudentInfoCard>
 
-          <FieldRow>
-            <Label><Pill size={15} /> Thông tin Thuốc</Label>
-            <MedicineCard>
-              <MedTitle>{data.medicineName}</MedTitle>
-              <MedDetails>
-                <MedDetailCol>
-                  <MedLabel>Liều lượng</MedLabel>
-                  <MedValue>{data.dosage}</MedValue>
-                </MedDetailCol>
-                <MedDetailCol style={{ alignItems: 'flex-end' }}>
-                  <MedLabel>Thời gian</MedLabel>
-                  <MedValue style={{ color: '#DC2626' }}>
-                    <Clock size={12} style={{ display: 'inline', marginRight: 4 }} />
-                    {data.timeToTake}
-                  </MedValue>
-                </MedDetailCol>
-              </MedDetails>
-            </MedicineCard>
-          </FieldRow>
-
-          {data.parentNotes && (
             <FieldRow>
-              <Label>Lời dặn của phụ huynh</Label>
-              <NoteBox>
-                "{data.parentNotes}"
-              </NoteBox>
+              <Label><Pill size={15} /> Thông tin Thuốc</Label>
+              <MedicineCard>
+                <MedTitle>{data.medicineName}</MedTitle>
+                <MedDetails>
+                  <MedDetailCol>
+                    <MedLabel>Liều lượng</MedLabel>
+                    <MedValue>{data.dosage}</MedValue>
+                  </MedDetailCol>
+                  <MedDetailCol style={{ alignItems: 'flex-end' }}>
+                    <MedLabel>Thời gian</MedLabel>
+                    <MedValue style={{ color: '#DC2626' }}>
+                      <Clock size={12} style={{ display: 'inline', marginRight: 4 }} />
+                      {data.timeToTake}
+                    </MedValue>
+                  </MedDetailCol>
+                </MedDetails>
+              </MedicineCard>
             </FieldRow>
-          )}
 
-          {data.imageUrl && (
+            {data.parentNotes && (
+              <FieldRow>
+                <Label>Lời dặn của phụ huynh</Label>
+                <NoteBox>
+                  "{data.parentNotes}"
+                </NoteBox>
+              </FieldRow>
+            )}
+
+            {data.imageUrl && (
+              <FieldRow>
+                <Label><ImageIcon size={15} /> Ảnh toa thuốc / Minh chứng</Label>
+                <ImageContainer onClick={() => setIsZoomed(true)}>
+                  <ImagePreview src={data.imageUrl} alt="Minh chứng y tế" />
+                </ImageContainer>
+              </FieldRow>
+            )}
+
             <FieldRow>
-              <Label><ImageIcon size={15} /> Ảnh toa thuốc / Minh chứng</Label>
-              <ImagePreview src={data.imageUrl} alt="Minh chứng y tế" />
+              <Label><MessageSquare size={15} /> Ghi chú của giáo viên (tùy chọn)</Label>
+              <TextArea 
+                placeholder="Nhập ghi chú gửi cho phụ huynh (nếu có)..."
+                value={teacherNote}
+                onChange={e => setTeacherNote(e.target.value)}
+              />
             </FieldRow>
-          )}
-        </Content>
+          </Content>
 
-        <Footer>
-          <ActionBtn onClick={() => { onMarkDone(data.id); onClose(); }}>
-            <CheckCircle2 size={18} />
-            Đã cho uống thuốc
-          </ActionBtn>
-        </Footer>
-      </ModalBox>
-    </Overlay>
+          <Footer>
+            <ActionBtn onClick={() => { onMarkDone(data.id, teacherNote); onClose(); }}>
+              <CheckCircle2 size={18} />
+              Đã cho uống thuốc
+            </ActionBtn>
+          </Footer>
+        </ModalBox>
+      </Overlay>
+
+      {/* Image Zoom Overlay */}
+      {isZoomed && data.imageUrl && (
+        <ZoomOverlay onClick={() => setIsZoomed(false)}>
+          <ZoomedImage src={data.imageUrl} alt="Zoomed" />
+        </ZoomOverlay>
+      )}
+    </>
   );
 };

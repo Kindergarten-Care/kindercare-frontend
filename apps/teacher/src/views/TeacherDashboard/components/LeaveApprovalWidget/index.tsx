@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
-import { AttendanceService } from '@/services/attendance';
-import { LeaveRequestService } from '@/services/leave-requests';
+import { AttendanceService } from '@/services/Attendance/AttendanceService';
+import { LeaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { LeaveRequest } from '@/config/types/attendance';
 
-import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/useTeacherQueries';
+import { useLeaveRequests, useUpdateLeaveRequest } from '@/hooks/queries';
 import { getStudentInitials } from '@/utils/string';
 
 const formatDate = (timestamp: number | undefined): string => {

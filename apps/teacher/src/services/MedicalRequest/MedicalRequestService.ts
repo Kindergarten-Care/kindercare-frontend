@@ -1,4 +1,4 @@
-import { apiClient } from '@kindercare/core';
+import { apiClient, SERVER } from '@kindercare/core';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type MedicationRequestStatus = 'Pending' | 'Done' | 'Skipped' | 'Completed' | 'Rejected';
@@ -73,9 +73,8 @@ export class MedicalRequestService {
       params.date = String(Math.floor(timestamp / 86400000) * 86400000);
     }
 
-    const res = await apiClient.get(`/teacher/classes/${classId}/medical-requests`, {
-      params,
-    });
+    const url = SERVER.teacher.getMedicalRequests.replace(':classId', String(classId));
+    const res = await apiClient.get(url, { params });
     const list = res.data?.data || [];
     return list.map(mapApiMedicalRequestToDomain);
   }
@@ -97,7 +96,7 @@ export class MedicalRequestService {
     const body: Record<string, string> = { status };
     if (teacherNote !== undefined) body.teacherNote = teacherNote;
 
-    await apiClient.put(`/teacher/medical-requests/${requestId}`, body);
+    await apiClient.put(SERVER.teacher.updateMedicalRequest.replace(':requestId', String(requestId)), body);
     return true;
   }
 }

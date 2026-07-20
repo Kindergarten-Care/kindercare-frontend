@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, AlertTriangle, Pill, Plus, Save, CheckCircle } from 'lucide-react';
 import * as S from './styles';
-import { useTeacherClasses } from '@/hooks/useTeacherQueries';
-import { useDetailedStudents } from '@/hooks/useTeacherQueries';
+import { useTeacherClasses } from '@/hooks/queries';
+import { useDetailedStudents } from '@/hooks/queries';
 import {
   useCreateHealthLog,
   useClassMedicalRequests,
@@ -18,6 +18,7 @@ import { AllergiesPopup } from './components/AllergiesPopup';
 import { MedicalRequestsPopup } from './components/MedicalRequestsPopup';
 import type { BMICategory } from '@/config/types/health';
 import { getStudentInitials } from '@/utils/string';
+import { MonthYearPicker } from '@kindercare/ui';
 
 interface ToastItem {
   id: string;
@@ -30,6 +31,7 @@ interface HealthRowState {
   height: string;
   weight: string;
   saved: boolean;
+  recordId?: number;
 }
 
 export const HealthView: React.FC = () => {
@@ -47,24 +49,45 @@ export const HealthView: React.FC = () => {
   const students = studentsData?.students ?? [];
 
   // ── Health Measurements ────────────────────────────────────────────────────────
+  const [termPeriod, setTermPeriod] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [healthRows, setHealthRows] = useState<Map<number, HealthRowState>>(new Map());
   const [savedRows, setSavedRows] = useState<Set<number>>(new Set());
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
-  // Init rows when students load
+  // Init rows when students or termPeriod load
   useEffect(() => {
-    if (students && students.length > 0) {
-      const map = new Map<number, HealthRowState>();
-      students.forEach((s: StudentDetailedDomainModel) => {
-        map.set(s.studentId, {
-          studentId: s.studentId,
-          height: '',
-          weight: '',
-          saved: false,
+    if (!students || students.length === 0 || !activeClassId) return;
+
+    let cancelled = false;
+    (async () => {
+      setLoadingLogs(true);
+      try {
+        const logs = await healthService.getHealthLogs(activeClassId, termPeriod);
+        if (cancelled) return;
+        
+        const map = new Map<number, HealthRowState>();
+        students.forEach((s: StudentDetailedDomainModel) => {
+          const existing = logs.find((l: any) => String(l.studentId) === String(s.studentId));
+          map.set(s.studentId, {
+            studentId: s.studentId,
+            height: existing?.height ? String(existing.height) : '',
+            weight: existing?.weight ? String(existing.weight) : '',
+            saved: !!existing,
+            recordId: existing?.recordId,
+          });
         });
-      });
-      setHealthRows(map);
-    }
-  }, [students]);
+        setHealthRows(map);
+      } catch (err) {
+        console.error('Failed to load health logs', err);
+      } finally {
+        if (!cancelled) setLoadingLogs(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [students, activeClassId, termPeriod]);
 
   // ── Create Health Log ──────────────────────────────────────────────────────────
   const createHealthLog = useCreateHealthLog();
@@ -82,20 +105,19 @@ export const HealthView: React.FC = () => {
     }
 
     try {
-      const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const termPeriod = `${now.getFullYear()}-${month}`;
-      const payload = {
-        studentId,
-        height,
-        weight,
-      };
-      await healthService.createHealthLog(activeClassId!, studentId, payload, termPeriod);
+      const payload = { studentId, height, weight };
+      let newRecordId = row.recordId;
+      if (row.recordId) {
+        await healthService.updateHealthLog(activeClassId!, row.recordId, payload);
+      } else {
+        const log = await healthService.createHealthLog(activeClassId!, studentId, payload, termPeriod);
+        newRecordId = (log as any).recordId;
+      }
       
       setHealthRows(prev => {
         const next = new Map(prev);
         const r = next.get(studentId);
-        if (r) next.set(studentId, { ...r, saved: true });
+        if (r) next.set(studentId, { ...r, saved: true, recordId: newRecordId });
         return next;
       });
 
@@ -135,10 +157,6 @@ export const HealthView: React.FC = () => {
     }
 
     try {
-      const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const termPeriod = `${now.getFullYear()}-${month}`;
-
       await healthService.batchUpdateHealthLogs(activeClassId!, recordsToSave, termPeriod);
 
       const sids = recordsToSave.map(r => r.studentId);
@@ -259,6 +277,17 @@ export const HealthView: React.FC = () => {
               <option key={c.classId} value={c.classId}>{c.className}</option>
             ))}
           </select>
+          <div style={{ zIndex: 10 }}>
+            <MonthYearPicker
+              month={Number(termPeriod.split('-')[1]) - 1}
+              year={Number(termPeriod.split('-')[0])}
+              onChange={(month, year) =>
+                setTermPeriod(
+                  `${year}-${String(month + 1).padStart(2, '0')}`
+                )
+              }
+            />
+          </div>
         </S.FilterRow>
       </S.TopBar>
 
@@ -314,87 +343,25 @@ export const HealthView: React.FC = () => {
       </S.StatCardsRow>
 
       {/* ── BMI Input Section ─────────────────────────────────────────────────── */}
-      <div id="bmi-section">
-        <S.BentoTitle style={{ marginBottom: 12 }}>
-          <Activity size={16} color="#059669" />
-          Nhập chỉ số Chiều cao & Cân nặng
-        </S.BentoTitle>
-
-        <S.BentoGrid>
-          {/* Form */}
-          <S.BentoCard $colSpan={2}>
-            <S.BentoTitle>
-              <Plus size={14} color="#6B7280" />
-              Thông tin đo lường
-            </S.BentoTitle>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <S.FormGroup>
-                <S.FormLabel>Chiều cao (cm)</S.FormLabel>
-                <S.FormInput
-                  type="number"
-                  placeholder="VD: 110"
-                  min={50}
-                  max={200}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      // bulk update mode: apply same height to all non-saved rows
-                      const h = e.target.value;
-                    setHealthRows(prev => {
-                      const next = new Map(prev);
-                      prev.forEach((row, sid) => {
-                        if (!row.saved) {
-                          next.set(sid, { ...row, height: h });
-                        }
-                      });
-                      return next;
-                    });
-                  }}
-                />
-              </S.FormGroup>
-              <S.FormGroup>
-                <S.FormLabel>Cân nặng (kg)</S.FormLabel>
-                <S.FormInput
-                  type="number"
-                  placeholder="VD: 18"
-                  min={5}
-                  max={150}
-                  step="0.1"
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const w = e.target.value;
-                    setHealthRows(prev => {
-                      const next = new Map(prev);
-                      prev.forEach((row, sid) => {
-                        if (!row.saved) {
-                          next.set(sid, { ...row, weight: w });
-                        }
-                      });
-                      return next;
-                    });
-                  }}
-                />
-              </S.FormGroup>
-            </div>
-            <S.NoteText style={{ marginTop: 8 }}>
-              Nhập nhanh: Giá trị nhập sẽ áp dụng cho tất cả học sinh chưa lưu.
-            </S.NoteText>
-          </S.BentoCard>
-
+      <div id="bmi-section" style={{ marginTop: 20 }}>
+        <S.BentoGrid style={{ gridTemplateColumns: '1fr' }}>
           {/* BMI Guide */}
           <S.BentoCard>
             <S.BentoTitle style={{ color: '#6B7280', fontSize: 12 }}>
               Tham chiếu BMI trẻ em (5–19 tuổi)
             </S.BentoTitle>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
               {Object.entries(BMI_CATEGORIES).map(([key, cat]) => (
                 <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{
                     width: 8, height: 8, borderRadius: '50%',
                     background: cat.color, flex: 'none',
                   }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', flex: 1 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>
                     {cat.label}
                   </span>
                   <span style={{ fontSize: 11, color: '#9CA3AF' }}>
-                    {key === 'underweight' ? '< 18.5' : key === 'normal' ? '18.5 – 24.9' : key === 'overweight' ? '25 – 29.9' : '≥ 30'}
+                    ({key === 'underweight' ? '< 18.5' : key === 'normal' ? '18.5 – 24.9' : key === 'overweight' ? '25 – 29.9' : '≥ 30'})
                   </span>
                 </div>
               ))}
@@ -443,6 +410,10 @@ export const HealthView: React.FC = () => {
         {!students || students.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9CA3AF' }}>
             Chưa có học sinh trong lớp này
+          </div>
+        ) : loadingLogs ? (
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#9CA3AF' }}>
+            Đang tải dữ liệu...
           </div>
         ) : (
           students.map((student: StudentDetailedDomainModel, idx: number) => {
@@ -496,11 +467,10 @@ export const HealthView: React.FC = () => {
                     placeholder="--"
                     min={50}
                     max={200}
-                    disabled={isSaved}
                     onChange={e => {
                       setHealthRows(prev => {
                         const next = new Map(prev);
-                        next.set(student.studentId, { ...prev.get(student.studentId)!, height: e.target.value });
+                        next.set(student.studentId, { ...prev.get(student.studentId)!, height: e.target.value, saved: false });
                         return next;
                       });
                     }}
@@ -522,11 +492,10 @@ export const HealthView: React.FC = () => {
                     min={5}
                     max={150}
                     step="0.1"
-                    disabled={isSaved}
                     onChange={e => {
                       setHealthRows(prev => {
                         const next = new Map(prev);
-                        next.set(student.studentId, { ...prev.get(student.studentId)!, weight: e.target.value });
+                        next.set(student.studentId, { ...prev.get(student.studentId)!, weight: e.target.value, saved: false });
                         return next;
                       });
                     }}

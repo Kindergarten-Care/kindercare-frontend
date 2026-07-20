@@ -1,4 +1,4 @@
-import { apiClient } from '@kindercare/core';
+import { apiClient, SERVER } from '@kindercare/core';
 
 export interface NewsfeedPost {
   postId: number;
@@ -20,7 +20,8 @@ export class NewsfeedService {
    * @returns postId của bài viết vừa tạo
    */
   public static async createNewsfeedPost(classId: number | string, content: string, mediaUrl?: string): Promise<string> {
-    const res = await apiClient.post(`/teacher/classes/${classId}/newsfeed`, {
+    const url = SERVER.teacher.postNewsfeed.replace(':classId', String(classId));
+    const res = await apiClient.post(url, {
       content,
       mediaUrl
     });
@@ -31,7 +32,8 @@ export class NewsfeedService {
    * Lấy danh sách nhật ký của lớp
    */
   public static async getNewsfeeds(classId: number | string): Promise<any[]> {
-    const res = await apiClient.get(`/teacher/classes/${classId}/newsfeed`);
+    const url = SERVER.teacher.getNewsfeeds.replace(':classId', String(classId));
+    const res = await apiClient.get(url);
     return res.data?.data || [];
   }
 
@@ -41,7 +43,8 @@ export class NewsfeedService {
    * @param postId ID của bài đăng
    */
   public static async deleteNewsfeedPost(classId: number | string, postId: number | string): Promise<boolean> {
-    const res = await apiClient.delete(`/teacher/classes/${classId}/newsfeed/${postId}`);
+    const url = SERVER.teacher.deleteNewsfeed.replace(':postId', String(postId));
+    const res = await apiClient.delete(url);
     return res.status === 200;
   }
 
@@ -57,7 +60,7 @@ export class NewsfeedService {
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
     formData.append('folder', `newsfeeds/feed-${dateStr}`);
-    const res = await apiClient.post('/teacher/upload', formData, { onUploadProgress });
+    const res = await apiClient.post(SERVER.teacher.uploadPhoto, formData, { onUploadProgress });
     return res.data?.data?.url || '';
   }
 }

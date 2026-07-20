@@ -18,7 +18,7 @@ import {
 } from '@/config/validations/assessment';
 
 /**
- * Form đánh giá định kỳ học sinh — 6 tiêu chí dạng bento card.
+ * Form đánh giá định kỳ học sinh — 5 tiêu chí dạng bento card.
  * Tự build Slider (input[type=range] styled) + Textarea, không phụ thuộc shadcn.
  */
 
@@ -249,7 +249,6 @@ const initialScores = (init?: UpsertAssessmentItem): Scores => ({
   languageScore: init?.languageScore ?? ASSESSMENT_SCORE_DEFAULT,
   socioEmotionalScore: init?.socioEmotionalScore ?? ASSESSMENT_SCORE_DEFAULT,
   aestheticScore: init?.aestheticScore ?? ASSESSMENT_SCORE_DEFAULT,
-  lifeSkillScore: init?.lifeSkillScore ?? ASSESSMENT_SCORE_DEFAULT,
 });
 
 export const AssessmentForm: React.FC<AssessmentFormProps> = ({
@@ -283,7 +282,6 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       socialScore: scores.socioEmotionalScore,
       socioEmotionalScore: scores.socioEmotionalScore,
       aestheticScore: scores.aestheticScore,
-      lifeSkillScore: scores.lifeSkillScore,
     }),
     [scores, studentId]
   );
@@ -297,7 +295,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
      *  BE dùng bảng `DevelopmentAssessments` (5 score cột + 1 text):
      *    PhysicalScore, CognitiveScore, LanguageScore,
      *    EmotionalScore, SocialScore, OverallNote
-     *  + 2 card UI (Thẩm mỹ / Kỹ năng sống) giữ local (DB không có cột).
+     *  + 1 card UI (Thẩm mỹ) giữ local (DB không có cột).
      *
      *  Card UI "Cảm xúc - Xã hội" (1 slider) → split thành
      *  emotionalScore + socialScore (cùng value) trước khi gửi.
@@ -312,7 +310,6 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       socialScore: soc,
       socioEmotionalScore: soc,
       aestheticScore: scores.aestheticScore,
-      lifeSkillScore: scores.lifeSkillScore,
       overallNote: comment.trim() || undefined,
       /** Alias tương thích ngược với code cũ. */
       teacherComment: comment.trim() || undefined,
@@ -341,16 +338,16 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <StudentAvatar src={studentAvatar} name={studentName} size={44} />
         <div>
           <StudentName>{studentName || `Học sinh #${studentId}`}</StudentName>
-          <StudentMeta>Đánh giá 6 tiêu chí — thang điểm {ASSESSMENT_SCORE_MIN}–{ASSESSMENT_SCORE_MAX}</StudentMeta>
+          <StudentMeta>Đánh giá 5 tiêu chí — thang điểm {ASSESSMENT_SCORE_MIN}–{ASSESSMENT_SCORE_MAX}</StudentMeta>
         </div>
       </StudentRow>
 
       <BentoGrid>
         {/**
-         * Render đủ 6 card theo ASSESSMENT_CRITERIA — KHÔNG filter `!isSupported`.
+         * Render đủ 5 card theo ASSESSMENT_CRITERIA — KHÔNG filter `!isSupported`.
          *  - 4 card có cột DB (Physical, Cognitive, Language, SocioEmotional → 2 cột riêng Emotional/Social):
          *      gửi BE khi save.
-         *  - 2 card local-only (Aesthetic, LifeSkill): DB DevelopmentAssessments chưa có cột
+         *  - 1 card local-only (Aesthetic): DB DevelopmentAssessments chưa có cột
          *      → KHÔNG gửi BE, lưu localStorage. Hiển thị badge "Lưu cục bộ" để user biết.
          */}
         {ASSESSMENT_CRITERIA.map(c => {

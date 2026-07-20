@@ -11,7 +11,7 @@ export const Container = styled.div`
 
 // Hero Section
 export const HeroSection = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   border-radius: 16px;
   padding: 32px;
   color: white;
