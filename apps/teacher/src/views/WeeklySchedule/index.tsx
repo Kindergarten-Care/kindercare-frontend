@@ -365,6 +365,8 @@ export const WeeklyScheduleView: React.FC = () => {
   // ── Confirm dialog state (delete) ────────────────────────────────────────
   const [confirmDelete, setConfirmDelete] = useState<{ scheduleDetailId: number; day: SchoolDay } | null>(null);
 
+  const isApproved = monthlySchedule?.approvedStatus === 1 && monthlySchedule?.isActive === true;
+
   return (
     <S.Container>
       {/* HERO */}
@@ -379,13 +381,20 @@ export const WeeklyScheduleView: React.FC = () => {
               <S.HeroWeekLabel>{weeksInMonth.length} tuần</S.HeroWeekLabel>
               <S.HeroDivider />
               {monthlySchedule ? (
-                <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
-                  <S.StatusDot $color="#10B981" />
-                  Đã tạo
-                </S.StatusBadge>
+                isApproved ? (
+                  <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
+                    <S.StatusDot $color="#10B981" />
+                    Đã được duyệt
+                  </S.StatusBadge>
+                ) : (
+                  <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
+                    <S.StatusDot $color="#F59E0B" />
+                    Đã tạo (Chưa duyệt)
+                  </S.StatusBadge>
+                )
               ) : (
-                <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
-                  <S.StatusDot $color="#F59E0B" />
+                <S.StatusBadge $color="#9ca3af" $bg="#f3f4f6">
+                  <S.StatusDot $color="#6b7280" />
                   Chưa tạo
                 </S.StatusBadge>
               )}
@@ -413,144 +422,177 @@ export const WeeklyScheduleView: React.FC = () => {
       </S.HeroSection>
 
       {/* TOP FORM: chủ đề tháng + lớp + lưu */}
-      <S.FormCard>
-        <S.FormHeader>
-          <S.FormTitle>
-            <Calendar size={18} /> Thông tin tháng
-          </S.FormTitle>
-          <S.FormSubtitle>
-            Lớp: <strong>{className}</strong> · Niên khóa đang hoạt động
-          </S.FormSubtitle>
-        </S.FormHeader>
+      {!isApproved ? (
+        <S.FormCard>
+          <S.FormHeader>
+            <S.FormTitle>
+              <Calendar size={18} /> Thông tin tháng
+            </S.FormTitle>
+            <S.FormSubtitle>
+              Lớp: <strong>{className}</strong> · Niên khóa đang hoạt động
+            </S.FormSubtitle>
+          </S.FormHeader>
 
-        <S.FormGrid>
-          <S.FormField>
-            <label>Tháng</label>
-            <select
-              value={currentMonth.month}
-              onChange={(e) =>
-                setCurrentMonth((prev) => ({
-                  ...prev,
-                  month: Number(e.target.value),
-                }))
-              }
-            >
-              {MONTH_NAMES.map((name, idx) => (
-                <option key={idx + 1} value={idx + 1}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </S.FormField>
+          <S.FormGrid>
+            <S.FormField>
+              <label>Tháng</label>
+              <select
+                value={currentMonth.month}
+                onChange={(e) =>
+                  setCurrentMonth((prev) => ({
+                    ...prev,
+                    month: Number(e.target.value),
+                  }))
+                }
+              >
+                {MONTH_NAMES.map((name, idx) => (
+                  <option key={idx + 1} value={idx + 1}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </S.FormField>
 
-          <S.FormField>
-            <label>Năm</label>
-            <input
-              type="number"
-              value={currentMonth.year}
-              onChange={(e) =>
-                setCurrentMonth((prev) => ({
-                  ...prev,
-                  year: Number(e.target.value),
-                }))
-              }
-              min={2020}
-              max={2100}
-            />
-          </S.FormField>
+            <S.FormField>
+              <label>Năm</label>
+              <input
+                type="number"
+                value={currentMonth.year}
+                onChange={(e) =>
+                  setCurrentMonth((prev) => ({
+                    ...prev,
+                    year: Number(e.target.value),
+                  }))
+                }
+                min={2020}
+                max={2100}
+              />
+            </S.FormField>
 
-          <S.FormField style={{ gridColumn: 'span 2' }}>
-            <label>Chủ đề tháng *</label>
-            <input
-              type="text"
-              placeholder="VD: Mùa Hè Rực Rỡ & Khám Phá Đại Dương"
-              value={monthTheme}
-              onChange={(e) => setMonthTheme(e.target.value)}
-              maxLength={255}
-            />
-          </S.FormField>
+            <S.FormField style={{ gridColumn: 'span 2' }}>
+              <label>Chủ đề tháng *</label>
+              <input
+                type="text"
+                placeholder="VD: Mùa Hè Rực Rỡ & Khám Phá Đại Dương"
+                value={monthTheme}
+                onChange={(e) => setMonthTheme(e.target.value)}
+                maxLength={255}
+              />
+            </S.FormField>
 
-          <S.FormActions>
-            <S.PrimaryButton
-              type="button"
-              onClick={saveMonthlySchedule}
-              disabled={isSaving || !monthTheme.trim()}
-            >
-              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin tháng'}
-            </S.PrimaryButton>
-          </S.FormActions>
-        </S.FormGrid>
-      </S.FormCard>
+            <S.FormActions>
+              <S.PrimaryButton
+                type="button"
+                onClick={saveMonthlySchedule}
+                disabled={isSaving || !monthTheme.trim()}
+              >
+                <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin tháng'}
+              </S.PrimaryButton>
+            </S.FormActions>
+          </S.FormGrid>
+        </S.FormCard>
+      ) : (
+        <S.FormCard style={{ padding: '16px 24px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 4 }}>Chủ đề tháng</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{monthTheme || 'Chưa có chủ đề'}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 4 }}>Tuần</div>
+              <select
+                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #E5E7EB', outline: 'none' }}
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(Number(e.target.value))}
+              >
+                {weeksInMonth.map((w) => (
+                  <option key={w.weekOrder} value={w.weekOrder}>
+                    {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {weekTheme && (
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #F3F4F6' }}>
+              <span style={{ fontSize: 13, color: '#6B7280' }}>Chủ đề tuần này:</span>{' '}
+              <strong style={{ fontSize: 14, color: '#111827' }}>{weekTheme}</strong>
+            </div>
+          )}
+        </S.FormCard>
+      )}
 
       {/* WEEK SELECTOR + theme + actions */}
-      <S.FormCard>
-        <S.FormHeader>
-          <S.FormTitle>
-            <FileSpreadsheet size={18} /> Thời khóa biểu tuần
-          </S.FormTitle>
-          <S.FormSubtitle>
-            {weeksInMonth.length === 0
-              ? 'Tháng này không có tuần hợp lệ'
-              : `Chọn tuần và nhập chủ đề. Upload CSV cho cả tuần hoặc thêm từng hoạt động.`}
-          </S.FormSubtitle>
-        </S.FormHeader>
+      {!isApproved && (
+        <S.FormCard>
+          <S.FormHeader>
+            <S.FormTitle>
+              <FileSpreadsheet size={18} /> Thời khóa biểu tuần
+            </S.FormTitle>
+            <S.FormSubtitle>
+              {weeksInMonth.length === 0
+                ? 'Tháng này không có tuần hợp lệ'
+                : `Chọn tuần và nhập chủ đề. Upload CSV cho cả tuần hoặc thêm từng hoạt động.`}
+            </S.FormSubtitle>
+          </S.FormHeader>
 
-        <S.FormGrid>
-          <S.FormField>
-            <label>Tuần</label>
-            <select
-              value={selectedWeek}
-              onChange={(e) => setSelectedWeek(Number(e.target.value))}
-              disabled={weeksInMonth.length === 0}
-            >
-              {weeksInMonth.map((w) => (
-                <option key={w.weekOrder} value={w.weekOrder}>
-                  {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
-                </option>
-              ))}
-            </select>
-          </S.FormField>
+          <S.FormGrid>
+            <S.FormField>
+              <label>Tuần</label>
+              <select
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                disabled={weeksInMonth.length === 0}
+              >
+                {weeksInMonth.map((w) => (
+                  <option key={w.weekOrder} value={w.weekOrder}>
+                    {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
+                  </option>
+                ))}
+              </select>
+            </S.FormField>
 
-          <S.FormField style={{ gridColumn: 'span 3' }}>
-            <label>Chủ đề tuần *</label>
-            <input
-              type="text"
-              placeholder="VD: Tuần 1: Làm quen với biển cả"
-              value={weekTheme}
-              onChange={(e) => setWeekTheme(e.target.value)}
-              maxLength={255}
-            />
-          </S.FormField>
+            <S.FormField style={{ gridColumn: 'span 3' }}>
+              <label>Chủ đề tuần *</label>
+              <input
+                type="text"
+                placeholder="VD: Tuần 1: Làm quen với biển cả"
+                value={weekTheme}
+                onChange={(e) => setWeekTheme(e.target.value)}
+                maxLength={255}
+              />
+            </S.FormField>
 
-          <S.FormActions>
-            <S.SecondaryButton type="button" onClick={downloadCsvTemplate}>
-              <Download size={16} /> Tải CSV mẫu
-            </S.SecondaryButton>
-            <S.SecondaryButton
-              type="button"
-              onClick={() => csvInputRef.current?.click()}
-              disabled={!monthlySchedule}
-              title={!monthlySchedule ? 'Vui lòng lưu thông tin tháng trước' : ''}
-            >
-              <Upload size={16} /> Upload CSV
-            </S.SecondaryButton>
-            <input
-              ref={csvInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleCsvSelected}
-              style={{ display: 'none' }}
-            />
-            <S.PrimaryButton
-              type="button"
-              onClick={saveWeeklySchedule}
-              disabled={isSaving || !monthlySchedule || !weekTheme.trim()}
-            >
-              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu tuần'}
-            </S.PrimaryButton>
-          </S.FormActions>
-        </S.FormGrid>
-      </S.FormCard>
+            <S.FormActions>
+              <S.SecondaryButton type="button" onClick={downloadCsvTemplate}>
+                <Download size={16} /> Tải CSV mẫu
+              </S.SecondaryButton>
+              <S.SecondaryButton
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                disabled={!monthlySchedule}
+                title={!monthlySchedule ? 'Vui lòng lưu thông tin tháng trước' : ''}
+              >
+                <Upload size={16} /> Upload CSV
+              </S.SecondaryButton>
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleCsvSelected}
+                style={{ display: 'none' }}
+              />
+              <S.PrimaryButton
+                type="button"
+                onClick={saveWeeklySchedule}
+                disabled={isSaving || !monthlySchedule || !weekTheme.trim()}
+              >
+                <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu tuần'}
+              </S.PrimaryButton>
+            </S.FormActions>
+          </S.FormGrid>
+        </S.FormCard>
+      )}
 
       {/* 5-day board */}
       {isLoading ? (
@@ -573,9 +615,11 @@ export const WeeklyScheduleView: React.FC = () => {
                       <S.TodayBadge>Hôm nay</S.TodayBadge>
                     )}
                   </S.DayTitle>
-                  <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
-                    <Plus size={14} />
-                  </S.AddButton>
+                  {!isApproved && (
+                    <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                      <Plus size={14} />
+                    </S.AddButton>
+                  )}
                 </S.DayHeader>
                 <S.DayBody>
                   {(() => {
@@ -597,7 +641,7 @@ export const WeeklyScheduleView: React.FC = () => {
                         </S.ItemType>
                         {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
                         {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
-                        {it.scheduleDetailId && !dayIsPast ? (
+                        {it.scheduleDetailId && !dayIsPast && !isApproved ? (
                           <S.ItemActions>
                             <S.ItemEditBtn
                               type="button"

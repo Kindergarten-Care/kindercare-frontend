@@ -138,7 +138,7 @@ export class AssessmentService {
       physicalScore: num(raw?.physicalScore ?? raw?.PhysicalScore),
       cognitiveScore: num(raw?.cognitiveScore ?? raw?.CognitiveScore),
       languageScore: num(raw?.languageScore ?? raw?.LanguageScore),
-      emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore),
+      emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore ?? raw?.socioEmotionalScore),
       socialScore: num(raw?.socialScore ?? raw?.SocialScore),
       aestheticScore: num(raw?.aestheticScore ?? raw?.AestheticScore),
       overallNote: typeof note === 'string' ? note : undefined,
