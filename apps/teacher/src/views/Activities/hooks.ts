@@ -148,11 +148,11 @@ export function useActivities() {
         const presentStudentIds = new Set(
           (attendanceData || [])
             .filter((a: any) => a.attendanceStatus === 'PRESENT' || a.attendanceStatus === 'PERMISSION_ABSENCE')
-            .map((a: any) => Number(a.id))
+            .map((a: any) => String(a.id))
         );
 
-        const filteredMealsData = (mealsData || []).filter((m: any) => presentStudentIds.has(m.studentId));
-        const filteredActivitiesData = (activitiesData || []).filter((a: any) => presentStudentIds.has(a.studentId));
+        const filteredMealsData = (mealsData || []).filter((m: any) => presentStudentIds.has(String(m.studentId)));
+        const filteredActivitiesData = (activitiesData || []).filter((a: any) => presentStudentIds.has(String(a.studentId)));
 
 
         // Validate data parsing structure
