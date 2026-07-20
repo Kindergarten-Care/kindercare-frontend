@@ -1,27 +1,11 @@
-'use client';
-
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { StudentsListView } from '@/views/StudentsList';
-import { DashboardLayout } from '@/layout/DashboardLayout';
+import type { Metadata } from 'next';
 
-export default function StudentsPage() {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: 'Danh sách lớp | KinderCare',
+};
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
-  }
-
-  if (!user) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Vui lòng đăng nhập...</div>;
-  }
-
-  return (
-    <DashboardLayout 
-      fullName={user.fullName || user.username} 
-      roleTitle={user.roleName || 'Giáo viên chủ nhiệm'}
-    >
-      <StudentsListView />
-    </DashboardLayout>
-  );
+export default function StudentsPage(): React.ReactElement {
+  return <StudentsListView />;
 }

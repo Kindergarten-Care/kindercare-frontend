@@ -13,7 +13,9 @@ import {
   Upload,
   X,
   FileSpreadsheet,
+  Target,
 } from 'lucide-react';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useWeeklySchedule, SCHOOL_DAYS } from './hooks/useWeeklySchedule';
 import { ItemModal } from './components/ItemModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -25,6 +27,7 @@ import {
 import * as S from './styles';
 import type { SchoolDay, WeeklyScheduleDetail, ActivityType } from '@/config/types/weeklySchedule';
 import { apiClient } from '@kindercare/core';
+import { Dropdown } from '@kindercare/ui';
 
 const MONTH_NAMES = [
   'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -365,9 +368,10 @@ export const WeeklyScheduleView: React.FC = () => {
   // ── Confirm dialog state (delete) ────────────────────────────────────────
   const [confirmDelete, setConfirmDelete] = useState<{ scheduleDetailId: number; day: SchoolDay } | null>(null);
 
-  const isApproved = monthlySchedule?.approvedStatus === 1 && monthlySchedule?.isActive === true;
+  const isApproved = monthlySchedule?.approvedStatus === 1;
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO */}
       <S.HeroSection>
@@ -381,15 +385,22 @@ export const WeeklyScheduleView: React.FC = () => {
               <S.HeroWeekLabel>{weeksInMonth.length} tuần</S.HeroWeekLabel>
               <S.HeroDivider />
               {monthlySchedule ? (
-                isApproved ? (
-                  <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
-                    <S.StatusDot $color="#10B981" />
-                    Đã được duyệt
-                  </S.StatusBadge>
+                monthlySchedule.approvedStatus === 1 ? (
+                  monthlySchedule.isActive ? (
+                    <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
+                      <S.StatusDot $color="#10B981" />
+                      Đã duyệt - đang áp dụng
+                    </S.StatusBadge>
+                  ) : (
+                    <S.StatusBadge $color="#1e3a8a" $bg="#dbeafe">
+                      <S.StatusDot $color="#3b82f6" />
+                      Đã được duyệt, chưa áp dụng
+                    </S.StatusBadge>
+                  )
                 ) : (
                   <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
                     <S.StatusDot $color="#F59E0B" />
-                    Đã tạo (Chưa duyệt)
+                    Đã tạo - chưa duyệt
                   </S.StatusBadge>
                 )
               ) : (
@@ -436,21 +447,20 @@ export const WeeklyScheduleView: React.FC = () => {
           <S.FormGrid>
             <S.FormField>
               <label>Tháng</label>
-              <select
-                value={currentMonth.month}
-                onChange={(e) =>
+              <Dropdown
+                value={String(currentMonth.month)}
+                onChange={(val) =>
                   setCurrentMonth((prev) => ({
                     ...prev,
-                    month: Number(e.target.value),
+                    month: Number(val),
                   }))
                 }
-              >
-                {MONTH_NAMES.map((name, idx) => (
-                  <option key={idx + 1} value={idx + 1}>
-                    {name}
-                  </option>
-                ))}
-              </select>
+                options={MONTH_NAMES.map((name, idx) => ({
+                  value: String(idx + 1),
+                  label: name,
+                }))}
+                fullWidth
+              />
             </S.FormField>
 
             <S.FormField>
@@ -500,17 +510,14 @@ export const WeeklyScheduleView: React.FC = () => {
             </div>
             <div>
               <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 4 }}>Tuần</div>
-              <select
-                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #E5E7EB', outline: 'none' }}
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(Number(e.target.value))}
-              >
-                {weeksInMonth.map((w) => (
-                  <option key={w.weekOrder} value={w.weekOrder}>
-                    {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
-                  </option>
-                ))}
-              </select>
+              <Dropdown
+                value={String(selectedWeek)}
+                onChange={(val) => setSelectedWeek(Number(val))}
+                options={weeksInMonth.map((w) => ({
+                  value: String(w.weekOrder),
+                  label: w.weekOrder === todayWeekOrder ? `${w.label} (Tuần này)` : w.label,
+                }))}
+              />
             </div>
           </div>
           {weekTheme && (
@@ -539,17 +546,16 @@ export const WeeklyScheduleView: React.FC = () => {
           <S.FormGrid>
             <S.FormField>
               <label>Tuần</label>
-              <select
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(Number(e.target.value))}
+              <Dropdown
+                value={weeksInMonth.length === 0 ? null : String(selectedWeek)}
+                onChange={(val) => setSelectedWeek(Number(val))}
+                options={weeksInMonth.map((w) => ({
+                  value: String(w.weekOrder),
+                  label: w.weekOrder === todayWeekOrder ? `${w.label} (Tuần này)` : w.label,
+                }))}
                 disabled={weeksInMonth.length === 0}
-              >
-                {weeksInMonth.map((w) => (
-                  <option key={w.weekOrder} value={w.weekOrder}>
-                    {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
-                  </option>
-                ))}
-              </select>
+                fullWidth
+              />
             </S.FormField>
 
             <S.FormField style={{ gridColumn: 'span 3' }}>
@@ -768,6 +774,7 @@ export const WeeklyScheduleView: React.FC = () => {
         ))}
       </S.ToastContainer>
     </S.Container>
+    </DashboardLayout>
   );
 };
 

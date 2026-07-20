@@ -89,11 +89,15 @@ export const SERVER = {
     getProxyApprovals:       '/teacher/proxy-approvals',
     updateProxyApproval:     '/teacher/proxy-approvals',
     getLessonPlans:          '/teacher/lesson-plans',
+    // Phiếu bé ngoan (bảng StudentAssessments — 5 tiêu chí, theo AssessmentMonth)
     getAssessments:          '/teacher/assessments',
-    // Đánh giá định kỳ học sinh (6 tiêu chí)
-    getClassAssessments:     '/teacher/classes/:classId/student-health/assessments',
-    upsertClassAssessments:  '/teacher/classes/:classId/student-health/assessments',
-    getStudentAssessmentHistory: '/teacher/classes/:classId/student-health/assessments/history',
+    getClassAssessments:     '/teacher/classes/:classId/assessments',
+    submitAssessment:        '/teacher/assessments',
+
+    // Đánh giá định kỳ học sinh (bảng DevelopmentAssessments — 5 tiêu chí, theo TermPeriod)
+    getClassDevelopmentAssessments:    '/teacher/classes/:classId/student-health/assessments',
+    upsertClassDevelopmentAssessments: '/teacher/classes/:classId/student-health/assessments',
+    getStudentDevelopmentAssessmentHistory: '/teacher/classes/:classId/student-health/assessments/history',
     
     // Quản lý thông tin học sinh
     getStudentAttendanceHistory: '/students/:studentId/attendance-history',

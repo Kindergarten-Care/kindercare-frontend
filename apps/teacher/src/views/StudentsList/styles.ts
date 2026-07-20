@@ -526,11 +526,11 @@ export const HeatmapCell = styled.span<{ $kind: 'present' | 'late' | 'absent' | 
       case 'late':
         return `background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;`;
       case 'absent':
-        return `background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5;`;
+        return `background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5;`;
       case 'weekend':
-        return `background: #F1F4F1; color: #C7CFCA; border: 1px solid transparent;`;
+        return `background: #F3F4F6; color: #9CA3AF; border: 1px solid transparent;`;
       case 'future':
-        return `background: #FAFCFB; color: #D1D5DB; border: 1px solid #EEF4F0;`;
+        return `background: #F9FAFB; color: #9CA3AF; border: 1px solid #F3F4F6;`;
     }
   }}
 `;
@@ -550,10 +550,10 @@ export const HealthCard = styled.div<{ $theme: 'blue' | 'purple' }>`
 
 export const HealthTitle = styled.div<{ $theme: 'blue' | 'purple' }>`
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: ${props => props.$theme === 'blue' ? '#1D4ED8' : '#7C3AED'};
+  color: ${props => props.$theme === 'blue' ? '#1E3A8A' : '#5B21B6'};
 `;
 
 export const HealthVal = styled.div`
@@ -561,6 +561,7 @@ export const HealthVal = styled.div`
   font-weight: 800;
   margin-top: 3px;
   font-family: inherit;
+  color: #1F2937;
 `;
 
 export const PrescriptionBox = styled.div`
