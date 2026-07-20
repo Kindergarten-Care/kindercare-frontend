@@ -1,27 +1,11 @@
-'use client';
-
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentView } from '@/views/AssessmentView';
-import { DashboardLayout } from '@/layout/DashboardLayout';
+import type { Metadata } from 'next';
 
-export default function AssessmentPage() {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: 'Đánh giá định kỳ | KinderCare',
+};
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
-  }
-
-  if (!user) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Vui lòng đăng nhập...</div>;
-  }
-
-  return (
-    <DashboardLayout
-      fullName={user.fullName || user.username}
-      roleTitle={user.roleName || 'Giáo viên chủ nhiệm'}
-    >
-      <AssessmentView />
-    </DashboardLayout>
-  );
+export default function AssessmentPage(): React.ReactElement {
+  return <AssessmentView />;
 }

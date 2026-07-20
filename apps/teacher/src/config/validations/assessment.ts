@@ -13,12 +13,11 @@ import {
  * Đánh giá học sinh — schema (hand-rolled, mirror Zod API).
  * Có thể migrate sang Zod sau nếu team cài zod (npm i zod).
  *
- * Validate cả FE form và contract BE (bảng `DevelopmentAssessments`):
- *  - 3 score BE chắc chắn nhận: physicalScore, cognitiveScore, languageScore       (range 1..10)
- *  - 2 score BE nhận thêm (sau TASK 1): emotionalScore, socialScore              (range 1..10)
- *  - 1 text BE nhận thêm: overallNote                                             (max 500 ký tự)
- *  - 1 field local-only (DB chưa có cột): aestheticScore
- *  - termPeriod: required khi gửi BE, regex YYYY-MM
+ * Validate cả FE form và contract BE (bảng `StudentAssessments`):
+ *  - 5 score BE yêu cầu: physicalScore, cognitiveScore, languageScore,
+ *                        socioEmotionalScore, aestheticScore   (range 1..10)
+ *  - 1 text optional: teacherComment                            (max 500 ký tự)
+ *  - termPeriod (assessmentMonth): required khi gửi BE, regex YYYY-MM
  */
 
 export class ValidationError extends Error {
@@ -44,14 +43,12 @@ function isMonthReversed(s: unknown): s is string {
   return typeof s === 'string' && MONTH_RE_REVERSED.test(s);
 }
 
-/** Runtime-validate 1 record đánh giá (full form 6 tiêu chí + note).
+/** Runtime-validate 1 record đánh giá (full form 5 tiêu chí + note).
  *
  * Quy tắc:
- *  - 3 scores required (BE chắc chắn nhận): physicalScore, cognitiveScore, languageScore
- *  - 2 scores optional (BE nhận nếu có):   emotionalScore, socialScore
- *  - 1 overallNote optional, max 500 ký tự
- *  - 1 field local-only (aestheticScore)
- *    FE vẫn cho phép nhập nhưng KHÔNG gửi BE (DB DevelopmentAssessments không có cột).
+ *  - 5 scores required: physicalScore, cognitiveScore, languageScore,
+ *                        socioEmotionalScore, aestheticScore
+ *  - 1 teacherComment optional, max 500 ký tự
  */
 export function validateAssessmentItem(input: unknown): string[] {
   const errors: string[] = [];
@@ -93,11 +90,7 @@ export function validateAssessmentItem(input: unknown): string[] {
   return errors;
 }
 
-/** Runtime-validate cả body gửi BE.
- *
- * Sau khi BE apply TASK 1: build payload gồm đủ 5 scores + overallNote.
- * 1 field local-only (aestheticScore) sẽ KHÔNG được gửi.
- */
+/** Runtime-validate cả body gửi BE (mảng items, dùng khi cần validate theo batch). */
 export function validateUpsertBody(input: unknown): {
   ok: boolean;
   data?: UpsertClassAssessmentsBody;
@@ -176,11 +169,8 @@ export function validateUpsertBody(input: unknown): {
 /**
  * Parse nhiều format về chuẩn YYYY-MM (dùng đồng nhất trong FE):
  *   - Date object
- *   - 'YYYY-MM' (FE + BE `DevelopmentAssessments.TermPeriod` đều dùng format này)
+ *   - 'YYYY-MM' (FE + BE `StudentAssessments.AssessmentMonth` đều dùng format này)
  *   - undefined / null → tháng hiện tại
- *
- * KHÔNG cần hỗ trợ MM-YYYY nữa vì DB `DevelopmentAssessments` lưu TermPeriod
- * dạng `YYYY-MM` (vd "2026-07"), khớp với format FE.
  */
 export function toAssessmentMonth(input: string | Date | undefined | null): string {
   if (!input) return currentMonthYYYY();
@@ -203,8 +193,7 @@ export function currentMonthYYYY(): string {
 }
 
 /**
- * Tính mean của 5 tiêu chí BE đang hỗ trợ trong `DevelopmentAssessments`
- * (3 bắt buộc + 2 optional). Bỏ qua field không có giá trị số.
+ * Tính mean của 5 tiêu chí trong `StudentAssessments`. Bỏ qua field không có giá trị số.
  * Trả về 0 nếu không có score nào.
  */
 export function assessmentMean(s: UpsertAssessmentItem): number {
@@ -212,23 +201,10 @@ export function assessmentMean(s: UpsertAssessmentItem): number {
     s.physicalScore,
     s.cognitiveScore,
     s.languageScore,
-    s.emotionalScore,
-    s.socialScore,
+    s.socioEmotionalScore,
+    s.aestheticScore,
   ].filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
   if (parts.length === 0) return 0;
   const sum = parts.reduce((a, b) => a + b, 0);
   return Math.round((sum / parts.length) * 10) / 10;
-}
-
-/**
- * Hợp nhất emotionalScore + socialScore thành 1 giá trị "socioEmotional"
- * để hiển thị radar chart (vì DB tách 2 cột, UI có 1 card "Cảm xúc - Xã hội").
- *
- * Công thức: mean(e, s), làm tròn 1 chữ số thập phân.
- * Bỏ qua field undefined / NaN.
- */
-export function mergeSocioEmotional(e?: number, s?: number): number {
-  const parts = [e, s].filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
-  if (parts.length === 0) return 0;
-  return Math.round((parts.reduce((a, b) => a + b, 0) / parts.length) * 10) / 10;
 }

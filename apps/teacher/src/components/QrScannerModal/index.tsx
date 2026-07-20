@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';

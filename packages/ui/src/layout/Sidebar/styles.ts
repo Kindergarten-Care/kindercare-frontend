@@ -14,7 +14,7 @@ export const SideNavContainer = styled.nav`
   flex-direction: column;
   z-index: 100;
   filter: drop-shadow(4px 0px 12px rgba(0, 0, 0, 0.02));
-  font-family: 'Montserrat', sans-serif;
+  font-family: ${({ theme }) => theme.fonts.body};
 `;
 
 export const BrandSection = styled.div`
@@ -48,7 +48,7 @@ export const BrandInfo = styled.div`
 `;
 
 export const BrandName = styled.span`
-  font-family: 'Montserrat', sans-serif;
+  font-family: ${({ theme }) => theme.fonts.display};
   font-weight: 900;
   font-size: 18px;
   color: #14532d;
@@ -57,7 +57,7 @@ export const BrandName = styled.span`
 `;
 
 export const BrandSub = styled.span`
-  font-family: 'Montserrat', sans-serif;
+  font-family: ${({ theme }) => theme.fonts.body};
   font-weight: 500;
   font-size: 10px;
   color: #6f7a6c;
@@ -119,7 +119,7 @@ export const NavIcon = styled.div<{ $active?: boolean }>`
 `;
 
 export const NavLabel = styled.span<{ $active?: boolean }>`
-  font-family: 'Montserrat', sans-serif;
+  font-family: ${({ theme }) => theme.fonts.body};
   font-size: 14px;
   line-height: 17.5px;
   color: ${({ $active }) => ($active ? '#046e1e' : '#475569')};

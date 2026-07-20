@@ -1,7 +1,10 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useProxyAuthorizations, useProcessProxyAuthorization } from '@/hooks/useProxyAuthorizationQueries';
 import { ShieldCheck, UserCheck, X, Phone, CreditCard, Calendar } from 'lucide-react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 
 export const ProxyApprovalList: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
@@ -39,6 +42,7 @@ export const ProxyApprovalList: React.FC = () => {
   }
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* Hero Header */}
       <S.HeroSection>
@@ -226,5 +230,6 @@ export const ProxyApprovalList: React.FC = () => {
         </S.ModalBackdrop>
       )}
     </S.Container>
+    </DashboardLayout>
   );
 };

@@ -1,27 +1,11 @@
-'use client';
-
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { ProxyApprovalList } from '@/views/ProxyApprovals';
-import { DashboardLayout } from '@/layout/DashboardLayout';
+import type { Metadata } from 'next';
 
-export default function ProxyApprovalsPage() {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: 'Duyệt đón hộ | KinderCare',
+};
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
-  }
-
-  if (!user) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Vui lòng đăng nhập...</div>;
-  }
-
-  return (
-    <DashboardLayout 
-      fullName={user.fullName || user.username} 
-      roleTitle={user.roleName || 'Giáo viên chủ nhiệm'}
-    >
-      <ProxyApprovalList />
-    </DashboardLayout>
-  );
+export default function ProxyApprovalsPage(): React.ReactElement {
+  return <ProxyApprovalList />;
 }
