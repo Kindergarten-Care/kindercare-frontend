@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { TeacherDashboardView } from '@/views/TeacherDashboard';
 import type { Metadata } from 'next';
 
@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function TeacherDashboardPage(): React.ReactElement {
-  return <TeacherDashboardView />;
+  return (
+    <Suspense fallback={null}>
+      <TeacherDashboardView />
+    </Suspense>
+  );
 }
