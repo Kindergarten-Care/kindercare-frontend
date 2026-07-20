@@ -4,8 +4,7 @@ import React from 'react';
 import * as S from './styles';
 import { TeacherSidebar } from '../TeacherSidebar';
 import { TopAppBar } from '../TopAppBar';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from '@kindercare/ui';
 import { useTeacherNotifications } from '@/hooks/useTeacherNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 

@@ -123,7 +123,7 @@ export const LogoBox = styled.div`
 `;
 
 export const DisplayText = styled.div`
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;
 `;
 
 export const AvatarWrapper = styled.div`

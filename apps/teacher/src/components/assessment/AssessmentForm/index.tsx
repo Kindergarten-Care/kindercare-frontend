@@ -188,20 +188,23 @@ const SliderScale = styled.div`
 
 const Textarea = styled.textarea<{ $hasError?: boolean }>`
   width: 100%;
-  min-height: 90px;
+  min-height: 100px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid ${p => (p.$hasError ? '#EF4444' : '#E2E8F0')};
+  border: 1.5px solid ${p => (p.$hasError ? '#EF4444' : '#CBD5E1')};
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1E293B;
   resize: vertical;
   outline: none;
   background: ${props => props.theme.colors.white};
   box-sizing: border-box;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
   &:focus {
-    border-color: ${props => props.theme.colors.primary};
-    box-shadow: 0 0 0 3px rgba(4, 110, 30, 0.1);
+    border-color: ${props => props.theme.colors.green || '#15803d'};
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
   }
 `;
 
@@ -278,8 +281,6 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
       physicalScore: scores.physicalScore,
       cognitiveScore: scores.cognitiveScore,
       languageScore: scores.languageScore,
-      emotionalScore: scores.socioEmotionalScore,
-      socialScore: scores.socioEmotionalScore,
       socioEmotionalScore: scores.socioEmotionalScore,
       aestheticScore: scores.aestheticScore,
     }),
@@ -291,27 +292,18 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
     setError(null);
     setSuccess(null);
 
-    /** Map từ 6 card UI → payload gửi BE.
-     *  BE dùng bảng `DevelopmentAssessments` (5 score cột + 1 text):
+    /** Map từ 5 card UI → payload gửi BE.
+     *  BE dùng bảng `StudentAssessments` (5 score cột + 1 text):
      *    PhysicalScore, CognitiveScore, LanguageScore,
-     *    EmotionalScore, SocialScore, OverallNote
-     *  + 1 card UI (Thẩm mỹ) giữ local (DB không có cột).
-     *
-     *  Card UI "Cảm xúc - Xã hội" (1 slider) → split thành
-     *  emotionalScore + socialScore (cùng value) trước khi gửi.
+     *    SocioEmotionalScore, AestheticScore, TeacherComment
      */
-    const soc = scores.socioEmotionalScore;
     const payload: UpsertAssessmentItem = {
       studentId,
       physicalScore: scores.physicalScore,
       cognitiveScore: scores.cognitiveScore,
       languageScore: scores.languageScore,
-      emotionalScore: soc,
-      socialScore: soc,
-      socioEmotionalScore: soc,
+      socioEmotionalScore: scores.socioEmotionalScore,
       aestheticScore: scores.aestheticScore,
-      overallNote: comment.trim() || undefined,
-      /** Alias tương thích ngược với code cũ. */
       teacherComment: comment.trim() || undefined,
     };
 
@@ -414,9 +406,15 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <MeanBadge $accent={accentMain}>
           ⌀ Trung bình: {mean.toFixed(1)} / {ASSESSMENT_SCORE_MAX}
         </MeanBadge>
-        <Button type="submit" disabled={disabled || submitting}>
-          {submitting ? 'Đang lưu…' : 'Lưu đánh giá'}
-        </Button>
+        {initial ? (
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#166534', background: '#DCFCE7', padding: '8px 18px', borderRadius: 999, border: '1px solid #BBF7D0' }}>
+            Đã đánh giá
+          </span>
+        ) : (
+          <Button type="submit" disabled={disabled || submitting}>
+            {submitting ? 'Đang lưu…' : 'Lưu đánh giá'}
+          </Button>
+        )}
       </Actions>
     </Container>
   );
