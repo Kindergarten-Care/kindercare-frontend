@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useDetailedStudents, useTeacherClasses } from '@/hooks/queries';
 import { useAuth } from '@/contexts/AuthContext';
 import { StudentDetailedDomainModel } from '@/config/types/student';
@@ -10,6 +13,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getStudentInitials } from '@/utils/string';
 import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import type { Student } from '@/config/types/attendance';
+import { healthService } from '@/services/health/HealthService';
+import type { HealthLogDomainModel } from '@/config/types/health';
 
 type DrawerTab = 'profile' | 'attendance' | 'health' | 'parents';
 type FilterType = 'all' | 'present' | 'absent' | 'allergy';
@@ -45,6 +50,8 @@ export const StudentsListView: React.FC = () => {
   const [todayMeds, setTodayMeds] = useState<any[]>([]);
   const [loadingMeds, setLoadingMeds] = useState(false);
   const [dailyAttendance, setDailyAttendance] = useState<Student[]>([]);
+  const [currentHealthLog, setCurrentHealthLog] = useState<HealthLogDomainModel | null>(null);
+  const [loadingHealth, setLoadingHealth] = useState(false);
 
   useEffect(() => {
     if (activeClassId) {
@@ -89,13 +96,32 @@ export const StudentsListView: React.FC = () => {
     }
   };
 
+  const loadCurrentHealthLog = async (classId: number | string, studentId: number) => {
+    try {
+      setLoadingHealth(true);
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const logs = await healthService.getHealthLogs(classId, currentMonth);
+      const studentLog = logs.find(log => log.studentId === studentId);
+      setCurrentHealthLog(studentLog || null);
+    } catch (e) {
+      console.error('Failed to load health log', e);
+      setCurrentHealthLog(null);
+    } finally {
+      setLoadingHealth(false);
+    }
+  };
+
 
   useEffect(() => {
     if (selectedStudent) {
       loadAttendanceHistory(selectedStudent.studentId, historyMonth);
       loadTodayMeds(selectedStudent.studentId);
+      if (activeClassId) {
+        loadCurrentHealthLog(activeClassId, selectedStudent.studentId);
+      }
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, activeClassId]);
 
   useEffect(() => {
     if (selectedStudent) {
@@ -320,7 +346,6 @@ export const StudentsListView: React.FC = () => {
     ? Math.round((drawerStudentPresentOrLateDays / drawerStudentAttendanceDays.length) * 100)
     : 100;
 
-  const drawerStudentBmi = selectedStudent?.healthRecord?.bmi || 0;
   const getBmiStatus = (bmiValue: number) => {
     if (bmiValue === 0) return '--';
     if (bmiValue < 14) return 'Hơi gầy';
@@ -329,6 +354,7 @@ export const StudentsListView: React.FC = () => {
   };
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO / STATS HEADER */}
       <section style={{
@@ -401,33 +427,6 @@ export const StudentsListView: React.FC = () => {
               </div>
             </div>
           </div>
-          <button 
-            onClick={() => setPermissionModalOpen(true)}
-            style={{
-              flex: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '9px',
-              height: '48px',
-              padding: '0 22px',
-              borderRadius: '14px',
-              border: 'none',
-              background: '#fff',
-              color: '#005A36',
-              fontFamily: 'inherit',
-              fontWeight: 800,
-              fontSize: '14.5px',
-              cursor: 'pointer',
-              boxShadow: '0 10px 24px -10px rgba(0,0,0,0.2)',
-              transition: 'transform 0.15s'
-            }}
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Thêm bé mới
-          </button>
         </div>
       </section>
 
@@ -726,13 +725,13 @@ export const StudentsListView: React.FC = () => {
               {activeTab === 'attendance' && (
                 <S.FadeInContent>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                    <span className="display" style={{ fontWeight: 700, fontSize: '14px' }}>Chuyên cần</span>
+                    <span className="display" style={{ fontWeight: 700, fontSize: '14px', color: '#1F2937' }}>Chuyên cần</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <input 
                         type="month"
                         value={historyMonth}
                         onChange={e => setHistoryMonth(e.target.value)}
-                        style={{ padding: '4px 8px', borderRadius: '8px', border: '1.5px solid #C7E3D5', fontSize: '12.5px', outline: 'none' }}
+                        style={{ padding: '4px 8px', borderRadius: '8px', border: '1.5px solid #C7E3D5', fontSize: '12.5px', outline: 'none', background: '#FFFFFF', color: '#1F2937', colorScheme: 'light' }}
                       />
                       <span style={{ fontSize: '12px', fontWeight: 700, color: '#005A36', background: '#E6F3ED', padding: '5px 11px', borderRadius: '8px' }}>
                         {drawerStudentAttendanceRate}%
@@ -760,7 +759,7 @@ export const StudentsListView: React.FC = () => {
                     </S.HeatmapGrid>
                   )}
 
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '11px', fontWeight: 600, color: '#6B7280', marginTop: '4px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: '#005A36' }} />
                       Có mặt
@@ -781,9 +780,9 @@ export const StudentsListView: React.FC = () => {
                     style={{
                       height: '44px',
                       borderRadius: '12px',
-                      border: '1px solid #C7E3D5',
-                      background: '#E6F3ED',
-                      color: '#005A36',
+                      border: 'none',
+                      background: '#005A36',
+                      color: '#FFFFFF',
                       fontFamily: 'inherit',
                       fontWeight: 700,
                       fontSize: '13.5px',
@@ -800,49 +799,55 @@ export const StudentsListView: React.FC = () => {
               {/* HEALTH TAB */}
               {activeTab === 'health' && (
                 <S.FadeInContent>
-                  <S.HealthRow>
-                    <S.HealthCard $theme="blue">
-                      <S.HealthTitle $theme="blue">Chiều cao</S.HealthTitle>
-                      <S.HealthVal>
-                        {selectedStudent.healthRecord?.height || '--'}
-                        <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 600 }}> cm</span>
-                      </S.HealthVal>
-                    </S.HealthCard>
+                  {loadingHealth ? (
+                    <div style={{ padding: '30px', textAlign: 'center', fontSize: '13px', color: '#6B7280' }}>Đang tải dữ liệu sức khỏe...</div>
+                  ) : (
+                    <>
+                      <S.HealthRow>
+                        <S.HealthCard $theme="blue">
+                          <S.HealthTitle $theme="blue">Chiều cao</S.HealthTitle>
+                          <S.HealthVal>
+                            {currentHealthLog?.height || '--'}
+                            <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 600 }}> cm</span>
+                          </S.HealthVal>
+                        </S.HealthCard>
 
-                    <S.HealthCard $theme="purple">
-                      <S.HealthTitle $theme="purple">Cân nặng</S.HealthTitle>
-                      <S.HealthVal>
-                        {selectedStudent.healthRecord?.weight ? selectedStudent.healthRecord.weight.toFixed(1) : '--'}
-                        <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 600 }}> kg</span>
-                      </S.HealthVal>
-                    </S.HealthCard>
-                  </S.HealthRow>
+                        <S.HealthCard $theme="purple">
+                          <S.HealthTitle $theme="purple">Cân nặng</S.HealthTitle>
+                          <S.HealthVal>
+                            {currentHealthLog?.weight ? currentHealthLog.weight.toFixed(1) : '--'}
+                            <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 600 }}> kg</span>
+                          </S.HealthVal>
+                        </S.HealthCard>
+                      </S.HealthRow>
 
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '11px',
-                    padding: '13px 15px',
-                    borderRadius: '13px',
-                    background: '#E6F3ED',
-                    border: '1px solid #C7E3D5'
-                  }}>
-                    <span style={{ flex: 'none', width: '36px', height: '36px', borderRadius: '11px', background: '#fff', color: '#005A36', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                      </svg>
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '12px', color: '#3F7B5F', fontWeight: 600 }}>Chỉ số BMI</div>
-                      <div className="display" style={{ fontSize: '15px', fontWeight: 700, color: '#1F2937' }}>
-                        {drawerStudentBmi ? drawerStudentBmi.toFixed(1) : '--'} · <span style={{ color: '#005A36' }}>{getBmiStatus(drawerStudentBmi)}</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '11px',
+                        padding: '13px 15px',
+                        borderRadius: '13px',
+                        background: '#E6F3ED',
+                        border: '1px solid #C7E3D5'
+                      }}>
+                        <span style={{ flex: 'none', width: '36px', height: '36px', borderRadius: '11px', background: '#fff', color: '#005A36', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                          </svg>
+                        </span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '12px', color: '#3F7B5F', fontWeight: 600 }}>Chỉ số BMI</div>
+                          <div className="display" style={{ fontSize: '15px', fontWeight: 700, color: '#1F2937' }}>
+                            {currentHealthLog?.bmi ? currentHealthLog.bmi.toFixed(1) : '--'} · <span style={{ color: '#005A36' }}>{getBmiStatus(currentHealthLog?.bmi || 0)}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   {/* Medications dặn thuốc */}
                   <S.PrescriptionBox>
-                    <span className="display" style={{ fontWeight: 700, fontSize: '13.5px' }}>💊 Đơn thuốc hôm nay</span>
+                    <span className="display" style={{ fontWeight: 700, fontSize: '13.5px', color: '#1F2937' }}>💊 Đơn thuốc hôm nay</span>
                     
                     {loadingMeds ? (
                       <div style={{ padding: '14px', textAlign: 'center', fontSize: '12.5px', color: '#6B7280' }}>Đang tải đơn thuốc hôm nay...</div>
@@ -997,5 +1002,6 @@ export const StudentsListView: React.FC = () => {
         />
       )}
     </S.Container>
+    </DashboardLayout>
   );
 };

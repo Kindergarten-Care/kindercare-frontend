@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import styled from 'styled-components';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import styled, { keyframes } from 'styled-components';
 import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import { Student } from '@/config/types/attendance';
+import { kcToast } from '@kindercare/ui';
 
 const Overlay = styled.div`
   position: fixed;
@@ -68,26 +69,107 @@ const Label = styled.label`
   color: #374151;
 `;
 
-const Select = styled.select`
+const DropdownTrigger = styled.div<{ $isOpen: boolean }>`
   width: 100%;
   box-sizing: border-box;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  padding: 11px 14px;
+  border-radius: 11px;
+  border: 1.5px solid ${p => p.$isOpen ? '#34D399' : '#E6EEE9'};
   font-size: 14px;
-  outline: none;
-  &:focus { border-color: #10B981; }
+  font-weight: 600;
+  color: #1F2937;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: ${p => p.$isOpen ? '0 0 0 3px rgba(52, 211, 153, 0.12)' : 'none'};
+
+  &:hover {
+    border-color: #34D399;
+  }
 `;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1.5px solid #E6EEE9;
+  border-radius: 11px;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+  z-index: 1000;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const DropdownSearchInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #E6EEE9;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  background: #fff;
+  color: #1F2937;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #34D399;
+  }
+`;
+
+const DropdownOptionsList = styled.div`
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 99px;
+  }
+`;
+
+const DropdownOption = styled.div<{ $active: boolean }>`
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: ${p => p.$active ? '#005A36' : '#374151'};
+  background: ${p => p.$active ? '#E6F3ED' : 'transparent'};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: ${p => p.$active ? '#E6F3ED' : '#F9FAFB'};
+  }
+`;
+
 
 const Input = styled.input`
   width: 100%;
   box-sizing: border-box;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #f3f4f6;
+  padding: 11px 14px;
+  border-radius: 11px;
+  border: 1.5px solid #E6EEE9;
+  background: #F3F4F6;
   font-size: 14px;
-  color: #6b7280;
+  font-weight: 600;
+  color: #4B5563;
 `;
 
 const Footer = styled.div`
@@ -119,6 +201,8 @@ const Btn = styled.button<{ $primary?: boolean }>`
 
 
 
+
+
 interface AttendanceConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -144,10 +228,24 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
 }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownSearch, setDropdownSearch] = useState('');
 
   const selectedStudent = useMemo(() => {
     return students.find(s => String(s.id) === selectedStudentId);
   }, [students, selectedStudentId]);
+
+  const filteredStudentsForDropdown = useMemo(() => {
+    return students.filter(s => s.name.toLowerCase().includes(dropdownSearch.toLowerCase().trim()));
+  }, [students, dropdownSearch]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedStudentId('');
+      setIsDropdownOpen(false);
+      setDropdownSearch('');
+    }
+  }, [isOpen]);
 
   const isDropoffComplete = !!selectedStudent?.dropoffImage;
   const isPickupComplete = !!selectedStudent?.pickupImage;
@@ -166,15 +264,15 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
 
   const handleSubmit = async () => {
     if (!selectedStudentId) {
-      alert('Vui lòng chọn học sinh!');
+      kcToast.warning('Vui lòng chọn học sinh!');
       return;
     }
     if (!photoBlob) {
-      alert('Không có ảnh chụp!');
+      kcToast.error('Không có ảnh chụp!');
       return;
     }
     if (isFullyComplete) {
-      alert('Học sinh đã hoàn thành điểm danh 2 chiều trong ngày!');
+      kcToast.warning('Học sinh đã hoàn thành điểm danh 2 chiều trong ngày!');
       return;
     }
 
@@ -194,21 +292,23 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
       const returnedType = res?.data?.type || res?.type;
 
       if (returnedType === 'dropoff') {
-        alert('Đã lưu ảnh nhận trẻ đầu ngày thành công!');
+        kcToast.success('Đã lưu ảnh nhận trẻ đầu ngày thành công!');
       } else if (returnedType === 'pickup') {
-        alert('Đã lưu ảnh trả trẻ cuối ngày thành công!');
+        kcToast.success('Đã lưu ảnh trả trẻ cuối ngày thành công!');
       } else {
-        alert('Điểm danh thành công!');
+        kcToast.success('Điểm danh thành công!');
       }
 
-      onSuccess();
-      onClose();
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1500);
     } catch (error: any) {
       console.error('Error submitting attendance:', error);
       if (error?.response?.status === 400) {
-        alert('Học sinh đã điểm danh đủ 2 lần trong ngày, không thể chụp thêm');
+        kcToast.error('Học sinh đã điểm danh đủ 2 lần trong ngày, không thể chụp thêm');
       } else {
-        alert('Có lỗi xảy ra khi điểm danh.');
+        kcToast.error('Có lỗi xảy ra khi điểm danh.');
       }
     } finally {
       setIsSubmitting(false);
@@ -230,14 +330,44 @@ export const AttendanceConfirmModal: React.FC<AttendanceConfirmModalProps> = ({
         </Header>
         <Body>
           {photoUrl && <ImagePreview src={photoUrl} alt="Preview" />}
-          <FormGroup>
+          <FormGroup style={{ position: 'relative' }}>
             <Label>Học sinh</Label>
-            <Select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}>
-              <option value="" disabled>Chọn học sinh...</option>
-              {students.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </Select>
+            <DropdownTrigger $isOpen={isDropdownOpen} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+              <span>{selectedStudent ? selectedStudent.name : 'Chọn học sinh...'}</span>
+              <span style={{ fontSize: '10px', transition: 'transform 0.2s', transform: isDropdownOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+            </DropdownTrigger>
+            {isDropdownOpen && (
+              <DropdownMenu>
+                <DropdownSearchInput
+                  type="text"
+                  placeholder="Tìm học sinh..."
+                  value={dropdownSearch}
+                  onChange={e => setDropdownSearch(e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                  autoFocus
+                />
+                <DropdownOptionsList>
+                  {filteredStudentsForDropdown.length === 0 ? (
+                    <div style={{ padding: '8px 12px', fontSize: '12.5px', color: '#9CA3AF', textAlign: 'center', fontWeight: 500 }}>Không tìm thấy học sinh</div>
+                  ) : (
+                    filteredStudentsForDropdown.map(s => (
+                      <DropdownOption
+                        key={s.id}
+                        $active={s.id === selectedStudentId}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedStudentId(s.id);
+                          setIsDropdownOpen(false);
+                          setDropdownSearch('');
+                        }}
+                      >
+                        {s.name}
+                      </DropdownOption>
+                    ))
+                  )}
+                </DropdownOptionsList>
+              </DropdownMenu>
+            )}
           </FormGroup>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <FormGroup>

@@ -1,27 +1,11 @@
-'use client';
-
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { AttendanceView } from '@/views/Attendance';
-import { DashboardLayout } from '@/layout/DashboardLayout';
+import type { Metadata } from 'next';
 
-export default function AttendancePage() {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: 'Điểm danh | KinderCare',
+};
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải dữ liệu...</div>;
-  }
-
-  if (!user) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Vui lòng đăng nhập...</div>;
-  }
-
-  return (
-    <DashboardLayout 
-      fullName={user.fullName || user.username} 
-      roleTitle={user.roleName || 'Giáo viên chủ nhiệm'}
-    >
-      <AttendanceView />
-    </DashboardLayout>
-  );
+export default function AttendancePage(): React.ReactElement {
+  return <AttendanceView />;
 }
