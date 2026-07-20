@@ -1,6 +1,9 @@
+'use client';
+
 import React, { useState, useRef } from 'react';
 import * as S from './styles';
-import { AuthUser } from '@/contexts/AuthContext';
+import { DashboardLayout } from '@/layout/DashboardLayout';
+import { AuthUser, useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/i18n/routing';
 import { ArrowLeft, Edit2, Briefcase, History, Settings, Camera, Loader2 } from 'lucide-react';
 import { ContactInfo } from './components/ContactInfo';
@@ -10,11 +13,8 @@ import { SettingsTab } from './components/SettingsTab';
 import { EditProfileModal } from './components/EditProfileModal';
 import { useUploadAvatar, useUpdateAvatar } from '@/hooks/queries';
 
-interface TeacherProfileViewProps {
-  user: AuthUser;
-}
-
-export const TeacherProfileView: React.FC<TeacherProfileViewProps> = ({ user }) => {
+export const TeacherProfileView: React.FC = () => {
+  const { user } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'work' | 'history' | 'settings'>('work');
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -72,6 +72,7 @@ export const TeacherProfileView: React.FC<TeacherProfileViewProps> = ({ user }) 
   const role = user?.professionalRank || 'Giáo viên Hạng III';
 
   return (
+    <DashboardLayout>
     <S.ProfileContainer>
       <S.BackButton onClick={() => router.back()} style={{ width: 'fit-content' }}>
         <ArrowLeft size={16} />
@@ -148,5 +149,6 @@ export const TeacherProfileView: React.FC<TeacherProfileViewProps> = ({ user }) 
         onSave={(data: any) => console.log('Saved data:', data)} 
       />
     </S.ProfileContainer>
+    </DashboardLayout>
   );
 };

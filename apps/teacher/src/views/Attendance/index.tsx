@@ -1,7 +1,10 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'styled-components';
 import { ScanLine, Search, Filter, SortDesc, Calendar, Bell, ChevronLeft, ChevronRight, CheckCircle2, Download, Camera } from 'lucide-react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { AttendanceService } from '@/services/Attendance/AttendanceService';
 import { LeaveRequestService } from '@/services/LeaveRequest/LeaveRequestService';
 import { QrScannerModal } from '../../components/QrScannerModal';
@@ -404,6 +407,7 @@ export const AttendanceView: React.FC = () => {
   const calKindColor = { full: '#005A36', some: '#D97706', high: '#DC2626', none: 'transparent' };
 
   return (
+    <DashboardLayout>
     <S.PageContainer>
       {/* HERO SECTION */}
       <S.HeroSection>
@@ -820,5 +824,6 @@ export const AttendanceView: React.FC = () => {
         }}
       />
     </S.PageContainer>
+    </DashboardLayout>
   );
 };

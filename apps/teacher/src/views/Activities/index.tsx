@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivities } from './hooks';
 import { MealStatus, NapStatus, participationStatus } from '@/config/types/activities';
@@ -270,6 +273,7 @@ export const ActivitiesView: React.FC = () => {
   const { hasMatrix, batchLabel, matrix, group } = getMatrixData();
 
   return (
+    <DashboardLayout>
     <S.Container>
       <S.TopHeader>
         <div>
@@ -559,5 +563,6 @@ export const ActivitiesView: React.FC = () => {
       </S.ToastContainer>
 
     </S.Container>
+    </DashboardLayout>
   );
 };

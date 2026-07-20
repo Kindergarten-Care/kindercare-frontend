@@ -13,7 +13,9 @@ import {
   Upload,
   X,
   FileSpreadsheet,
+  Target,
 } from 'lucide-react';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useWeeklySchedule, SCHOOL_DAYS } from './hooks/useWeeklySchedule';
 import { ItemModal } from './components/ItemModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -368,6 +370,7 @@ export const WeeklyScheduleView: React.FC = () => {
   const isApproved = monthlySchedule?.approvedStatus === 1 && monthlySchedule?.isActive === true;
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO */}
       <S.HeroSection>
@@ -768,6 +771,7 @@ export const WeeklyScheduleView: React.FC = () => {
         ))}
       </S.ToastContainer>
     </S.Container>
+    </DashboardLayout>
   );
 };
 

@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useActivities } from '../Activities/hooks';
 import { 
   Utensils, 
@@ -310,6 +313,7 @@ export const ScheduleView: React.FC = () => {
   };
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO SECTION */}
       <S.HeroSection>
@@ -718,5 +722,6 @@ export const ScheduleView: React.FC = () => {
         </S.ModalBackdrop>
       )}
     </S.Container>
+    </DashboardLayout>
   );
 };

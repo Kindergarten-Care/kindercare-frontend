@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, AlertTriangle, Pill, Plus, Save, CheckCircle } from 'lucide-react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useTeacherClasses } from '@/hooks/queries';
 import { useDetailedStudents } from '@/hooks/queries';
 import {
@@ -246,6 +247,7 @@ export const HealthView: React.FC = () => {
   const dateStr = today.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <S.TopBar>
@@ -578,5 +580,6 @@ export const HealthView: React.FC = () => {
         ))}
       </S.ToastContainer>
     </S.Container>
+    </DashboardLayout>
   );
 };

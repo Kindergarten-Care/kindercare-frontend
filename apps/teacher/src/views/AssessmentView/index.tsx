@@ -1,8 +1,11 @@
+'use client';
+
 import React, { useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useAuth } from '@/contexts/AuthContext';
 import { classService } from '@/services/class/ClassService';
 import { AttendanceService } from '@/services/Attendance/AttendanceService';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { fixImageUrl } from '@/utils/imageUrl';
 import { StudentAvatar } from '@/components/common/StudentAvatar';
 import {
@@ -568,6 +571,7 @@ export const AssessmentView: React.FC = () => {
   const selectedStudent = students.find(s => String(s.id) === String(selectedId));
 
   return (
+    <DashboardLayout>
     <Container>
       <Header>
         <HeaderTitle><BarChart3 size={22} /> Đánh giá định kỳ học sinh</HeaderTitle>
@@ -655,5 +659,6 @@ export const AssessmentView: React.FC = () => {
 
       {toast && <Toast $type={toast.type}>{toast.text}</Toast>}
     </Container>
+    </DashboardLayout>
   );
 };

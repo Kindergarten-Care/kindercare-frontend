@@ -63,8 +63,11 @@ export const { markOneRead, markAllRead, prependItem } = notificationSlice.actio
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
-export const selectNotifications = (state: { notifications: NotificationState }) =>
-  state.notifications.items.filter(n => {
+const selectAllNotifications = (state: { notifications: NotificationState }) => state.notifications.items;
+
+export const selectNotifications = createSelector(
+  selectAllNotifications,
+  (items) => items.filter(n => {
     // 1. Chỉ hiển thị thông báo chưa đọc
     if (n.isRead === 1) return false;
 
@@ -81,7 +84,8 @@ export const selectNotifications = (state: { notifications: NotificationState })
     const isFromAdmin = ['ANNOUNCEMENT', 'SYSTEM', 'ADMIN'].includes(n.type) || ['Admin', 'Principal', 'Hiệu trưởng'].includes(role);
     
     return isFromParent || isFromAdmin;
-  });
+  })
+);
 
 export const selectUnreadCount = createSelector(
   selectNotifications,
