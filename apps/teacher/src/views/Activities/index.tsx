@@ -116,12 +116,35 @@ export const ActivitiesView: React.FC = () => {
     isMenuEditing,
     setIsMenuEditing,
     editedMenu,
-    setEditedMenu
+    setEditedMenu,
+    weeklySchedule,
   } = useActivities();
 
-  // Mock missing properties since we removed them from hooks.ts to fix build
-  const scheduleItems: any[] = [];
-  const handleScheduleStatusChange = (id: string, completed: boolean) => {};
+  // Derive today's schedule items from weeklySchedule API data
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+
+  const scheduleItems = React.useMemo(() => {
+    if (!weeklySchedule?.details || !Array.isArray(weeklySchedule.details)) return [];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayName = days[new Date().getDay()];
+    return weeklySchedule.details
+      .filter((d: any) => d.dayOfWeek === todayName)
+      .map((d: any) => ({
+        id: d.id || `${d.dayOfWeek}-${d.startTime}-${d.activityName}`,
+        timeSlot: `${(d.startTime || '00:00:00').slice(0, 5)} - ${(d.endTime || '23:59:00').slice(0, 5)}`,
+        activityName: d.activityName,
+        completed: completedIds.has(d.id || `${d.dayOfWeek}-${d.startTime}-${d.activityName}`),
+      }));
+  }, [weeklySchedule, completedIds]);
+
+  const handleScheduleStatusChange = (id: string, completed: boolean) => {
+    setCompletedIds(prev => {
+      const next = new Set(prev);
+      if (completed) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
 
 
   // Selected item tracking

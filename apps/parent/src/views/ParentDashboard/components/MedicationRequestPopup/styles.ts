@@ -10,6 +10,31 @@ export const HeadRow = styled.div`
   border-bottom: 1px solid #f1f5f9;
 `;
 
+export const DateFieldWrapper = styled.div`
+  padding: 16px 24px 0 24px;
+`;
+
+export const DateSelectBtn = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: ${p => (p.$active ? '#f8fafc' : '#ffffff')};
+  border: 1px solid ${p => (p.$active ? 'var(--brand)' : '#e2e8f0')};
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+`;
+
 export const IconBox = styled.div`
   width: 44px;
   height: 44px;
