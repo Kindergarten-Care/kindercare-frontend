@@ -5,12 +5,10 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import * as S from './styles';
 
-import AlbumStripWidget from './components/AlbumStripWidget';
 import ChildHeroWidget from './components/ChildHeroWidget';
 import QuickActionsStrip from './components/QuickActionsStrip';
 import LiveScheduleWidget from './components/LiveScheduleWidget';
 import MiniGrowthWidget from './components/MiniGrowthWidget';
-import CameraWidget from './components/CameraWidget';
 import DailyMenuWidget from './components/DailyMenuWidget';
 import MiniCalendarWidget from './components/MiniCalendarWidget';
 import UrgentNoticeBanner from './components/UrgentNoticeBanner';
@@ -29,7 +27,6 @@ export function ParentDashboard(): React.ReactElement {
     loading,
     activeStudent,
     schedule,
-    photos,
     calendarDays,
     attendanceStats,
     latestAssessment,
@@ -89,14 +86,11 @@ export function ParentDashboard(): React.ReactElement {
           />
 
           <S.BottomGrid>
-            <S.ColumnStack>
-              <LiveScheduleWidget
-                schedule={schedule}
-                className={activeStudent.className}
-                todayAttendanceStatus={todayCalendarStatus}
-              />
-              <AlbumStripWidget photos={photos} />
-            </S.ColumnStack>
+            <LiveScheduleWidget
+              schedule={schedule}
+              className={activeStudent.className}
+              todayAttendanceStatus={todayCalendarStatus}
+            />
             <DailyMenuWidget menu={dailyMenu} />
           </S.BottomGrid>
 
@@ -104,10 +98,6 @@ export function ParentDashboard(): React.ReactElement {
         </S.LeftColumn>
 
         <S.RightColumn>
-          <CameraWidget
-            className={activeStudent.className}
-            teacher={activeStudent.academicYearName}
-          />
           <MiniCalendarWidget
             days={calendarDays}
             stats={attendanceStats}
