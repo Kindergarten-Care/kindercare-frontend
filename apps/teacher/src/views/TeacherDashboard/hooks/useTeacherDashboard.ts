@@ -52,7 +52,7 @@ export const useTeacherDashboard = () => {
   const [newsfeedModalOpen, setNewsfeedModalOpen] = useState(false);
   const [isTimelineModalOpen, setTimelineModalOpen] = useState(false);
   const [allFeaturesOpen, setAllFeaturesOpen] = useState(false);
-  const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'all' | null>(null);
+  const [requestListType, setRequestListType] = useState<'leave' | 'medical' | 'proxy' | 'all' | null>(null);
   const [selectedLeave, setSelectedLeave] = useState<any>(null);
   const [selectedMedical, setSelectedMedical] = useState<any>(null);
   const [selectedProxy, setSelectedProxy] = useState<any>(null);
@@ -196,8 +196,8 @@ export const useTeacherDashboard = () => {
       }
       
       if (openRequestList && !requestListType) {
-        if (openRequestList === 'leave' || openRequestList === 'medical') {
-          setRequestListType(openRequestList);
+        if (openRequestList === 'leave' || openRequestList === 'medical' || openRequestList === 'proxy') {
+          setRequestListType(openRequestList as any);
         }
       }
     };
