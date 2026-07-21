@@ -82,13 +82,23 @@ export function useChildGrowthHistory() {
 
   const currentAssessment = useMemo(() => {
     const target = monthParam(viewYear, viewMonth);
-    return assessments.find(a => a.assessmentMonth === target) ?? null;
+    return assessments.find(a => {
+      const [mm, yyyy] = (a.assessmentMonth || '').split('-');
+      if (!mm || !yyyy) return false;
+      return `${yyyy}-${mm}` === target;
+    }) ?? null;
   }, [assessments, viewYear, viewMonth]);
 
   const sortedNotes = useMemo(() => {
     return [...assessments]
       .filter(a => !!a.teacherComment)
-      .sort((a, b) => b.assessmentMonth.localeCompare(a.assessmentMonth));
+      .sort((a, b) => {
+        const [mmA, yyyyA] = (a.assessmentMonth || '').split('-');
+        const [mmB, yyyyB] = (b.assessmentMonth || '').split('-');
+        const dateA = mmA && yyyyA ? `${yyyyA}-${mmA}` : '';
+        const dateB = mmB && yyyyB ? `${yyyyB}-${mmB}` : '';
+        return dateB.localeCompare(dateA);
+      });
   }, [assessments]);
 
   // Chart always shows the trailing 6 months of history, independent of the picker.

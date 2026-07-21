@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { ResponsiveModal } from '@kindercare/ui';
+import { ResponsiveModal, DatePicker } from '@kindercare/ui';
 import * as S from './styles';
-import { IconClose, IconCheck, IconMedicine, IconPlus } from '@/assets/icons/dashboard';
+import { IconClose, IconCheck, IconMedicine, IconPlus, IconCalendar } from '@/assets/icons/dashboard';
 import { useMedicationRequestPopup } from './useMedicationRequestPopup';
 
 interface MedicationRequestPopupProps {
@@ -36,6 +36,8 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
     generalNote,
     setGeneralNote,
     isSubmitting,
+    selectedDate,
+    setSelectedDate,
     handleAddMedicine,
     handleRemoveMedicine,
     handleFieldChange,
@@ -60,6 +62,29 @@ const MedicationRequestPopup: React.FC<MedicationRequestPopupProps> = ({
             <IconClose size={16} />
           </S.CloseBtn>
         </S.HeadRow>
+
+        <S.DateFieldWrapper>
+          <S.InputLabel style={{ marginBottom: '8px', display: 'block' }}>Dặn thuốc ngày</S.InputLabel>
+          <DatePicker
+            value={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            disabled={isSubmitting}
+            disableDate={(date) => date.getDay() === 0 || date.getDay() === 6}
+            alignPanel="left"
+          >
+            {({ onClick, open }) => (
+              <S.DateSelectBtn onClick={onClick} $active={open}>
+                <IconCalendar size={18} color="var(--brand)" />
+                {selectedDate.toLocaleDateString('vi-VN', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </S.DateSelectBtn>
+            )}
+          </DatePicker>
+        </S.DateFieldWrapper>
 
         <S.ContentForm>
           {medicines.map((med, index) => {

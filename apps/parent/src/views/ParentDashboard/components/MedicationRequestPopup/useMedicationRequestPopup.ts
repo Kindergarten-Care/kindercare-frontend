@@ -38,6 +38,7 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
   const [medicines, setMedicines] = useState<MedicineItem[]>([createEmptyMedicine(1)]);
   const [generalNote, setGeneralNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const activeUrlsRef = useRef<Set<string>>(new Set());
 
   // Cleanup all active Object URLs on unmount to prevent memory leaks
@@ -153,8 +154,8 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
     setIsSubmitting(true);
 
     try {
-      // Save the exact current timestamp (including hour, minute, second) when sending the request
-      const requestDate = Math.floor(Date.now() / 1000);
+      // Save the selected timestamp (including hour, minute, second) when sending the request
+      const requestDate = Math.floor(selectedDate.getTime() / 1000);
 
       // Create promises for each medicine card
       const promises = medicines.map(m => {
@@ -192,6 +193,8 @@ export const useMedicationRequestPopup = ({ isOpen, onClose, onSubmitSuccess }: 
     generalNote,
     setGeneralNote,
     isSubmitting,
+    selectedDate,
+    setSelectedDate,
     handleAddMedicine,
     handleRemoveMedicine,
     handleFieldChange,
