@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivities } from './hooks';
 import { MealStatus, NapStatus, participationStatus } from '@/config/types/activities';
@@ -113,12 +116,35 @@ export const ActivitiesView: React.FC = () => {
     isMenuEditing,
     setIsMenuEditing,
     editedMenu,
-    setEditedMenu
+    setEditedMenu,
+    weeklySchedule,
   } = useActivities();
 
-  // Mock missing properties since we removed them from hooks.ts to fix build
-  const scheduleItems: any[] = [];
-  const handleScheduleStatusChange = (id: string, completed: boolean) => {};
+  // Derive today's schedule items from weeklySchedule API data
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+
+  const scheduleItems = React.useMemo(() => {
+    if (!weeklySchedule?.details || !Array.isArray(weeklySchedule.details)) return [];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayName = days[new Date().getDay()];
+    return weeklySchedule.details
+      .filter((d: any) => d.dayOfWeek === todayName)
+      .map((d: any) => ({
+        id: d.id || `${d.dayOfWeek}-${d.startTime}-${d.activityName}`,
+        timeSlot: `${(d.startTime || '00:00:00').slice(0, 5)} - ${(d.endTime || '23:59:00').slice(0, 5)}`,
+        activityName: d.activityName,
+        completed: completedIds.has(d.id || `${d.dayOfWeek}-${d.startTime}-${d.activityName}`),
+      }));
+  }, [weeklySchedule, completedIds]);
+
+  const handleScheduleStatusChange = (id: string, completed: boolean) => {
+    setCompletedIds(prev => {
+      const next = new Set(prev);
+      if (completed) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
 
 
   // Selected item tracking
@@ -270,6 +296,7 @@ export const ActivitiesView: React.FC = () => {
   const { hasMatrix, batchLabel, matrix, group } = getMatrixData();
 
   return (
+    <DashboardLayout>
     <S.Container>
       <S.TopHeader>
         <div>
@@ -547,35 +574,7 @@ export const ActivitiesView: React.FC = () => {
             </div>
           </S.SectionCard>
 
-          {/* SECTION B: LESSON LOG */}
-          <S.SectionCard style={{ padding: '18px 22px' }}>
-            <S.LessonHeaderRow>
-              <span style={{ fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>Bài học hôm nay</span>
-              <span style={{ fontSize: '12px', color: '#9ca3af' }}>· Nhật ký giảng dạy</span>
-            </S.LessonHeaderRow>
-            <S.LessonGrid>
-              <S.LessonCard $bg="#FFFBEB" $borderColor="#FEF3C7">
-                <S.LessonWatermark $color="#FDE68A"><BookOpen size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#D97706">TOÁN HỌC</S.LessonSubject>
-                <S.LessonTitle>Đếm số 1 đến 10</S.LessonTitle>
-                <S.LessonNote>Các bé rất hào hứng nhận biết các chữ số qua thẻ màu.</S.LessonNote>
-              </S.LessonCard>
 
-              <S.LessonCard $bg="#EFF6FF" $borderColor="#DBEAFE">
-                <S.LessonWatermark $color="#BFDBFE"><Sun size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#2563EB">NGÔN NGỮ</S.LessonSubject>
-                <S.LessonTitle>Kể chuyện Thỏ & Rùa</S.LessonTitle>
-                <S.LessonNote>Lớp chia nhóm đóng kịch truyện cổ tích, bé ngoan.</S.LessonNote>
-              </S.LessonCard>
-
-              <S.LessonCard $bg="#ECFDF5" $borderColor="#D1FAE5">
-                <S.LessonWatermark $color="#A7F3D0"><Users size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#059669">THỂ CHẤT</S.LessonSubject>
-                <S.LessonTitle>Tập dân vũ</S.LessonTitle>
-                <S.LessonNote>Khởi động ngoài trời, rèn luyện sự dẻo dai.</S.LessonNote>
-              </S.LessonCard>
-            </S.LessonGrid>
-          </S.SectionCard>
         </S.RightCol>
       </S.SplitContainer>
 
@@ -587,5 +586,6 @@ export const ActivitiesView: React.FC = () => {
       </S.ToastContainer>
 
     </S.Container>
+    </DashboardLayout>
   );
 };

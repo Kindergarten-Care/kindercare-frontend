@@ -63,7 +63,7 @@ export interface MedicationDomainModel {
 // ─── Health Log (height/weight/bmi) ──────────────────────────────────────────
 
 export interface HealthLogApiDto {
-  logId: number;
+  recordId: number;
   studentId: number;
   height: number;
   weight: number;
@@ -73,7 +73,7 @@ export interface HealthLogApiDto {
 }
 
 export interface HealthLogDomainModel {
-  logId: number;
+  recordId: number;
   studentId: number;
   height: number;
   weight: number;

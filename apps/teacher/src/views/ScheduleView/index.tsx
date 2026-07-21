@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useActivities } from '../Activities/hooks';
 import { 
   Utensils, 
@@ -310,6 +313,7 @@ export const ScheduleView: React.FC = () => {
   };
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO SECTION */}
       <S.HeroSection>
@@ -398,26 +402,19 @@ export const ScheduleView: React.FC = () => {
           </S.MenuHeaderText>
           <S.MenuTag style={{ marginRight: 'auto' }}>🥗 Cân bằng 4 nhóm chất</S.MenuTag>
 
-          {!isMenuEditing && (
-            <S.EditMenuBtn onClick={() => { setEditedMenu(menu); setIsMenuEditing(true); }}>
-              {(!menu.breakfastMenu && !menu.lunchMenu && !menu.afternoonSnackMenu) ? (
-                <><Plus size={16} /> Tạo thực đơn</>
-              ) : (
-                <><Edit2 size={14} /> Chỉnh sửa</>
-              )}
-            </S.EditMenuBtn>
-          )}
+
+
         </S.MenuHeader>
 
-        {/* Weekly menu overview - shows all 7 days in a compact grid */}
+        {/* Weekly menu overview - shows Mon-Fri in a compact grid */}
         {weeklyMenu && weeklyMenu.days && weeklyMenu.days.some(d => d.breakfast.length + d.lunch.length + d.snack.length > 0) && (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
+            gridTemplateColumns: 'repeat(5, 1fr)',
             gap: '10px',
             marginBottom: '16px'
           }}>
-            {weeklyMenu.days.map((d) => {
+            {weeklyMenu.days.filter(d => d.dayOfWeek !== 'Saturday' && d.dayOfWeek !== 'Sunday').map((d) => {
               const breakfastNames = d.breakfast.map(x => x.dishName).join(', ');
               const lunchNames = d.lunch.map(x => x.dishName).join(', ');
               const snackNames = d.snack.map(x => x.dishName).join(', ');
@@ -469,105 +466,69 @@ export const ScheduleView: React.FC = () => {
         )}
 
         {/* Display real menu with dishes (today's focus, fall back to current date) */}
-        {!isMenuEditing ? (
-          <S.MenuGrid>
-            {[
-              { 
-                key: 'breakfastMenu', 
-                meal: 'Bữa sáng', 
-                time: '08:00', 
-                icon: '🥣', 
-                bg: '#FEF3C7', 
-                color: '#D97706',
-                dishes: menu.breakfastMenu ? menu.breakfastMenu.split('\n') : []
-              },
-              { 
-                key: 'lunchMenu', 
-                meal: 'Bữa trưa', 
-                time: '11:00', 
-                icon: '🍱', 
-                bg: '#E6F3ED', 
-                color: '#005A36',
-                dishes: menu.lunchMenu ? menu.lunchMenu.split('\n') : []
-              },
-              { 
-                key: 'afternoonSnackMenu', 
-                meal: 'Bữa xế', 
-                time: '14:30', 
-                icon: '🍮', 
-                bg: '#E3EDFD', 
-                color: '#2563EB',
-                dishes: menu.afternoonSnackMenu ? menu.afternoonSnackMenu.split('\n') : []
-              }
-            ].map(m => (
-              <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
-                <S.MenuCardHeader>
-                  <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
-                  <S.MenuCardTitle $timeColor={m.color}>
-                    <div>{m.meal}</div>
-                    <div>{m.time}</div>
-                  </S.MenuCardTitle>
-                </S.MenuCardHeader>
-                <div>
-                  {m.dishes.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {m.dishes.map((dish, idx) => (
-                        <div key={idx} style={{ 
-                          fontSize: '13px', 
-                          fontWeight: 500, 
-                          color: '#374151', 
-                          lineHeight: 1.4,
-                          padding: '4px 0',
-                          borderBottom: idx < m.dishes.length - 1 ? '1px dashed #E5E7EB' : 'none'
-                        }}>
-                          {dish}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '13px', color: '#9CA3AF', fontStyle: 'italic' }}>
-                      (Chưa có thực đơn)
-                    </div>
-                  )}
-                </div>
-              </S.MenuCard>
-            ))}
-          </S.MenuGrid>
-        ) : (
-          <S.MenuGrid>
-            {[
-              { key: 'breakfastMenu', meal: 'Bữa sáng', time: '08:00', icon: '🥣', bg: '#FEF3C7', color: '#D97706' },
-              { key: 'lunchMenu', meal: 'Bữa trưa', time: '11:00', icon: '🍱', bg: '#E6F3ED', color: '#005A36' },
-              { key: 'afternoonSnackMenu', meal: 'Bữa xế', time: '14:30', icon: '🍮', bg: '#E3EDFD', color: '#2563EB' }
-            ].map(m => (
-              <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
-                <S.MenuCardHeader>
-                  <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
-                  <S.MenuCardTitle $timeColor={m.color}>
-                    <div>{m.meal}</div>
-                    <div>{m.time}</div>
-                  </S.MenuCardTitle>
-                </S.MenuCardHeader>
-                <div>
-                  <S.MenuTextarea 
-                    value={editedMenu[m.key as keyof typeof editedMenu]}
-                    onChange={e => setEditedMenu({...editedMenu, [m.key]: e.target.value})}
-                    placeholder={`Nhập ${m.meal.toLowerCase()}...`}
-                  />
-                </div>
-              </S.MenuCard>
-            ))}
-          </S.MenuGrid>
-        )}
-        
-        {isMenuEditing && (
-          <S.MenuActionRow>
-            <S.MenuCancelBtn onClick={() => setIsMenuEditing(false)}>Huỷ bỏ</S.MenuCancelBtn>
-            <S.MenuSaveBtn onClick={handleSaveMenu}>
-              {saving ? 'Đang lưu...' : 'Lưu thực đơn'}
-            </S.MenuSaveBtn>
-          </S.MenuActionRow>
-        )}
+        <S.MenuGrid>
+          {[
+            { 
+              key: 'breakfastMenu', 
+              meal: 'Bữa sáng', 
+              time: '08:00', 
+              icon: '🥣', 
+              bg: '#FEF3C7', 
+              color: '#D97706',
+              dishes: menu.breakfastMenu ? menu.breakfastMenu.split('\n') : []
+            },
+            { 
+              key: 'lunchMenu', 
+              meal: 'Bữa trưa', 
+              time: '11:00', 
+              icon: '🍱', 
+              bg: '#E6F3ED', 
+              color: '#005A36',
+              dishes: menu.lunchMenu ? menu.lunchMenu.split('\n') : []
+            },
+            { 
+              key: 'afternoonSnackMenu', 
+              meal: 'Bữa xế', 
+              time: '14:30', 
+              icon: '🍮', 
+              bg: '#E3EDFD', 
+              color: '#2563EB',
+              dishes: menu.afternoonSnackMenu ? menu.afternoonSnackMenu.split('\n') : []
+            }
+          ].map(m => (
+            <S.MenuCard key={m.meal} $bg={m.bg} $borderColor={m.color}>
+              <S.MenuCardHeader>
+                <S.MenuCardIcon>{m.icon}</S.MenuCardIcon>
+                <S.MenuCardTitle $timeColor={m.color}>
+                  <div>{m.meal}</div>
+                  <div>{m.time}</div>
+                </S.MenuCardTitle>
+              </S.MenuCardHeader>
+              <div>
+                {m.dishes.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {m.dishes.map((dish, idx) => (
+                      <div key={idx} style={{ 
+                        fontSize: '13px', 
+                        fontWeight: 500, 
+                        color: '#374151', 
+                        lineHeight: 1.4,
+                        padding: '4px 0',
+                        borderBottom: idx < m.dishes.length - 1 ? '1px dashed #E5E7EB' : 'none'
+                      }}>
+                        {dish}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '13px', color: '#9CA3AF', fontStyle: 'italic' }}>
+                    (Chưa có thực đơn)
+                  </div>
+                )}
+              </div>
+            </S.MenuCard>
+          ))}
+        </S.MenuGrid>
       </S.MenuSection>
 
       {/* WEEKLY TIMETABLE GRID */}
@@ -706,35 +667,7 @@ export const ScheduleView: React.FC = () => {
             </div>
           </S.SectionCard>
 
-          {/* LESSON LOG */}
-          <S.SectionCard>
-            <S.LessonHeaderRow>
-              <span style={{ fontWeight: 700, fontSize: '16px', color: '#1F2937' }}>Bài học hôm nay</span>
-              <span style={{ fontSize: '12px', color: '#9ca3af' }}>· Nhật ký giảng dạy</span>
-            </S.LessonHeaderRow>
-            <S.LessonGrid>
-              <S.LessonCard $bg="#FFFBEB" $borderColor="#FEF3C7">
-                <S.LessonWatermark $color="#FDE68A"><BookOpen size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#D97706">TOÁN HỌC</S.LessonSubject>
-                <S.LessonTitle>Đếm số 1 đến 10</S.LessonTitle>
-                <S.LessonNote>Các bé rất hào hứng nhận biết các chữ số qua thẻ màu.</S.LessonNote>
-              </S.LessonCard>
 
-              <S.LessonCard $bg="#EFF6FF" $borderColor="#DBEAFE">
-                <S.LessonWatermark $color="#BFDBFE"><Sun size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#2563EB">NGÔN NGỮ</S.LessonSubject>
-                <S.LessonTitle>Kể chuyện Thỏ & Rùa</S.LessonTitle>
-                <S.LessonNote>Lớp chia nhóm đóng kịch truyện cổ tích, bé ngoan.</S.LessonNote>
-              </S.LessonCard>
-
-              <S.LessonCard $bg="#ECFDF5" $borderColor="#D1FAE5">
-                <S.LessonWatermark $color="#A7F3D0"><Users size={48} /></S.LessonWatermark>
-                <S.LessonSubject $color="#059669">THỂ CHẤT</S.LessonSubject>
-                <S.LessonTitle>Tập dân vũ</S.LessonTitle>
-                <S.LessonNote>Khởi động ngoài trời, rèn luyện sự dẻo dai.</S.LessonNote>
-              </S.LessonCard>
-            </S.LessonGrid>
-          </S.SectionCard>
         </S.RightCol>
       </S.SplitContainer>
 
@@ -789,5 +722,6 @@ export const ScheduleView: React.FC = () => {
         </S.ModalBackdrop>
       )}
     </S.Container>
+    </DashboardLayout>
   );
 };

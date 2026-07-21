@@ -1,29 +1,20 @@
 /**
- * Đánh giá định kỳ học sinh — 6 tiêu chí.
+ * Đánh giá định kỳ học sinh (Phiếu bé ngoan) — 5 tiêu chí.
  *
- * Schema ánh xạ bảng `DevelopmentAssessments` (PascalCase, đã có sẵn trong DB):
+ * Schema ánh xạ bảng `StudentAssessments`:
  *   - 5 score cột: PhysicalScore, CognitiveScore, LanguageScore,
- *                  EmotionalScore, SocialScore
- *   - 1 text cột:  OverallNote
- *   - TermPeriod varchar(7): 'YYYY-MM'
+ *                  SocioEmotionalScore, AestheticScore
+ *   - 1 text cột:  TeacherComment
+ *   - AssessmentMonth varchar(7): 'YYYY-MM'
  *
- * UI hiển thị 6 card (Thể chất / Nhận thức / Ngôn ngữ / Cảm xúc - Xã hội /
- * Thẩm mỹ / Kỹ năng sống) nhưng DB chỉ lưu 5 score (Cảm xúc - Xã hội được tách
- * thành `EmotionalScore` + `SocialScore`). 2 tiêu chí Thẩm mỹ + Kỹ năng sống
- * giữ local-only trên client (DB chưa có cột).
- *
- * Flow mapping FE ↔ DB:
- *   - Lưu: `socioEmotionalScore` (UI 1 slider) → split thành `emotional + social`
- *          (FE gửi cả 2 = mean của socioEmotional).
- *   - Load: `emotional + social` (DB 2 cột) → merge thành `socioEmotional`
- *          (FE hiển thị 1 điểm trên radar chart).
+ * UI hiển thị đủ 5 card, khớp 1-1 với 5 cột DB — không cần merge/split gì thêm.
  */
 
 export type AssessmentCriterionKey =
   | 'physicalScore'        // Thể chất
   | 'cognitiveScore'       // Nhận thức
   | 'languageScore'        // Ngôn ngữ
-  | 'socioEmotionalScore'  // Cảm xúc - Xã hội (UI merge emotional + social)
+  | 'socioEmotionalScore'  // Cảm xúc - Xã hội
   | 'aestheticScore';      // Thẩm mỹ
 
 /** Mỗi tiêu chí điểm 1..10 (BE validate tối đa 10). */
@@ -34,42 +25,30 @@ export const ASSESSMENT_SCORE_MAX = 10;
 export const ASSESSMENT_SCORE_DEFAULT = 7;
 
 /**
- * Field `score` mà BE chắc chắn chấp nhận trong PUT body.
- * Map tới 3 cột PascalCase trong `DevelopmentAssessments`:
- *   PhysicalScore, CognitiveScore, LanguageScore.
+ * Field `score` mà BE yêu cầu trong body — map tới 5 cột trong `StudentAssessments`:
+ *   PhysicalScore, CognitiveScore, LanguageScore, SocioEmotionalScore, AestheticScore.
  */
 export const BE_REQUIRED_SCORE_KEYS: AssessmentCriterionKey[] = [
   'physicalScore',
   'cognitiveScore',
   'languageScore',
+  'socioEmotionalScore',
+  'aestheticScore',
 ];
 
-/**
- * Field `score` mà BE chấp nhận thêm (sau khi nâng cấp TASK 1).
- * Map tới 2 cột PascalCase: EmotionalScore, SocialScore.
- * FE gửi kèm 2 field này (nếu có) để BE lưu vào cột tương ứng.
- */
-export const BE_OPTIONAL_SCORE_KEYS: ReadonlyArray<string> = [
-  'emotionalScore',
-  'socialScore',
-  'aestheticScore',
-] as const;
+/** Không còn field score optional riêng — cả 5 tiêu chí đều map thẳng cột DB. */
+export const BE_OPTIONAL_SCORE_KEYS: ReadonlyArray<string> = [] as const;
 
 /**
- * Field text mà BE chấp nhận thêm.
- * Map tới 1 cột PascalCase: OverallNote.
+ * Field text mà BE chấp nhận. Map tới cột `TeacherComment`.
  */
 export const BE_OPTIONAL_TEXT_KEYS: ReadonlyArray<string> = [
-  'overallNote',
+  'teacherComment',
 ] as const;
 
 /**
- * Danh sách tất cả field mà BE hiện chấp nhận trong PUT body (camelCase).
- *  - 3 score bắt buộc
- *  - 2 score optional (emotional, social)
- *  - 1 text optional (overallNote)
- *
- * Tổng cộng: 6 field camelCase ↔ 6 cột PascalCase trong bảng `DevelopmentAssessments`.
+ * Danh sách tất cả field mà BE chấp nhận trong body (camelCase).
+ * Tổng cộng: 5 score + 1 text ↔ 6 cột trong bảng `StudentAssessments`.
  */
 export const BE_SUPPORTED_FIELDS: ReadonlyArray<string> = [
   ...BE_REQUIRED_SCORE_KEYS,
@@ -77,58 +56,43 @@ export const BE_SUPPORTED_FIELDS: ReadonlyArray<string> = [
   ...BE_OPTIONAL_TEXT_KEYS,
 ] as const;
 
-/**
- * Field UI KHÔNG có cột DB tương ứng → KHÔNG gửi BE, KHÔNG validate.
- * Hiện có 1 tiêu chí: Thẩm mỹ (DB `DevelopmentAssessments` không có cột).
- * FE vẫn hiển thị cho user nhập, lưu localStorage để sau này BE mở rộng có sẵn data.
- */
+/** Không còn field local-only — cả 5 tiêu chí UI đều có cột DB tương ứng. */
 export const LOCAL_ONLY_FIELDS: AssessmentCriterionKey[] = [];
 
-/** Body payload gửi lên BE khi tạo/cập nhật. */
+/** Body payload gửi lên BE khi tạo/cập nhật 1 học sinh (POST /teacher/assessments). */
 export interface UpsertAssessmentItem {
   studentId: number | string;
-  /** 3 score bắt buộc */
   physicalScore: CriterionScore;
   cognitiveScore: CriterionScore;
   languageScore: CriterionScore;
-  /** 2 score optional — map tới EmotionalScore + SocialScore trong DB. */
-  emotionalScore?: CriterionScore;
-  socialScore?: CriterionScore;
-  /** UI field — KHÔNG gửi BE (DB không có cột). */
-  aestheticScore?: CriterionScore;
-  /** UI field — KHÔNG gửi BE (DB không có cột socioEmotional riêng). */
-  socioEmotionalScore?: CriterionScore;
-  /** Optional, max 500 ký tự. BE map → OverallNote. */
-  overallNote?: string;
-  /** Alias để tương thích ngược với code cũ. */
+  socioEmotionalScore: CriterionScore;
+  aestheticScore: CriterionScore;
+  /** Optional, max 500 ký tự. BE cột `TeacherComment`. */
   teacherComment?: string;
 }
 
 export interface UpsertClassAssessmentsBody {
   items: UpsertAssessmentItem[];
-  /** Required, YYYY-MM (vd "2026-07"). */
+  /** Required, YYYY-MM (vd "2026-07"). BE gọi là `month`/`assessmentMonth`. */
   termPeriod: string;
 }
 
 /**
  * 1 record đánh giá trả về từ BE (GET assessments + GET history).
- * BE trả về camelCase (NestJS default) hoặc PascalCase (raw mode) tùy cấu hình —
- * service `AssessmentService.normalize` tự map về shape camelCase bên dưới.
+ * BE trả về camelCase — service `AssessmentService.normalize` chuẩn hóa về shape này.
  */
 export interface AssessmentHistoryPoint {
   assessmentId: number;
   studentId: number | string;
-  /** YYYY-MM theo BE. */
+  /** YYYY-MM theo BE (field `assessmentMonth`). */
   termPeriod: string;
   physicalScore: number;
   cognitiveScore: number;
   languageScore: number;
-  /** ✅ BE đã hỗ trợ (sau TASK 1). */
-  emotionalScore: number;
-  socialScore: number;
+  socioEmotionalScore: number;
   aestheticScore: number;
   /** Có thể null/undefined nếu record cũ chưa có. */
-  overallNote?: string;
+  teacherComment?: string;
   createdAt?: number;
   updatedAt?: number;
 }

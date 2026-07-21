@@ -5,7 +5,6 @@ import * as S from './styles';
 import { AssessmentService } from '@/services/StudentAssessmentService';
 import { ASSESSMENT_CRITERIA } from '@/config/types/assessment';
 import type { AssessmentHistoryPoint, AssessmentCriterionKey } from '@/config/types/assessment';
-import { mergeSocioEmotional } from '@/config/validations/assessment';
 import { useRouter } from '@/i18n/routing';
 import { ChevronRight, BookOpen, CheckCircle2, Circle } from 'lucide-react';
 import { getStudentInitials } from '@/utils/string';
@@ -183,9 +182,7 @@ export const PeriodicAssessmentWidget: React.FC<PeriodicAssessmentWidgetProps> =
 
 /**
  * Render danh sách HS với 5 ô điểm tương ứng ASSESSMENT_CRITERIA.
- * - Điểm BE đã có: physicalScore, cognitiveScore, languageScore, emotionalScore, socialScore
- * - UI merge emotional + social thành "Cảm xúc - Xã hội" (theo ASSESSMENT_CRITERIA)
- * - aestheticScore: hiển thị "—" vì DB chưa có cột
+ * Điểm BE trả về: physicalScore, cognitiveScore, languageScore, socioEmotionalScore, aestheticScore.
  */
 interface AssessmentListProps {
   records: AssessmentHistoryPoint[];
@@ -201,13 +198,12 @@ const AssessmentList: React.FC<AssessmentListProps> = ({ records, studentNames, 
       <CriteriaHeader />
 
       {records.map(r => {
-        const emoMerged = mergeSocioEmotional(r.emotionalScore, r.socialScore);
         const scores: Record<AssessmentCriterionKey, number | null> = {
           physicalScore: r.physicalScore || null,
           cognitiveScore: r.cognitiveScore || null,
           languageScore: r.languageScore || null,
-          socioEmotionalScore: emoMerged > 0 ? emoMerged : null,
-          aestheticScore: null,
+          socioEmotionalScore: r.socioEmotionalScore || null,
+          aestheticScore: r.aestheticScore || null,
         };
         const known = (Object.values(scores).filter(v => v !== null) as number[]);
         const avg = known.length > 0
@@ -216,7 +212,7 @@ const AssessmentList: React.FC<AssessmentListProps> = ({ records, studentNames, 
         const key = String(r.studentId);
         const name = studentNames?.[key] || `HS #${key}`;
         const initial = getStudentInitials(name);
-        const isComplete = known.length >= 3;
+        const isComplete = known.length >= 5;
 
         return (
           <AssessmentRow
@@ -227,7 +223,7 @@ const AssessmentList: React.FC<AssessmentListProps> = ({ records, studentNames, 
             scores={scores}
             avg={avg}
             isComplete={isComplete}
-            note={r.overallNote}
+            note={r.teacherComment}
             onClick={() => onStudentClick(r.studentId)}
           />
         );

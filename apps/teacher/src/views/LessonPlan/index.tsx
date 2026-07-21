@@ -19,6 +19,7 @@ import { useLessonPlan } from './hooks/useLessonPlan';
 import { LessonModal } from './components/LessonModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import type { DayKey } from '@/config/types/lessonPlan';
 import {
   STATUS_COLORS,
@@ -114,6 +115,7 @@ export const LessonPlanView: React.FC = () => {
   const canWithdraw = status === 'Submitted';
 
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO */}
       <S.HeroSection>
@@ -403,5 +405,6 @@ export const LessonPlanView: React.FC = () => {
         />
       )}
     </S.Container>
+    </DashboardLayout>
   );
 };

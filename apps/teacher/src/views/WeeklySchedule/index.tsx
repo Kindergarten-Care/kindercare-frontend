@@ -13,7 +13,9 @@ import {
   Upload,
   X,
   FileSpreadsheet,
+  Target,
 } from 'lucide-react';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { useWeeklySchedule, SCHOOL_DAYS } from './hooks/useWeeklySchedule';
 import { ItemModal } from './components/ItemModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -25,6 +27,7 @@ import {
 import * as S from './styles';
 import type { SchoolDay, WeeklyScheduleDetail, ActivityType } from '@/config/types/weeklySchedule';
 import { apiClient } from '@kindercare/core';
+import { Dropdown } from '@kindercare/ui';
 
 const MONTH_NAMES = [
   'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -365,7 +368,10 @@ export const WeeklyScheduleView: React.FC = () => {
   // ── Confirm dialog state (delete) ────────────────────────────────────────
   const [confirmDelete, setConfirmDelete] = useState<{ scheduleDetailId: number; day: SchoolDay } | null>(null);
 
+  const isApproved = monthlySchedule?.approvedStatus === 1;
+
   return (
+    <DashboardLayout>
     <S.Container>
       {/* HERO */}
       <S.HeroSection>
@@ -379,13 +385,27 @@ export const WeeklyScheduleView: React.FC = () => {
               <S.HeroWeekLabel>{weeksInMonth.length} tuần</S.HeroWeekLabel>
               <S.HeroDivider />
               {monthlySchedule ? (
-                <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
-                  <S.StatusDot $color="#10B981" />
-                  Đã tạo
-                </S.StatusBadge>
+                monthlySchedule.approvedStatus === 1 ? (
+                  monthlySchedule.isActive ? (
+                    <S.StatusBadge $color="#065F46" $bg="#D1FAE5">
+                      <S.StatusDot $color="#10B981" />
+                      Đã duyệt - đang áp dụng
+                    </S.StatusBadge>
+                  ) : (
+                    <S.StatusBadge $color="#1e3a8a" $bg="#dbeafe">
+                      <S.StatusDot $color="#3b82f6" />
+                      Đã được duyệt, chưa áp dụng
+                    </S.StatusBadge>
+                  )
+                ) : (
+                  <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
+                    <S.StatusDot $color="#F59E0B" />
+                    Đã tạo - chưa duyệt
+                  </S.StatusBadge>
+                )
               ) : (
-                <S.StatusBadge $color="#92400E" $bg="#FEF3C7">
-                  <S.StatusDot $color="#F59E0B" />
+                <S.StatusBadge $color="#9ca3af" $bg="#f3f4f6">
+                  <S.StatusDot $color="#6b7280" />
                   Chưa tạo
                 </S.StatusBadge>
               )}
@@ -413,144 +433,172 @@ export const WeeklyScheduleView: React.FC = () => {
       </S.HeroSection>
 
       {/* TOP FORM: chủ đề tháng + lớp + lưu */}
-      <S.FormCard>
-        <S.FormHeader>
-          <S.FormTitle>
-            <Calendar size={18} /> Thông tin tháng
-          </S.FormTitle>
-          <S.FormSubtitle>
-            Lớp: <strong>{className}</strong> · Niên khóa đang hoạt động
-          </S.FormSubtitle>
-        </S.FormHeader>
+      {!isApproved ? (
+        <S.FormCard>
+          <S.FormHeader>
+            <S.FormTitle>
+              <Calendar size={18} /> Thông tin tháng
+            </S.FormTitle>
+            <S.FormSubtitle>
+              Lớp: <strong>{className}</strong> · Niên khóa đang hoạt động
+            </S.FormSubtitle>
+          </S.FormHeader>
 
-        <S.FormGrid>
-          <S.FormField>
-            <label>Tháng</label>
-            <select
-              value={currentMonth.month}
-              onChange={(e) =>
-                setCurrentMonth((prev) => ({
-                  ...prev,
-                  month: Number(e.target.value),
-                }))
-              }
-            >
-              {MONTH_NAMES.map((name, idx) => (
-                <option key={idx + 1} value={idx + 1}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </S.FormField>
+          <S.FormGrid>
+            <S.FormField>
+              <label>Tháng</label>
+              <Dropdown
+                value={String(currentMonth.month)}
+                onChange={(val) =>
+                  setCurrentMonth((prev) => ({
+                    ...prev,
+                    month: Number(val),
+                  }))
+                }
+                options={MONTH_NAMES.map((name, idx) => ({
+                  value: String(idx + 1),
+                  label: name,
+                }))}
+                fullWidth
+              />
+            </S.FormField>
 
-          <S.FormField>
-            <label>Năm</label>
-            <input
-              type="number"
-              value={currentMonth.year}
-              onChange={(e) =>
-                setCurrentMonth((prev) => ({
-                  ...prev,
-                  year: Number(e.target.value),
-                }))
-              }
-              min={2020}
-              max={2100}
-            />
-          </S.FormField>
+            <S.FormField>
+              <label>Năm</label>
+              <input
+                type="number"
+                value={currentMonth.year}
+                onChange={(e) =>
+                  setCurrentMonth((prev) => ({
+                    ...prev,
+                    year: Number(e.target.value),
+                  }))
+                }
+                min={2020}
+                max={2100}
+              />
+            </S.FormField>
 
-          <S.FormField style={{ gridColumn: 'span 2' }}>
-            <label>Chủ đề tháng *</label>
-            <input
-              type="text"
-              placeholder="VD: Mùa Hè Rực Rỡ & Khám Phá Đại Dương"
-              value={monthTheme}
-              onChange={(e) => setMonthTheme(e.target.value)}
-              maxLength={255}
-            />
-          </S.FormField>
+            <S.FormField style={{ gridColumn: 'span 2' }}>
+              <label>Chủ đề tháng *</label>
+              <input
+                type="text"
+                placeholder="VD: Mùa Hè Rực Rỡ & Khám Phá Đại Dương"
+                value={monthTheme}
+                onChange={(e) => setMonthTheme(e.target.value)}
+                maxLength={255}
+              />
+            </S.FormField>
 
-          <S.FormActions>
-            <S.PrimaryButton
-              type="button"
-              onClick={saveMonthlySchedule}
-              disabled={isSaving || !monthTheme.trim()}
-            >
-              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin tháng'}
-            </S.PrimaryButton>
-          </S.FormActions>
-        </S.FormGrid>
-      </S.FormCard>
+            <S.FormActions>
+              <S.PrimaryButton
+                type="button"
+                onClick={saveMonthlySchedule}
+                disabled={isSaving || !monthTheme.trim()}
+              >
+                <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin tháng'}
+              </S.PrimaryButton>
+            </S.FormActions>
+          </S.FormGrid>
+        </S.FormCard>
+      ) : (
+        <S.FormCard style={{ padding: '16px 24px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 4 }}>Chủ đề tháng</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>{monthTheme || 'Chưa có chủ đề'}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 4 }}>Tuần</div>
+              <Dropdown
+                value={String(selectedWeek)}
+                onChange={(val) => setSelectedWeek(Number(val))}
+                options={weeksInMonth.map((w) => ({
+                  value: String(w.weekOrder),
+                  label: w.weekOrder === todayWeekOrder ? `${w.label} (Tuần này)` : w.label,
+                }))}
+              />
+            </div>
+          </div>
+          {weekTheme && (
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #F3F4F6' }}>
+              <span style={{ fontSize: 13, color: '#6B7280' }}>Chủ đề tuần này:</span>{' '}
+              <strong style={{ fontSize: 14, color: '#111827' }}>{weekTheme}</strong>
+            </div>
+          )}
+        </S.FormCard>
+      )}
 
       {/* WEEK SELECTOR + theme + actions */}
-      <S.FormCard>
-        <S.FormHeader>
-          <S.FormTitle>
-            <FileSpreadsheet size={18} /> Thời khóa biểu tuần
-          </S.FormTitle>
-          <S.FormSubtitle>
-            {weeksInMonth.length === 0
-              ? 'Tháng này không có tuần hợp lệ'
-              : `Chọn tuần và nhập chủ đề. Upload CSV cho cả tuần hoặc thêm từng hoạt động.`}
-          </S.FormSubtitle>
-        </S.FormHeader>
+      {!isApproved && (
+        <S.FormCard>
+          <S.FormHeader>
+            <S.FormTitle>
+              <FileSpreadsheet size={18} /> Thời khóa biểu tuần
+            </S.FormTitle>
+            <S.FormSubtitle>
+              {weeksInMonth.length === 0
+                ? 'Tháng này không có tuần hợp lệ'
+                : `Chọn tuần và nhập chủ đề. Upload CSV cho cả tuần hoặc thêm từng hoạt động.`}
+            </S.FormSubtitle>
+          </S.FormHeader>
 
-        <S.FormGrid>
-          <S.FormField>
-            <label>Tuần</label>
-            <select
-              value={selectedWeek}
-              onChange={(e) => setSelectedWeek(Number(e.target.value))}
-              disabled={weeksInMonth.length === 0}
-            >
-              {weeksInMonth.map((w) => (
-                <option key={w.weekOrder} value={w.weekOrder}>
-                  {w.weekOrder === todayWeekOrder ? `${w.label} (Hôm nay)` : w.label}
-                </option>
-              ))}
-            </select>
-          </S.FormField>
+          <S.FormGrid>
+            <S.FormField>
+              <label>Tuần</label>
+              <Dropdown
+                value={weeksInMonth.length === 0 ? null : String(selectedWeek)}
+                onChange={(val) => setSelectedWeek(Number(val))}
+                options={weeksInMonth.map((w) => ({
+                  value: String(w.weekOrder),
+                  label: w.weekOrder === todayWeekOrder ? `${w.label} (Tuần này)` : w.label,
+                }))}
+                disabled={weeksInMonth.length === 0}
+                fullWidth
+              />
+            </S.FormField>
 
-          <S.FormField style={{ gridColumn: 'span 3' }}>
-            <label>Chủ đề tuần *</label>
-            <input
-              type="text"
-              placeholder="VD: Tuần 1: Làm quen với biển cả"
-              value={weekTheme}
-              onChange={(e) => setWeekTheme(e.target.value)}
-              maxLength={255}
-            />
-          </S.FormField>
+            <S.FormField style={{ gridColumn: 'span 3' }}>
+              <label>Chủ đề tuần *</label>
+              <input
+                type="text"
+                placeholder="VD: Tuần 1: Làm quen với biển cả"
+                value={weekTheme}
+                onChange={(e) => setWeekTheme(e.target.value)}
+                maxLength={255}
+              />
+            </S.FormField>
 
-          <S.FormActions>
-            <S.SecondaryButton type="button" onClick={downloadCsvTemplate}>
-              <Download size={16} /> Tải CSV mẫu
-            </S.SecondaryButton>
-            <S.SecondaryButton
-              type="button"
-              onClick={() => csvInputRef.current?.click()}
-              disabled={!monthlySchedule}
-              title={!monthlySchedule ? 'Vui lòng lưu thông tin tháng trước' : ''}
-            >
-              <Upload size={16} /> Upload CSV
-            </S.SecondaryButton>
-            <input
-              ref={csvInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleCsvSelected}
-              style={{ display: 'none' }}
-            />
-            <S.PrimaryButton
-              type="button"
-              onClick={saveWeeklySchedule}
-              disabled={isSaving || !monthlySchedule || !weekTheme.trim()}
-            >
-              <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu tuần'}
-            </S.PrimaryButton>
-          </S.FormActions>
-        </S.FormGrid>
-      </S.FormCard>
+            <S.FormActions>
+              <S.SecondaryButton type="button" onClick={downloadCsvTemplate}>
+                <Download size={16} /> Tải CSV mẫu
+              </S.SecondaryButton>
+              <S.SecondaryButton
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                disabled={!monthlySchedule}
+                title={!monthlySchedule ? 'Vui lòng lưu thông tin tháng trước' : ''}
+              >
+                <Upload size={16} /> Upload CSV
+              </S.SecondaryButton>
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleCsvSelected}
+                style={{ display: 'none' }}
+              />
+              <S.PrimaryButton
+                type="button"
+                onClick={saveWeeklySchedule}
+                disabled={isSaving || !monthlySchedule || !weekTheme.trim()}
+              >
+                <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu tuần'}
+              </S.PrimaryButton>
+            </S.FormActions>
+          </S.FormGrid>
+        </S.FormCard>
+      )}
 
       {/* 5-day board */}
       {isLoading ? (
@@ -573,9 +621,11 @@ export const WeeklyScheduleView: React.FC = () => {
                       <S.TodayBadge>Hôm nay</S.TodayBadge>
                     )}
                   </S.DayTitle>
-                  <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
-                    <Plus size={14} />
-                  </S.AddButton>
+                  {!isApproved && (
+                    <S.AddButton type="button" $isPast={dayIsPast} onClick={() => openAddItem(day.key)} title={`Thêm hoạt động ${day.label}`}>
+                      <Plus size={14} />
+                    </S.AddButton>
+                  )}
                 </S.DayHeader>
                 <S.DayBody>
                   {(() => {
@@ -597,7 +647,7 @@ export const WeeklyScheduleView: React.FC = () => {
                         </S.ItemType>
                         {it.details ? <S.ItemDetails>{it.details}</S.ItemDetails> : null}
                         {it.location ? <S.ItemLocation>📍 {it.location}</S.ItemLocation> : null}
-                        {it.scheduleDetailId && !dayIsPast ? (
+                        {it.scheduleDetailId && !dayIsPast && !isApproved ? (
                           <S.ItemActions>
                             <S.ItemEditBtn
                               type="button"
@@ -724,6 +774,7 @@ export const WeeklyScheduleView: React.FC = () => {
         ))}
       </S.ToastContainer>
     </S.Container>
+    </DashboardLayout>
   );
 };
 

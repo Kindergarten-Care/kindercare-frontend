@@ -1,75 +1,97 @@
 import { apiClient } from '@kindercare/core';
 import { SERVER, ApiResponse } from '@kindercare/core';
-import { validateUpsertBody } from '@/config/validations/assessment';
+import { validateAssessmentItem } from '@/config/validations/assessment';
 import {
   AssessmentHistoryPoint,
   UpsertAssessmentItem,
-  UpsertClassAssessmentsBody,
 } from '@/config/types/assessment';
 
 /**
- * Service cho tính năng "Đánh giá định kỳ học sinh".
+ * Convert `YYYY-MM` (dùng nội bộ FE, khớp MonthYearPicker/sort) → `MM-YYYY`
+ * (BE yêu cầu cho cột `StudentAssessments.AssessmentMonth`).
+ */
+function toBeMonthFormat(termPeriod: string): string {
+  const [yyyy, mm] = termPeriod.split('-');
+  return `${mm}-${yyyy}`;
+}
+
+/**
+ * Convert `MM-YYYY` (BE trả về) → `YYYY-MM` (FE dùng nội bộ).
+ */
+function fromBeMonthFormat(assessmentMonth: string): string {
+  const m = /^(\d{2})-(\d{4})$/.exec(assessmentMonth || '');
+  if (!m) return assessmentMonth || '';
+  return `${m[2]}-${m[1]}`;
+}
+
+/**
+ * Service cho tính năng "Đánh giá định kỳ học sinh" (Phiếu bé ngoan).
  *
- * Endpoint thực tế BE đang chạy:
- *   GET  /teacher/classes/:classId/student-health/assessments?termPeriod=YYYY-MM
- *   PUT  /teacher/classes/:classId/student-health/assessments         body: { items, termPeriod }
- *   GET  /teacher/classes/:classId/student-health/assessments/history?studentId=&monthsBack=
+ * Endpoint BE thực tế đang chạy (bảng `StudentAssessments`):
+ *   GET  /teacher/classes/:classId/assessments?month=MM-YYYY
+ *   GET  /teacher/assessments?studentId=                      (lịch sử 6 tháng gần nhất)
+ *   POST /teacher/assessments   body: {classId, studentId, month, ...scores, teacherComment}
  *
- * Các endpoint này đã được một service khác dùng ổn → tận dụng, đỡ phải đụng BE.
+ * BE lưu `AssessmentMonth` dạng `MM-YYYY` (VD "07-2026") — FE dùng `YYYY-MM` nội bộ
+ * (khớp MonthYearPicker + so sánh string đúng thứ tự thời gian) nên convert 2 chiều
+ * ở lớp service này, UI/component phía trên không cần biết.
  *
- * Bảng nguồn: `DevelopmentAssessments` (PascalCase, đã có sẵn 5 records mẫu).
+ * Bảng nguồn: `StudentAssessments`.
  *   - 5 score cột: PhysicalScore, CognitiveScore, LanguageScore,
- *                  EmotionalScore, SocialScore
- *   - 1 text cột:  OverallNote
- *   - TermPeriod varchar(7): 'YYYY-MM'
+ *                  SocioEmotionalScore, AestheticScore
+ *   - 1 text cột:  TeacherComment
+ *   - AssessmentMonth varchar(7): 'MM-YYYY'
  */
 export class AssessmentService {
   /**
    * Lấy bản ghi đánh giá của 1 lớp trong 1 tháng.
-   * Trả về danh sách các bé đã có record (FE map với danh sách học sinh của lớp).
+   * BE trả về TOÀN BỘ học sinh của lớp: { studentId, fullName, avatarUrl, assessment: {...} | null }.
+   * Chỉ giữ lại các bé đã có `assessment` (bé chưa đánh giá → assessment = null).
    */
   public static async getClassAssessments(
     classId: number | string,
     termPeriod: string
   ): Promise<AssessmentHistoryPoint[]> {
-    const url = SERVER.teacher.getAssessments;
+    const url = SERVER.teacher.getClassAssessments.replace(':classId', String(classId));
     const res = await apiClient.get<ApiResponse<{ students: any[] }>>(url, {
-      params: { month: termPeriod },
+      params: { month: toBeMonthFormat(termPeriod) },
     });
-    const raw =
-      res.data?.data?.students ?? (res.data?.data as any) ?? [];
-    const arr = Array.isArray(raw) ? raw : [];
-    return arr.map(AssessmentService.normalize);
+    const students = res.data?.data?.students ?? [];
+    const arr = Array.isArray(students) ? students : [];
+    return arr
+      .filter(s => s.assessment)
+      .map(s => AssessmentService.normalize({ studentId: s.studentId, ...s.assessment }));
   }
 
   /**
-   * Tạo mới / cập nhật đánh giá cho nhiều học sinh trong cùng tháng.
-   * Body đã được validate bởi validateUpsertBody() (chỉ chứa field BE hỗ trợ).
+   * Tạo mới / cập nhật đánh giá cho 1 học sinh trong 1 tháng.
+   * BE chỉ nhận từng học sinh 1 request (không có endpoint batch cho StudentAssessments).
    */
   public static async upsertClassAssessments(
     classId: number | string,
     termPeriod: string,
     items: UpsertAssessmentItem[]
   ): Promise<{ ok: true } | { ok: false; error: string }> {
-    const body: UpsertClassAssessmentsBody = { items, termPeriod };
-    const valid = validateUpsertBody(body);
-    if (!valid.ok) {
-      return { ok: false, error: Object.values(valid.errors).join(' ') };
+    for (const item of items) {
+      const errs = validateAssessmentItem(item);
+      if (errs.length > 0) {
+        return { ok: false, error: errs.join(' ') };
+      }
     }
 
     try {
-      const url = SERVER.teacher.getAssessments;
+      const url = SERVER.teacher.submitAssessment;
       for (const item of items) {
         const payload = {
           classId: Number(classId),
           studentId: Number(item.studentId),
-          month: termPeriod,
+          month: toBeMonthFormat(termPeriod),
           physicalScore: item.physicalScore,
           cognitiveScore: item.cognitiveScore,
           languageScore: item.languageScore,
-          emotionalScore: typeof item.emotionalScore === 'number' ? item.emotionalScore : item.socioEmotionalScore,
+          socioEmotionalScore: item.socioEmotionalScore,
           aestheticScore: item.aestheticScore,
-          notes: item.overallNote || item.teacherComment
+          teacherComment: item.teacherComment,
         };
         await apiClient.post<ApiResponse<unknown>>(url, payload);
       }
@@ -85,19 +107,20 @@ export class AssessmentService {
 
   /**
    * Lấy lịch sử 6 tháng gần nhất của 1 học sinh để vẽ radar chart.
+   * BE dùng active class của giáo viên — không cần truyền classId.
    */
   public static async getStudentHistory(
-    classId: number | string,
+    _classId: number | string,
     studentId: number | string,
     monthsBack = 6
   ): Promise<AssessmentHistoryPoint[]> {
     const url = SERVER.teacher.getAssessments;
     try {
-      const res = await apiClient.get<ApiResponse<{ assessments: any[] }>>(url, {
-        params: { classId, studentId, monthsBack },
+      const res = await apiClient.get<ApiResponse<any[]>>(url, {
+        params: { studentId },
       });
-      const raw = res.data?.data?.assessments ?? (res.data?.data as any) ?? [];
-      const arr = Array.isArray(raw) ? raw : [];
+      const raw = res.data?.data ?? [];
+      const arr = (Array.isArray(raw) ? raw : []).slice(0, monthsBack);
       return arr.map(AssessmentService.normalize);
     } catch (e) {
       console.warn('getStudentHistory fallback', e);
@@ -107,17 +130,7 @@ export class AssessmentService {
 
   /**
    * Chuẩn hóa 1 record từ BE về shape FE dùng.
-   * BE trả về camelCase (NestJS default) hoặc PascalCase (raw mode) tùy cấu hình.
-   * Bảng nguồn: `DevelopmentAssessments` (5 scores + OverallNote).
-   *
-   * Mapping field camelCase ↔ PascalCase:
-   *   PhysicalScore   ↔ PhysicalScore
-   *   CognitiveScore  ↔ CognitiveScore
-   *   LanguageScore   ↔ LanguageScore
-   *   EmotionalScore  ↔ EmotionalScore
-   *   SocialScore     ↔ SocialScore
-   *   OverallNote     ↔ OverallNote (FE alias 'teacherComment' để tương thích UI)
-   *   TermPeriod      ↔ TermPeriod (YYYY-MM)
+   * Bảng nguồn: `StudentAssessments` (5 scores + TeacherComment).
    */
   public static normalize = (raw: any): AssessmentHistoryPoint => {
     const num = (v: unknown, fallback = 0): number => {
@@ -125,25 +138,20 @@ export class AssessmentService {
       return typeof n === 'number' && Number.isFinite(n) ? n : fallback;
     };
 
-    const termPeriod: string =
-      raw?.termPeriod ?? raw?.TermPeriod ?? raw?.assessmentMonth ?? raw?.AssessmentMonth ?? '';
-
-    const note =
-      raw?.overallNote ?? raw?.OverallNote ?? raw?.teacherComment ?? raw?.TeacherComment ?? undefined;
+    const termPeriod: string = fromBeMonthFormat(raw?.assessmentMonth ?? raw?.termPeriod ?? '');
 
     return {
-      assessmentId: num(raw?.assessmentId ?? raw?.AssessmentID, 0),
-      studentId: raw?.studentId ?? raw?.StudentID,
+      assessmentId: num(raw?.assessmentId, 0),
+      studentId: raw?.studentId,
       termPeriod,
-      physicalScore: num(raw?.physicalScore ?? raw?.PhysicalScore),
-      cognitiveScore: num(raw?.cognitiveScore ?? raw?.CognitiveScore),
-      languageScore: num(raw?.languageScore ?? raw?.LanguageScore),
-      emotionalScore: num(raw?.emotionalScore ?? raw?.EmotionalScore),
-      socialScore: num(raw?.socialScore ?? raw?.SocialScore),
-      aestheticScore: num(raw?.aestheticScore ?? raw?.AestheticScore),
-      overallNote: typeof note === 'string' ? note : undefined,
-      createdAt: num(raw?.createdAt ?? raw?.CreatedAt, 0),
-      updatedAt: num(raw?.updatedAt ?? raw?.UpdatedAt, 0),
+      physicalScore: num(raw?.physicalScore),
+      cognitiveScore: num(raw?.cognitiveScore),
+      languageScore: num(raw?.languageScore),
+      socioEmotionalScore: num(raw?.socioEmotionalScore),
+      aestheticScore: num(raw?.aestheticScore),
+      teacherComment: typeof raw?.teacherComment === 'string' ? raw.teacherComment : undefined,
+      createdAt: num(raw?.createdAt, 0),
+      updatedAt: num(raw?.updatedAt, 0),
     };
   };
 }

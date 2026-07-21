@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import * as S from './styles';
+import { DashboardLayout } from '@/layout/DashboardLayout';
 import { LeaveRequestStatus } from '@/config/types/attendance';
 import { HeroBannerWidget } from './components/HeroBannerWidget';
 import { QuickCategoriesWidget } from './components/QuickCategoriesWidget';
@@ -249,6 +250,7 @@ export const TeacherDashboardView: React.FC = () => {
   const openQuickActionFor = (kid: TodayKid) => setSelectedQuickKid(kid);
 
   return (
+    <DashboardLayout>
     <S.DashboardContainer>
       {/* CONFETTI LAYER */}
       <S.ConfettiContainer>
@@ -376,7 +378,14 @@ export const TeacherDashboardView: React.FC = () => {
         isOpen={!!selectedMedical}
         data={selectedMedical}
         onClose={() => setSelectedMedical(null)}
-        onMarkDone={(id) => { addToast('✅ Đã cho uống thuốc thành công!'); setSelectedMedical(null); }}
+        onMarkDone={(id, note) => { 
+          updateMedicalReq.mutate({ requestId: Number(id), status: 'Completed', teacherNote: note }, {
+            onSuccess: () => {
+              addToast('✅ Đã cho uống thuốc thành công!');
+              setSelectedMedical(null);
+            }
+          });
+        }}
       />
 
       <ProxyDetailModal
@@ -480,6 +489,7 @@ export const TeacherDashboardView: React.FC = () => {
         classId={activeClassId}
       />
     </S.DashboardContainer>
+    </DashboardLayout>
   );
 };
 export default TeacherDashboardView;

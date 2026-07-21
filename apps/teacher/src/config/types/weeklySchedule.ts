@@ -41,6 +41,8 @@ export interface MonthlySchedule {
   month: number;
   year: number;
   monthTheme: string;
+  approvedStatus?: number;
+  isActive?: boolean;
   createdAt?: number;
   updatedAt?: number;
 }

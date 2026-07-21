@@ -1,27 +1,15 @@
-'use client';
-
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { DashboardLayout } from '@/layout/DashboardLayout';
+import React, { Suspense } from 'react';
 import { TeacherDashboardView } from '@/views/TeacherDashboard';
+import type { Metadata } from 'next';
 
-export default function TeacherDashboardPage() {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: 'Tổng quan | KinderCare',
+};
 
-  if (isLoading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Đang tải hệ thống...</div>;
-  }
-
-  if (!user) {
-    return null; // Will redirect via AuthGuard
-  }
-
+export default function TeacherDashboardPage(): React.ReactElement {
   return (
-    <DashboardLayout 
-      fullName={user.fullName || user.username} 
-      roleTitle={user.roleName || 'Giáo Viên Mầm Non'}
-    >
+    <Suspense fallback={null}>
       <TeacherDashboardView />
-    </DashboardLayout>
+    </Suspense>
   );
 }
