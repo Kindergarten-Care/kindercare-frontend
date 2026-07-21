@@ -33,9 +33,9 @@ function getNotifType(payload: NotificationPayload): string {
     const data = typeof payload.dataPayload === 'string'
       ? JSON.parse(payload.dataPayload)
       : payload.dataPayload;
-    return data?.requestType || data?.type || payload.type || 'general';
+    return (data?.requestType || data?.type || payload.type || 'general').toLowerCase();
   } catch {
-    return payload.type || 'general';
+    return (payload.type || 'general').toLowerCase();
   }
 }
 

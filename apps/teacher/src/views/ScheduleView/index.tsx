@@ -230,6 +230,8 @@ export const ScheduleView: React.FC = () => {
   }
 
   const hasMatrix = !!selectedItem && !!optType && records.length > 0;
+  const GROUP_WIDTHS = { meal: 280, nap: 260, study: 300 };
+  const groupWidth = optType ? GROUP_WIDTHS[optType] : 280;
   const opts = hasMatrix ? OPTSETS[optType!] : [];
   const batchLabel = hasMatrix ? 'Tất cả: ' + opts[0].label.replace(/^.*? /, '') : '';
 
@@ -628,7 +630,7 @@ export const ScheduleView: React.FC = () => {
                   <S.MatrixRow key={m.id}>
                     <S.AvatarNode $bg={m.grad}>{m.initial}</S.AvatarNode>
                     <S.StudentNameNode>{m.name}</S.StudentNameNode>
-                    <S.OptionsGroup>
+                    <S.OptionsGroup $width={groupWidth}>
                       {m.options.map((opt: any) => (
                         <S.OptionBtn 
                           key={opt.k} 

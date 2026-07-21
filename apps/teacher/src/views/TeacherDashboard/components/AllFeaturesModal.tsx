@@ -168,6 +168,7 @@ const features = [
   { id: 'activities',    name: 'Hoạt động',        icon: '🎨', bg: '#FCE7F3', color: '#BE185D' },
   { id: 'health',        name: 'Y tế & Sức khỏe',  icon: '💊', bg: '#FEE2E2', color: '#DC2626' },
   { id: 'leave',         name: 'Đơn xin nghỉ',     icon: '📬', bg: '#FEF9C3', color: '#854D0E' },
+  { id: 'proxy',         name: 'Đơn đón hộ',       icon: '🚙', bg: '#E0E7FF', color: '#4338CA' },
   { id: 'assessment',    name: 'Đánh giá định kỳ', icon: '📊', bg: '#FEF3C7', color: '#D97706' },
   { id: 'newsfeed',      name: 'Nhật ký lớp',      icon: '📸', bg: '#E0E7FF', color: '#4338CA' },
   { id: 'weekly-schedule', name: 'Lịch tuần',      icon: '🗓️', bg: '#FEF3C7', color: '#B45309' },

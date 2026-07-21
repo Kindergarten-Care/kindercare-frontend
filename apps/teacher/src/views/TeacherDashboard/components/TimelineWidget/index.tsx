@@ -17,10 +17,10 @@ interface TimelineItemParsed {
 }
 
 export const TimelineWidget: React.FC<TimelineWidgetProps> = ({ classId }) => {
-  // get today's timestamp in string
+  // Backend expects unix timestamp string in seconds for the `date` parameter
   const todayDate = new Date();
-  const dateStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
-
+  const targetTimestamp = Math.floor(Date.UTC(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()) / 1000);
+  const dateStr = String(targetTimestamp);
   const { data: scheduleData, isLoading: isLoadingSchedule } = useClassSchedule(classId || undefined, dateStr);
   const { data: menuData, isLoading: isLoadingMenu } = useClassMenu(classId || undefined, dateStr);
 

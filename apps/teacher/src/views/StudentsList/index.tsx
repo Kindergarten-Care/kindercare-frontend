@@ -299,7 +299,7 @@ export const StudentsListView: React.FC = () => {
 
   // Drawer selected student details calculation
   const buildHeatmapFromApi = (historyList: Array<{ date: string; status: string }>, year: number, month: number) => {
-    const cells: { day: number; kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' }[] = [];
+    const cells: { day: number; kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' | 'no_data' }[] = [];
     const daysInMonth = new Date(year, month, 0).getDate();
     const todayZero = new Date();
     todayZero.setHours(0, 0, 0, 0);
@@ -309,7 +309,7 @@ export const StudentsListView: React.FC = () => {
       const dow = dateObj.getDay();
       const weekend = dow === 0 || dow === 6;
 
-      let kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' = 'present';
+      let kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' | 'no_data' = 'no_data';
 
       if (weekend) {
         kind = 'weekend';
@@ -327,7 +327,7 @@ export const StudentsListView: React.FC = () => {
             kind = 'absent';
           }
         } else {
-          kind = 'absent';
+          kind = 'no_data';
         }
       }
       cells.push({ day, kind });
@@ -340,7 +340,7 @@ export const StudentsListView: React.FC = () => {
   const drawerStudentHeatmap = selectedStudent
     ? buildHeatmapFromApi(attendanceHistory, parseInt(yearStr), parseInt(monthStr))
     : [];
-  const drawerStudentAttendanceDays = drawerStudentHeatmap.filter(c => c.kind !== 'weekend' && c.kind !== 'future');
+  const drawerStudentAttendanceDays = drawerStudentHeatmap.filter(c => c.kind === 'present' || c.kind === 'late' || c.kind === 'absent');
   const drawerStudentPresentOrLateDays = drawerStudentAttendanceDays.filter(c => c.kind === 'present' || c.kind === 'late').length;
   const drawerStudentAttendanceRate = drawerStudentAttendanceDays.length > 0
     ? Math.round((drawerStudentPresentOrLateDays / drawerStudentAttendanceDays.length) * 100)
@@ -745,7 +745,7 @@ export const StudentsListView: React.FC = () => {
                     <S.HeatmapGrid>
                       {drawerStudentHeatmap.map(c => {
                         const [y, m] = historyMonth.split('-');
-                        const dayLabel = `${c.day}/${m} · ${c.kind === 'present' ? 'có mặt' : c.kind === 'late' ? 'vắng phép' : c.kind === 'absent' ? 'vắng' : c.kind === 'weekend' ? 'cuối tuần' : 'chưa tới'}`;
+                        const dayLabel = `${c.day}/${m} · ${c.kind === 'present' ? 'có mặt' : c.kind === 'late' ? 'vắng phép' : c.kind === 'absent' ? 'vắng' : c.kind === 'weekend' ? 'cuối tuần' : c.kind === 'no_data' ? 'chưa có dữ liệu' : 'chưa tới'}`;
                         return (
                           <S.HeatmapCell 
                             key={c.day}

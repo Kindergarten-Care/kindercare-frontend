@@ -450,6 +450,9 @@ export const TeacherDashboardView: React.FC = () => {
             case 'leave':
               setRequestListType('leave');
               break;
+            case 'proxy':
+              setRequestListType('proxy');
+              break;
             case 'assessment':
               router.push('/assessment');
               break;
@@ -472,9 +475,9 @@ export const TeacherDashboardView: React.FC = () => {
         isOpen={!!requestListType}
         onClose={() => setRequestListType(null)}
         type={requestListType || 'leave'}
-        title={requestListType === 'leave' ? 'Đơn xin nghỉ học' : (requestListType === 'medical' ? 'Dặn dò y tế' : 'Tất cả đơn')}
+        title={requestListType === 'leave' ? 'Đơn xin nghỉ học' : (requestListType === 'medical' ? 'Dặn dò y tế' : (requestListType === 'proxy' ? 'Đơn đón hộ' : 'Tất cả đơn'))}
         subtitle="Danh sách cần xử lý"
-        tasks={(requestListType === 'leave' ? tasks.filter(t => t.tag === 'Đơn phép') : (requestListType === 'medical' ? tasks.filter(t => t.tag === 'Y tế') : tasks)).map(t => ({
+        tasks={(requestListType === 'leave' ? tasks.filter(t => t.tag === 'Đơn phép') : (requestListType === 'medical' ? tasks.filter(t => t.tag === 'Y tế') : (requestListType === 'proxy' ? tasks.filter(t => t.tag === 'Đón hộ') : tasks))).map(t => ({
           ...t,
           onRowClick: t.onRowClick ? () => {
             setRequestListType(null); // Đóng bảng danh sách
