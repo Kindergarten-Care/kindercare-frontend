@@ -503,7 +503,7 @@ export const HeatmapGrid = styled.div`
   margin-top: 8px;
 `;
 
-export const HeatmapCell = styled.span<{ $kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' }>`
+export const HeatmapCell = styled.span<{ $kind: 'present' | 'late' | 'absent' | 'weekend' | 'future' | 'no_data' }>`
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -531,6 +531,8 @@ export const HeatmapCell = styled.span<{ $kind: 'present' | 'late' | 'absent' | 
         return `background: #F3F4F6; color: #9CA3AF; border: 1px solid transparent;`;
       case 'future':
         return `background: #F9FAFB; color: #9CA3AF; border: 1px solid #F3F4F6;`;
+      case 'no_data':
+        return `background: #F3F4F6; color: #9CA3AF; border: 1px solid #D1D5DB; border-style: dashed;`;
     }
   }}
 `;
