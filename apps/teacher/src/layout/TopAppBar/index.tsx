@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import * as S from './styles';
 import { NotificationPopup } from './components/NotificationPopup';
+import { GlobalSearchBar } from './components/GlobalSearchBar';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchNotifications, prependItem, selectUnreadCount } from '@/store/slices/notificationSlice';
 import type { AppDispatch } from '@/store';
 import { useRouter } from '@/i18n/routing';
-import { ChevronDown, Menu, Search, Bell } from 'lucide-react';
+import { ChevronDown, Menu, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useTeacherProfile } from '@/hooks/queries';
 import { initPushNotification, socketService } from '@kindercare/core';
@@ -130,10 +131,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ fullName, roleTitle, onMen
           </S.MenuButton>
         )}
         
-        <S.SearchWrapper>
-          <Search size={19} color="#9CA3AF" strokeWidth={2.2} />
-          <S.SearchInput type="text" placeholder="Tìm bé, hoạt động hoặc danh mục…" />
-        </S.SearchWrapper>
+        <GlobalSearchBar />
       </div>
 
       <div style={{ flex: 1 }}></div>
